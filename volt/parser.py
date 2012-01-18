@@ -4,6 +4,7 @@
 # (c) Wibowo Arindrarto <bow@bow.web.id>
 
 import codecs
+import datetime
 import os
 import re
 
@@ -41,6 +42,9 @@ class Content(object):
         with codecs.open(filename, 'r', 'utf8') as source:
             self._parse_text_content(source)
         self.markup = self._get_markup_lang()
+        if not hasattr(self, 'title') or not hasattr(self, 'time'):
+            raise ContentError("Missing 'title' or 'time' in %s(filename)." \
+                    % self.filename)
         if hasattr(self, 'tags'):
             self.tags = self._process_tags()
 
@@ -89,3 +93,9 @@ class Content(object):
 
         """
         return filter(None, self.tags.split(', '))
+
+    def _process_time(self):
+        """Changes self.time from string to a datetime object.
+
+        """
+        pass

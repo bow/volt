@@ -1,6 +1,6 @@
 ---
 tags: testing, beta, development
-time: 2011/10/01 20:30:00
+time: 2011/10/01 20:30
 title: Move along people, this is just a test
 ---
 
