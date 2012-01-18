@@ -4,9 +4,9 @@
 # (c) Wibowo Arindrarto <bow@bow.web.id>
 
 import codecs
-import datetime
 import os
 import re
+from datetime import datetime
 
 import yaml
 
@@ -16,6 +16,8 @@ _MARKUP = {
            '.rst': 'rst', '.textile': 'textile',
            '.html': 'html'
           }
+
+_POST_TIME_FORMAT = "%Y/%m/%d %H:%M"
 
 
 class ParseError(Exception):
@@ -45,6 +47,7 @@ class Content(object):
         if not hasattr(self, 'title') or not hasattr(self, 'time'):
             raise ContentError("Missing 'title' or 'time' in %s(filename)." \
                     % self.filename)
+        self.time = self._process_time()
         if hasattr(self, 'tags'):
             self.tags = self._process_tags()
 
@@ -98,4 +101,4 @@ class Content(object):
         """Changes self.time from string to a datetime object.
 
         """
-        pass
+        return datetime.strptime(self.time, _POST_TIME_FORMAT)
