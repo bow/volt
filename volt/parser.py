@@ -42,26 +42,6 @@ class Content(object):
             self._parse_text_content(source)
         self.markup = self._get_markup_lang()
 
-    def _get_markup_lang(self):
-        """Returns the content markup language.
-
-        Markup language is guessed first and foremost based on the 
-        file extension. Failing that, the method checks if the header 
-        specifies 'markup'. If no 'markup' is specified or if the 
-        specified markup is not implemented, a ParseError exception is raised.
-
-        """
-        ext = os.path.splitext(self.filename)[1]
-        if ext.lower() in _MARKUP:
-            return _MARKUP[ext].lower()
-        else:
-            if hasattr(self, 'markup') and \
-                    self.markup.lower() in _MARKUP.values():
-                return self.markup.lower()
-            else:
-                raise ParseError("Markup language unknown or unimplemented in \
-                        %s(filename)." % self.filename)
-
     def _parse_text_content(self, source):
         """Parses the content of a text file.
 
@@ -81,3 +61,24 @@ class Content(object):
         for key in header:
             setattr(self, key, header[key])
         self.content = parsed.pop(0).strip()
+
+    def _get_markup_lang(self):
+        """Returns the content markup language.
+
+        Markup language is guessed first and foremost based on the 
+        file extension. Failing that, the method checks if the header 
+        specifies 'markup'. If no 'markup' is specified or if the 
+        specified markup is not implemented, a ParseError exception is raised.
+
+        """
+        ext = os.path.splitext(self.filename)[1]
+        if ext.lower() in _MARKUP:
+            return _MARKUP[ext.lower()]
+        else:
+            if hasattr(self, 'markup') and \
+                    self.markup.lower() in _MARKUP.values():
+                return self.markup.lower()
+            else:
+                raise ParseError("Markup language unknown or unimplemented in \
+                        %s(filename)." % self.filename)
+
