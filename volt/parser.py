@@ -59,7 +59,7 @@ class Content(object):
                     self.metada['markup'].lower() in _MARKUP.values():
                 return self.metada['markup'].lower()
             else:
-                raise ParseError("Unable to determine markup language in \
+                raise ParseError("Markup language unknown or unimplemented in \
                         %s(filename)." % self.filename)
 
     def _parse_text_content(self, source):
@@ -76,6 +76,7 @@ class Content(object):
         parsed = filter(None, pattern.split(source.read()))
         header = yaml.load(parsed.pop(0))
         if not isinstance(header, dict):
-            raise ParseError("Unable to parse header in %(filename).")
+            raise ParseError("Header format unrecognizable in %(filename)." \
+                    % self.filename)
         self.metadata = header
         self.content = parsed.pop(0).strip()
