@@ -41,6 +41,8 @@ class Content(object):
         with codecs.open(filename, 'r', 'utf8') as source:
             self._parse_text_content(source)
         self.markup = self._get_markup_lang()
+        if hasattr(self, 'tags'):
+            self.tags = self._process_tags()
 
     def _parse_text_content(self, source):
         """Parses the content of a text file.
@@ -59,7 +61,7 @@ class Content(object):
             raise ParseError("Header format unrecognizable in %(filename)." \
                     % self.filename)
         for key in header:
-            setattr(self, key, header[key])
+            setattr(self, key.lower(), header[key])
         self.content = parsed.pop(0).strip()
 
     def _get_markup_lang(self):
@@ -81,4 +83,9 @@ class Content(object):
             else:
                 raise ParseError("Markup language unknown or unimplemented in \
                         %s(filename)." % self.filename)
+    
+    def _process_tags(self):
+        """Changes self.tags from a string to a list.
 
+        """
+        return filter(None, self.tags.split(', '))
