@@ -52,12 +52,12 @@ class Content(object):
 
         """
         ext = os.path.splitext(self.filename)[1]
-        if ext in _MARKUP:
-            return _MARKUP[ext]
+        if ext.lower() in _MARKUP:
+            return _MARKUP[ext].lower()
         else:
-            if 'markup' in self.metada and \
-                    self.metada['markup'].lower() in _MARKUP.values():
-                return self.metada['markup'].lower()
+            if hasattr(self, 'markup') and \
+                    self.markup.lower() in _MARKUP.values():
+                return self.markup.lower()
             else:
                 raise ParseError("Markup language unknown or unimplemented in \
                         %s(filename)." % self.filename)
@@ -65,8 +65,8 @@ class Content(object):
     def _parse_text_content(self, source):
         """Parses the content of a text file.
 
-        Parsing results are stored in self.metadata (for the header)
-        and self.content (for the content itself).
+        Header parsing results are stored as Content object attrributes,
+        while the rest of the file is stored in self.content.
 
         Args:
           source: file object that implements read()
@@ -78,5 +78,6 @@ class Content(object):
         if not isinstance(header, dict):
             raise ParseError("Header format unrecognizable in %(filename)." \
                     % self.filename)
-        self.metadata = header
+        for key in header:
+            setattr(self, key, header[key])
         self.content = parsed.pop(0).strip()
