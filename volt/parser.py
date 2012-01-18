@@ -3,14 +3,15 @@
 # 
 # (c) Wibowo Arindrarto <bow@bow.web.id>
 
-import os
 import codecs
+import os
+import re
 
 import yaml
 
 
 _MARKUP = {
-           '.markdown': 'markdown', '.md': 'markdown
+           '.markdown': 'markdown', '.md': 'markdown',
            '.rst': 'rst', '.textile': 'textile',
            '.html': 'html'
           }
@@ -38,8 +39,8 @@ class Content(object):
         """
         self.filename = filename
         with codecs.open(filename, 'r', 'utf8') as source:
-            _parse_text_content(source)
-        self.markup = _get_markup_lang()
+            self._parse_text_content(source)
+        self.markup = self._get_markup_lang()
 
     def _get_markup_lang(self):
         """Returns the content markup language.
@@ -71,7 +72,7 @@ class Content(object):
           source: file object that implements read()
 
         """
-        pattern = re.comp(r'^---$', re.MULTILINE)
+        pattern = re.compile(r'^---$', re.MULTILINE)
         parsed = filter(None, pattern.split(source.read()))
         header = yaml.load(parsed.pop(0))
         if not isinstance(header, dict):
