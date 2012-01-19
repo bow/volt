@@ -55,8 +55,15 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         Overrides parent log_request so 'size' can be set dynamically.
 
         """
-        if code / 100 != 3:
-            size = os.path.getsize(self.file_path)
+        ### HACK, add code for 404 processing later
+        if code <= 200:
+            actual_file = os.path.join(self.file_path, 'index.html')
+            if os.path.isdir(self.file_path):
+                if os.path.exists(actual_file) or \
+                   os.path.exists(actual_file[:-1]):
+                    size = os.path.getsize(actual_file)
+            else:
+                size = os.path.getsize(self.file_path)
         self.log_message('"%s" %s %s',
                          self.requestline, str(code), str(size))
 
