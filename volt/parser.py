@@ -23,6 +23,9 @@ _POST_TIME_FORMAT = "%Y/%m/%d %H:%M"
 class ParseError(Exception):
     pass
 
+class ContentError(Exception):
+    pass
+
 
 class Content(object):
     """Class that represents a content object in volt.
@@ -43,11 +46,11 @@ class Content(object):
         self.filename = filename
         with codecs.open(filename, 'r', 'utf8') as source:
             self._parse_text_content(source)
-        self.markup = self._get_markup_lang()
         if not hasattr(self, 'title') or not hasattr(self, 'time'):
             raise ContentError("Missing 'title' or 'time' in %s(filename)." \
                     % self.filename)
         self.time = self._process_time()
+        self.markup = self._get_markup_lang()
         if hasattr(self, 'tags'):
             self.tags = self._process_tags()
 
