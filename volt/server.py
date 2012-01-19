@@ -8,6 +8,7 @@ for the "site" directory and serves the contents.
 
 """
 
+import argparse
 import os
 import posixpath
 import sys
@@ -16,12 +17,20 @@ from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-p', '--port', action='store', dest='server_port',
+                     default=8000, help='Sets the static server port', type=int)
+parser.add_argument('-d', '--dir', action='store', dest='server_dir',
+                     default=os.path.abspath(os.path.join(os.getcwd(), 'site')),
+                     help='Sets the directory to serve')
+
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     #server_version = 'VoltHTTP' + __version__
 
     def __init__(self, *args, **kwargs):
-        self.base_dir = os.path.abspath(os.path.join(os.getcwd(), 'site'))
+        self.base_dir = options.server_dir
         SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
 
     def log_error(self, format, *args):
@@ -74,17 +83,17 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 def main():
     
-    if sys.argv[1:]:
-        port = int(sys.argv[1])
-    else:
-        port = 8000
-    address = ('127.0.0.1', port)
+    ### HACK, fix later
+    global options
+    options = parser.parse_args()
+
+    address = ('127.0.0.1', options.server_port)
     
     server = HTTPServer(address, VoltHTTPRequestHandler)
     sa = server.socket.getsockname()
 
-    print "\nVolt development server running at %s:%s ..." % (sa[0], sa[1]) 
-    print "Serving contents of %s." % ("directory")
+    print "\nVolt development server running at %s:%s" % (sa[0], sa[1]) 
+    print "Serving contents of %s ..." % (os.path.abspath(options.server_dir))
     print "CTRL-C to stop.\n"
 
     try:
