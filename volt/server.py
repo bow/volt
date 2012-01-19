@@ -30,7 +30,8 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         Overrides parent log_message to provide a more compact output.
 
         """
-        sys.stderr.write("[%s] %s\n" % (self.log_date_time_string(), format%args)) 
+        sys.stderr.write("[%s] %s\n" % 
+                         (self.log_date_time_string(), format % args))
 
     def log_request(self, code='-', size='-'):
         """Logs the accepted request.
