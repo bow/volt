@@ -15,6 +15,7 @@ import sys
 import urllib
 from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
+from socket import error
 
 
 __version__ = "0.1"
@@ -100,7 +101,22 @@ def main():
     
     print "\nVolt v%s Development Server" % (__version__)
 
-    server = HTTPServer(address, VoltHTTPRequestHandler)
+    # handle socket errors in a try..except block
+    # adapted from Django's runserver
+    try:
+        server = HTTPServer(address, VoltHTTPRequestHandler)
+    except Exception, e:
+        ERRORS = {
+            13: "You don't have permission to access port %s." % 
+                (options.server_port),
+            98: "Port %s already in use." % (options.server_port),
+        }
+        try:
+            error_message = ERRORS[e.args[0]]
+        except (AttributeError, KeyError):
+            error_message = str(e)
+        sys.stderr.write("Error: %s\n" % error_message)
+        sys.exit(1)
 
     running_address, running_port = server.socket.getsockname()
     if running_address == '127.0.0.1':
@@ -112,9 +128,10 @@ def main():
 
     try:
         server.serve_forever()
-    except KeyboardInterrupt:
+    except:
         server.shutdown()
         print "\nServer stopped.\n"
+        sys.exit(0)
 
 if __name__ == '__main__':
     main()
