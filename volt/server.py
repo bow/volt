@@ -17,6 +17,8 @@ from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
+__version__ = "0.1"
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-p', '--port', action='store', dest='server_port',
@@ -27,7 +29,7 @@ parser.add_argument('-d', '--dir', action='store', dest='server_dir',
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
-    #server_version = 'VoltHTTP' + __version__
+    server_version = 'VoltHTTP' + __version__
 
     def __init__(self, *args, **kwargs):
         self.base_dir = options.server_dir
@@ -96,11 +98,16 @@ def main():
 
     address = ('127.0.0.1', options.server_port)
     
-    server = HTTPServer(address, VoltHTTPRequestHandler)
-    sa = server.socket.getsockname()
+    print "\nVolt v%s Development Server" % (__version__)
 
-    print "\nVolt development server running at %s:%s" % (sa[0], sa[1]) 
-    print "Serving contents of %s ..." % (os.path.abspath(options.server_dir))
+    server = HTTPServer(address, VoltHTTPRequestHandler)
+
+    running_address, running_port = server.socket.getsockname()
+    if running_address == '127.0.0.1':
+        running_address = 'localhost'
+
+    print "Serving %s/" % (os.path.abspath(options.server_dir))
+    print "Running at http://%s:%s/" % (running_address, running_port) 
     print "CTRL-C to stop.\n"
 
     try:
