@@ -30,7 +30,7 @@ parser.add_argument('-d', '--dir', action='store', dest='server_dir',
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
-    server_version = 'VoltHTTP' + __version__
+    server_version = 'VoltHTTPServer/' + __version__
 
     def __init__(self, *args, **kwargs):
         self.base_dir = options.server_dir
