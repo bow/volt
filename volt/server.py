@@ -21,8 +21,15 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
     #server_version = 'VoltHTTP' + __version__
 
     def __init__(self, *args, **kwargs):
-        self.base_dir = os.path.join(os.getcwd(), 'site')
+        self.base_dir = os.path.abspath(os.path.join(os.getcwd(), 'site'))
         SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
+
+    def log_error(self, format, *args):
+        """Logs the error.
+
+        Overwritten to unclutter log message.
+        """
+        pass
 
     def log_message(self, format, *args):
         """Prints the log message.
@@ -39,6 +46,8 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         Overrides parent log_request so 'size' can be set dynamically.
 
         """
+        if code / 100 != 3:
+            size = os.path.getsize(self.file_path)
         self.log_message('"%s" %s %s',
                          self.requestline, str(code), str(size))
 
@@ -53,14 +62,15 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         path = posixpath.normpath(urllib.unquote(path))
         words = path.split('/')
         words = filter(None, words)
-        # the line below is the only overwrite
         path = self.base_dir
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
             if word in (os.curdir, os.pardir): continue
             path = os.path.join(path, word)
-        return path
+        # set file path as attribute, to get size in log_request()
+        self.file_path = path
+        return self.file_path
 
 def main():
     
