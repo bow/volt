@@ -115,7 +115,8 @@ def main():
             error_message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):
             error_message = str(e)
-        sys.stderr.write("Error: %s\n\n" % error_message)
+        sys.stderr.write("Error: %s\n" % error_message)
+        sys.stderr.write("Exiting...\n\n")
         sys.exit(1)
 
     running_address, running_port = server.socket.getsockname()
