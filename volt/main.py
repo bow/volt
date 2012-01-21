@@ -5,20 +5,29 @@ import argparse
 import os
 import sys
 
+from volt import __version__
 from volt import server
 
+
+class CustomParser(argparse.ArgumentParser):
+    """Custom parser that prints help message when an error occurs.
+    """
+    def error(self, message):
+        sys.stderr.write('\nerror: %s\n' % message)
+        self.print_help()
+        print
+        sys.exit(2)
 
 def build_parsers():
     """Build parser for arguments.
     """
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(title='Commands',
-                                       help='Valid commands',
+    parser = CustomParser(version="volt %s" % __version__)
+    subparsers = parser.add_subparsers(title='subcommands',
                                       )
     # parser for serve
-    server_parser = subparsers.add_parser('serve', 
-                                          help="Serves 'site' directory if \
-                                                  present, otherwise serves \
+    server_parser = subparsers.add_parser('serve',
+                                          help="serve the 'site' directory if \
+                                                  present, otherwise serve \
                                                   current directory",
                                          )
     server_parser.add_argument('-d', '--dir', dest='server_dir',
