@@ -9,19 +9,18 @@ from volt import server
 
 
 def build_parsers():
-
+    """Build parser for arguments.
+    """
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(title='Commands',
                                        help='Valid commands',
                                       )
-
     # parser for serve
     server_parser = subparsers.add_parser('serve', 
                                           help="Serves 'site' directory if \
                                                   present, otherwise serves \
                                                   current directory",
                                          )
-    # default directory is handled in server.py
     server_parser.add_argument('-d', '--dir', dest='server_dir',
                                metavar='DIR',
                                help='directory to serve',
@@ -36,9 +35,13 @@ def build_parsers():
     return parser
 
 def run_server(options):
+    """Runs the volt server.
+    """
     server.run(options)
 
 def main():
+    """Main execution routine.
+    """
     parser = build_parsers()
     options = parser.parse_args()
 
