@@ -44,16 +44,4 @@ def main():
     """
     parser = build_parsers()
     options = parser.parse_args()
-
-    # if server_dir is not set, look for 'site' in current directory
-    # otherwise, serve current directory
-    if not options.server_dir:
-        site_dir = os.path.join(os.getcwd(), 'site')
-        if os.path.exists(site_dir):
-            setattr(options, 'server_dir', site_dir)
-        else:
-            setattr(options, 'server_dir', os.getcwd())
-    else:
-        options.server_dir = os.path.abspath(options.server_dir)
-
     options.func(options)

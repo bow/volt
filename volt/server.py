@@ -90,9 +90,22 @@ def run(args):
     global options
     options = args
 
-    address = ('127.0.0.1', options.server_port)
+    # if server dir is not set, look for 'site' in current directory
+    # otherwise, serve current directory
+    if not options.server_dir:
+        site_dir = os.path.join(os.getcwd(), 'site')
+        if os.path.exists(site_dir):
+            setattr(options, 'server_dir', site_dir)
+        else:
+            setattr(options, 'server_dir', os.getcwd())
+    else:
+        options.server_dir = os.path.abspath(options.server_dir)
+        if not os.path.exists(options.server_dir):
+            raise OSError("Directory does not exist.")
 
     print "\nVolt v%s Development Server" % (__version__)
+
+    address = ('127.0.0.1', options.server_port)
 
     try:
         server = HTTPServer(address, VoltHTTPRequestHandler)
@@ -124,3 +137,6 @@ def run(args):
         server.shutdown()
         print "\nServer stopped.\n"
         sys.exit(0)
+
+
+    options.func(options)
