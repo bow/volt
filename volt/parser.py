@@ -1,8 +1,3 @@
-# This file is part of the Volt package and is governed by its license.
-# See Volt's LICENSE file for details.
-# 
-# (c) Wibowo Arindrarto <bow@bow.web.id>
-
 import codecs
 import os
 import re

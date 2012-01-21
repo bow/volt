@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """HTTP server for Volt's static output.
 
 This module is just a simple wrapper for SimpleHTTPServer with more compact
@@ -17,16 +15,8 @@ from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from socket import error
 
+from volt import __version__
 
-__version__ = "0.1"
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument('-p', '--port', action='store', dest='server_port',
-                     default=8000, help='Sets the static server port', type=int)
-parser.add_argument('-d', '--dir', action='store', dest='server_dir',
-                     default=os.path.abspath(os.path.join(os.getcwd(), 'site')),
-                     help='Sets the directory to serve')
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
@@ -91,18 +81,19 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.file_path = path
         return self.file_path
 
-def main():
-    
-    ### HACK, fix later
+def run(args):
+    """Runs the server.
+
+    Arguments:
+    options: Namespace object from argparse.ArgumentParser()
+    """
     global options
-    options = parser.parse_args()
+    options = args
 
     address = ('127.0.0.1', options.server_port)
-    
+
     print "\nVolt v%s Development Server" % (__version__)
 
-    # handle socket errors in a try..except block
-    # adapted from Django's runserver
     try:
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
@@ -119,12 +110,12 @@ def main():
         sys.stderr.write("Exiting...\n\n")
         sys.exit(1)
 
-    running_address, running_port = server.socket.getsockname()
-    if running_address == '127.0.0.1':
-        running_address = 'localhost'
+    run_address, run_port = server.socket.getsockname()
+    if run_address == '127.0.0.1':
+        run_address = 'localhost'
 
-    print "Serving %s/" % (os.path.abspath(options.server_dir))
-    print "Running at http://%s:%s/" % (running_address, running_port) 
+    print "Serving %s/" % (options.server_dir)
+    print "Running at http://%s:%s/" % (run_address, run_port) 
     print "CTRL-C to stop.\n"
 
     try:
@@ -133,6 +124,3 @@ def main():
         server.shutdown()
         print "\nServer stopped.\n"
         sys.exit(0)
-
-if __name__ == '__main__':
-    main()
