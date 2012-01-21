@@ -6,18 +6,23 @@ _volt()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="serve info"
+    opts="-h version serve"
 
     case "${prev}" in
+        -h|--help|version)
+            COMPREPLY=()
+            return 0
+            ;;
         serve)
             local subopts="--dir --port --help"
             COMPREPLY=( $(compgen -W "${subopts}" -- ${cur}) )
             return 0
             ;;
         *)
-        ;;
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+            ;;
     esac
 
-    COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 }
 complete -F _volt volt

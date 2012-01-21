@@ -13,17 +13,17 @@ class CustomParser(argparse.ArgumentParser):
     """Custom parser that prints help message when an error occurs.
     """
     def error(self, message):
-        sys.stderr.write('\nerror: %s\n' % message)
-        self.print_help()
-        print
+        sys.stderr.write('error: %s\n' % message)
+        self.print_usage()
         sys.exit(2)
 
 def build_parsers():
     """Build parser for arguments.
     """
-    parser = CustomParser(version="volt %s" % __version__)
+    parser = CustomParser()
     subparsers = parser.add_subparsers(title='subcommands',
                                       )
+
     # parser for serve
     server_parser = subparsers.add_parser('serve',
                                           help="serve the 'site' directory if \
@@ -39,9 +39,21 @@ def build_parsers():
                                metavar='PORT',
                                help='server port',
                               )
-    server_parser.set_defaults(func=run_server)
+    # parser for version
+    # bit of a hack, so version can be shown without the "--"
+    version_parser = subparsers.add_parser('version',
+                                        help="show volt version number and exit",
+                                       )
+    # set function to run dynamically
+    for subparser in ['server_parser', 'version_parser', ]:
+        eval(subparser).set_defaults(func=eval("run_%s" % subparser[:-7]))
 
     return parser
+
+def run_version(options):
+    """Shows version number.
+    """
+    print "Volt %s" % __version__
 
 def run_server(options):
     """Runs the volt server.
