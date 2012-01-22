@@ -84,7 +84,7 @@ def run(args):
     """Runs the server.
 
     Arguments:
-    options: Namespace object from argparse.ArgumentParser()
+    args: Namespace object from argparse.ArgumentParser()
     """
     global options
     options = args
@@ -119,7 +119,7 @@ def run(args):
         except (AttributeError, KeyError):
             error_message = str(e)
         sys.stderr.write("Error: %s\n" % error_message)
-        sys.stderr.write("Exiting...\n\n")
+        sys.stderr.write("Aborting...\n\n")
         sys.exit(1)
 
     run_address, run_port = server.socket.getsockname()
@@ -128,8 +128,8 @@ def run(args):
 
     sys.stderr.write("Serving %s/\n" 
                      "Running at http://%s:%s/\n"
-                     "CTRL-C to stop.\n\n" % (options.server_dir, run_address,
-                                            run_port)
+                     "CTRL-C to stop.\n\n" % 
+                     (options.server_dir, run_address, run_port)
                     )
 
     try:
