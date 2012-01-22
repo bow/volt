@@ -39,8 +39,14 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         Overrides parent log_message to provide a more compact output.
 
         """
-        sys.stderr.write("[%s] %s\n" % 
-                         (self.log_date_time_string(), format % args))
+        message = "[%s] %s\n" % (self.log_date_time_string(), format % args)
+
+        if int(args[1]) >= 400:
+            message = "%s%s%s" % ("\033[00;31m", message, "\033[m")
+        elif int(args[1]) >= 300:
+            message = "%s%s%s" % ("\033[00;32m", message, "\033[m")
+
+        sys.stderr.write(message)
 
     def log_request(self, code='-', size='-'):
         """Logs the accepted request.
@@ -102,7 +108,7 @@ def run(args):
         if not os.path.exists(options.server_dir):
             raise OSError("Directory does not exist.")
 
-    sys.stderr.write("\nVolt %s Development Server\n" % __version__)
+    sys.stderr.write("\n\033[00;32mVolt %s Development Server\033[m\n" % __version__)
 
     address = ('127.0.0.1', options.server_port)
 
@@ -138,6 +144,5 @@ def run(args):
         server.shutdown()
         sys.stderr.write("\nServer stopped.\n\n")
         sys.exit(0)
-
 
     options.func(options)
