@@ -64,7 +64,6 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         """Returns filesystem path of from requests.
 
         Overrides parent translate_path to enable custom directory setting.
-
         """
         path = path.split('?',1)[0]
         path = path.split('#',1)[0]
@@ -103,7 +102,7 @@ def run(args):
         if not os.path.exists(options.server_dir):
             raise OSError("Directory does not exist.")
 
-    print "\nVolt v%s Development Server" % (__version__)
+    sys.stderr.write("\nVolt %s Development Server\n" % __version__)
 
     address = ('127.0.0.1', options.server_port)
 
@@ -127,15 +126,17 @@ def run(args):
     if run_address == '127.0.0.1':
         run_address = 'localhost'
 
-    print "Serving %s/" % (options.server_dir)
-    print "Running at http://%s:%s/" % (run_address, run_port) 
-    print "CTRL-C to stop.\n"
+    sys.stderr.write("Serving %s/\n" 
+                     "Running at http://%s:%s/\n"
+                     "CTRL-C to stop.\n\n" % (options.server_dir, run_address,
+                                            run_port)
+                    )
 
     try:
         server.serve_forever()
     except:
         server.shutdown()
-        print "\nServer stopped.\n"
+        sys.stderr.write("\nServer stopped.\n\n")
         sys.exit(0)
 
 
