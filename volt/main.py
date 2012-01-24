@@ -26,13 +26,13 @@ def build_parsers():
 
     # parser for serve
     server_parser = subparsers.add_parser('serve',
-                                          help="serve the 'site' directory if \
-                                                  present, otherwise serve \
-                                                  current directory",
+                                          help="serve generated volt site",
                                          )
-    server_parser.add_argument('-d', '--dir', dest='server_dir',
-                               metavar='DIR',
-                               help='directory to serve',
+    server_parser.add_argument('root_dir',
+                               default=os.getcwd(),
+                               nargs='?',
+                               metavar='ROOT_DIR',
+                               help='volt root directory',
                               )
     server_parser.add_argument('-p', '--port', dest='server_port',
                                default='8000', type=int,
@@ -58,7 +58,18 @@ def run_version(options):
 def run_server(options):
     """Runs the volt server.
     """
+    options.root_dir = os.path.abspath(options.root_dir)
+    if not is_valid_dir(options.root_dir):
+        raise OSError("%s is not a valid volt root directory." % options.root_dir)
     server.run(options)
+
+def is_valid_dir(dir):
+    """Returns True if the current directory is a valid Volt directory.
+
+    Checks for 'settings.py' and 'site' directory.
+    """
+    valid_flags = [os.path.join(dir, x) for x in ['settings.py', 'site']]
+    return all(map(os.path.exists, valid_flags))
 
 def main():
     """Main execution routine.

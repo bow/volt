@@ -22,10 +22,6 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     server_version = 'VoltHTTPServer/' + __version__
 
-    def __init__(self, *args, **kwargs):
-        self.base_dir = options.server_dir
-        SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
-
     def log_error(self, format, *args):
         """Logs the error.
 
@@ -76,7 +72,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         path = posixpath.normpath(urllib.unquote(path))
         words = path.split('/')
         words = filter(None, words)
-        path = self.base_dir
+        path = os.getcwd()
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
@@ -86,28 +82,12 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.file_path = path
         return self.file_path
 
-def run(args):
+def run(options):
     """Runs the server.
 
     Arguments:
-    args: Namespace object from argparse.ArgumentParser()
+    options: Namespace object from argparse.ArgumentParser()
     """
-    global options
-    options = args
-
-    # if server dir is not set, look for 'site' in current directory
-    # otherwise, serve current directory
-    if not options.server_dir:
-        site_dir = os.path.join(os.getcwd(), 'site')
-        if os.path.exists(site_dir):
-            setattr(options, 'server_dir', site_dir)
-        else:
-            setattr(options, 'server_dir', os.getcwd())
-    else:
-        options.server_dir = os.path.abspath(options.server_dir)
-        if not os.path.exists(options.server_dir):
-            raise OSError("Directory does not exist.")
-
     sys.stderr.write("\n\033[00;32mVolt %s Development Server\033[m\n" % __version__)
 
     address = ('127.0.0.1', options.server_port)
@@ -135,7 +115,7 @@ def run(args):
     sys.stderr.write("Serving %s/\n" 
                      "Running at http://%s:%s/\n"
                      "CTRL-C to stop.\n\n" % 
-                     (options.server_dir, run_address, run_port)
+                     (options.root_dir, run_address, run_port)
                     )
 
     try:
