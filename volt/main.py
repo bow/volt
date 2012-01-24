@@ -58,20 +58,7 @@ def run_version(options):
 def run_server(options):
     """Runs the volt server.
     """
-    options.volt_dir = os.path.abspath(options.volt_dir)
-    if not is_valid_dir(options.volt_dir):
-        sys.stderr.write("Error: %s is not a valid volt root directory\n" % \
-                         options.volt_dir)
-        sys.exit(1)
     server.run(options)
-
-def is_valid_dir(dir):
-    """Returns True if the current directory is a valid Volt directory.
-
-    Checks for 'settings.py' and 'site' directory.
-    """
-    valid_flags = [os.path.join(dir, x) for x in ['settings.py', 'site']]
-    return all(map(os.path.exists, valid_flags))
 
 def main():
     """Main execution routine.

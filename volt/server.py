@@ -16,6 +16,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from socket import error
 
 from volt import __version__
+from volt.utils import is_valid_volt
 
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -88,8 +89,14 @@ def run(options):
     Arguments:
     options: Namespace object from argparse.ArgumentParser()
     """
-    address = ('127.0.0.1', options.server_port)
+    options.volt_dir = os.path.abspath(options.volt_dir)
+    if not is_valid_volt(options.volt_dir):
+        sys.stderr.write("Error: %s is not a valid volt root directory\n" % \
+                         options.volt_dir
+                        )
+        sys.exit(1)
 
+    address = ('127.0.0.1', options.server_port)
     try:
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
@@ -105,12 +112,10 @@ def run(options):
         sys.stderr.write("Error: %s\n" % error_message)
         sys.exit(1)
 
-    sys.stderr.write("\n\033[00;32mVolt %s Development Server\033[m\n" % __version__)
-
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-
+    sys.stderr.write("\n\033[00;32mVolt %s Development Server\033[m\n" % __version__)
     sys.stderr.write("Serving %s/\n" 
                      "Running at http://%s:%s/\n"
                      "CTRL-C to stop.\n\n" % 
