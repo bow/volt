@@ -13,7 +13,7 @@ class CustomParser(argparse.ArgumentParser):
     """Custom parser that prints help message when an error occurs.
     """
     def error(self, message):
-        sys.stderr.write('error: %s\n' % message)
+        sys.stderr.write("Error: %s\n" % message)
         self.print_usage()
         sys.exit(2)
 
@@ -28,10 +28,10 @@ def build_parsers():
     server_parser = subparsers.add_parser('serve',
                                           help="serve generated volt site",
                                          )
-    server_parser.add_argument('root_dir',
+    server_parser.add_argument('volt_dir',
                                default=os.getcwd(),
                                nargs='?',
-                               metavar='ROOT_DIR',
+                               metavar='VOLT_DIR',
                                help='volt root directory',
                               )
     server_parser.add_argument('-p', '--port', dest='server_port',
@@ -58,9 +58,11 @@ def run_version(options):
 def run_server(options):
     """Runs the volt server.
     """
-    options.root_dir = os.path.abspath(options.root_dir)
-    if not is_valid_dir(options.root_dir):
-        raise OSError("%s is not a valid volt root directory." % options.root_dir)
+    options.volt_dir = os.path.abspath(options.volt_dir)
+    if not is_valid_dir(options.volt_dir):
+        sys.stderr.write("Error: %s is not a valid volt root directory\n" % \
+                         options.volt_dir)
+        sys.exit(1)
     server.run(options)
 
 def is_valid_dir(dir):

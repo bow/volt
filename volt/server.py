@@ -88,25 +88,24 @@ def run(options):
     Arguments:
     options: Namespace object from argparse.ArgumentParser()
     """
-    sys.stderr.write("\n\033[00;32mVolt %s Development Server\033[m\n" % __version__)
-
     address = ('127.0.0.1', options.server_port)
 
     try:
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
         ERRORS = {
-            13: "You don't have permission to access port %s." % 
+            13: "You don't have permission to access port %s" % 
                 (options.server_port),
-            98: "Port %s already in use." % (options.server_port),
+            98: "Port %s already in use" % (options.server_port),
         }
         try:
             error_message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):
             error_message = str(e)
         sys.stderr.write("Error: %s\n" % error_message)
-        sys.stderr.write("Aborting...\n\n")
         sys.exit(1)
+
+    sys.stderr.write("\n\033[00;32mVolt %s Development Server\033[m\n" % __version__)
 
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
@@ -115,7 +114,7 @@ def run(options):
     sys.stderr.write("Serving %s/\n" 
                      "Running at http://%s:%s/\n"
                      "CTRL-C to stop.\n\n" % 
-                     (options.root_dir, run_address, run_port)
+                     (options.volt_dir, run_address, run_port)
                     )
 
     try:
