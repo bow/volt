@@ -16,7 +16,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from socket import error
 
 from volt import __version__
-from volt.utils import is_valid_volt
+from volt.util import is_valid_root
 
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -90,7 +90,7 @@ def run(options):
     options: Namespace object from argparse.ArgumentParser()
     """
     options.volt_dir = os.path.abspath(options.volt_dir)
-    if not is_valid_volt(options.volt_dir):
+    if not is_valid_root(options.volt_dir):
         sys.stderr.write("Error: %s is not a valid volt root directory\n" % \
                          options.volt_dir
                         )
