@@ -89,18 +89,30 @@ def run(options):
     Arguments:
     options: Namespace object from argparse.ArgumentParser()
     """
-    options.volt_dir = os.path.abspath(options.volt_dir)
-    if not is_valid_root(options.volt_dir):
-        sys.stderr.write("Error: %s is not a valid volt root directory\n" % \
-                         options.volt_dir
-                        )
-        sys.exit(1)
+# try:
+#   check dir
+#   check site
+#   instantiate server
+# except:
+#   no dir: raise error
+#   no site: raise error
+#   other server errors
 
+#    options.volt_dir = os.path.join(options.volt_dir)
+#    if not is_valid_root(options.volt_dir):
+#        sys.stderr.write("Error: %s is not a valid volt root directory\n" % \
+#                         options.volt_dir
+#                        )
+#        sys.exit(1)
+
+    options.volt_dir = os.path.abspath(options.volt_dir)
     address = ('127.0.0.1', options.server_port)
     try:
+        os.chdir(os.path.join(options.volt_dir, 'site'))
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
         ERRORS = {
+            2: "'%s' is not a valid volt root directory" % options.volt_dir,
             13: "You don't have permission to access port %s" % 
                 (options.server_port),
             98: "Port %s already in use" % (options.server_port),
