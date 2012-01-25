@@ -30,5 +30,5 @@ def color(text, c='grey', w='normal'):
 
 normal = color
 inform = partial(color, c='green')
-notify = partial(color, c='yellow', w='bold')
-warn = partial(color, c='red', w='bold')
+notify = partial(color, c='yellow')
+warn = partial(color, c='red')
