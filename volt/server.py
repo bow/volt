@@ -3,7 +3,6 @@
 This module is just a simple wrapper for SimpleHTTPServer with more compact
 log message and the option to set directory to serve. By default, it searches
 for the "site" directory and serves the contents.
-
 """
 
 import argparse
@@ -16,7 +15,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from socket import error
 
 from volt import __version__
-from volt.util import is_valid_root
+from volt.util import is_valid_root, normal, inform, notify, warn
 
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -39,11 +38,12 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         message = "[%s] %s\n" % (self.log_date_time_string(), format % args)
 
         if int(args[1]) >= 400:
-            message = "%s%s%s" % ("\033[00;31m", message, "\033[m")
+            warn(message)
         elif int(args[1]) >= 300:
-            message = "%s%s%s" % ("\033[00;32m", message, "\033[m")
+            inform(message)
+        else:
+            normal(message)
 
-        sys.stderr.write(message)
 
     def log_request(self, code='-', size='-'):
         """Logs the accepted request.
@@ -89,22 +89,6 @@ def run(options):
     Arguments:
     options: Namespace object from argparse.ArgumentParser()
     """
-# try:
-#   check dir
-#   check site
-#   instantiate server
-# except:
-#   no dir: raise error
-#   no site: raise error
-#   other server errors
-
-#    options.volt_dir = os.path.join(options.volt_dir)
-#    if not is_valid_root(options.volt_dir):
-#        sys.stderr.write("Error: %s is not a valid volt root directory\n" % \
-#                         options.volt_dir
-#                        )
-#        sys.exit(1)
-
     options.volt_dir = os.path.abspath(options.volt_dir)
     address = ('127.0.0.1', options.server_port)
     try:
@@ -121,24 +105,24 @@ def run(options):
             error_message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):
             error_message = str(e)
-        sys.stderr.write("Error: %s\n" % error_message)
+        warn("Error: %s\n" % error_message)
         sys.exit(1)
 
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-    sys.stderr.write("\n\033[00;32mVolt %s Development Server\033[m\n" % __version__)
-    sys.stderr.write("Serving %s/\n" 
-                     "Running at http://%s:%s/\n"
-                     "CTRL-C to stop.\n\n" % 
-                     (options.volt_dir, run_address, run_port)
-                    )
+    notify("\nVolt %s Development Server\n" % __version__)
+    normal("Serving %s/\n" 
+           "Running at http://%s:%s/\n"
+           "CTRL-C to stop.\n\n" % 
+           (options.volt_dir, run_address, run_port)
+          )
 
     try:
         server.serve_forever()
     except:
         server.shutdown()
-        sys.stderr.write("\nServer stopped.\n\n")
+        notify("\nServer stopped.\n\n")
         sys.exit(0)
 
     options.func(options)
