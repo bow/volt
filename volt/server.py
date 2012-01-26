@@ -96,7 +96,7 @@ def run(options):
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
         ERRORS = {
-            2: "'%s' is not a valid volt root directory" % options.volt_dir,
+            2: "Directory 'site' not found in %s" % options.volt_dir,
             13: "You don't have permission to access port %s" % 
                 (options.server_port),
             98: "Port %s already in use" % (options.server_port),
