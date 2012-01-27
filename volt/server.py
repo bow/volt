@@ -15,7 +15,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from socket import error
 
 from volt import __version__
-from volt.util import is_valid_root, normal, inform, notify, warn
+from volt.util import is_valid_root, write, inform, notify, warn
 
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -42,7 +42,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         elif int(args[1]) >= 300:
             inform(message)
         else:
-            normal(message)
+            write(message)
 
 
     def log_request(self, code='-', size='-'):
@@ -112,11 +112,11 @@ def run(options):
     if run_address == '127.0.0.1':
         run_address = 'localhost'
     notify("\nVolt %s Development Server\n" % __version__)
-    normal("Serving %s/\n" 
-           "Running at http://%s:%s/\n"
-           "CTRL-C to stop.\n\n" % 
-           (options.volt_dir, run_address, run_port)
-          )
+    write("Serving %s/\n" 
+          "Running at http://%s:%s/\n"
+          "CTRL-C to stop.\n\n" % 
+          (options.volt_dir, run_address, run_port)
+         )
 
     try:
         server.serve_forever()

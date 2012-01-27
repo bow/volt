@@ -14,7 +14,7 @@ def is_valid_root(dir):
     valid_flags = [os.path.join(dir, x) for x in ['settings.py', 'site']]
     return all([os.path.exists(x) for x in valid_flags])
 
-def normal(text, c='grey', w='normal'):
+def write(text, c='grey', w='normal'):
     """Colors the text.
     """
     color_map = {
@@ -30,6 +30,6 @@ def normal(text, c='grey', w='normal'):
 
     sys.stderr.write(colored_text)
 
-inform = partial(normal, c='green')
-notify = partial(normal, c='yellow')
-warn = partial(normal, c='red')
+inform = partial(write, c='green')
+notify = partial(write, c='yellow')
+warn = partial(write, c='red')
