@@ -14,8 +14,7 @@ from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from socket import error
 
-from volt import __version__
-from volt.util import is_valid_root, write, inform, notify, warn
+from volt import __version__, util
 
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -38,11 +37,11 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         message = "[%s] %s\n" % (self.log_date_time_string(), format % args)
 
         if int(args[1]) >= 400:
-            warn(message)
+            util.show_warning(message)
         elif int(args[1]) >= 300:
-            inform(message)
+            util.show_notif(message)
         else:
-            write(message)
+            util.show_info(message)
 
 
     def log_request(self, code='-', size='-'):
@@ -95,34 +94,31 @@ def run(options):
         os.chdir(os.path.join(options.volt_dir, 'site'))
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
-        ERRORS = {
-            2: "Directory 'site' not found in %s" % options.volt_dir,
-            13: "You don't have permission to access port %s" % 
-                (options.server_port),
-            98: "Port %s already in use" % (options.server_port),
-        }
+        ERRORS = { 2: "Directory 'site' not found in %s" % options.volt_dir,
+                  13: "You don't have permission to access port %s" % 
+                      (options.server_port),
+                  98: "Port %s already in use" % (options.server_port)}
         try:
             error_message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):
             error_message = str(e)
-        warn("Error: %s\n" % error_message)
+        util.show_error("Error: %s\n" % error_message)
         sys.exit(1)
 
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-    notify("\nVolt %s Development Server\n" % __version__)
-    write("Serving %s/\n" 
-          "Running at http://%s:%s/\n"
-          "CTRL-C to stop.\n\n" % 
-          (options.volt_dir, run_address, run_port)
-         )
+    util.show_notif("\nVolt %s Development Server\n" % __version__)
+    util.show_info("Serving %s/\n" 
+                   "Running at http://%s:%s/\n"
+                   "CTRL-C to stop.\n\n" % 
+                   (options.volt_dir, run_address, run_port))
 
     try:
         server.serve_forever()
     except:
         server.shutdown()
-        notify("\nServer stopped.\n\n")
+        util.show_notif("\nServer stopped.\n\n")
         sys.exit(0)
 
     options.func(options)
