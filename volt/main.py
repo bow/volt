@@ -6,6 +6,7 @@ import os
 import sys
 
 from volt import __version__, server, util
+from volt.conf import session
 
 
 class CustomParser(argparse.ArgumentParser):
@@ -26,7 +27,7 @@ def build_parsers():
     server_parser = subparsers.add_parser('serve',
                                           help="serve generated volt site")
     server_parser.add_argument('volt_dir',
-                               default=os.getcwd(),
+                               default=session.root,
                                nargs='?',
                                metavar='VOLT_DIR',
                                help='volt root directory')
