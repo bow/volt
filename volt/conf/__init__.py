@@ -34,7 +34,8 @@ class Session(object):
         """
         current = dir
         if os.path.split(current)[1] == '':
-            return
+            raise ConfigError("'%s' is not part of a Volt directory." % \
+                    os.getcwd())
         else:
             if os.path.exists(os.path.join(current, \
                     default.VOLT.USER_CONF)):
