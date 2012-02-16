@@ -30,19 +30,17 @@ class Session(object):
         Checks the current directory for a Volt settings file.
         If it is not present, parent directories of the current directory is
         checked until a Volt settings file is found. If no Volt settings
-        file is found up to '/', return None.
+        file is found up to '/', raise ConfigError.
         """
-        current = dir
-        if os.path.split(current)[1] == '':
+        # raise error if search goes all the way to root without any results
+        if os.path.dirname(dir) == dir:
             raise ConfigError("'%s' is not part of a Volt directory." % \
                     os.getcwd())
-        else:
-            if os.path.exists(os.path.join(current, \
-                    default.VOLT.USER_CONF)):
-                return current
-            else:
-                parent = os.path.split(current)[0]
-                return self.get_root(parent)
+        # recurse if config file not found
+        if not os.path.exists(os.path.join(dir, default.VOLT.USER_CONF)):
+            parent = os.path.dirname(dir)
+            return self.get_root(parent)
+        return dir
 
     def set_opts(self, module):
         """Sets the values of all Options objects in a loaded module
