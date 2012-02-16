@@ -12,6 +12,9 @@ class Session(object):
     def __init__(self):
         self.root = self.get_root()
 
+        # flag for python version
+        self.py3 = (sys.version_info.major > 2)
+
         # load the user-defined configurations as a module object.
         user_conf = os.path.splitext(default.VOLT.USER_CONF)[0]
         sys.path.append(self.root)
