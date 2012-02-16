@@ -58,7 +58,7 @@ class Session(object):
                 # set directory + file vars to absolute paths
                 # directory + file vars has 'DIR' + 'FILE' in their names
                 for opt in obj:
-                    if 'DIR' in opt or 'FILE' in opt:
+                    if opt.endswith('_DIR') or opt.endswith('_FILE'):
                         obj[opt] = os.path.join(self.root, obj[opt])
                 setattr(self, var, obj)
 
