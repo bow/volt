@@ -12,7 +12,7 @@ __all__ = ['VOLT', 'SITE', 'ENGINES', 'BLOG', 'PAGE', 'COLLECTION', ]
 VOLT = Options(
 
   # User config file name
-  USER_CONF_FILE = "voltconf.py",
+  USER_CONF = "voltconf.py",
 
   # Directories of content files, templates, and generated site
   # All directories are relative to Volt's root directory
