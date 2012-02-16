@@ -53,7 +53,7 @@ BLOG = Options(
   URL = "blog",
 
   # Directory for storing blog posts content relative to Volt's root directory
-  DIR = "blog",
+  DIR = os.path.join(VOLT.CONTENT_DIR, "blog"),
 
   # Blog posts default author
   # Can be overwritten by conf author individually in post content header
@@ -69,8 +69,8 @@ BLOG = Options(
   EXCERPT_LENGTH = 50,
 
   # Default names of blog template files for single blog posts and pagination
-  POST_TEMPLATE = os.path.join(VOLT.TEMPLATE_DIR, "post.html"),
-  PAGINATION_TEMPLATE = os.path.join(VOLT.TEMPLATE_DIR, "archive.html"),
+  POST_TEMPLATE_FILE = os.path.join(VOLT.TEMPLATE_DIR, "post.html",
+  PAGINATION_TEMPLATE_FILE = os.path.join(VOLT.TEMPLATE_DIR, "pagination.html"),
 
 )
 

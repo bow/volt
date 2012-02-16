@@ -55,6 +55,11 @@ class Session(object):
         for var in dir(module):
             obj = getattr(module, var)
             if isinstance(obj, Options):
+                # set directory + file vars to absolute paths
+                # directory + file vars has 'DIR' + 'FILE' in their names
+                for opt in obj:
+                    if 'DIR' in opt or 'FILE' in opt:
+                        obj[opt] = os.path.join(self.root, obj[opt])
                 setattr(self, var, obj)
 
 session = Session()
