@@ -11,11 +11,15 @@ class Session(object):
     """
     def __init__(self):
         self.root = self.get_root()
-        self._user_conf = self.get_user_conf()
+
+        # load the user-defined configurations as a module object.
+        user_conf = os.path.splitext(default.VOLT.USER_CONF)[0]
+        sys.path.append(self.root)
+        user =  __import__(user_conf)
 
         # load default config first, then overwrite by user config
-        for mod in (default, self._user_conf):
-            self.set_attrs(mod)
+        for conf in (default, user):
+            self.set_opts(conf)
 
     def get_root(self, dir=os.getcwd()):
         """Returns the root directory of a Volt project.
@@ -39,14 +43,7 @@ class Session(object):
                 parent = os.path.split(current)[0]
                 return self.get_root(parent)
 
-    def get_user_conf(self):
-        """Loads the user-defined configurations as a module object.
-        """
-        user_conf = os.path.splitext(default.VOLT.USER_CONF)[0]
-        sys.path.append(self.root)
-        return __import__(user_conf)
-
-    def set_attrs(self, module):
+    def set_opts(self, module):
         """Sets the values of all Options objects in a loaded module
         as self attributes.
 
