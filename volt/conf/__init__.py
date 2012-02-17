@@ -16,7 +16,7 @@ class Session(object):
         self.py3 = (sys.version_info.major > 2)
 
         # load the user-defined configurations as a module object.
-        user_conf = os.path.splitext(default.VOLT.USER_CONF)[0]
+        user_conf = os.path.splitext(default.SITE.USER_CONF)[0]
         sys.path.append(self.root)
         user =  __import__(user_conf)
 
@@ -40,7 +40,7 @@ class Session(object):
             raise ConfigError("'%s' is not part of a Volt directory." % \
                     os.getcwd())
         # recurse if config file not found
-        if not os.path.exists(os.path.join(dir, default.VOLT.USER_CONF)):
+        if not os.path.exists(os.path.join(dir, default.SITE.USER_CONF)):
             parent = os.path.dirname(dir)
             return self.get_root(parent)
         return dir
