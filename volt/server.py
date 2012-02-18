@@ -85,9 +85,6 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 def run():
     """Runs the server.
-
-    Arguments:
-    options: Namespace object from argparse.ArgumentParser()
     """
     address = ('127.0.0.1', config.CMD.server_port)
     try:
@@ -119,5 +116,3 @@ def run():
         server.shutdown()
         util.show_notif("\nServer stopped.\n\n")
         sys.exit(0)
-
-    options.func(options)
