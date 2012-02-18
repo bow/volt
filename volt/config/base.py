@@ -21,22 +21,9 @@ class DefaultConfig(Config):
                 self[key] = conf_obj[key]
 
 
-# General site configurations
-SITE = DefaultConfig(
-
-  # Site name, URL, and description
-  # No need to add 'http://' in site URL
-  TITLE = "My Volt Site",
-  URL = "localhost",
-  DESC = "",
-
-  # Date and time format used in site content headers
-  # Used for parsing the headers
-  # Default is e.g. "2004-03-13 22:10"
-  CONTENT_DATETIME_FORMAT = "%Y-%m-%d %H:%M",
-  # Date and time format displayed on the generated site
-  # Default is e.g. "Saturday, 13 March 2004"
-  DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
+# Volt configurations
+# Changing values in this Config is allowed but not recommended
+VOLT = DefaultConfig(
 
   # User config file name
   USER_CONF = "voltconf.py",
@@ -48,12 +35,25 @@ SITE = DefaultConfig(
 )
 
 
-# Engines switch to set whether an engine is used in site generation or not
-ENGINE = DefaultConfig(
-  # Default is to turn off all engines
-  BLOG = False,
-  PAGE = False,
-  COLLECTION = False,
+# General project configurations
+SITE = DefaultConfig(
+
+  # Site name, URL, and description
+  TITLE = "My Volt Site",
+  URL = "http://127.0.0.1",
+  DESC = "",
+
+  # Engines used in generating the site
+  # Defaults to none
+  ENGINES = [],
+
+  # Date and time format used in site content headers
+  # Used for parsing the headers
+  # Default is e.g. "2004-03-13 22:10"
+  CONTENT_DATETIME_FORMAT = "%Y-%m-%d %H:%M",
+  # Date and time format displayed on the generated site
+  # Default is e.g. "Saturday, 13 March 2004"
+  DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
 )
 
 
@@ -64,7 +64,7 @@ BLOG = DefaultConfig(
   URL = "blog",
 
   # Directory for storing blog posts content relative to Volt's root directory
-  CONTENT_DIR = join(SITE.CONTENT_DIR, "blog"),
+  CONTENT_DIR = join(VOLT.CONTENT_DIR, "blog"),
 
   # Blog posts default author
   # Can be overwritten by conf author individually in post content header
@@ -80,8 +80,8 @@ BLOG = DefaultConfig(
   EXCERPT_LENGTH = 50,
 
   # Default names of blog template files for single blog posts and pagination
-  SINGLE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "post.html"),
-  MULTIPlE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "pagination.html"),
+  SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "post.html"),
+  MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "pagination.html"),
 
   # TODO
   # Sort order for paginated posts display
@@ -103,13 +103,13 @@ PAGE = DefaultConfig(
   URL = "page",
 
   # Directory for storing page content relative to Volt's root directory
-  CONTENT_DIR = join(SITE.CONTENT_DIR, "page"),
+  CONTENT_DIR = join(VOLT.CONTENT_DIR, "page"),
 
   # Page permalink
   PERMALINK = "{slug}",
 
   # Default names of page template file
-  TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "page.html"),
+  TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "page.html"),
 
   # Required properties
   # These properties must be defined in each individual page item header
@@ -124,14 +124,14 @@ COLLECTION = DefaultConfig(
   URL = "collection",
 
   # Directory for storing collection content relative to Volt's root directory
-  CONTENT_DIR = join(SITE.CONTENT_DIR, "collection"),
+  CONTENT_DIR = join(VOLT.CONTENT_DIR, "collection"),
 
   # Page permalink
   PERMALINK = "{slug}",
 
   # Default names of collection template files for single and multiple items
-  SINGLE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "single.html"),
-  MULTIPLE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "multiple.html"),
+  SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "single.html"),
+  MULTIPLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "multiple.html"),
 
   # Required properties
   # These properties must be defined for each collection items individually

@@ -90,11 +90,11 @@ def run(options):
     options: Namespace object from argparse.ArgumentParser()
     """
     address = ('127.0.0.1', options.server_port)
-    print config.SITE.SITE_DIR
+    print config.VOLT.SITE_DIR
     try:
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
-        ERRORS = { 2: "Directory 'site' not found in %s" % config.SITE.SITE_DIR,
+        ERRORS = { 2: "Directory 'site' not found in %s" % config.VOLT.SITE_DIR,
                   13: "You don't have permission to access port %s" % 
                       (options.server_port),
                   98: "Port %s already in use" % (options.server_port)}
@@ -112,7 +112,7 @@ def run(options):
     util.show_info("Serving %s/\n" 
                    "Running at http://%s:%s/\n"
                    "CTRL-C to stop.\n\n" % 
-                   (config.SITE.SITE_DIR, run_address, run_port))
+                   (config.VOLT.SITE_DIR, run_address, run_port))
 
     try:
         server.serve_forever()
