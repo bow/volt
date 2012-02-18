@@ -12,9 +12,17 @@ class Config(dict):
         # enables value access by dot notation
         self.__dict__ = self
 
+class DefaultConfig(Config):
+    """Container class for default configuration options.
+    """
+    def merge(self, conf_obj):
+        for key in conf_obj.keys():
+            if key in self:
+                self[key] = conf_obj[key]
+
 
 # General site configurations
-SITE = Config(
+SITE = DefaultConfig(
 
   # Site name, URL, and description
   # No need to add 'http://' in site URL
@@ -41,7 +49,7 @@ SITE = Config(
 
 
 # Engines switch to set whether an engine is used in site generation or not
-ENGINE = Config(
+ENGINE = DefaultConfig(
   # Default is to turn off all engines
   BLOG = False,
   PAGE = False,
@@ -50,7 +58,7 @@ ENGINE = Config(
 
 
 # Configurations for the blog engine
-BLOG = Config(
+BLOG = DefaultConfig(
 
   # Path for all blog posts relative to the site URL
   URL = "blog",
@@ -89,7 +97,7 @@ BLOG = Config(
 
 
 # Configurations for the page engine
-PAGE = Config(
+PAGE = DefaultConfig(
 
   # Path for all pages relative to the site URL
   URL = "page",
@@ -110,7 +118,7 @@ PAGE = Config(
 
 
 # Configurations for the collection engine
-COLLECTION = Config(
+COLLECTION = DefaultConfig(
 
   # Path for all collections relative to the site URL
   URL = "collection",

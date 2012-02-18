@@ -20,8 +20,19 @@ class SessionConfig(object):
         user =  __import__(user_conf)
 
         # load default config first, then overwrite by user config
-        for conf in (base, user):
-            self.set_opts(conf)
+        for name in dir(base):
+            obj = getattr(base, name)
+            if isinstance(obj, base.DefaultConfig):
+                # set directory + file names to absolute paths
+                # directory + file names has 'DIR' + 'FILE' in their names
+                for opt in obj:
+                    if opt.endswith('_DIR') or opt.endswith('_FILE'):
+                        obj[opt] = os.path.join(self.root, obj[opt])
+                # if the user-defined configs has a Config object with a
+                # same name, merge together and overwrite default config
+                if hasattr(user, name):
+                    obj.merge(getattr(user, name))
+                setattr(self, name, obj)
 
     def get_root(self, dir=os.getcwd()):
         """Returns the root directory of a Volt project.
@@ -44,21 +55,5 @@ class SessionConfig(object):
             return self.get_root(parent)
         return dir
 
-    def set_opts(self, module):
-        """Sets the values of all Config objects in a loaded module
-        as self attributes.
-
-        Argsuments:
-        module: loaded config module
-        """
-        for var in dir(module):
-            obj = getattr(module, var)
-            if isinstance(obj, base.Config):
-                # set directory + file vars to absolute paths
-                # directory + file vars has 'DIR' + 'FILE' in their names
-                for opt in obj:
-                    if opt.endswith('_DIR') or opt.endswith('_FILE'):
-                        obj[opt] = os.path.join(self.root, obj[opt])
-                setattr(self, var, obj)
 
 config = SessionConfig()
