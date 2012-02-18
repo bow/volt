@@ -83,21 +83,20 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.file_path = path
         return self.file_path
 
-def run(options):
+def run():
     """Runs the server.
 
     Arguments:
     options: Namespace object from argparse.ArgumentParser()
     """
-    address = ('127.0.0.1', options.server_port)
-    print config.VOLT.SITE_DIR
+    address = ('127.0.0.1', config.CMD.server_port)
     try:
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
         ERRORS = { 2: "Directory 'site' not found in %s" % config.VOLT.SITE_DIR,
                   13: "You don't have permission to access port %s" % 
-                      (options.server_port),
-                  98: "Port %s already in use" % (options.server_port)}
+                      (config.CMD.server_port),
+                  98: "Port %s already in use" % (config.CMD.server_port)}
         try:
             error_message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):

@@ -36,23 +36,23 @@ def build_parsers():
                                            help="show version number and exit")
     # set function to run dynamically
     for subcmd in ['server', 'version', ]:
-        eval('%s_parser' % subcmd).set_defaults(func=eval('run_%s' % subcmd))
+        eval('%s_parser' % subcmd).set_defaults(run=eval('run_%s' % subcmd))
 
     return parser
 
-def run_version(options):
+def run_version():
     """Shows version number.
     """
     print "Volt %s" % __version__
 
-def run_server(options):
+def run_server():
     """Runs the volt server.
     """
-    server.run(options)
+    server.run()
 
 def main():
     """Main execution routine.
     """
-    parser = build_parsers()
-    options = parser.parse_args()
-    options.func(options)
+    # set command-line args accessible package-wide
+    config.CMD = build_parsers().parse_args()
+    config.CMD.run()
