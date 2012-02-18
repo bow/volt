@@ -1,4 +1,7 @@
-# Autocompletion script for Volt
+# Volt auto completion script
+#
+# Part of the Volt package
+
 
 _volt()
 {
@@ -6,21 +9,39 @@ _volt()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="-h version serve"
+    opts="help init gen serve switch demo version"
 
     case "${prev}" in
-        -h|--help|version)
+        help)
+            COMPREPLY=( $(compgen -W "init gen serve switch demo version" -- ${cur}) )
+            ;;
+        gen)
+            case "${cur}" in
+                -*)
+                    local subopts="--dir"
+                    COMPREPLY=( $(compgen -W "${subopts}" -- ${cur}) )
+                    ;;
+                *)
+                    _filedir
+                    ;;
+            esac
+            ;;
+        version)
             COMPREPLY=()
-            return 0
             ;;
         serve)
-            local subopts="--dir --port --help"
-            COMPREPLY=( $(compgen -W "${subopts}" -- ${cur}) )
-            return 0
+            case "${cur}" in
+                -*)
+                    local subopts="--port --help"
+                    COMPREPLY=( $(compgen -W "${subopts}" -- ${cur}) )
+                    ;;
+                *)
+                    _filedir
+                    ;;
+            esac
             ;;
         *)
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-            return 0
             ;;
     esac
 
