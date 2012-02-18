@@ -1,12 +1,20 @@
-# Volt default configurations file
+# Volt base configurations file
 
-import os
+from os.path import join
 
-from volt.conf.options import Options
+
+class Config(dict):
+    """Container class for storing configuration options.
+    """
+    def __init__(self, *args, **kwargs):
+        super(Config, self).__init__(*args, **kwargs)
+        # set __dict__ to the dict contents itself
+        # enables value access by dot notation
+        self.__dict__ = self
 
 
 # General site configurations
-SITE = Options(
+SITE = Config(
 
   # Site name, URL, and description
   # No need to add 'http://' in site URL
@@ -33,7 +41,7 @@ SITE = Options(
 
 
 # Engines switch to set whether an engine is used in site generation or not
-ENGINE = Options(
+ENGINE = Config(
   # Default is to turn off all engines
   BLOG = False,
   PAGE = False,
@@ -42,13 +50,13 @@ ENGINE = Options(
 
 
 # Configurations for the blog engine
-BLOG = Options(
+BLOG = Config(
 
   # Path for all blog posts relative to the site URL
   URL = "blog",
 
   # Directory for storing blog posts content relative to Volt's root directory
-  CONTENT_DIR = os.path.join(SITE.CONTENT_DIR, "blog"),
+  CONTENT_DIR = join(SITE.CONTENT_DIR, "blog"),
 
   # Blog posts default author
   # Can be overwritten by conf author individually in post content header
@@ -64,8 +72,8 @@ BLOG = Options(
   EXCERPT_LENGTH = 50,
 
   # Default names of blog template files for single blog posts and pagination
-  SINGLE_TEMPLATE_FILE = os.path.join(SITE.TEMPLATE_DIR, "post.html"),
-  MULTIPlE_TEMPLATE_FILE = os.path.join(SITE.TEMPLATE_DIR, "pagination.html"),
+  SINGLE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "post.html"),
+  MULTIPlE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "pagination.html"),
 
   # TODO
   # Sort order for paginated posts display
@@ -81,19 +89,19 @@ BLOG = Options(
 
 
 # Configurations for the page engine
-PAGE = Options(
+PAGE = Config(
 
   # Path for all pages relative to the site URL
   URL = "page",
 
   # Directory for storing page content relative to Volt's root directory
-  CONTENT_DIR = os.path.join(SITE.CONTENT_DIR, "page"),
+  CONTENT_DIR = join(SITE.CONTENT_DIR, "page"),
 
   # Page permalink
   PERMALINK = "{slug}",
 
   # Default names of page template file
-  TEMPLATE_FILE = os.path.join(SITE.TEMPLATE_DIR, "page.html"),
+  TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "page.html"),
 
   # Required properties
   # These properties must be defined in each individual page item header
@@ -102,20 +110,20 @@ PAGE = Options(
 
 
 # Configurations for the collection engine
-COLLECTION = Options(
+COLLECTION = Config(
 
   # Path for all collections relative to the site URL
   URL = "collection",
 
   # Directory for storing collection content relative to Volt's root directory
-  CONTENT_DIR = os.path.join(SITE.CONTENT_DIR, "collection"),
+  CONTENT_DIR = join(SITE.CONTENT_DIR, "collection"),
 
   # Page permalink
   PERMALINK = "{slug}",
 
   # Default names of collection template files for single and multiple items
-  SINGLE_TEMPLATE_FILE = os.path.join(SITE.TEMPLATE_DIR, "single.html"),
-  MULTIPLE_TEMPLATE_FILE = os.path.join(SITE.TEMPLATE_DIR, "multiple.html"),
+  SINGLE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "single.html"),
+  MULTIPLE_TEMPLATE_FILE = join(SITE.TEMPLATE_DIR, "multiple.html"),
 
   # Required properties
   # These properties must be defined for each collection items individually

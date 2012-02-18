@@ -5,7 +5,7 @@ import os
 import sys
 from functools import partial
 
-from volt.conf import session
+from volt.config import config
 
 
 def volt_path(filepath):
@@ -14,7 +14,7 @@ def volt_path(filepath):
     Arguments:
     filepath: relative path of the file / directory
     """
-    return os.path.join(os.path.abspath(session.root, filepath))
+    return os.path.join(os.path.abspath(config.root, filepath))
 
 def is_valid_root(dir):
     """Returns True if the current directory is a valid Volt root directory.

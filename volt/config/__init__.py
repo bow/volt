@@ -2,11 +2,10 @@ import os
 import sys
 
 from volt import ConfigError
-from volt.conf import default
-from volt.conf.options import Options
+from volt.config import base
 
 
-class Session(object):
+class SessionConfig(object):
     """Container class for storing all configurations used in a Volt run.
     """
     def __init__(self):
@@ -16,12 +15,12 @@ class Session(object):
         self.py3 = (sys.version_info.major > 2)
 
         # load the user-defined configurations as a module object.
-        user_conf = os.path.splitext(default.SITE.USER_CONF)[0]
+        user_conf = os.path.splitext(base.SITE.USER_CONF)[0]
         sys.path.append(self.root)
         user =  __import__(user_conf)
 
         # load default config first, then overwrite by user config
-        for conf in (default, user):
+        for conf in (base, user):
             self.set_opts(conf)
 
     def get_root(self, dir=os.getcwd()):
@@ -40,13 +39,13 @@ class Session(object):
             raise ConfigError("'%s' is not part of a Volt directory." % \
                     os.getcwd())
         # recurse if config file not found
-        if not os.path.exists(os.path.join(dir, default.SITE.USER_CONF)):
+        if not os.path.exists(os.path.join(dir, base.SITE.USER_CONF)):
             parent = os.path.dirname(dir)
             return self.get_root(parent)
         return dir
 
     def set_opts(self, module):
-        """Sets the values of all Options objects in a loaded module
+        """Sets the values of all Config objects in a loaded module
         as self attributes.
 
         Argsuments:
@@ -54,7 +53,7 @@ class Session(object):
         """
         for var in dir(module):
             obj = getattr(module, var)
-            if isinstance(obj, Options):
+            if isinstance(obj, base.Config):
                 # set directory + file vars to absolute paths
                 # directory + file vars has 'DIR' + 'FILE' in their names
                 for opt in obj:
@@ -62,4 +61,4 @@ class Session(object):
                         obj[opt] = os.path.join(self.root, obj[opt])
                 setattr(self, var, obj)
 
-session = Session()
+config = SessionConfig()

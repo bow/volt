@@ -1,9 +1,10 @@
 # Volt configurations file
-from volt.conf.options import Options
+
+from volt.config.base import Config
 
 
 # General site configurations
-SITE = Options(
+SITE = Config(
 
   # Your site name
   TITLE = "Volt Demo",
@@ -16,7 +17,7 @@ SITE = Options(
 )
 
 # Engines switch; sets whether an engine is used in site generation or not
-ENGINES = Options(
+ENGINES = Config(
 
   BLOG = True,
   PAGE = True,
