@@ -26,11 +26,6 @@ def build_parsers():
     # parser for serve
     server_parser = subparsers.add_parser('serve',
                                           help="serve generated volt site")
-    server_parser.add_argument('volt_dir',
-                               default=config.root,
-                               nargs='?',
-                               metavar='VOLT_DIR',
-                               help='volt root directory')
     server_parser.add_argument('-p', '--port', dest='server_port',
                                default='8000', type=int,
                                metavar='PORT',
