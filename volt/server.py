@@ -15,6 +15,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from socket import error
 
 from volt import __version__, util
+from volt.config import config
 
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -88,13 +89,12 @@ def run(options):
     Arguments:
     options: Namespace object from argparse.ArgumentParser()
     """
-    options.volt_dir = os.path.abspath(options.volt_dir)
     address = ('127.0.0.1', options.server_port)
+    print config.SITE.SITE_DIR
     try:
-        os.chdir(os.path.join(options.volt_dir, 'site'))
         server = HTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
-        ERRORS = { 2: "Directory 'site' not found in %s" % options.volt_dir,
+        ERRORS = { 2: "Directory 'site' not found in %s" % config.SITE.SITE_DIR,
                   13: "You don't have permission to access port %s" % 
                       (options.server_port),
                   98: "Port %s already in use" % (options.server_port)}
@@ -112,7 +112,7 @@ def run(options):
     util.show_info("Serving %s/\n" 
                    "Running at http://%s:%s/\n"
                    "CTRL-C to stop.\n\n" % 
-                   (options.volt_dir, run_address, run_port))
+                   (config.SITE.SITE_DIR, run_address, run_port))
 
     try:
         server.serve_forever()
