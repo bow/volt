@@ -23,15 +23,15 @@ class SessionConfig(object):
         for name in dir(base):
             obj = getattr(base, name)
             if isinstance(obj, base.DefaultConfig):
+                # if the user-defined configs has a Config object with a
+                # same name, merge together and overwrite default config
+                if hasattr(user, name):
+                    obj.merge(getattr(user, name))
                 # set directory + file names to absolute paths
                 # directory + file names has 'DIR' + 'FILE' in their names
                 for opt in obj:
                     if opt.endswith('_DIR') or opt.endswith('_FILE'):
                         obj[opt] = os.path.join(self.root, obj[opt])
-                # if the user-defined configs has a Config object with a
-                # same name, merge together and overwrite default config
-                if hasattr(user, name):
-                    obj.merge(getattr(user, name))
                 setattr(self, name, obj)
 
     def get_root(self, dir=os.getcwd()):
