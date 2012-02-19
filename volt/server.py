@@ -10,13 +10,29 @@ import os
 import posixpath
 import sys
 import urllib
-from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
-from socket import error
+from SocketServer import ThreadingTCPServer
+from socket import error, getfqdn
 
 from volt import __version__, util
 from volt.config import config
 
+
+class VoltHTTPServer(ThreadingTCPServer):
+    """Volt HTTP Server
+    """
+    # copied from BaseHTTPServer.py since ThreadingTCPServer is used
+    # instead of TCPServer
+    allow_reuse_address = 1
+
+    def server_bind(self):
+        """Override server_bind to store the server name.
+        """
+        ThreadingTCPServer.server_bind(self)
+        host, port = self.socket.getsockname()[:2]
+        self.server_name = getfqdn(host)
+        self.server_port = port
+                                                    
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
@@ -73,7 +89,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         path = posixpath.normpath(urllib.unquote(path))
         words = path.split('/')
         words = filter(None, words)
-        path = os.getcwd()
+        path = config.VOLT.SITE_DIR
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
@@ -83,14 +99,15 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.file_path = path
         return self.file_path
 
+
 def run():
     """Runs the server.
     """
     address = ('127.0.0.1', config.CMD.server_port)
     try:
-        server = HTTPServer(address, VoltHTTPRequestHandler)
+        server = VoltHTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
-        ERRORS = { 2: "Directory 'site' not found in %s" % config.VOLT.SITE_DIR,
+        ERRORS = { 2: "Site directory '%s' not found" % config.VOLT.SITE_DIR,
                   13: "You don't have permission to access port %s" % 
                       (config.CMD.server_port),
                   98: "Port %s already in use" % (config.CMD.server_port)}
