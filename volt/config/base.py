@@ -1,4 +1,4 @@
-# Volt base configurations file
+# Volt default configurations file
 
 from os.path import join
 
@@ -25,115 +25,116 @@ class DefaultConfig(Config):
 # Changing values in this Config is allowed but not recommended
 VOLT = DefaultConfig(
 
-  # User config file name
-  USER_CONF = "voltconf.py",
+    # User config file name
+    # Used to determine project root
+    USER_CONF = "voltconf.py",
 
-  # Directories of content files, templates, and generated site
-  CONTENT_DIR = "content",
-  TEMPLATE_DIR = "templates",
-  SITE_DIR = "site",
+    # Directory paths for content files, templates, and generated site
+    # relative to a project root
+    CONTENT_DIR = "content",
+    TEMPLATE_DIR = "templates",
+    SITE_DIR = "site",
 )
 
 
-# General project configurations
+# Default site configurations
 SITE = DefaultConfig(
 
-  # Site name, URL, and description
-  TITLE = "My Volt Site",
-  URL = "http://127.0.0.1",
-  DESC = "",
+    # Site name, URL, and description
+    TITLE = "My Volt Site",
+    URL = "http://127.0.0.1",
+    DESC = "",
 
-  # Engines used in generating the site
-  # Defaults to none
-  ENGINES = [],
+    # Engines used in generating the site
+    # Defaults to none
+    ENGINES = [],
 
-  # Date and time format used in site content headers
-  # Used for parsing the headers
-  # Default is e.g. "2004-03-13 22:10"
-  CONTENT_DATETIME_FORMAT = "%Y-%m-%d %H:%M",
-  # Date and time format displayed on the generated site
-  # Default is e.g. "Saturday, 13 March 2004"
-  DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
+    # Date and time format used in site content headers
+    # Used for parsing the headers
+    # Default is e.g. "2004-03-13 22:10"
+    CONTENT_DATETIME_FORMAT = "%Y-%m-%d %H:%M",
+    # Date and time format displayed on the generated site
+    # Default is e.g. "Saturday, 13 March 2004"
+    DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
 )
 
 
-# Configurations for the blog engine
+# Default configurations for the blog engine
 BLOG = DefaultConfig(
 
-  # Path for all blog posts relative to the site URL
-  URL = "blog",
+    # URL for all blog content relative to root URL
+    URL = "blog",
 
-  # Directory for storing blog posts content relative to Volt's root directory
-  CONTENT_DIR = join(VOLT.CONTENT_DIR, "blog"),
+    # Blog post permalink, relative to blog URL
+    PERMALINK = "{%Y}/{%m}/{%d}/{slug}",
 
-  # Blog posts default author
-  # Can be overwritten by conf author individually in post content header
-  AUTHOR = "",
+    # Blog posts author, can be overwritten in individual blog posts
+    AUTHOR = "",
 
-  # Blog post permalink
-  PERMALINK = "{%Y}/{%m}/{%d}/{slug}",
+    # The number of displayed posts per pagination page
+    POSTS_PER_PAGE = 10,
 
-  # The number of displayed posts per pagination page
-  POSTS_PER_PAGE = 10,
+    # Default length (in words) of blog post excerpts
+    EXCERPT_LENGTH = 50,
 
-  # Default length (in words) of blog post excerpts
-  EXCERPT_LENGTH = 50,
+    # Directory path for storing blog content relative to a project root
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, "blog"),
 
-  # Default names of blog template files for single blog posts and pagination
-  SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "post.html"),
-  MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "pagination.html"),
+    # File paths of blog template files relative to a project root
+    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "post.html"),
+    MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "pagination.html"),
 
-  # TODO
-  # Sort order for paginated posts display
-  # Valid options are 'date', 'title', 'category', 'author'
-  # Default order is A-Z (for alphabets) and present-past (for dates)
-  # To reverse order just add '-' in front, e.g. '-date'
-  SORT = ('date', 'title', 'category', 'author', ),
+    # TODO
+    # Sort order for paginated posts display
+    # Valid options are 'date', 'title', 'category', 'author'
+    # Default order is A-Z (for alphabets) and present-past (for dates)
+    # To reverse order just add '-' in front, e.g. '-date'
+    SORT = ('date', 'title', 'category', 'author', ),
 
-  # Required properties
-  # These properties must be defined in each individual blog post header
-  REQUIRED = ('title', 'time', ),
+    # Required properties
+    # These properties must be defined in each individual blog post header
+    REQUIRED = ('title', 'time', ),
 )
 
 
-# Configurations for the page engine
+# Default configurations for the page engine
 PAGE = DefaultConfig(
 
-  # Path for all pages relative to the site URL
-  URL = "page",
+    # URL for all page content relative to root URL
+    URL = "page",
 
-  # Directory for storing page content relative to Volt's root directory
-  CONTENT_DIR = join(VOLT.CONTENT_DIR, "page"),
+    # Page permalink, relative to page URL
+    PERMALINK = "{slug}",
 
-  # Page permalink
-  PERMALINK = "{slug}",
+    # Directory path for storing page content relative to a project root
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, "page"),
 
-  # Default names of page template file
-  TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "page.html"),
+    # File paths of page template files relative to a project root
+    TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "page.html"),
 
-  # Required properties
-  # These properties must be defined in each individual page item header
-  REQUIRED = ('title', ),
+    # Required properties
+    # These properties must be defined in each individual page item header
+    REQUIRED = ('title', ),
 )
 
 
-# Configurations for the collection engine
+# Default configurations for the collection engine
 COLLECTION = DefaultConfig(
 
-  # Path for all collections relative to the site URL
-  URL = "collection",
+    # URL for all collection content relative to root URL
+    URL = "collection",
 
-  # Directory for storing collection content relative to Volt's root directory
-  CONTENT_DIR = join(VOLT.CONTENT_DIR, "collection"),
+    # Collection permalink, relative to collection URL
+    PERMALINK = "{slug}",
 
-  # Page permalink
-  PERMALINK = "{slug}",
+    # Directory path for storing collection content relative to a project root
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, "collection"),
 
-  # Default names of collection template files for single and multiple items
-  SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "single.html"),
-  MULTIPLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "multiple.html"),
+    # File paths of collection template files relative to a project root
+    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "single.html"),
+    MULTIPLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "multiple.html"),
 
-  # Required properties
-  # These properties must be defined for each collection items individually
-  REQUIRED = ('title', 'item', ),
+    # Required properties
+    # These properties must be defined for each collection item individually
+    REQUIRED = ('title', 'item', ),
 )
