@@ -7,8 +7,9 @@ from volt import ConfigError
 class Session(object):
     """Container class for storing all configurations used in a Volt run.
     """
-    def __init__(self, default_conf='volt.config.default'):
+    def __init__(self, default_conf='volt.config.default', start_dir=os.getcwd()):
         self.py3 = (sys.version_info.major > 2)
+        self.start_dir = start_dir
         # lazy loading flag
         self._initialized = False
         self._default = self.import_conf(default_conf)
@@ -22,7 +23,7 @@ class Session(object):
         """Initializes the session instance.
         """
         # get root and add it to sys.path so we can import from it
-        self.root = self.get_root()
+        self.root = self.get_root(self.start_dir)
         sys.path.append(self.root)
 
         # load the user-defined configurations as a module object.
@@ -50,7 +51,7 @@ class Session(object):
 
         self._initialized = True
 
-    def get_root(self, dir=os.getcwd()):
+    def get_root(self, start_dir):
         """Returns the root directory of a Volt project.
 
         Arguments:
@@ -62,14 +63,14 @@ class Session(object):
         file is found up to '/', raise ConfigError.
         """
         # raise error if search goes all the way to root without any results
-        if os.path.dirname(dir) == dir:
+        if os.path.dirname(start_dir) == start_dir:
             raise ConfigError("'%s' is not part of a Volt directory." % \
                     os.getcwd())
         # recurse if config file not found
-        if not os.path.exists(os.path.join(dir, self._default.VOLT.USER_CONF)):
-            parent = os.path.dirname(dir)
+        if not os.path.exists(os.path.join(start_dir, self._default.VOLT.USER_CONF)):
+            parent = os.path.dirname(start_dir)
             return self.get_root(parent)
-        return dir
+        return start_dir
 
     def import_conf(self, mod):
         """Imports a Volt configuration.
