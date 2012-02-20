@@ -24,9 +24,9 @@ def build_parsers():
     subparsers = parser.add_subparsers(title='subcommands')
 
     # parser for serve
-    server_parser = subparsers.add_parser('serve',
+    serve_parser = subparsers.add_parser('serve',
                                           help="serve generated volt site")
-    server_parser.add_argument('-p', '--port', dest='server_port',
+    serve_parser.add_argument('-p', '--port', dest='server_port',
                                default='8000', type=int,
                                metavar='PORT',
                                help='server port')
@@ -34,21 +34,49 @@ def build_parsers():
     # bit of a hack, so version can be shown without the "--"
     version_parser = subparsers.add_parser('version',
                                            help="show version number and exit")
-    # set function to run dynamically
-    for subcmd in ['server', 'version', ]:
+
+    # sets the function to run for each subparser option
+    # e.g. subcmd = 'server', it will set the function to run_server
+    for subcmd in subparsers.choices.keys():
         eval('%s_parser' % subcmd).set_defaults(run=eval('run_%s' % subcmd))
 
     return parser
+
+def run_demo():
+    """Starts a new project with pre-made demo files, generates the static
+    site, and starts the server.
+    """
+    # TODO
+    #run_init()
+    #run_gen()
+    #run_server()
+
+def run_gen():
+    """Generates the static site.
+    """
+    # TODO
+    pass
+
+def run_init():
+    """Starts a new Volt project.
+    """
+    # TODO
+    pass
+
+def run_serve():
+    """Runs the volt server.
+    """
+    server.run()
+
+def run_switch():
+    """Switches an engine on or off.
+    """
+    pass
 
 def run_version():
     """Shows version number.
     """
     print "Volt %s" % __version__
-
-def run_server():
-    """Runs the volt server.
-    """
-    server.run()
 
 def main():
     """Main execution routine.
