@@ -11,16 +11,16 @@ class Session(object):
         self.py3 = (sys.version_info.major > 2)
         self.start_dir = start_dir
         # lazy loading flag
-        self._initialized = False
+        self._loaded = False
         self._default = self.import_conf(default_conf)
     
     def __getattr__(self, name):
-        if not self._initialized:
-            self._initialize()
+        if not self._loaded:
+            self._load()
         return object.__getattribute__(self, name)
 
-    def _initialize(self):
-        """Initializes the session instance.
+    def _load(self):
+        """Loads the session instance.
         """
         # get root and add it to sys.path so we can import from it
         self.root = self.get_root(self.start_dir)
@@ -49,7 +49,7 @@ class Session(object):
                 obj[opt] = os.path.join(self.root, obj[opt])
             setattr(self, item, obj)
 
-        self._initialized = True
+        self._loaded = True
 
     def get_root(self, start_dir):
         """Returns the root directory of a Volt project.
