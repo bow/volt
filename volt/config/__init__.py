@@ -7,12 +7,18 @@ from volt import ConfigError
 class Session(object):
     """Container class for storing all configurations used in a Volt run.
     """
+
     def __init__(self, default_conf='volt.config.default', start_dir=os.getcwd()):
+        """Initializes Session.
+
+        Arguments:
+            default_conf: default configurations, module or absolute path
+            start_dir: starting directory for user configuration lookup
+        """
         self.py3 = (sys.version_info.major > 2)
-        self.start_dir = start_dir
-        # lazy loading flag
-        self._loaded = False
         self._default = self.import_conf(default_conf)
+        self.start_dir = start_dir
+        self._loaded = False
     
     def __getattr__(self, name):
         if not self._loaded:
