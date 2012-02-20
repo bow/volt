@@ -1,6 +1,6 @@
 # Volt configurations file
 
-from volt.config.base import Config
+from volt.config.default import Config
 
 
 # General project configurations

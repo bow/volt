@@ -2,37 +2,47 @@ import os
 import sys
 
 from volt import ConfigError
-from volt.config import base
 
 
-class SessionConfig(object):
+class Session(object):
     """Container class for storing all configurations used in a Volt run.
     """
-    def __init__(self):
-        self.root = self.get_root()
-
-        # flag for python version
+    def __init__(self, default_conf='volt.config.default'):
         self.py3 = (sys.version_info.major > 2)
+        # lazy loading flag
+        self._initialized = False
+        self._default = self.import_conf(default_conf)
+    
+    def __getattr__(self, name):
+        if not self._initialized:
 
-        # load the user-defined configurations as a module object.
-        user_conf = os.path.splitext(base.VOLT.USER_CONF)[0]
-        sys.path.append(self.root)
-        user =  __import__(user_conf)
+            # get root and add it to sys.path so we can import from it
+            self.root = self.get_root()
+            sys.path.append(self.root)
 
-        # load default config first, then overwrite by user config
-        for name in dir(base):
-            obj = getattr(base, name)
-            if isinstance(obj, base.DefaultConfig):
+            # load the user-defined configurations as a module object.
+            # if user config import fails, all config is from default config
+            try:
+                user = self.import_conf(self._default.VOLT.USER_CONF)
+            except ImportError:
+                user = None
+
+            # load default config first, then overwrite by user config
+            default_conf_items = [x for x in dir(self._default) if x == x.upper()]
+            for item in default_conf_items:
+                obj = getattr(self._default, item)
                 # if the user-defined configs has a Config object with a
-                # same name, merge together and overwrite default config
-                if hasattr(user, name):
-                    obj.merge(getattr(user, name))
-                # set directory + file names to absolute paths
-                # directory + file names has 'DIR' + 'FILE' in their names
-                for opt in obj:
-                    if opt.endswith('_DIR') or opt.endswith('_FILE'):
-                        obj[opt] = os.path.join(self.root, obj[opt])
-                setattr(self, name, obj)
+                # same item, merge together and overwrite default config
+                if hasattr(user, item):
+                    obj.merge(getattr(user, item))
+                # set directory + file items to absolute paths
+                # directory + file items has 'DIR' + 'FILE' in their items
+                paths = (x for x in obj if x.endswith('_FILE') or x.endswith('_DIR'))
+                for opt in paths:
+                    obj[opt] = os.path.join(self.root, obj[opt])
+                setattr(self, item, obj)
+            self._initialized = True
+        return object.__getattribute__(self, name)
 
     def get_root(self, dir=os.getcwd()):
         """Returns the root directory of a Volt project.
@@ -50,10 +60,25 @@ class SessionConfig(object):
             raise ConfigError("'%s' is not part of a Volt directory." % \
                     os.getcwd())
         # recurse if config file not found
-        if not os.path.exists(os.path.join(dir, base.VOLT.USER_CONF)):
+        if not os.path.exists(os.path.join(dir, self._default.VOLT.USER_CONF)):
             parent = os.path.dirname(dir)
             return self.get_root(parent)
         return dir
 
+    def import_conf(self, mod):
+        """Imports a Volt configuration.
 
-config = SessionConfig()
+        Arguments:
+        name: dotted module notation or an absolute path to the
+              configuration file.
+        """
+        if os.path.isabs(mod):
+            mod_dir = os.path.dirname(mod)
+            mod_file = os.path.basename(mod)
+            mod_file = os.path.splitext(mod_file)[0]
+            sys.path.append(mod_dir)
+            return __import__(mod_file)
+        return __import__(mod, fromlist=[mod.split('.')[-1]])
+
+
+config = Session()
