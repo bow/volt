@@ -18,6 +18,9 @@ VOLT = DefaultConfig(
     CONTENT_DIR = "content",
     TEMPLATE_DIR = "templates",
     SITE_DIR = "site",
+
+    # Flag for colored terminal output
+    COLORED_TEXT = False,
 )
 
 
