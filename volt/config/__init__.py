@@ -23,7 +23,8 @@ class Session(object):
             # load the user-defined configurations as a module object.
             # if user config import fails, all config is from default config
             try:
-                user = self.import_conf(self._default.VOLT.USER_CONF)
+                user_conf = os.path.splitext(self._default.VOLT.USER_CONF)[0]
+                user = self.import_conf(user_conf)
             except ImportError:
                 user = None
 
