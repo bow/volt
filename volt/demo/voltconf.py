@@ -1,24 +1,32 @@
 # Volt configurations file
 
-from volt.config.default import Config
+from volt.config.base import Config
+
+
+# Volt configurations
+VOLT = Config(
+
+    # Flag for colored terminal output
+    COLORED_TEXT = True,
+)
 
 
 # General project configurations
 SITE = Config(
 
-  # Your site name
-  TITLE = "Volt Demo Site",
+    # Your site name
+    TITLE = "Volt Demo Site",
 
-  # Your site URL
-  URL = "http://127.0.0.1",
+    # Your site URL
+    URL = "http://127.0.0.1",
 
-  # Your site description
-  DESC = "Because static sites have potential",
+    # Your site description
+    DESC = "Because static sites have potential",
 
-  # Engines used in generating the site
-  # Available engines are 'page', 'blog', and 'collection'
-  # To disable an engine, just remove its name from this list
-  ENGINES = ['page', 'blog', ],
+    # Engines used in generating the site
+    # Available engines are 'page', 'blog', and 'collection'
+    # To disable an engine, just remove its name from this list
+    ENGINES = ['page', 'blog', ],
 )
 
 
