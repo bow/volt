@@ -15,35 +15,40 @@ class Session(object):
     
     def __getattr__(self, name):
         if not self._initialized:
-
-            # get root and add it to sys.path so we can import from it
-            self.root = self.get_root()
-            sys.path.append(self.root)
-
-            # load the user-defined configurations as a module object.
-            # if user config import fails, all config is from default config
-            try:
-                user_conf = os.path.splitext(self._default.VOLT.USER_CONF)[0]
-                user = self.import_conf(user_conf)
-            except ImportError:
-                user = None
-
-            # load default config first, then overwrite by user config
-            default_conf_items = [x for x in dir(self._default) if x == x.upper()]
-            for item in default_conf_items:
-                obj = getattr(self._default, item)
-                # if the user-defined configs has a Config object with a
-                # same item, merge together and overwrite default config
-                if hasattr(user, item):
-                    obj.merge(getattr(user, item))
-                # set directory + file items to absolute paths
-                # directory + file items has 'DIR' + 'FILE' in their items
-                paths = (x for x in obj if x.endswith('_FILE') or x.endswith('_DIR'))
-                for opt in paths:
-                    obj[opt] = os.path.join(self.root, obj[opt])
-                setattr(self, item, obj)
-            self._initialized = True
+            self._initialize()
         return object.__getattribute__(self, name)
+
+    def _initialize(self):
+        """Initializes the session instance.
+        """
+        # get root and add it to sys.path so we can import from it
+        self.root = self.get_root()
+        sys.path.append(self.root)
+
+        # load the user-defined configurations as a module object.
+        # if user config import fails, all config is from default config
+        try:
+            user_conf = os.path.splitext(self._default.VOLT.USER_CONF)[0]
+            user = self.import_conf(user_conf)
+        except ImportError:
+            user = None
+
+        # load default config first, then overwrite by user config
+        default_conf_items = [x for x in dir(self._default) if x == x.upper()]
+        for item in default_conf_items:
+            obj = getattr(self._default, item)
+            # if the user-defined configs has a Config object with a
+            # same item, merge together and overwrite default config
+            if hasattr(user, item):
+                obj.merge(getattr(user, item))
+            # set directory + file items to absolute paths
+            # directory + file items has 'DIR' + 'FILE' in their items
+            paths = (x for x in obj if x.endswith('_FILE') or x.endswith('_DIR'))
+            for opt in paths:
+                obj[opt] = os.path.join(self.root, obj[opt])
+            setattr(self, item, obj)
+
+        self._initialized = True
 
     def get_root(self, dir=os.getcwd()):
         """Returns the root directory of a Volt project.
