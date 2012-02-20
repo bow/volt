@@ -26,8 +26,7 @@ class VoltHTTPServer(ThreadingTCPServer):
     allow_reuse_address = 1
 
     def server_bind(self):
-        """Override server_bind to store the server name.
-        """
+        # overrides server_bind to store the server name.
         ThreadingTCPServer.server_bind(self)
         host, port = self.socket.getsockname()[:2]
         self.server_name = getfqdn(host)
@@ -39,18 +38,11 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
     server_version = 'VoltHTTPServer/' + __version__
 
     def log_error(self, format, *args):
-        """Logs the error.
-
-        Overwritten to unclutter log message.
-        """
+        # overwritten to unclutter log message.
         pass
 
     def log_message(self, format, *args):
-        """Prints the log message.
-
-        Overrides parent log_message to provide a more compact output.
-
-        """
+        # overrides parent log_message to provide a more compact output.
         message = "[%s] %s\n" % (self.log_date_time_string(), format % args)
 
         if int(args[1]) >= 400:
@@ -62,11 +54,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 
     def log_request(self, code='-', size='-'):
-        """Logs the accepted request.
-
-        Overrides parent log_request so 'size' can be set dynamically.
-
-        """
+        # overrides parent log_request so 'size' can be set dynamically.
         ### HACK, add code for 404 processing later
         if code <= 200:
             actual_file = os.path.join(self.file_path, 'index.html')
@@ -80,10 +68,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
                          self.requestline, str(code), str(size))
 
     def translate_path(self, path):
-        """Returns filesystem path of from requests.
-
-        Overrides parent translate_path to enable custom directory setting.
-        """
+        # overrides parent translate_path to enable custom directory setting.
         path = path.split('?',1)[0]
         path = path.split('#',1)[0]
         path = posixpath.normpath(urllib.unquote(path))
