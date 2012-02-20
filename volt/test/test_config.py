@@ -16,9 +16,14 @@ class TestConfig(unittest.TestCase):
         default_conf = 'volt.test.fixtures.default'
         self.config = Session(default_conf, user_conf)
 
-    def test_overwrite(self):
-        self.assertEqual(self.config.TEST.TITLE, 'Title in user')
-        self.assertEqual(self.config.TEST.DESC, 'Desc in default')
+    def test_config(self):
+        # test if title is overwritten
+        self.assertEqual(self.config.ENGINE.TITLE, 'Title in user')
+        # test if default conf is preserved
+        self.assertEqual(self.config.ENGINE.DESC, 'Desc in default')
+        # test if absolute path resolution for user-defined engine path works
+        self.assertEqual(self.config.ENGINE.CONTENT_DIR, \
+                os.path.join(self.config.root, "engine_dir_user"))
 
 
 if __name__ == '__main__':
