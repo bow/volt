@@ -5,9 +5,11 @@ import argparse
 import os
 import sys
 
-from volt import __version__, util
+from volt import util
 from volt.config import config
-from volt.engine import PageEngine, BlogEngine, CollectionEngine
+
+
+__version__ = "0.0.1"
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -58,7 +60,7 @@ def run_demo():
 def run_gen():
     """Generates the static site.
     """
-    # TODO
+    from volt.engine import PageEngine, BlogEngine, CollectionEngine
     for eng in config.SITE.ENGINES:
         eng_name = "%sEngine" % eng.capitalize()
         # try import engines in user volt project directory first
