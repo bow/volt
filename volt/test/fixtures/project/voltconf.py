@@ -4,7 +4,7 @@ from volt.config.base import Config
 
 
 VOLT = Config(
-    CONTENT_DIR = "engine_dir_user",
+    CUSTOM_DIR = "custom_dir_user",
 )
 
 SITE = Config(

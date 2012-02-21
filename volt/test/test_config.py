@@ -27,9 +27,9 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.SITE.TITLE, 'Title in user')
         # test if default conf is preserved
         self.assertEqual(self.config.SITE.DESC, 'Desc in default')
-        # test if absolute path resolution for user-defined engine path works
-        self.assertEqual(self.config.VOLT.CONTENT_DIR, \
-                os.path.join(self.config.root, "engine_dir_user"))
+        # test if user-defined path resolution works
+        self.assertEqual(self.config.VOLT.CUSTOM_DIR, \
+                os.path.join(self.config.root, "custom_dir_user"))
         # test for lazy loading flag
         self.assertTrue(self.config._loaded)
 

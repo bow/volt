@@ -43,7 +43,7 @@ class Session(object):
             # if the user-defined configs has a Config object with a
             # same item, merge together and overwrite default config
             if hasattr(user, item):
-                obj.merge(getattr(user, item))
+                obj.override(getattr(user, item))
             # set directory + file items to absolute paths
             # directory + file items has 'DIR' + 'FILE' in their items
             paths = (x for x in obj if x.endswith('_FILE') or x.endswith('_DIR'))

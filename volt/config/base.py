@@ -13,7 +13,6 @@ class Config(dict):
 class DefaultConfig(Config):
     """Container class for default configuration options.
     """
-    def merge(self, conf_obj):
+    def override(self, conf_obj):
         for key in conf_obj.keys():
-            if key in self:
-                self[key] = conf_obj[key]
+            self[key] = conf_obj[key]
