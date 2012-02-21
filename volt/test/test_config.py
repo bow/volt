@@ -24,11 +24,11 @@ class TestConfig(unittest.TestCase):
 
     def test_load(self):
         # test if title is overwritten
-        self.assertEqual(self.config.ENGINE.TITLE, 'Title in user')
+        self.assertEqual(self.config.SITE.TITLE, 'Title in user')
         # test if default conf is preserved
-        self.assertEqual(self.config.ENGINE.DESC, 'Desc in default')
+        self.assertEqual(self.config.SITE.DESC, 'Desc in default')
         # test if absolute path resolution for user-defined engine path works
-        self.assertEqual(self.config.ENGINE.CONTENT_DIR, \
+        self.assertEqual(self.config.VOLT.CONTENT_DIR, \
                 os.path.join(self.config.root, "engine_dir_user"))
         # test for lazy loading flag
         self.assertTrue(self.config._loaded)

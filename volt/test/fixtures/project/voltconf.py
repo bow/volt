@@ -3,7 +3,10 @@
 from volt.config.base import Config
 
 
-ENGINE = Config(
-    TITLE = "Title in user",
+VOLT = Config(
     CONTENT_DIR = "engine_dir_user",
+)
+
+SITE = Config(
+    TITLE = "Title in user",
 )
