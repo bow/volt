@@ -14,8 +14,9 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingTCPServer
 from socket import error, getfqdn
 
-from volt import __version__, util
+from volt import util
 from volt.config import config
+from volt.main import __version__
 
 
 class VoltHTTPServer(ThreadingTCPServer):
