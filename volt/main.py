@@ -5,11 +5,11 @@ import argparse
 import os
 import sys
 
-from volt import __version__, server, util
+from volt import __version__, util
 from volt.config import config
 
 
-class CustomParser(argparse.ArgumentParser):
+class ArgParser(argparse.ArgumentParser):
     """Custom parser that prints help message when an error occurs.
     """
     def error(self, message):
@@ -20,7 +20,7 @@ class CustomParser(argparse.ArgumentParser):
 def build_parsers():
     """Build parser for arguments.
     """
-    parser = CustomParser()
+    parser = ArgParser()
     subparsers = parser.add_subparsers(title='subcommands')
 
     # parser for serve
@@ -66,6 +66,7 @@ def run_init():
 def run_serve():
     """Runs the volt server.
     """
+    from volt import server
     server.run()
 
 def run_switch():
