@@ -92,9 +92,9 @@ def run_version():
     """
     print "Volt %s" % __version__
 
-def main():
+def main(cli_arglist=None):
     """Main execution routine.
     """
     # set command-line args accessible package-wide
-    config.CMD = build_parsers().parse_args()
+    config.CMD = build_parsers().parse_args(cli_arglist)
     config.CMD.run()
