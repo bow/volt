@@ -59,10 +59,16 @@ def run_gen():
     """Generates the static site.
     """
     # TODO
-    for item in config.SITE.ENGINES:
-        engine = eval('%sEngine' % item.capitalize())
-        engine_conf = eval('config.%s' % item.upper())
-        engine(engine_conf).run()
+    for eng in config.SITE.ENGINES:
+        eng_name = "%sEngine" % eng.capitalize()
+        # try import engines in user volt project directory first
+        try:
+            eng_mod = __import__("engine.%s" % eng, fromlist=[1])
+            eng_class = getattr(eng_mod, eng_name)
+        except ImportError:
+            eng_class = eval(eng_name)
+        eng_conf = eval("config.%s" % eng.upper())
+        eng_class(eng_conf).run()
 
 def run_init():
     """Starts a new Volt project.
