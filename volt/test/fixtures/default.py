@@ -2,10 +2,10 @@
 
 from os.path import join
 
-from volt.config.base import DefaultConfig
+from volt.config.base import Config
 
 
-VOLT = DefaultConfig(
+VOLT = Config(
     USER_CONF = "voltconf.py",
     CONTENT_DIR = "content",
     TEMPLATE_DIR = "templates",
@@ -14,13 +14,13 @@ VOLT = DefaultConfig(
     DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
 )
 
-SITE = DefaultConfig(
+SITE = Config(
     TITLE = "Title in default",
     DESC = "Desc in default", 
-    ENGINES = ['blog', ]
+    ENGINES = []
 )
 
-BLOG = DefaultConfig(
+BLOG = Config(
     URL = "blog",
     PERMALINK = "{%Y}/{%m}/{%d}/{slug}",
     AUTHOR = "",

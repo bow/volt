@@ -9,4 +9,5 @@ VOLT = Config(
 
 SITE = Config(
     TITLE = "Title in user",
+    ENGINES = ['blog']
 )

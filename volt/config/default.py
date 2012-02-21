@@ -2,12 +2,12 @@
 
 from os.path import join
 
-from volt.config.base import DefaultConfig
+from volt.config.base import Config
 
 
 # Volt configurations
 # Changing values in this Config is allowed but not recommended
-VOLT = DefaultConfig(
+VOLT = Config(
 
     # User config file name
     # Used to determine project root
@@ -25,7 +25,7 @@ VOLT = DefaultConfig(
 
 
 # Default site configurations
-SITE = DefaultConfig(
+SITE = Config(
 
     # Site name, URL, and description
     TITLE = "My Volt Site",
@@ -47,7 +47,7 @@ SITE = DefaultConfig(
 
 
 # Default configurations for the blog engine
-BLOG = DefaultConfig(
+BLOG = Config(
 
     # URL for all blog content relative to root URL
     URL = "blog",
@@ -85,7 +85,7 @@ BLOG = DefaultConfig(
 
 
 # Default configurations for the page engine
-PAGE = DefaultConfig(
+PAGE = Config(
 
     # URL for all page content relative to root URL
     URL = "page",
@@ -106,7 +106,7 @@ PAGE = DefaultConfig(
 
 
 # Default configurations for the collection engine
-COLLECTION = DefaultConfig(
+COLLECTION = Config(
 
     # URL for all collection content relative to root URL
     URL = "collection",
