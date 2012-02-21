@@ -26,7 +26,7 @@ SITE = Config(
     # Engines used in generating the site
     # Available engines are 'page', 'blog', and 'collection'
     # To disable an engine, just remove its name from this list
-    ENGINES = ['page', 'blog', ],
+    ENGINES = ['blog', ],
 )
 
 
