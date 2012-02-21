@@ -13,9 +13,9 @@ class TestConfig(unittest.TestCase):
 
     def setUp(self):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        user_conf = os.path.join(self.test_dir, 'fixtures/project')
-        default_conf = 'volt.test.fixtures.default'
-        self.config = Session(default_conf, user_conf)
+        self.user_conf = os.path.join(self.test_dir, 'fixtures/project/voltconf.py')
+        self.default_conf = 'volt.test.fixtures.default'
+        self.config = Session(self.default_conf, self.user_conf)
 
     def tearDown(self):
         # destroy default config so default values are reset
@@ -45,13 +45,13 @@ class TestConfig(unittest.TestCase):
         self.config._load()
         # test for dotted notation import
         self.assertIsNotNone(self.config.import_conf(\
-                'volt.test.fixtures.default'))
+                self.default_conf))
         # test for absolute path notation import
         self.assertIsNotNone(self.config.import_conf(\
-                self.config.VOLT.USER_CONF, True))
+                self.user_conf, True))
         # test if exception is properly raised
         self.assertRaises(ImportError, Session().import_conf, \
-                self.config.VOLT.USER_CONF)
+                self.user_conf)
 
 
 if __name__ == '__main__':
