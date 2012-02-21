@@ -1,6 +1,6 @@
 # Volt page engine
 
-from volt.engine import BaseEngine
+from volt.engine.base import BaseEngine
 
 
 class PageEngine(BaseEngine):
