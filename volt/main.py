@@ -7,6 +7,7 @@ import sys
 
 from volt import __version__, util
 from volt.config import config
+from volt.engine import PageEngine, BlogEngine, CollectionEngine
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -23,6 +24,9 @@ def build_parsers():
     parser = ArgParser()
     subparsers = parser.add_subparsers(title='subcommands')
 
+    # parser for gen
+    gen_parser = subparsers.add_parser('gen',
+                                       help="generates Volt site using the specified engines")
     # parser for serve
     serve_parser = subparsers.add_parser('serve',
                                           help="serve generated volt site")
@@ -55,7 +59,10 @@ def run_gen():
     """Generates the static site.
     """
     # TODO
-    pass
+    for item in config.SITE.ENGINES:
+        engine = eval('%sEngine' % item.capitalize())
+        engine_conf = eval('config.%s' % item.upper())
+        engine(engine_conf).run()
 
 def run_init():
     """Starts a new Volt project.
