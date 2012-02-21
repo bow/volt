@@ -6,7 +6,7 @@ from volt.config.base import Config
 
 class BaseEngine(object):
 
-    def __init__(self, config, content_class=None):
+    def __init__(self, config=None, content_class=None):
         """Initializes the engine
 
         Arguments:
