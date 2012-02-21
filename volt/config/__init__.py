@@ -28,17 +28,13 @@ class Session(object):
     def _load(self):
         """Loads the session instance.
         """
-        # get root and add it to sys.path so we can import from it
+        # get root and modify path to user conf to absolute path
         self.root = self.get_root(self.start_dir)
-        sys.path.append(self.root)
+        self._default.VOLT.USER_CONF = os.path.join(self.root, \
+                self._default.VOLT.USER_CONF)
 
-        # load the user-defined configurations as a module object.
-        # if user config import fails, all config is from default config
-        try:
-            user_conf = os.path.splitext(self._default.VOLT.USER_CONF)[0]
-            user = self.import_conf(user_conf)
-        except ImportError:
-            user = None
+        # import user-defined configs as a module object
+        user = self.import_conf(self._default.VOLT.USER_CONF, path=True)
 
         # load default config first, then overwrite by user config
         default_conf_items = [x for x in dir(self._default) if x == x.upper()]
@@ -78,20 +74,25 @@ class Session(object):
             return self.get_root(parent)
         return start_dir
 
-    def import_conf(self, mod):
+    def import_conf(self, mod, path=False):
         """Imports a Volt configuration.
 
         Arguments:
-        name: dotted module notation or an absolute path to the
-              configuration file.
+        mod: dotted package notation or an absolute path to the
+             configuration file.
+        path: boolean indicating if mod is absolute path or dotted package
+              notation
         """
-        if os.path.isabs(mod):
+        if path and os.path.isabs(mod):
             mod_dir = os.path.dirname(mod)
             mod_file = os.path.basename(mod)
             mod_file = os.path.splitext(mod_file)[0]
             sys.path.append(mod_dir)
             return __import__(mod_file)
-        return __import__(mod, fromlist=[mod.split('.')[-1]])
+        elif not path:
+            return __import__(mod, fromlist=[mod.split('.')[-1]])
+
+        raise ImportError("Could not import %s" % mod)
 
 
 config = Session()
