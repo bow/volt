@@ -1,13 +1,14 @@
 import os
+from collections import OrderedDict
 
 from volt import ConfigError
+from volt.config import config
 from volt.config.base import Config
-from collections import OrderedDict
 
 
 class BaseEngine(object):
 
-    def __init__(self, config=None, content_container=None):
+    def __init__(self, config=None, content_container=None, site_config=config.SITE):
         """Initializes the engine
 
         Arguments:
@@ -21,6 +22,7 @@ class BaseEngine(object):
             raise TypeError("Engine must be initialized with a content holder class.")
 
         self.config = config
+        self.site = site_config
         self.ccontainer = content_container
         self._contents = OrderedDict()
 
