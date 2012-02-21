@@ -2,6 +2,7 @@ import os
 import sys
 
 from volt import ConfigError
+from volt.config.base import Config
 
 
 class Session(object):
@@ -37,7 +38,8 @@ class Session(object):
         user = self.import_conf(self._default.VOLT.USER_CONF, path=True)
 
         # load default config first, then overwrite by user config
-        default_conf_items = [x for x in dir(self._default) if x == x.upper()]
+        default_conf_items = (x for x in dir(self._default) if \
+                isinstance(getattr(self._default, x), Config))
         for item in default_conf_items:
             obj = getattr(self._default, item)
             # if the user-defined configs has a Config object with a
