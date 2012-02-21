@@ -60,17 +60,22 @@ def run_demo():
 def run_gen():
     """Generates the static site.
     """
-    from volt.engine import PageEngine, BlogEngine, CollectionEngine
-    for eng in config.SITE.ENGINES:
-        eng_name = "%sEngine" % eng.capitalize()
+    from volt.engine import BlogEngine, BlogItem, PageEngine, PageItem,\
+            CollectionEngine, CollectionItem
+
+    for e in config.SITE.ENGINES:
+        eng_class_name = "%sEngine" % e.capitalize()
+        eng_item_name = "%sItem" % e.capitalize()
         # try import engines in user volt project directory first
         try:
-            eng_mod = __import__("engine.%s" % eng, fromlist=[1])
-            eng_class = getattr(eng_mod, eng_name)
+            eng_mod = __import__("engine.%s" % e, fromlist=[1])
+            eng_class = getattr(eng_mod, eng_class_name)
+            eng_item = getattr(eng_mod, eng_item_name)
         except ImportError:
-            eng_class = eval(eng_name)
-        eng_conf = eval("config.%s" % eng.upper())
-        eng_class(eng_conf).run()
+            eng_class = eval(eng_class_name)
+            eng_item = eval(eng_item_name)
+        eng_conf = eval("config.%s" % e.upper())
+        eng_class(eng_conf, eng_item).run()
 
 def run_init():
     """Starts a new Volt project.

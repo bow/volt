@@ -2,58 +2,58 @@ import os
 
 from volt import ConfigError
 from volt.config.base import Config
+from collections import OrderedDict
 
 
 class BaseEngine(object):
 
-    def __init__(self, config=None, content_class=None):
+    def __init__(self, config=None, content_container=None):
         """Initializes the engine
 
         Arguments:
         config: Engine Config object from volt.config.config
+        content_container: content container Class
         """
         if not isinstance(config, Config):
             raise TypeError("Engine must be initialized with a Config object.")
 
-        #if not isinstance(content_class, BaseItem):
-        #    raise TypeError("Engine must be initialized with a content holder \
-        #           object.")
+        if not issubclass(content_container, BaseItem):
+            raise TypeError("Engine must be initialized with a content holder class.")
 
         self.config = config
-        #self.cclass = content_class
+        self.ccontainer = content_container
+        self._contents = OrderedDict()
 
     def parse(self):
         """Parses the content, returning BaseItem object.
         """
         # this should be a generator
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement parse().")
 
     def create_dirs(self):
         """Creates all required directories in the site folder.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement create_dirs().")
 
     def build_paths(self):
         """Builds all the required URLs.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement build_paths().")
 
     def write_single(self):
         """Writes a single BaseItem object to an output file.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement write_single().")
 
     def write_multiple(self):
         """Writes an output file composed of multipe BaseItem object.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement write_multiple().")
 
     def run(self):
         """Starts the engine processing.
         """
-        #raise NotImplementedError
-        print self.__class__.__name__, "activated!"
-        print self.config
+        raise NotImplementedError("Subclasses must implement run().")
 
 
 class BaseItem(object):
