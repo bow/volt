@@ -2,11 +2,10 @@
 
 import os
 import re
-from datetime import datetime
 
 import yaml
 
-from volt import ContentError, ParseError
+from volt import ParseError
 from volt.config import config
 from volt.engine.base import BaseEngine, BaseItem
 from volt.util import _MARKUP
@@ -17,11 +16,11 @@ class BlogEngine(BaseEngine):
     """
     
     def run(self):
-        self.parse()
+        self.parse(content_dir=config.BLOG.CONTENT_DIR)
 
-    def parse(self):
+    def parse(self, content_dir):
         # get absolute paths of content files
-        content_dir = self.globdir(config.BLOG.CONTENT_DIR, iter=True)
+        content_dir = self.globdir(content_dir, iter=True)
         files = (x for x in content_dir if os.path.isfile(x))
 
         # set pattern for header delimiter
@@ -51,60 +50,18 @@ class BlogItem(BaseItem):
     """Class representation of a single blog post.
     """
     
-    def __init__(self, fname, header, content):
-        self.fname = fname
-        self.content = content
-        self.header = dict()
+    def __init__(self, *args, **kwargs):
 
-        # set all header keys into lowercaps
-        for key in header:
-            self.header[key.lower()] = header[key]
+        super(BlogItem, self).__init__(*args, **kwargs)
 
-        self.check_required()
-        self.get_markup()
-        self.process_into_list()
-        self.process_time()
+        # check if all required fields are present
+        self.check_required(reqs=config.BLOG.REQUIRED)
+        # determine content markup language
+        self.get_markup(markup_dict=_MARKUP)
+        # get datetime object from time strings
+        self.process_time(time_format=config.SITE.CONTENT_DATETIME_FORMAT)
+        # transform strings into list
+        self.process_into_list(fields=['tags', 'categories'], sep=', ')
 
-        print self.fname
+        print self.id
         print self.header
-
-    def check_required(self):
-        """Check if all the required header fields are present.
-        """
-        for req in config.BLOG.REQUIRED:
-            if not req in self.header:
-                raise ContentError(\
-                        "Required header field '%s' is missing in '%s'" % \
-                        (req, self.fname))
-
-    def process_into_list(self, fields=['tags', 'categories'], sep=', '):
-        """Transforms a comma-separated tags or categories string into a list.
-
-        Arguments:
-        fields: list of fields to transform into list
-        sep: field subitem separator
-        """
-        for field in fields:
-            if field in self.header:
-                self.header[field] = filter(None, self.header[field].split(sep))
-
-    def process_time(self):
-        """Transforms time string into a datetime object.
-        """
-        if 'time' in self.header:
-            self.header['time'] = datetime.strptime(self.header['time'], \
-                    config.SITE.CONTENT_DATETIME_FORMAT)
-
-    def get_markup(self, markup_map=_MARKUP):
-        """Sets the markup language into a header key-value pair.
-
-        markup_map: dictionary with file extensions as keys and
-            their corresponding markup language as values
-        """
-        if 'markup' not in self.header:
-            ext = os.path.splitext(self.fname)[1]
-            if ext in markup_map:
-                self.header['markup'] = _MARKUP[ext]
-            else:
-                raise ContentError("Could not determine markup of '%s'" % \
-                        self.fname)
