@@ -35,14 +35,6 @@ SITE = Config(
     # Engines used in generating the site
     # Defaults to none
     ENGINES = [],
-
-    # Date and time format used in site content headers
-    # Used for parsing the headers
-    # Default is e.g. "2004-03-13 22:10"
-    CONTENT_DATETIME_FORMAT = "%Y/%m/%d %H:%M",
-    # Date and time format displayed on the generated site
-    # Default is e.g. "Saturday, 13 March 2004"
-    DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
 )
 
 
@@ -54,6 +46,15 @@ BLOG = Config(
 
     # Blog post permalink, relative to blog URL
     PERMALINK = "{%Y}/{%m}/{%d}/{slug}",
+
+    # Date and time format used in blog content headers
+    # Used for parsing the headers
+    # Default is e.g. "2004-03-13 22:10"
+    CONTENT_DATETIME_FORMAT = "%Y/%m/%d %H:%M",
+
+    # Date and time format displayed on the generated site
+    # Default is e.g. "Saturday, 13 March 2004"
+    DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
 
     # Blog posts author, can be overwritten in individual blog posts
     AUTHOR = "",
@@ -75,8 +76,13 @@ BLOG = Config(
     # Sort order for paginated posts display
     # Valid options are 'date', 'title', 'category', 'author'
     # Default order is A-Z (for alphabets) and present-past (for dates)
-    # To reverse order just add '-' in front, e.g. '-date'
-    SORT = ('date', 'title', 'category', 'author', ),
+    # To reverse order just add '-' in front, e.g. '-time'
+    SORT = ('time', 'title', 'category', 'author', ),
+
+    # Protected properties
+    # These properties must not be defined by any individual blog post header,
+    # since they are used internally
+    PROTECTED = ('id', 'content', ),
 
     # Required properties
     # These properties must be defined in each individual blog post header

@@ -48,6 +48,8 @@ class BlogItem(BaseItem):
             if not isinstance(header, dict):
                 raise ParseError("Header format unrecognizable in %s." \
                         % fname)
+            # check if no protected header fields is overwritten
+            self.check_protected(prot=config.BLOG.PROTECTED, header=header)
 
             # set blog item file contents as attributes
             for field in header:
@@ -60,7 +62,7 @@ class BlogItem(BaseItem):
         # determine content markup language
         self.get_markup(markup_dict=_MARKUP)
         # get datetime object from time strings
-        self.process_time(fmt=config.SITE.CONTENT_DATETIME_FORMAT)
+        self.process_time(fmt=config.BLOG.CONTENT_DATETIME_FORMAT)
         # transform strings into list
         self.process_into_list(fields=['tags', 'categories'], sep=', ')
 
