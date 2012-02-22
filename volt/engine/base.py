@@ -6,8 +6,6 @@ import os
 from collections import OrderedDict
 from datetime import datetime
 
-import yaml
-
 from volt import ConfigError, ContentError, ParseError
 from volt.config import config
 
@@ -88,17 +86,17 @@ class BaseItem(object):
         for field in header:
             self.header[field.lower()] = header[field]
 
-    def check_required(self, reqs):
+    def check_required(self, req):
         """Check if all the required header fields are present.
 
         Arguments:
-        reqs: iterable that contains required header fields
+        req: iterable that contains required header fields
         """
-        for req in reqs:
-            if not req in self.header:
+        for field in req:
+            if not field in self.header:
                 raise ContentError(\
-                        "Required header field '%s' is missing in '%s'" % \
-                        (req, self.id))
+                        "Required header field '%s' is missing in '%s'." % \
+                        (field, self.id))
 
     def process_into_list(self, fields=['tags', 'categories'], sep=', '):
         """Transforms a comma-separated tags or categories string into a list.
@@ -111,15 +109,14 @@ class BaseItem(object):
             if field in self.header:
                 self.header[field] = filter(None, self.header[field].split(sep))
 
-    def process_time(self, time_format):
+    def process_time(self, fmt):
         """Transforms time string into a datetime object.
 
         Arguments:
-        time_format: time format string
+        fmt: time format string
         """
         if 'time' in self.header:
-            self.header['time'] = datetime.strptime(self.header['time'], \
-                    time_format)
+            self.header['time'] = datetime.strptime(self.header['time'], fmt)
 
     def get_markup(self, markup_dict):
         """Sets the markup language into a header key-value pair.
@@ -135,3 +132,7 @@ class BaseItem(object):
             else:
                 raise ContentError("Could not determine markup of '%s'" % \
                         self.id)
+        self.header['markup'] = self.header['markup'].lower()
+        if self.header['markup'] not in markup_dict.values():
+            raise ContentError("Markup language '%s' is not supported." % \
+                    self.header['markup'])

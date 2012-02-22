@@ -55,11 +55,11 @@ class BlogItem(BaseItem):
         super(BlogItem, self).__init__(*args, **kwargs)
 
         # check if all required fields are present
-        self.check_required(reqs=config.BLOG.REQUIRED)
+        self.check_required(req=config.BLOG.REQUIRED)
         # determine content markup language
         self.get_markup(markup_dict=_MARKUP)
         # get datetime object from time strings
-        self.process_time(time_format=config.SITE.CONTENT_DATETIME_FORMAT)
+        self.process_time(fmt=config.SITE.CONTENT_DATETIME_FORMAT)
         # transform strings into list
         self.process_into_list(fields=['tags', 'categories'], sep=', ')
 
