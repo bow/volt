@@ -1,5 +1,11 @@
+# Volt base engine
+
+import codecs
+import glob
 import os
 from collections import OrderedDict
+
+import yaml
 
 from volt import ConfigError
 from volt.config import config
@@ -8,28 +14,35 @@ from volt.config.base import Config
 
 class BaseEngine(object):
 
-    def __init__(self, config=None, content_container=None, site_config=config.SITE):
+    def __init__(self, content_container=None):
         """Initializes the engine
 
         Arguments:
         config: Engine Config object from volt.config.config
         content_container: content container Class
         """
-        if not isinstance(config, Config):
-            raise TypeError("Engine must be initialized with a Config object.")
-
         if not issubclass(content_container, BaseItem):
             raise TypeError("Engine must be initialized with a content holder class.")
 
-        self.config = config
-        self.site = site_config
         self.ccontainer = content_container
-        self._contents = OrderedDict()
+        self.contents = OrderedDict()
+
+    def open_text(self, fname, mod='r', enc='utf-8'):
+        """Open text files with Unicode encoding.
+        """
+        return codecs.open(fname, mode=mod, encoding=enc)
+
+    def globdir(self, directory, pattern='*', iter=False):
+        """Returns glob or iglob results for a given directory.
+        """
+        pattern = os.path.join(directory, pattern)
+        if iter:
+            return glob.iglob(pattern)
+        return glob.glob(pattern)
 
     def parse(self):
         """Parses the content, returning BaseItem object.
         """
-        # this should be a generator
         raise NotImplementedError("Subclasses must implement parse().")
 
     def create_dirs(self):

@@ -39,7 +39,7 @@ SITE = Config(
     # Date and time format used in site content headers
     # Used for parsing the headers
     # Default is e.g. "2004-03-13 22:10"
-    CONTENT_DATETIME_FORMAT = "%Y-%m-%d %H:%M",
+    CONTENT_DATETIME_FORMAT = "%Y/%m/%d %H:%M",
     # Date and time format displayed on the generated site
     # Default is e.g. "Saturday, 13 March 2004"
     DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",

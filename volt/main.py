@@ -74,8 +74,7 @@ def run_gen():
         except ImportError:
             eng_class = eval(eng_class_name)
             eng_item = eval(eng_item_name)
-        eng_conf = eval("config.%s" % e.upper())
-        eng_class(eng_conf, eng_item).run()
+        eng_class(eng_item).run()
 
 def run_init():
     """Starts a new Volt project.
