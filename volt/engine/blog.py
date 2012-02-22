@@ -16,9 +16,15 @@ class BlogEngine(BaseEngine):
     """
     
     def run(self):
-        self.parse(content_dir=config.BLOG.CONTENT_DIR)
+        self.parse(content_dir=config.BLOG.CONTENT_DIR, conf=config.BLOG)
 
-    def parse(self, content_dir):
+    def parse(self, content_dir, conf):
+        """Parses all files in a directory.
+
+        Arguments:
+        content_dir: directory containing files to be parsed
+        conf: Config object containing blog options
+        """
         # get absolute paths of content files
         content_dir = self.globdir(content_dir, iter=True)
         files = (x for x in content_dir if os.path.isfile(x))
@@ -28,15 +34,21 @@ class BlogEngine(BaseEngine):
 
         # parse each file and fill self.contents with BlogItem-s
         for fname in files:
-            self.items[fname] = self.item_class(fname, header_delim)
+            self.items[fname] = self.item_class(fname, header_delim, conf)
 
 
 class BlogItem(BaseItem):
     """Class representation of a single blog post.
     """
     
-    def __init__(self, fname, header_delim):
+    def __init__(self, fname, header_delim, conf):
+        """Initializes BlogItem.
 
+        Arguments:
+        fname: blog post filename
+        header_delim: compiled regex pattern for header parsing
+        conf: Config object containing blog options
+        """
         self.id = fname
 
         with self.open_text(self.id) as source:
@@ -49,7 +61,7 @@ class BlogItem(BaseItem):
                 raise ParseError("Header format unrecognizable in %s." \
                         % fname)
             # check if no protected header fields is overwritten
-            self.check_protected(prot=config.BLOG.PROTECTED, header=header)
+            self.check_protected(prot=conf.PROTECTED, header=header)
 
             # set blog item file contents as attributes
             for field in header:
@@ -58,11 +70,11 @@ class BlogItem(BaseItem):
             self.content = read.pop(0).strip()
 
         # check if all required fields are present
-        self.check_required(req=config.BLOG.REQUIRED)
+        self.check_required(req=conf.REQUIRED)
         # determine content markup language
         self.get_markup(markup_dict=_MARKUP)
         # get datetime object from time strings
-        self.process_time(fmt=config.BLOG.CONTENT_DATETIME_FORMAT)
+        self.process_time(fmt=conf.CONTENT_DATETIME_FORMAT)
         # transform strings into list
         self.process_into_list(fields=['tags', 'categories'], sep=', ')
 
