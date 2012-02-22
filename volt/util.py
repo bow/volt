@@ -8,21 +8,12 @@ from functools import partial
 from volt.config import config
 
 
-def volt_path(filepath):
-    """Returns the absolute path of a file / directory in a Volt root directory
-
-    Arguments:
-    filepath: relative path of the file / directory
-    """
-    return os.path.join(os.path.abspath(config.root, filepath))
-
-def is_valid_root(dir):
-    """Returns True if the current directory is a valid Volt root directory.
-
-    Checks for 'settings.py' and 'site' directory.
-    """
-    valid_flags = [os.path.join(dir, x) for x in ['settings.py', 'site']]
-    return all([os.path.exists(x) for x in valid_flags])
+_MARKUP = { '.md': 'markdown',
+            '.markdown': 'markdown',
+            '.rst': 'rst',
+            '.textile': 'textile',
+            '.html': 'html',
+          }
 
 def show_info(text, c='grey', w='normal'):
     """Colors the text.
