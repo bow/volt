@@ -14,7 +14,7 @@ class TestConfig(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
         self.user_conf = os.path.join(self.test_dir, 'fixtures/project/voltconf.py')
-        self.default_conf = 'volt.test.fixtures.default'
+        self.default_conf = 'volt.test.fixtures.config.default'
         self.config = Session(self.default_conf, self.user_conf)
 
     def tearDown(self):
