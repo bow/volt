@@ -68,6 +68,7 @@ def run_gen():
         eng_item_name = "%sItem" % e.capitalize()
         # try import engines in user volt project directory first
         try:
+            sys.path.append(os.path.join(config.root, 'engine'))
             eng_mod = __import__("engine.%s" % e, fromlist=[1])
             eng_class = getattr(eng_mod, eng_class_name)
             eng_item = getattr(eng_mod, eng_item_name)
