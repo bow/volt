@@ -12,7 +12,7 @@ from volt.config import config
 
 class BaseEngine(object):
 
-    def __init__(self, content_container=None):
+    def __init__(self, item_class=None):
         """Initializes the engine
 
         Arguments:
@@ -21,13 +21,8 @@ class BaseEngine(object):
         if not issubclass(content_container, BaseItem):
             raise TypeError("Engine must be initialized with a content container class.")
 
-        self.ccontainer = content_container
-        self.contents = OrderedDict()
-
-    def open_text(self, fname, mod='r', enc='utf-8'):
-        """Open text files with Unicode encoding.
-        """
-        return codecs.open(fname, mode=mod, encoding=enc)
+        self.item_class = item_class
+        self.items = OrderedDict()
 
     def globdir(self, directory, pattern='*', iter=False):
         """Returns glob or iglob results for a given directory.
@@ -70,21 +65,15 @@ class BaseEngine(object):
 
 class BaseItem(object):
 
-    def __init__(self, id, header, content):
-        """Initializes item object.
+    def open_text(self, fname, mod='r', enc='utf-8'):
+        """Open text files with Unicode encoding.
 
         Arguments:
-        id: resource identifier, e.g. filename
-        header: dictionary of parsed header contents
-        content: resource content
+        fname: file name to open
+        mod: file mode
+        enc: file encoding
         """
-        self.id = id
-        self.content = content
-        self.header = dict()
-
-        # set all header fields into lowercaps
-        for field in header:
-            self.header[field.lower()] = header[field]
+        return codecs.open(fname, mode=mod, encoding=enc)
 
     def check_required(self, req):
         """Check if all the required header fields are present.
@@ -93,7 +82,7 @@ class BaseItem(object):
         req: iterable that contains required header fields
         """
         for field in req:
-            if not field in self.header:
+            if not hasattr(self, field):
                 raise ContentError(\
                         "Required header field '%s' is missing in '%s'." % \
                         (field, self.id))
@@ -106,8 +95,9 @@ class BaseItem(object):
         sep: field subitem separator
         """
         for field in fields:
-            if field in self.header:
-                self.header[field] = filter(None, self.header[field].split(sep))
+            if hasattr(self, field):
+                setattr(self, field, filter(None, \
+                        getattr(self, field).strip().split(sep)))
 
     def process_time(self, fmt):
         """Transforms time string into a datetime object.
@@ -115,8 +105,9 @@ class BaseItem(object):
         Arguments:
         fmt: time format string
         """
-        if 'time' in self.header:
-            self.header['time'] = datetime.strptime(self.header['time'], fmt)
+        if hasattr(self, 'time'):
+            str_time = getattr(self, 'time')
+            setattr(self, 'time', datetime.strptime(str_time, fmt))
 
     def get_markup(self, markup_dict):
         """Sets the markup language into a header key-value pair.
@@ -125,14 +116,14 @@ class BaseItem(object):
         markup_dict: dictionary with file extensions as keys and
             their corresponding markup language as values
         """
-        if 'markup' not in self.header:
+        if not hasattr(self, 'markup'):
             ext = os.path.splitext(self.id)[1]
-            if ext in markup_dict:
-                self.header['markup'] = markup_dict[ext]
-            else:
+            try:
+                setattr(self, 'markup', markup_dict[ext])
+            except:
                 raise ContentError("Could not determine markup of '%s'" % \
-                        self.id)
-        self.header['markup'] = self.header['markup'].lower()
-        if self.header['markup'] not in markup_dict.values():
+                            self.id)
+        setattr(self, 'markup', getattr(self, 'markup').lower())
+        if getattr(self, 'markup') not in markup_dict.values():
             raise ContentError("Markup language '%s' is not supported." % \
-                    self.header['markup'])
+                    getattr(self, 'markup'))

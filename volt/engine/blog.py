@@ -24,35 +24,36 @@ class BlogEngine(BaseEngine):
         files = (x for x in content_dir if os.path.isfile(x))
 
         # set pattern for header delimiter
-        pattern = re.compile(r'^---$', re.MULTILINE)
+        header_delim = re.compile(r'^---$', re.MULTILINE)
 
         # parse each file and fill self.contents with BlogItem-s
         for fname in files:
-            with self.open_text(fname) as source:
-                # open file and remove whitespaces
-                read = filter(None, pattern.split(source.read()))
-
-                # header should be parsed by yaml into dict
-                header = yaml.load(read.pop(0))
-                if not isinstance(header, dict):
-                    raise ParseError("Header format unrecognizable in %s." \
-                            % fname)
-
-                # content is everything else after header
-                content = read.pop(0).strip()
-            
-                # store results in an Item class in self.contents
-                # with filenames as the key
-                self.contents[fname] = self.ccontainer(fname, header, content)
+            self.items[fname] = self.item_class(fname, header_delim)
 
 
 class BlogItem(BaseItem):
     """Class representation of a single blog post.
     """
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, fname, header_delim):
 
-        super(BlogItem, self).__init__(*args, **kwargs)
+        self.id = fname
+
+        with self.open_text(self.id) as source:
+            # open file and remove whitespaces
+            read = filter(None, header_delim.split(source.read()))
+
+            # header should be parsed by yaml into dict
+            header = yaml.load(read.pop(0))
+            if not isinstance(header, dict):
+                raise ParseError("Header format unrecognizable in %s." \
+                        % fname)
+
+            # set blog item file contents as attributes
+            for field in header:
+                setattr(self, field.lower(), header[field])
+            # content is everything else after header
+            self.content = read.pop(0).strip()
 
         # check if all required fields are present
         self.check_required(req=config.BLOG.REQUIRED)
@@ -64,4 +65,4 @@ class BlogItem(BaseItem):
         self.process_into_list(fields=['tags', 'categories'], sep=', ')
 
         print self.id
-        print self.header
+        print self.__dict__
