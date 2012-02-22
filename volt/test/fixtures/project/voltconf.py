@@ -1,5 +1,7 @@
 # Volt default configurations file fixture
 
+import os
+
 from volt.config.base import Config
 
 
@@ -9,5 +11,9 @@ VOLT = Config(
 
 SITE = Config(
     TITLE = "Title in user",
-    ENGINES = ['blog']
+    ENGINES = ['blog'],
+)
+
+BLOG = Config(
+    CUSTOM_DIR = os.path.join(VOLT.CUSTOM_DIR, "user_join"),
 )

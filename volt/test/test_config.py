@@ -13,9 +13,11 @@ class TestConfig(unittest.TestCase):
 
     def setUp(self):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        self.user_conf = os.path.join(self.test_dir, 'fixtures/project/voltconf.py')
+        self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
+        self.user_conf = os.path.join(self.project_dir, 'voltconf.py')
         self.default_conf = 'volt.test.fixtures.config.default'
-        self.config = Session(self.default_conf, self.user_conf)
+        self.config = Session(default_conf=self.default_conf, \
+                start_dir=self.project_dir)
 
     def tearDown(self):
         # destroy default config so default values are reset
@@ -29,16 +31,19 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.SITE.DESC, 'Desc in default')
         # test if user-defined path resolution works
         self.assertEqual(self.config.VOLT.CUSTOM_DIR, \
-                os.path.join(self.config.root, "custom_dir_user"))
+                os.path.join(self.project_dir, 'custom_dir_user'))
+        self.assertEqual(self.config.BLOG.CUSTOM_DIR, \
+                os.path.join(self.project_dir, 'custom_dir_user', 'user_join'))
         # test for lazy loading flag
         self.assertTrue(self.config._loaded)
 
     def test_get_root(self):
         # test if exception is properly raised
         self.assertRaises(ConfigError, Session().get_root, self.test_dir)
-        # test if root path resolution works properly
-        self.assertEqual(self.config.root, os.path.join(self.test_dir, \
-                'fixtures/project'))
+        # test if root path resolution works properly for all dirs in project dir
+        self.assertEqual(self.config.root, self.project_dir)
+        self.assertEqual(self.config.root, Session().get_root(\
+                os.path.join(self.project_dir, "content")))
 
     def test_import_conf(self):
         # load config first since it's a lazy object
