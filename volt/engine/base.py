@@ -18,7 +18,7 @@ class BaseEngine(object):
         Arguments:
         content_container: content container class subclassing BaseItem
         """
-        if not issubclass(content_container, BaseItem):
+        if not issubclass(item_class, BaseItem):
             raise TypeError("Engine must be initialized with a content container class.")
 
         self.item_class = item_class
