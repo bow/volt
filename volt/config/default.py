@@ -42,7 +42,7 @@ SITE = Config(
 BLOG = Config(
 
     # URL for all blog content relative to root URL
-    URL = "blog",
+    URL = "/blog",
 
     # Blog post permalink, relative to blog URL
     PERMALINK = "{%Y}/{%m}/{%d}/{slug}",
@@ -99,7 +99,7 @@ BLOG = Config(
 PAGE = Config(
 
     # URL for all page content relative to root URL
-    URL = "page",
+    URL = "/page",
 
     # Page permalink, relative to page URL
     PERMALINK = "{slug}",
@@ -120,7 +120,7 @@ PAGE = Config(
 COLLECTION = Config(
 
     # URL for all collection content relative to root URL
-    URL = "collection",
+    URL = "/collection",
 
     # Collection permalink, relative to collection URL
     PERMALINK = "{slug}",
