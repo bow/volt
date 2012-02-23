@@ -34,6 +34,8 @@ class TestConfig(unittest.TestCase):
                 os.path.join(self.project_dir, 'custom_dir_user'))
         self.assertEqual(self.config.BLOG.CUSTOM_DIR, \
                 os.path.join(self.project_dir, 'custom_dir_user', 'user_join'))
+        # test for user-only defined Config
+        self.assertEqual(self.config.ADDON.TITLE, 'Only in user')
         # test for lazy loading flag
         self.assertTrue(self.config._loaded)
 

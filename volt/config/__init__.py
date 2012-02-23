@@ -37,15 +37,25 @@ class Session(object):
         # import user-defined configs as a module object
         user = self.import_conf(self._default.VOLT.USER_CONF, path=True)
 
-        # load default config first, then overwrite by user config
-        default_conf_items = (x for x in dir(self._default) if \
-                isinstance(getattr(self._default, x), Config))
-        for item in default_conf_items:
-            obj = getattr(self._default, item)
-            # if the user-defined configs has a Config object with a
-            # same item, merge together and overwrite default config
-            if hasattr(user, item):
-                obj.override(getattr(user, item))
+        # process default and user-defined Configs
+        default_conf_items = [x for x in dir(self._default) if \
+                isinstance(getattr(self._default, x), Config)]
+        user_conf_items = [x for x in dir(user) if isinstance(\
+                getattr(user, x), Config) and x not in default_conf_items]
+
+        # Configs to process is everything in default + anything in user
+        # not present in default
+        conf_items = default_conf_items + user_conf_items
+
+        for item in conf_items:
+            # try load from default first and override if present in user
+            # otherwise load from user
+            try:
+                obj = getattr(self._default, item)
+                if hasattr(user, item):
+                    obj.override(getattr(user, item))
+            except:
+                obj = getattr(user, item)
             # set directory + file items to absolute paths
             # directory + file items has 'DIR' + 'FILE' in their items
             paths = (x for x in obj if x.endswith('_FILE') or x.endswith('_DIR'))

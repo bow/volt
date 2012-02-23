@@ -17,3 +17,7 @@ SITE = Config(
 BLOG = Config(
     CUSTOM_DIR = os.path.join(VOLT.CUSTOM_DIR, "user_join"),
 )
+
+ADDON = Config(
+    TITLE = "Only in user",
+)
