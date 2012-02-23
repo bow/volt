@@ -2,11 +2,14 @@
 
 # tests for volt.engine
 
+import glob
 import os
+import re
 import unittest
 from datetime import datetime
 
 from volt import ConfigError, ContentError, ParseError
+from volt.config import Session
 from volt.engine.base import BaseEngine, BaseItem, MARKUP
 from volt.engine.blog import BlogEngine, BlogItem
 
@@ -89,13 +92,22 @@ class TestBlogEngine(unittest.TestCase):
     def tearDown(self):
         del self.engine
 
-    def test_parse(self):
-        # test if blog post is parsed correctly
-        content_dir = os.path.join(self.content_dir, '01')
-        fname = os.path.join(content_dir, '01_pass.md')
-        self.engine.parse(content_dir, self.conf)
-        item_obj = self.engine.items[fname]
-        # actual tests
+
+class TestBlogItem(unittest.TestCase):
+
+    def setUp(self):
+        # set up dirs and Session
+        self.test_dir = os.path.dirname(os.path.abspath(__file__))
+        self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
+        self.content_dir = os.path.join(self.project_dir, 'content', 'blog')
+        default_conf = 'volt.test.fixtures.config.default'
+        self.config = Session(default_conf, self.project_dir).BLOG
+        self.delim = re.compile(r'^---$', re.MULTILINE)
+
+    def test_init(self):
+        # test if blog post is processed correctly
+        fname = glob.glob(os.path.join(self.content_dir, 'pass', '*'))[0]
+        item_obj = BlogItem(fname, self.delim, self.config)
         self.assertEqual(item_obj.id, fname)
         self.assertEqual(item_obj.time, datetime(2004, 3, 13, 22, 10))
         self.assertEqual(item_obj.title, 'Jabberwock')
@@ -104,16 +116,16 @@ class TestBlogEngine(unittest.TestCase):
         content = u'Should be parsed correctly.\n\nHey look, unicode: \u042d\u0439, \u0441\u043c\u043e\u0442\u0440\u0438, \u042e\u043d\u0438\u043a\u043e\u0434'
         self.assertEqual(item_obj.content, content)
 
-    def test_parse_header_missing(self):
-        content_dir = os.path.join(self.content_dir, '02')
-        self.assertRaises(ParseError, self.engine.parse, content_dir, self.conf)
+    def test_init_header_missing(self):
+        fname = glob.glob(os.path.join(self.content_dir, 'fail', '02*'))[0]
+        self.assertRaises(ParseError, BlogItem, fname, self.delim, self.config)
 
-    def test_parse_header_typo(self):
+    def test_init_header_typo(self):
         from yaml import scanner
-        content_dir = os.path.join(self.content_dir, '03')
-        self.assertRaises(scanner.ScannerError, self.engine.parse, content_dir, self.conf)
+        fname = glob.glob(os.path.join(self.content_dir, 'fail', '03*'))[0]
+        self.assertRaises(scanner.ScannerError, BlogItem, fname, self.delim, self.config)
 
-    def test_parse_markup_missing(self):
-        content_dir = os.path.join(self.content_dir, '04')
-        fname = os.path.join(content_dir, '04_markup-missing.post')
-        self.assertRaises(ContentError, self.engine.parse, content_dir, self.conf)
+    def test_init_markup_missing(self):
+        fname = glob.glob(os.path.join(self.content_dir, 'fail', '04*'))[0]
+        self.assertRaises(ContentError, BlogItem, fname, self.delim, self.config)
+
