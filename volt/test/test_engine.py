@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime
 
 from volt import ConfigError, ContentError, ParseError
-from volt.engine.base import BaseEngine, BaseItem
+from volt.engine.base import BaseEngine, BaseItem, MARKUP
 from volt.engine.blog import BlogEngine, BlogItem
 
 
@@ -67,12 +67,11 @@ class TestBaseItem(unittest.TestCase):
 
     def test_get_markup(self):
         # test if markup is set correctly
-        from volt.util import _MARKUP
-        self.item.get_markup(_MARKUP)
+        self.item.get_markup(MARKUP)
         self.assertEqual(self.item.markup, 'markdown')
         # test if exception is raised for unlisted markup
         setattr(self.item, 'markup', 'xml')
-        self.assertRaises(ContentError, self.item.get_markup, _MARKUP)
+        self.assertRaises(ContentError, self.item.get_markup, MARKUP)
 
 
 class TestBlogEngine(unittest.TestCase):

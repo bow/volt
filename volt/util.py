@@ -8,13 +8,6 @@ from functools import partial
 from volt.config import config
 
 
-_MARKUP = { '.md': 'markdown',
-            '.markdown': 'markdown',
-            '.rst': 'rst',
-            '.textile': 'textile',
-            '.html': 'html',
-          }
-
 def show_info(text, c='grey', w='normal'):
     """Colors the text.
     """

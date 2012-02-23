@@ -10,6 +10,11 @@ from volt import ConfigError, ContentError, ParseError
 from volt.config import config
 
 
+MARKUP = { '.md': 'markdown',
+           '.markdown': 'markdown',
+         }
+
+
 class BaseEngine(object):
 
     def __init__(self, item_class=None):

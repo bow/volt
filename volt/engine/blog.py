@@ -7,8 +7,7 @@ import yaml
 
 from volt import ParseError
 from volt.config import config
-from volt.engine.base import BaseEngine, BaseItem
-from volt.util import _MARKUP
+from volt.engine.base import BaseEngine, BaseItem, MARKUP
 
 
 class BlogEngine(BaseEngine):
@@ -72,7 +71,7 @@ class BlogItem(BaseItem):
         # check if all required fields are present
         self.check_required(conf.REQUIRED)
         # determine content markup language
-        self.get_markup(_MARKUP)
+        self.get_markup(MARKUP)
         # get datetime object from time strings
         self.process_time(conf.CONTENT_DATETIME_FORMAT)
         # transform strings into list
