@@ -87,6 +87,11 @@ BLOG = Config(
     # Required properties
     # These properties must be defined in each individual blog post header
     REQUIRED = ('title', 'time', ),
+
+    # Fields that would be transformed from string into list objects using
+    # LIST_SEP as a separator
+    FIELDS_AS_LIST = ('tags', 'categories', ),
+    LIST_SEP = ', '
 )
 
 

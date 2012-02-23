@@ -32,4 +32,6 @@ BLOG = Config(
     SORT = ('time', 'title', 'category', 'author', ),
     PROTECTED = ('id', 'content', ),
     REQUIRED = ('title', 'time', ),
+    FIELDS_AS_LIST = ('tags', 'categories', ),
+    LIST_SEP = ', '
 )

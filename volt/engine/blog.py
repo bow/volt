@@ -70,13 +70,13 @@ class BlogItem(BaseItem):
             self.content = read.pop(0).strip()
 
         # check if all required fields are present
-        self.check_required(req=conf.REQUIRED)
+        self.check_required(conf.REQUIRED)
         # determine content markup language
-        self.get_markup(markup_dict=_MARKUP)
+        self.get_markup(_MARKUP)
         # get datetime object from time strings
-        self.process_time(fmt=conf.CONTENT_DATETIME_FORMAT)
+        self.process_time(conf.CONTENT_DATETIME_FORMAT)
         # transform strings into list
-        self.process_into_list(fields=['tags', 'categories'], sep=', ')
+        self.process_into_list(conf.FIELDS_AS_LIST, conf.LIST_SEP)
 
         print self.id
         print self.__dict__

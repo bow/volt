@@ -100,7 +100,7 @@ class BaseItem(object):
                         "Required header field '%s' is missing in '%s'." % \
                         (field, self.id))
 
-    def process_into_list(self, fields=['tags', 'categories'], sep=', '):
+    def process_into_list(self, fields, sep):
         """Transforms a comma-separated tags or categories string into a list.
 
         Arguments:
