@@ -145,3 +145,30 @@ class BaseItem(object):
         if getattr(self, 'markup') not in markup_dict.values():
             raise ContentError("Markup language '%s' is not supported." % \
                     getattr(self, 'markup'))
+
+    def set_slug(self, string):
+        """Transforms the given string into a slug and set it as a slug instance attribute.
+
+        Arguments:
+        string: string to transform into slug
+        """
+        string = string.strip()
+
+        # remove english articles
+        arts = ('A ', ' a ', 'An ', ' an ', )
+        for art in arts:
+            if art in string:
+                string = string.replace(art, '')
+
+        for char in (' - ', '  ', ' ', '_', ):
+            if char in string:
+                string = string.replace(char, '-')
+
+        bad_chars = '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~'
+        for ugh in bad_chars:
+            if ugh in string:
+                string = string.replace(ugh, '')
+        # warn if there are non-ascii chars
+        assert string.decode('utf8') == string
+
+        setattr(self, 'slug', string.lower())

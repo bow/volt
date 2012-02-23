@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 
 # tests for volt.engine
 
@@ -76,6 +77,16 @@ class TestBaseItem(unittest.TestCase):
         setattr(self.item, 'markup', 'xml')
         self.assertRaises(ContentError, self.item.get_markup, MARKUP)
 
+    def test_set_slug(self):
+        self.item.set_slug('What about the A* search algorithm?')
+        self.assertEqual(self.item.slug, 'what-about-the-a-search-algorithm')
+        self.item.set_slug('Kings of Convenience - Know How (feat. Feist)')
+        self.assertEqual(self.item.slug, 'kings-of-convenience-know-how-feat-feist')
+        self.item.set_slug('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest')
+        self.assertEqual(self.item.slug, 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
+        self.assertRaises(AssertionError, self.item.set_slug, 'Röyksopp - Eple')
+        self.assertRaises(AssertionError, self.item.set_slug, '宇多田ヒカル')
+
 
 class TestBlogEngine(unittest.TestCase):
 
@@ -115,6 +126,7 @@ class TestBlogItem(unittest.TestCase):
         self.assertIsNone(item_obj.empty)
         content = u'Should be parsed correctly.\n\nHey look, unicode: \u042d\u0439, \u0441\u043c\u043e\u0442\u0440\u0438, \u042e\u043d\u0438\u043a\u043e\u0434'
         self.assertEqual(item_obj.content, content)
+        self.assertEqual(item_obj.slug, 'jabberwock')
 
     def test_init_header_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'fail', '02*'))[0]

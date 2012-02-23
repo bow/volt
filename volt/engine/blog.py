@@ -76,6 +76,8 @@ class BlogItem(BaseItem):
         self.process_time(conf.CONTENT_DATETIME_FORMAT)
         # transform strings into list
         self.process_into_list(conf.FIELDS_AS_LIST, conf.LIST_SEP)
+        # set slug from title
+        self.set_slug(self.title)
 
         print self.id
         print self.__dict__
