@@ -78,6 +78,8 @@ class TestBaseItem(unittest.TestCase):
         self.assertRaises(ContentError, self.item.get_markup, MARKUP)
 
     def test_set_slug(self):
+        self.item.set_slug('Move along people, this is just a test')
+        self.assertEqual('move-along-people-this-is-just-test')
         self.item.set_slug('What about the A* search algorithm?')
         self.assertEqual(self.item.slug, 'what-about-the-a-search-algorithm')
         self.item.set_slug('Kings of Convenience - Know How (feat. Feist)')
