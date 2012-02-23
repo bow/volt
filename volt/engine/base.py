@@ -155,12 +155,12 @@ class BaseItem(object):
         string = string.strip()
 
         # remove english articles
-        arts = ('A ', ' a ', 'An ', ' an ', )
+        arts = ('A ',  'An ', )
         for art in arts:
             if art in string:
                 string = string.replace(art, '')
 
-        for char in (' - ', '  ', ' ', '_', ):
+        for char in (' - ', ' a ', ' an ', '  ', ' ', '_', ):
             if char in string:
                 string = string.replace(char, '-')
 
