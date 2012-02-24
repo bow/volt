@@ -156,5 +156,5 @@ class TestBlogItem(unittest.TestCase):
 
     def test_init_markup_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'fail', '04*'))[0]
-        self.assertRaises(ContentError, BlogItem, fname, self.delim, self.config)
+        self.assertEqual(BlogItem(fname, self.delim, self.config).markup, 'html')
 

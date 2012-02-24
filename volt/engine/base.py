@@ -11,7 +11,8 @@ from volt import ConfigError, ContentError, ParseError
 from volt.config import config
 
 
-MARKUP = { '.md': 'markdown',
+MARKUP = { '.html': 'html',
+           '.md': 'markdown',
            '.markdown': 'markdown',
          }
 
@@ -140,8 +141,7 @@ class BaseItem(object):
             try:
                 setattr(self, 'markup', markup_dict[ext])
             except:
-                raise ContentError("Could not determine markup of '%s'" % \
-                            self.id)
+                setattr(self, 'markup', 'html')
         setattr(self, 'markup', getattr(self, 'markup').lower())
         if getattr(self, 'markup') not in markup_dict.values():
             raise ContentError("Markup language '%s' is not supported." % \
