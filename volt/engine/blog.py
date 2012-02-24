@@ -67,6 +67,8 @@ class BlogUnit(BaseUnit):
                             header[field], conf.CONTENT_DATETIME_FORMAT)
                 if field in conf.FIELDS_AS_LIST:
                     header[field] = self.as_list(header[field], conf.LIST_SEP)
+                if field == 'slug':
+                    header[field] = self.slugify(header[field])
                 setattr(self, field.lower(), header[field])
             # content is everything else after header
             self.content = read.pop(0).strip()
@@ -75,7 +77,9 @@ class BlogUnit(BaseUnit):
         self.check_required(conf.REQUIRED)
 
         # set other attributes
-        self.slug = self.slugify(self.title)
+        # if slug is not set in header, set it now
+        if not hasattr(self, 'slug'):
+            self.slug = self.slugify(self.title)
         self.permalink = self.permify(conf.PERMALINK, conf.URL)
         self.set_markup(MARKUP)
 
