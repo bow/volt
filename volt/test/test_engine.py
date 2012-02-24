@@ -52,6 +52,11 @@ class TestBaseUnit(unittest.TestCase):
         req = ('title', 'surprise', )
         self.assertRaises(ContentError, self.unit.check_required, req)
 
+    def test_check_protected(self):
+        # test protected fields check
+        prot = ('cats', )
+        self.assertRaises(ContentError, self.unit.check_protected, 'cats', prot)
+
     def test_process_into_list(self):
         # test if specified fields are processed into lists
         tags = ['ripley', 'ash', 'kane']
@@ -154,3 +159,6 @@ class TestBlogUnit(unittest.TestCase):
         fname = glob.glob(os.path.join(self.content_dir, 'fail', '04*'))[0]
         self.assertEqual(BlogUnit(fname, self.delim, self.config).markup, 'html')
 
+    def test_init_protected_set(self):
+        fname = glob.glob(os.path.join(self.content_dir, 'fail', '05*'))[0]
+        self.assertRaises(ContentError, BlogUnit, fname, self.delim, self.config)

@@ -60,11 +60,10 @@ class BlogUnit(BaseUnit):
             if not isinstance(header, dict):
                 raise ParseError("Header format unrecognizable in %s." \
                         % fname)
-            # check if no protected header fields is overwritten
-            self.check_protected(prot=conf.PROTECTED, header=header)
 
             # set blog unit file contents as attributes
             for field in header:
+                self.check_protected(field, conf.PROTECTED)
                 if field == 'time':
                     header[field] = datetime.strptime(\
                             header[field], conf.CONTENT_DATETIME_FORMAT)

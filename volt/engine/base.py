@@ -82,18 +82,17 @@ class BaseUnit(object):
         """
         return codecs.open(fname, mode=mod, encoding=enc)
 
-    def check_protected(self, prot, header):
-        """Check if none of the defined header fields are in the protected list.
+    def check_protected(self, field, prot):
+        """Raises ContentError if field is present in protected.
         
         Arguments:
-        prot: iterable that contains protected header fields
-        header: dictionary resulting from header parsing
+        field: string to check against prot
+        prot: list containing protected fields
         """
-        for field in prot:
-            if prot in header:
-                raise ContentError(\
-                        "'%s' should not define the protected header field '%s'" % \
-                        (self.id, field))
+        if field in prot:
+            raise ContentError(\
+                    "'%s' should not define the protected header field '%s'" % \
+                    (self.id, field))
 
     def check_required(self, req):
         """Check if all the required header fields are present.
