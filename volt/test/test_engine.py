@@ -38,7 +38,6 @@ class TestBaseUnit(unittest.TestCase):
 
     def setUp(self):
         header = {'title': 'Logos',
-                  'time' : '2004/03/13 22:20',
                   'tags' : 'ripley, ash, kane    ',
                   'cats' : 'wickus;christopher;koobus;',
                  }
@@ -50,7 +49,7 @@ class TestBaseUnit(unittest.TestCase):
 
     def test_check_required(self):
         # test required fields check
-        req = ('title', 'time', 'surprise', )
+        req = ('title', 'surprise', )
         self.assertRaises(ContentError, self.unit.check_required, req)
 
     def test_process_into_list(self):
@@ -61,13 +60,6 @@ class TestBaseUnit(unittest.TestCase):
         cats = ['wickus', 'christopher', 'koobus']
         self.unit.process_into_list(['cats'], ';')
         self.assertEqual(self.unit.cats, cats)
-
-    def test_process_time(self):
-        # test time parsing
-        fmt = '%Y/%m/%d %H:%M'
-        self.unit.process_time(fmt)
-        time_obj = datetime(2004, 3, 13, 22, 20)
-        self.assertEqual(self.unit.time, time_obj)
 
     def test_get_markup(self):
         # test if markup is set correctly

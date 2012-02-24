@@ -119,16 +119,6 @@ class BaseUnit(object):
                 setattr(self, field, filter(None, \
                         getattr(self, field).strip().split(sep)))
 
-    def process_time(self, fmt):
-        """Transforms time string into a datetime object.
-
-        Arguments:
-        fmt: time format string
-        """
-        if hasattr(self, 'time'):
-            str_time = getattr(self, 'time')
-            setattr(self, 'time', datetime.strptime(str_time, fmt))
-
     def get_markup(self, markup_dict):
         """Sets the markup language into a header key-value pair.
 

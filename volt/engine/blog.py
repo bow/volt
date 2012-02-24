@@ -2,6 +2,7 @@
 
 import os
 import re
+from datetime import datetime
 
 import yaml
 
@@ -64,6 +65,9 @@ class BlogUnit(BaseUnit):
 
             # set blog unit file contents as attributes
             for field in header:
+                if field == 'time':
+                    header[field] = datetime.strptime(\
+                            header[field], conf.CONTENT_DATETIME_FORMAT)
                 setattr(self, field.lower(), header[field])
             # content is everything else after header
             self.content = read.pop(0).strip()
@@ -72,8 +76,6 @@ class BlogUnit(BaseUnit):
         self.check_required(conf.REQUIRED)
         # determine content markup language
         self.get_markup(MARKUP)
-        # get datetime object from time strings
-        self.process_time(conf.CONTENT_DATETIME_FORMAT)
         # transform strings into list
         self.process_into_list(conf.FIELDS_AS_LIST, conf.LIST_SEP)
         # set slug from title
