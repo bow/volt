@@ -61,13 +61,13 @@ class TestBaseUnit(unittest.TestCase):
         self.unit.process_into_list(['cats'], ';')
         self.assertEqual(self.unit.cats, cats)
 
-    def test_get_markup(self):
+    def test_set_markup(self):
         # test if markup is set correctly
-        self.unit.get_markup(MARKUP)
+        self.unit.set_markup(MARKUP)
         self.assertEqual(self.unit.markup, 'markdown')
         # test if exception is raised for unlisted markup
         setattr(self.unit, 'markup', 'xml')
-        self.assertRaises(ContentError, self.unit.get_markup, MARKUP)
+        self.assertRaises(ContentError, self.unit.set_markup, MARKUP)
 
     def test_set_slug(self):
         self.unit.set_slug('Move along people, this is just a test')

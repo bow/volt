@@ -75,7 +75,7 @@ class BlogUnit(BaseUnit):
         # check if all required fields are present
         self.check_required(conf.REQUIRED)
         # determine content markup language
-        self.get_markup(MARKUP)
+        self.set_markup(MARKUP)
         # transform strings into list
         self.process_into_list(conf.FIELDS_AS_LIST, conf.LIST_SEP)
         # set slug from title

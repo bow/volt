@@ -119,7 +119,7 @@ class BaseUnit(object):
                 setattr(self, field, filter(None, \
                         getattr(self, field).strip().split(sep)))
 
-    def get_markup(self, markup_dict):
+    def set_markup(self, markup_dict):
         """Sets the markup language into a header key-value pair.
 
         Arguments:
@@ -127,7 +127,7 @@ class BaseUnit(object):
             their corresponding markup language as values
         """
         if not hasattr(self, 'markup'):
-            ext = os.path.splitext(self.id)[1]
+            ext = os.path.splitext(self.id)[1].lower()
             try:
                 setattr(self, 'markup', markup_dict[ext])
             except:
