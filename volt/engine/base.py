@@ -7,6 +7,8 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 
+import yaml
+
 from volt import ConfigError, ContentError, ParseError
 from volt.config import config
 
@@ -81,6 +83,17 @@ class BaseUnit(object):
         enc: file encoding
         """
         return codecs.open(fname, mode=mod, encoding=enc)
+
+    def parse_yaml(self, string):
+        """Parses the yaml string.
+
+        Arguments:
+        string: yaml-formatted string
+
+        This is a thin wrapper for yaml.load, so it's more convenient
+        for subclassing xUnits to parse yaml contents.
+        """
+        return yaml.load(string)
 
     def check_protected(self, field, prot):
         """Raises ContentError if field is present in protected.
