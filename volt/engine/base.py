@@ -167,8 +167,8 @@ class BaseUnit(object):
 
         return string.lower()
 
-    def set_permalink(self, pattern, base_url=''):
-        """Sets permalink according to pattern
+    def permify(self, pattern, base_url=''):
+        """Returns permalink according to pattern
 
         Arguments:
         pattern: string replacement pattern
@@ -210,5 +210,5 @@ class BaseUnit(object):
                                 (self.id, cmp))
                     perms[i] = getattr(self, cmp)
 
-        url = '/'.join(filter(None, perms)).replace(' ', '')
-        setattr(self, 'permalink', url)
+        return '/'.join(filter(None, perms)).replace(' ', '')
+

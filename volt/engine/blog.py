@@ -74,15 +74,15 @@ class BlogUnit(BaseUnit):
 
         # set other attributes
         self.slug = self.slugify(self.title)
+        # set permalink
+        self.permalink = self.permify(conf.PERMALINK, conf.URL)
+        # determine content markup language
+        self.set_markup(MARKUP)
 
         # check if all required fields are present
         self.check_required(conf.REQUIRED)
-        # determine content markup language
-        self.set_markup(MARKUP)
         # transform strings into list
         self.process_into_list(conf.FIELDS_AS_LIST, conf.LIST_SEP)
-        # set permalink
-        self.set_permalink(conf.PERMALINK, conf.URL)
 
         print self.id
         print self.__dict__
