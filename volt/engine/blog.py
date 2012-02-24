@@ -58,7 +58,7 @@ class BlogUnit(BaseUnit):
             # header should be parsed by yaml into dict
             header = yaml.load(read.pop(0))
             if not isinstance(header, dict):
-                raise ParseError("Header format unrecognizable in %s." \
+                raise ParseError("Header format unrecognizable in '%s'." \
                         % fname)
 
             # set blog unit file contents as attributes
@@ -73,15 +73,13 @@ class BlogUnit(BaseUnit):
             # content is everything else after header
             self.content = read.pop(0).strip()
 
-        # set other attributes
-        self.slug = self.slugify(self.title)
-        # set permalink
-        self.permalink = self.permify(conf.PERMALINK, conf.URL)
-        # determine content markup language
-        self.set_markup(MARKUP)
-
         # check if all required fields are present
         self.check_required(conf.REQUIRED)
+
+        # set other attributes
+        self.slug = self.slugify(self.title)
+        self.permalink = self.permify(conf.PERMALINK, conf.URL)
+        self.set_markup(MARKUP)
 
         print self.id
         print self.__dict__

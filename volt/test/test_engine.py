@@ -37,14 +37,7 @@ class TestBaseEngine(unittest.TestCase):
 class TestBaseUnit(unittest.TestCase):
 
     def setUp(self):
-        header = {'title': 'Logos',
-                  'tags' : 'ripley, ash, kane    ',
-                  'cats' : 'wickus;christopher;koobus;',
-                 }
         self.unit = BaseUnit()
-        self.unit.content = 'Content'
-        for field in header:
-            setattr(self.unit, field, header[field])
         self.unit.id = '01.md'
 
     def test_check_required(self):
@@ -79,17 +72,17 @@ class TestBaseUnit(unittest.TestCase):
         self.assertEqual(slugify('Move along people, this is just a test'),
                 'move-along-people-this-is-just-test')
         self.assertEqual(slugify('What does it mean to say !&^#*&@$))*((&?'),
-                 'what-does-it-mean-to-say')
+                'what-does-it-mean-to-say')
         self.assertEqual(slugify('What about the A* search algorithm?'),
-                 'what-about-the-a-search-algorithm')
+                'what-about-the-a-search-algorithm')
         self.assertEqual(slugify('--This- is a bad -- -*&( ---___- title---'),
-                 'this-is-bad-title')
+                'this-is-bad-title')
         self.assertEqual(slugify("Hors d'oeuvre, a fully-loaded MP5, and an astronaut from Ann Arbor."),
-                 'hors-doeuvre-fully-loaded-mp5-and-astronaut-from-ann-arbor')
+                'hors-doeuvre-fully-loaded-mp5-and-astronaut-from-ann-arbor')
         self.assertEqual(slugify('Kings of Convenience - Know How (feat. Feist)'),
-                 'kings-of-convenience-know-how-feat-feist')
+                'kings-of-convenience-know-how-feat-feist')
         self.assertEqual(slugify('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest'),
-                 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
+                'journey-through-the-himalayan-mountains-part-1-unusual-guest')
         self.assertRaises(AssertionError, slugify, 'Röyksopp - Eple')
         self.assertRaises(AssertionError, slugify, '宇多田ヒカル')
         self.assertRaises(ContentError, slugify, '&**%&^%&$-')

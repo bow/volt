@@ -118,7 +118,7 @@ class BaseUnit(object):
         """Transforms a comma-separated tags or categories string into a list.
 
         Arguments:
-        fields: list of fields to transform into list
+        fields: string to transform into list
         sep: field subitem separator
         """
         return filter(None, field.strip().split(sep))
