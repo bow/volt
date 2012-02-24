@@ -3,6 +3,7 @@
 import codecs
 import glob
 import os
+import re
 from collections import OrderedDict
 from datetime import datetime
 
@@ -155,20 +156,23 @@ class BaseItem(object):
         string = string.strip()
 
         # remove english articles
-        arts = ('A ',  'An ', )
-        for art in arts:
-            if art in string:
-                string = string.replace(art, '')
+        string = re.sub('A\s|An\s', '', string)
 
-        for char in (' - ', ' a ', ' an ', '  ', ' ', '_', ):
-            if char in string:
-                string = string.replace(char, '-')
+        # replace spaces, etc with dash
+        string = re.sub(r'\s([A|a]n|[A|a])\s|_|\s+', '-', string)
 
-        bad_chars = '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~'
-        for ugh in bad_chars:
-            if ugh in string:
-                string = string.replace(ugh, '')
+        # remove bad chars
+        bad_chars = r'[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]'
+        string = re.sub(bad_chars, '', string)
         # warn if there are non-ascii chars
         assert string.decode('utf8') == string
+
+        # slug should not begin or end with dash or contain multiple dashes
+        string = re.sub(r'^-+|-+$', '', string)
+        string = re.sub(r'-+', '-', string)
+
+        # raise exception if slug results in an empty string
+        if not string:
+            raise ContentError("Slug for '%s' is an empty string." % self.id)
 
         setattr(self, 'slug', string.lower())

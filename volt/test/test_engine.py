@@ -79,15 +79,20 @@ class TestBaseItem(unittest.TestCase):
 
     def test_set_slug(self):
         self.item.set_slug('Move along people, this is just a test')
-        self.assertEqual('move-along-people-this-is-just-test')
+        self.assertEqual(self.item.slug, 'move-along-people-this-is-just-test')
+        self.item.set_slug('What does it mean to say !&^#*&@$))*((&?')
+        self.assertEqual(self.item.slug, 'what-does-it-mean-to-say')
         self.item.set_slug('What about the A* search algorithm?')
         self.assertEqual(self.item.slug, 'what-about-the-a-search-algorithm')
+        self.item.set_slug('--This- is a bad -- -*&( --- - title---')
+        self.assertEqual(self.item.slug, 'this-is-bad-title')
         self.item.set_slug('Kings of Convenience - Know How (feat. Feist)')
         self.assertEqual(self.item.slug, 'kings-of-convenience-know-how-feat-feist')
         self.item.set_slug('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest')
         self.assertEqual(self.item.slug, 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
         self.assertRaises(AssertionError, self.item.set_slug, 'Röyksopp - Eple')
         self.assertRaises(AssertionError, self.item.set_slug, '宇多田ヒカル')
+        self.assertRaises(ContentError, self.item.set_slug, '&**%&^%&$-')
 
 
 class TestBlogEngine(unittest.TestCase):
