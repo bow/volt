@@ -106,17 +106,14 @@ class BaseUnit(object):
                         "Required header field '%s' is missing in '%s'." % \
                         (field, self.id))
 
-    def process_into_list(self, fields, sep):
+    def as_list(self, field, sep):
         """Transforms a comma-separated tags or categories string into a list.
 
         Arguments:
         fields: list of fields to transform into list
         sep: field subitem separator
         """
-        for field in fields:
-            if hasattr(self, field):
-                setattr(self, field, filter(None, \
-                        getattr(self, field).strip().split(sep)))
+        return filter(None, field.strip().split(sep))
 
     def set_markup(self, markup_dict):
         """Sets the markup language into a header key-value pair.

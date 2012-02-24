@@ -67,6 +67,8 @@ class BlogUnit(BaseUnit):
                 if field == 'time':
                     header[field] = datetime.strptime(\
                             header[field], conf.CONTENT_DATETIME_FORMAT)
+                if field in conf.FIELDS_AS_LIST:
+                    header[field] = self.as_list(header[field], conf.LIST_SEP)
                 setattr(self, field.lower(), header[field])
             # content is everything else after header
             self.content = read.pop(0).strip()
@@ -80,8 +82,6 @@ class BlogUnit(BaseUnit):
 
         # check if all required fields are present
         self.check_required(conf.REQUIRED)
-        # transform strings into list
-        self.process_into_list(conf.FIELDS_AS_LIST, conf.LIST_SEP)
 
         print self.id
         print self.__dict__
