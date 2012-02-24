@@ -58,6 +58,9 @@ class TestBaseUnit(unittest.TestCase):
         cats = 'wickus;christopher;koobus;'
         catlist = ['wickus', 'christopher', 'koobus']
         self.assertEqual(self.unit.as_list(cats, ';'), catlist)
+        grps = 'trinity, twin, twin, morpheus'
+        grplist = ['trinity', 'twin', 'morpheus']
+        self.assertEqual(self.unit.as_list(grps, ', '), grplist)
 
     def test_set_markup(self):
         # test if markup is set correctly
