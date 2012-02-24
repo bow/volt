@@ -45,7 +45,7 @@ BLOG = Config(
     URL = "/blog",
 
     # Blog post permalink, relative to blog URL
-    PERMALINK = "{%Y}/{%m}/{%d}/{slug}",
+    PERMALINK = "{time:%Y/%m/%d}/{slug}",
 
     # Date and time format used in blog content headers
     # Used for parsing the headers

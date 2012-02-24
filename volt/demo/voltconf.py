@@ -37,7 +37,7 @@ BLOG = Config(
     URL = "/blog",
 
     # Blog posts permalink, relative to blog URL
-    PERMALINK = "{%Y}/{%m}/{%d}/{slug}",
+    PERMALINK = "{time:%Y/%m/%d}/{slug}",
 
     # Blog posts author, can be overwritten in individual blog posts
     AUTHOR = "Admin",

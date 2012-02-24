@@ -78,6 +78,8 @@ class BlogItem(BaseItem):
         self.process_into_list(conf.FIELDS_AS_LIST, conf.LIST_SEP)
         # set slug from title
         self.set_slug(self.title)
+        # set permalink
+        self.set_permalink(conf.PERMALINK, conf.URL)
 
         print self.id
         print self.__dict__

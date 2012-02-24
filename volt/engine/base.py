@@ -176,3 +176,49 @@ class BaseItem(object):
             raise ContentError("Slug for '%s' is an empty string." % self.id)
 
         setattr(self, 'slug', string.lower())
+
+    def set_permalink(self, pattern, base_url=''):
+        """Sets permalink according to pattern
+
+        Arguments:
+        pattern: string replacement pattern
+        base_url: string that will be appended in front of the permalink
+
+        The pattern argument may refer to the current object's attributes by
+        enclosing them in square brackets. If the instance attribute is a
+        datetime object, it must be formatted by specifying a string format
+        argument.
+
+        Here are several examples of a valid permalink pattern:
+        - '{time:%Y/%m/%d}/{slug}'
+        - '{time:%Y}/post/{time:%d}/blog/{id}'
+        """
+        # raise exception if there are spaces?
+        if pattern != re.sub(r'\s', '', pattern):
+            raise ContentError("Permalink in '%s' contains whitespace(s)." \
+                    % self.id)
+        
+        # strip preceeding '/' but make sure ends with '/'
+        pattern = re.sub(r'^/+', '', pattern)
+        pattern = re.sub(r'/*$', '/', pattern)
+
+        # get all permalink components and store into list
+        perms = filter(None, [base_url]) + re.findall(r'(.+?)/+(?!%)', pattern)
+
+        # process components that are enclosed in {}
+        for i in range(len(perms)):
+            if perms[i][0] == '{' and perms[i][-1] == '}':
+                cmp = perms[i][1:-1]
+                if cmp.startswith('time'):
+                    if not hasattr(self, cmp[:4]):
+                        raise ContentError("'%s' has no '%s' attribute." % \
+                                (self.id, cmp[:4]))
+                    perms[i] = datetime.strftime(getattr(self, 'time'), cmp[5:])
+                else:
+                    if not hasattr(self, cmp):
+                        raise ContentError("'%s' has no '%s' attribute." % \
+                                (self.id, cmp))
+                    perms[i] = getattr(self, cmp)
+
+        url = '/'.join(filter(None, perms)).replace(' ', '')
+        setattr(self, 'permalink', url)

@@ -96,6 +96,14 @@ class TestBaseItem(unittest.TestCase):
         self.assertRaises(AssertionError, self.item.set_slug, '宇多田ヒカル')
         self.assertRaises(ContentError, self.item.set_slug, '&**%&^%&$-')
 
+    def test_set_permalink(self):
+        self.item.set_slug('Yo Dawg!')
+        self.item.time = datetime(2009, 1, 28, 16, 47)
+        self.item.set_permalink('{time:%Y/%m/%d}/{slug}', '/base')
+        self.assertEqual(self.item.permalink, '/base/2009/01/28/yo-dawg')
+        self.item.set_permalink('{time:%Y}/mustard/{time:%m}/{slug}')
+        self.assertEqual(self.item.permalink, '2009/mustard/01/yo-dawg')
+        self.assertRaises(ContentError, self.item.set_permalink, 'bali/{beach}/party')
 
 class TestBlogEngine(unittest.TestCase):
 
