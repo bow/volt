@@ -179,8 +179,8 @@ class BaseUnit(object):
         base_url: string that will be appended in front of the permalink
 
         The pattern argument may refer to the current object's attributes by
-        enclosing them in square brackets. If the instance attribute is a
-        datetime object, it must be formatted by specifying a string format
+        enclosing them in square brackets. If the referred instance attribute 
+        is a datetime object, it must be formatted by specifying a string format
         argument.
 
         Here are several examples of a valid permalink pattern:
@@ -203,16 +203,15 @@ class BaseUnit(object):
         for i in range(len(perms)):
             if perms[i][0] == '{' and perms[i][-1] == '}':
                 cmp = perms[i][1:-1]
-                if cmp.startswith('time'):
-                    if not hasattr(self, cmp[:4]):
-                        raise ContentError("'%s' has no '%s' attribute." % \
-                                (self.id, cmp[:4]))
-                    perms[i] = datetime.strftime(getattr(self, 'time'), cmp[5:])
+                if ':' in cmp:
+                    cmp, fmt = cmp.split(':')
+                if not hasattr(self, cmp):
+                    raise ContentError("'%s' has no '%s' attribute." % \
+                            (self.id, cmp))
+                if isinstance(getattr(self, cmp), datetime):
+                    perms[i] = datetime.strftime(getattr(self, cmp), fmt)
                 else:
-                    if not hasattr(self, cmp):
-                        raise ContentError("'%s' has no '%s' attribute." % \
-                                (self.id, cmp))
-                    perms[i] = getattr(self, cmp)
+                    perms[i] = self.slugify(getattr(self, cmp))
 
         return '/'.join(filter(None, perms)).replace(' ', '')
 
