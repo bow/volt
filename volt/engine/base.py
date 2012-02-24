@@ -122,15 +122,7 @@ class BaseUnit(object):
         fields: string to transform into list
         sep: field subitem separator
         """
-        temp = filter(None, field.strip().split(sep))
-        # remove duplicates
-        res = []
-        for i in range(len(temp)):
-            item = temp.pop(0)
-            if item not in res:
-                res.append(item)
-        
-        return res
+        return list(set(filter(None, field.strip().split(sep)))).sort()
 
     def set_markup(self, markup_dict):
         """Sets the markup language into a header key-value pair.

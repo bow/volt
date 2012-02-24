@@ -53,13 +53,13 @@ class TestBaseUnit(unittest.TestCase):
     def test_process_into_list(self):
         # test if specified fields are processed into lists
         tags = 'ripley, ash, kane   '
-        taglist = ['ripley', 'ash', 'kane']
+        taglist = ['ripley', 'ash', 'kane'].sort()
         self.assertEqual(self.unit.as_list(tags, ', '), taglist)
         cats = 'wickus;christopher;koobus;'
-        catlist = ['wickus', 'christopher', 'koobus']
+        catlist = ['wickus', 'christopher', 'koobus'].sort()
         self.assertEqual(self.unit.as_list(cats, ';'), catlist)
         grps = 'trinity, twin, twin, morpheus'
-        grplist = ['trinity', 'twin', 'morpheus']
+        grplist = ['trinity', 'twin', 'morpheus'].sort()
         self.assertEqual(self.unit.as_list(grps, ', '), grplist)
 
     def test_set_markup(self):
