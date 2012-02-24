@@ -69,27 +69,28 @@ class TestBaseUnit(unittest.TestCase):
         setattr(self.unit, 'markup', 'xml')
         self.assertRaises(ContentError, self.unit.set_markup, MARKUP)
 
-    def test_set_slug(self):
-        self.unit.set_slug('Move along people, this is just a test')
-        self.assertEqual(self.unit.slug, 'move-along-people-this-is-just-test')
-        self.unit.set_slug('What does it mean to say !&^#*&@$))*((&?')
-        self.assertEqual(self.unit.slug, 'what-does-it-mean-to-say')
-        self.unit.set_slug('What about the A* search algorithm?')
-        self.assertEqual(self.unit.slug, 'what-about-the-a-search-algorithm')
-        self.unit.set_slug('--This- is a bad -- -*&( ---___- title---')
-        self.assertEqual(self.unit.slug, 'this-is-bad-title')
-        self.unit.set_slug("Hors d'oeuvre, a fully-loaded MP5, and an astronaut from Ann Arbor.")
-        self.assertEqual(self.unit.slug, 'hors-doeuvre-fully-loaded-mp5-and-astronaut-from-ann-arbor')
-        self.unit.set_slug('Kings of Convenience - Know How (feat. Feist)')
-        self.assertEqual(self.unit.slug, 'kings-of-convenience-know-how-feat-feist')
-        self.unit.set_slug('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest')
-        self.assertEqual(self.unit.slug, 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
-        self.assertRaises(AssertionError, self.unit.set_slug, 'Röyksopp - Eple')
-        self.assertRaises(AssertionError, self.unit.set_slug, '宇多田ヒカル')
-        self.assertRaises(ContentError, self.unit.set_slug, '&**%&^%&$-')
+    def test_slugify(self):
+        slugify = self.unit.slugify
+        self.assertEqual(slugify('Move along people, this is just a test'),
+                'move-along-people-this-is-just-test')
+        self.assertEqual(slugify('What does it mean to say !&^#*&@$))*((&?'),
+                 'what-does-it-mean-to-say')
+        self.assertEqual(slugify('What about the A* search algorithm?'),
+                 'what-about-the-a-search-algorithm')
+        self.assertEqual(slugify('--This- is a bad -- -*&( ---___- title---'),
+                 'this-is-bad-title')
+        self.assertEqual(slugify("Hors d'oeuvre, a fully-loaded MP5, and an astronaut from Ann Arbor."),
+                 'hors-doeuvre-fully-loaded-mp5-and-astronaut-from-ann-arbor')
+        self.assertEqual(slugify('Kings of Convenience - Know How (feat. Feist)'),
+                 'kings-of-convenience-know-how-feat-feist')
+        self.assertEqual(slugify('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest'),
+                 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
+        self.assertRaises(AssertionError, slugify, 'Röyksopp - Eple')
+        self.assertRaises(AssertionError, slugify, '宇多田ヒカル')
+        self.assertRaises(ContentError, slugify, '&**%&^%&$-')
 
     def test_set_permalink(self):
-        self.unit.set_slug('Yo Dawg!')
+        self.unit.slug = self.unit.slugify('Yo Dawg!')
         self.unit.time = datetime(2009, 1, 28, 16, 47)
         self.unit.set_permalink('{time:%Y/%m/%d}/{slug}', '/base')
         self.assertEqual(self.unit.permalink, '/base/2009/01/28/yo-dawg')

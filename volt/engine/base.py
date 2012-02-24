@@ -137,8 +137,8 @@ class BaseUnit(object):
             raise ContentError("Markup language '%s' is not supported." % \
                     getattr(self, 'markup'))
 
-    def set_slug(self, string):
-        """Transforms the given string into a slug and set it as a slug instance attribute.
+    def slugify(self, string):
+        """Returns a slugified version of the given string.
 
         Arguments:
         string: string to transform into slug
@@ -165,7 +165,7 @@ class BaseUnit(object):
         if not string:
             raise ContentError("Slug for '%s' is an empty string." % self.id)
 
-        setattr(self, 'slug', string.lower())
+        return string.lower()
 
     def set_permalink(self, pattern, base_url=''):
         """Sets permalink according to pattern
