@@ -64,8 +64,8 @@ class BlogUnit(BaseUnit):
             # set blog unit file contents as attributes
             for field in header:
                 self.check_protected(field, conf.PROTECTED)
-                if field == 'time':
-                    header[field] = datetime.strptime(\
+                if field in conf.FIELDS_AS_DATETIME:
+                    header[field] = self.as_datetime(\
                             header[field], conf.CONTENT_DATETIME_FORMAT)
                 if field in conf.FIELDS_AS_LIST:
                     header[field] = self.as_list(header[field], conf.LIST_SEP)

@@ -106,6 +106,14 @@ class BaseUnit(object):
                         "Required header field '%s' is missing in '%s'." % \
                         (field, self.id))
 
+    def as_datetime(self, field, pattern):
+        """Transforms a string into a datetime object given the pattern.
+
+        Arguments:
+        field: string to transform
+        """
+        return datetime.strptime(field, pattern)
+
     def as_list(self, field, sep):
         """Transforms a comma-separated tags or categories string into a list.
 

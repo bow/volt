@@ -88,6 +88,10 @@ BLOG = Config(
     # These properties must be defined in each individual blog post header
     REQUIRED = ('title', 'time', ),
 
+    # Fields that would be transformed from string into datetime objects using
+    # CONTENT_DATETIME_FORMAT as the pattern
+    FIELDS_AS_DATETIME = ('time', ),
+
     # Fields that would be transformed from string into list objects using
     # LIST_SEP as a separator
     FIELDS_AS_LIST = ('tags', 'categories', ),
