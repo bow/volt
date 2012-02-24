@@ -127,7 +127,7 @@ class TestBlogUnit(unittest.TestCase):
 
     def test_init(self):
         # test if blog post is processed correctly
-        fname = glob.glob(os.path.join(self.content_dir, 'pass', '*'))[0]
+        fname = glob.glob(os.path.join(self.content_dir, 'unit_pass', '*'))[0]
         unit_obj = BlogUnit(fname, self.delim, self.config)
         self.assertEqual(unit_obj.id, fname)
         self.assertEqual(unit_obj.time, datetime(2004, 3, 13, 22, 10))
@@ -140,18 +140,18 @@ class TestBlogUnit(unittest.TestCase):
         self.assertEqual(unit_obj.permalink, '/blog/2004/03/13/jabberwock')
 
     def test_init_header_missing(self):
-        fname = glob.glob(os.path.join(self.content_dir, 'fail', '02*'))[0]
+        fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '02*'))[0]
         self.assertRaises(ParseError, BlogUnit, fname, self.delim, self.config)
 
     def test_init_header_typo(self):
         from yaml import scanner
-        fname = glob.glob(os.path.join(self.content_dir, 'fail', '03*'))[0]
+        fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '03*'))[0]
         self.assertRaises(scanner.ScannerError, BlogUnit, fname, self.delim, self.config)
 
     def test_init_markup_missing(self):
-        fname = glob.glob(os.path.join(self.content_dir, 'fail', '04*'))[0]
+        fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '04*'))[0]
         self.assertEqual(BlogUnit(fname, self.delim, self.config).markup, 'html')
 
     def test_init_protected_set(self):
-        fname = glob.glob(os.path.join(self.content_dir, 'fail', '05*'))[0]
+        fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '05*'))[0]
         self.assertRaises(ContentError, BlogUnit, fname, self.delim, self.config)
