@@ -4,8 +4,6 @@ import os
 import re
 from datetime import datetime
 
-import yaml
-
 from volt import ParseError
 from volt.config import config
 from volt.engine.base import BaseEngine, BaseUnit, MARKUP

@@ -6,6 +6,7 @@ import os
 import re
 from collections import OrderedDict
 from datetime import datetime
+from functools import partial
 
 import yaml
 
@@ -74,15 +75,9 @@ class BaseEngine(object):
 
 class BaseUnit(object):
 
-    def open_text(self, fname, mod='r', enc='utf-8'):
-        """Open text files with Unicode encoding.
-
-        Arguments:
-        fname: file name to open
-        mod: file mode
-        enc: file encoding
-        """
-        return codecs.open(fname, mode=mod, encoding=enc)
+    # convenience methods
+    open_text = partial(codecs.open, encoding='utf8')
+    as_datetime = datetime.strptime
 
     def parse_yaml(self, string):
         """Parses the yaml string.
@@ -93,6 +88,7 @@ class BaseUnit(object):
         This is a thin wrapper for yaml.load, so it's more convenient
         for subclassing xUnits to parse yaml contents.
         """
+        # why can't this be assigned directly like the other wrappers?
         return yaml.load(string)
 
     def check_protected(self, field, prot):
@@ -118,14 +114,6 @@ class BaseUnit(object):
                 raise ContentError(\
                         "Required header field '%s' is missing in '%s'." % \
                         (field, self.id))
-
-    def as_datetime(self, field, pattern):
-        """Transforms a string into a datetime object given the pattern.
-
-        Arguments:
-        field: string to transform
-        """
-        return datetime.strptime(field, pattern)
 
     def as_list(self, field, sep):
         """Transforms a comma-separated tags or categories string into a list.
