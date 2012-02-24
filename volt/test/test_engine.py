@@ -134,7 +134,7 @@ class TestBlogUnit(unittest.TestCase):
         unit_obj = BlogUnit(fname, self.delim, self.config)
         self.assertEqual(unit_obj.id, fname)
         self.assertEqual(unit_obj.time, datetime(2004, 3, 13, 22, 10))
-        self.assertEqual(unit_obj.title, 'Jabberwock')
+        self.assertEqual(unit_obj.title, '3.14159265')
         self.assertEqual(unit_obj.extra, 'ice cream please')
         self.assertIsNone(unit_obj.empty)
         content = u'Should be parsed correctly.\n\nHey look, unicode: \u042d\u0439, \u0441\u043c\u043e\u0442\u0440\u0438, \u042e\u043d\u0438\u043a\u043e\u0434'

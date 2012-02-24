@@ -69,6 +69,8 @@ class BlogUnit(BaseUnit):
                     header[field] = self.as_list(header[field], conf.LIST_SEP)
                 if field == 'slug':
                     header[field] = self.slugify(header[field])
+                if isinstance(header[field], (int, float)):
+                    header[field] = str(header[field])
                 setattr(self, field.lower(), header[field])
             # content is everything else after header
             self.content = read.pop(0).strip()
