@@ -159,7 +159,7 @@ class BaseItem(object):
         string = re.sub('A\s|An\s', '', string)
 
         # replace spaces, etc with dash
-        string = re.sub(r'\s([A|a]n|[A|a])\s|_|\s+', '-', string)
+        string = re.sub(r'\s([A|a]n??)\s|_|\s+', '-', string)
 
         # remove bad chars
         bad_chars = r'[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]'
