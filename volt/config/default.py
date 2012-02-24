@@ -111,7 +111,7 @@ PAGE = Config(
     TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "page.html"),
 
     # Required properties
-    # These properties must be defined in each individual page item header
+    # These properties must be defined in each individual page unit header
     REQUIRED = ('title', ),
 )
 
@@ -133,6 +133,6 @@ COLLECTION = Config(
     MULTIPLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "multiple.html"),
 
     # Required properties
-    # These properties must be defined for each collection item individually
-    REQUIRED = ('title', 'item', ),
+    # These properties must be defined for each collection unit individually
+    REQUIRED = ('title', 'unit', ),
 )

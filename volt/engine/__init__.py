@@ -1,7 +1,7 @@
-from volt.engine.page import PageEngine, PageItem
-from volt.engine.blog import BlogEngine, BlogItem
-from volt.engine.collection import CollectionEngine, CollectionItem
+from volt.engine.page import PageEngine, PageUnit
+from volt.engine.blog import BlogEngine, BlogUnit
+from volt.engine.collection import CollectionEngine, CollectionUnit
 
 __all__ = ['PageEngine', 'BlogEngine', 'CollectionEngine',
-           'PageItem', 'BlogItem', 'CollectionItem',
+           'PageUnit', 'BlogUnit', 'CollectionUnit',
           ]

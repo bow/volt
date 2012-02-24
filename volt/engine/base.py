@@ -19,17 +19,17 @@ MARKUP = { '.html': 'html',
 
 class BaseEngine(object):
 
-    def __init__(self, item_class=None):
+    def __init__(self, unit_class=None):
         """Initializes the engine
 
         Arguments:
-        content_container: content container class subclassing BaseItem
+        content_container: content container class subclassing BaseUnit
         """
-        if not issubclass(item_class, BaseItem):
+        if not issubclass(unit_class, BaseUnit):
             raise TypeError("Engine must be initialized with a content container class.")
 
-        self.item_class = item_class
-        self.items = OrderedDict()
+        self.unit_class = unit_class
+        self.units = OrderedDict()
 
     def globdir(self, directory, pattern='*', iter=False):
         """Returns glob or iglob results for a given directory.
@@ -40,7 +40,7 @@ class BaseEngine(object):
         return glob.glob(pattern)
 
     def parse(self):
-        """Parses the content, returning BaseItem object.
+        """Parses the content, returning BaseUnit object.
         """
         raise NotImplementedError("Subclasses must implement parse().")
 
@@ -55,12 +55,12 @@ class BaseEngine(object):
         raise NotImplementedError("Subclasses must implement build_paths().")
 
     def write_single(self):
-        """Writes a single BaseItem object to an output file.
+        """Writes a single BaseUnit object to an output file.
         """
         raise NotImplementedError("Subclasses must implement write_single().")
 
     def write_multiple(self):
-        """Writes an output file composed of multipe BaseItem object.
+        """Writes an output file composed of multipe BaseUnit object.
         """
         raise NotImplementedError("Subclasses must implement write_multiple().")
 
@@ -70,7 +70,7 @@ class BaseEngine(object):
         raise NotImplementedError("Subclasses must implement run().")
 
 
-class BaseItem(object):
+class BaseUnit(object):
 
     def open_text(self, fname, mod='r', enc='utf-8'):
         """Open text files with Unicode encoding.

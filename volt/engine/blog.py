@@ -7,7 +7,7 @@ import yaml
 
 from volt import ParseError
 from volt.config import config
-from volt.engine.base import BaseEngine, BaseItem, MARKUP
+from volt.engine.base import BaseEngine, BaseUnit, MARKUP
 
 
 class BlogEngine(BaseEngine):
@@ -31,17 +31,17 @@ class BlogEngine(BaseEngine):
         # set pattern for header delimiter
         header_delim = re.compile(r'^---$', re.MULTILINE)
 
-        # parse each file and fill self.contents with BlogItem-s
+        # parse each file and fill self.contents with BlogUnit-s
         for fname in files:
-            self.items[fname] = self.item_class(fname, header_delim, conf)
+            self.units[fname] = self.unit_class(fname, header_delim, conf)
 
 
-class BlogItem(BaseItem):
+class BlogUnit(BaseUnit):
     """Class representation of a single blog post.
     """
     
     def __init__(self, fname, header_delim, conf):
-        """Initializes BlogItem.
+        """Initializes BlogUnit.
 
         Arguments:
         fname: blog post filename
@@ -62,7 +62,7 @@ class BlogItem(BaseItem):
             # check if no protected header fields is overwritten
             self.check_protected(prot=conf.PROTECTED, header=header)
 
-            # set blog item file contents as attributes
+            # set blog unit file contents as attributes
             for field in header:
                 setattr(self, field.lower(), header[field])
             # content is everything else after header

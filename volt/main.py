@@ -62,7 +62,7 @@ def run_gen():
     """
     for e in config.SITE.ENGINES:
         eng_class_name = "%sEngine" % e.capitalize()
-        eng_item_name = "%sItem" % e.capitalize()
+        eng_unit_name = "%sUnit" % e.capitalize()
         # try import engines in user volt project directory first
         try:
             sys.path.append(os.path.join(config.root, 'engine'))
@@ -70,8 +70,8 @@ def run_gen():
         except ImportError:
             eng_mod = __import__("volt.engine.%s" % e, fromlist=[1])
         eng_class = getattr(eng_mod, eng_class_name)
-        eng_item = getattr(eng_mod, eng_item_name)
-        eng_class(eng_item).run()
+        eng_unit = getattr(eng_mod, eng_unit_name)
+        eng_class(eng_unit).run()
 
 def run_init():
     """Starts a new Volt project.
