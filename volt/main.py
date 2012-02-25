@@ -7,6 +7,7 @@ import sys
 
 from volt import util
 from volt.config import config
+from volt.config.base import import_conf
 
 
 __version__ = "0.0.1"
@@ -65,10 +66,10 @@ def run_gen():
         eng_unit_name = "%sUnit" % e.capitalize()
         # try import engines in user volt project directory first
         try:
-            sys.path.append(os.path.join(config.root, 'engine'))
-            eng_mod = __import__("engine.%s" % e, fromlist=[1])
+            user_eng = os.path.join(config.root, 'engine', '%s.py' % e)
+            eng_mod = import_conf(user_eng_path, True)
         except ImportError:
-            eng_mod = __import__("volt.engine.%s" % e, fromlist=[1])
+            eng_mod = import_conf('volt.engine.%s' % e)
         eng_class = getattr(eng_mod, eng_class_name)
         eng_unit = getattr(eng_mod, eng_unit_name)
         eng_class(eng_unit).run()
