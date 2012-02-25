@@ -47,7 +47,7 @@ class BlogUnit(BaseUnit):
         header_delim: compiled regex pattern for header parsing
         conf: Config object containing blog options
         """
-        self.id = fname
+        super(BlogUnit, self).__init__(fname)
 
         with self.open_text(self.id) as source:
             # open file and remove whitespaces

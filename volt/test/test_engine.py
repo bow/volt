@@ -37,8 +37,7 @@ class TestBaseEngine(unittest.TestCase):
 class TestBaseUnit(unittest.TestCase):
 
     def setUp(self):
-        self.unit = BaseUnit()
-        self.unit.id = '01.md'
+        self.unit = BaseUnit('01.md')
 
     def test_check_required(self):
         # test required fields check

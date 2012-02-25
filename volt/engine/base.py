@@ -76,6 +76,14 @@ class BaseEngine(object):
 
 class BaseUnit(object):
 
+    def __init__(self, id):
+        """Initializes BaseUnit instance.
+
+        Arguments:
+        id: any string that refers to the BaseUnit instance exclusively
+        """
+        self.id = id
+
     # convenience methods
     open_text = partial(codecs.open, encoding='utf8')
     as_datetime = datetime.strptime
