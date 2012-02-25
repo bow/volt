@@ -82,5 +82,5 @@ class BlogUnit(BaseUnit):
         # if slug is not set in header, set it now
         if not hasattr(self, 'slug'):
             self.slug = self.slugify(self.title)
-        self.permalink = self.permify(conf.PERMALINK)
+        self.permalist = self.get_permalist(conf.PERMALINK)
         self.set_markup(MARKUP)

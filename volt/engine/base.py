@@ -181,8 +181,8 @@ class BaseUnit(object):
 
         return string.lower()
 
-    def permify(self, pattern):
-        """Returns permalink according to pattern
+    def get_permalist(self, pattern):
+        """Returns a list of strings which will be used to construct permalinks.
 
         Arguments:
         pattern: string replacement pattern
@@ -209,20 +209,24 @@ class BaseUnit(object):
         perms = re.findall(r'(.+?)/+(?!%)', pattern)
 
         # process components that are enclosed in {}
-        for i in range(len(perms)):
-            if perms[i][0] == '{' and perms[i][-1] == '}':
-                cmp = perms[i][1:-1]
+        permalist = []
+        for item in perms:
+            if item[0] == '{' and item[-1] == '}':
+                cmp = item[1:-1]
                 if ':' in cmp:
                     cmp, fmt = cmp.split(':')
                 if not hasattr(self, cmp):
                     raise ContentError("'%s' has no '%s' attribute." % \
                             (self.id, cmp))
                 if isinstance(getattr(self, cmp), datetime):
-                    perms[i] = datetime.strftime(getattr(self, cmp), fmt)
+                    strftime = datetime.strftime(getattr(self, cmp), fmt)
+                    permalist.extend(filter(None, strftime.split('/')))
                 else:
-                    perms[i] = self.slugify(getattr(self, cmp))
+                    permalist.append(self.slugify(getattr(self, cmp)))
+            else:
+                permalist.append(self.slugify(item))
 
-        return '/'.join(filter(None, perms)).replace(' ', '')
+        return filter(None, permalist)
 
 
 def get_class(mod, cls):
