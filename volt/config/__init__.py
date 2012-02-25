@@ -1,5 +1,6 @@
 import os
 import sys
+from itertools import chain, ifilter
 
 from volt import ConfigError
 from volt.config.base import Config
@@ -38,16 +39,12 @@ class Session(object):
         user = self.import_conf(self._default.VOLT.USER_CONF, path=True)
 
         # process default and user-defined Configs
-        default_conf_items = [x for x in dir(self._default) if \
-                isinstance(getattr(self._default, x), Config)]
-        user_conf_items = [x for x in dir(user) if isinstance(\
-                getattr(user, x), Config) and x not in default_conf_items]
+        default_configs = self.get_configs(self._default)
+        user_configs = (x for x in self.get_configs(user) if x not in default_configs)
 
         # Configs to process is everything in default + anything in user
         # not present in default
-        conf_items = default_conf_items + user_conf_items
-
-        for item in conf_items:
+        for item in chain(default_configs, user_configs):
             # try load from default first and override if present in user
             # otherwise load from user
             try:
@@ -105,6 +102,14 @@ class Session(object):
             return __import__(mod, fromlist=[mod.split('.')[-1]])
 
         raise ImportError("Could not import %s" % mod)
+
+    def get_configs(self, mod):
+        """Returns an iterable returning all Config instances in the given module.
+
+        Arguments:
+        mod: module to be searched
+        """
+        return ifilter(lambda x: isinstance(getattr(mod, x), Config), dir(mod))
 
 
 config = Session()
