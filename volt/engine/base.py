@@ -7,6 +7,7 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 from functools import partial
+from inspect import isclass
 
 import yaml
 
@@ -215,3 +216,19 @@ class BaseUnit(object):
 
         return '/'.join(filter(None, perms)).replace(' ', '')
 
+
+def get_class(mod, cls):
+    """Returns a class defined in the given module that is a subclass of the given class.
+
+    Arguments:
+    cls: parent class of the class to return
+    mod: module to be searched
+    """
+    objs = (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x)))
+    # return if class is not itself
+    for item in objs:
+        if item.__name__ != cls.__name__ and issubclass(item, cls):
+            return item
+
+get_engine = partial(get_class, cls=BaseEngine)
+get_unit = partial(get_class, cls=BaseUnit)

@@ -8,6 +8,7 @@ import sys
 from volt import util
 from volt.config import config
 from volt.config.base import import_conf
+from volt.engine.base import get_engine, get_unit
 
 
 __version__ = "0.0.1"
@@ -62,16 +63,14 @@ def run_gen():
     """Generates the static site.
     """
     for e in config.SITE.ENGINES:
-        eng_class_name = "%sEngine" % e.capitalize()
-        eng_unit_name = "%sUnit" % e.capitalize()
         # try import engines in user volt project directory first
         try:
-            user_eng = os.path.join(config.root, 'engine', '%s.py' % e)
-            eng_mod = import_conf(user_eng_path, True)
+            user_eng_path = os.path.join(config.root, 'engine', '%s.py' % e)
+            eng_mod = import_conf(user_eng_path, path=True)
         except ImportError:
             eng_mod = import_conf('volt.engine.%s' % e)
-        eng_class = getattr(eng_mod, eng_class_name)
-        eng_unit = getattr(eng_mod, eng_unit_name)
+        eng_class = get_engine(eng_mod)
+        eng_unit = get_unit(eng_mod)
         eng_class(eng_unit).run()
 
 def run_init():
