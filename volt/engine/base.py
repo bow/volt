@@ -172,12 +172,11 @@ class BaseUnit(object):
 
         return string.lower()
 
-    def permify(self, pattern, base_url=''):
+    def permify(self, pattern):
         """Returns permalink according to pattern
 
         Arguments:
         pattern: string replacement pattern
-        base_url: string that will be appended in front of the permalink
 
         The pattern argument may refer to the current object's attributes by
         enclosing them in square brackets. If the referred instance attribute 
@@ -198,7 +197,7 @@ class BaseUnit(object):
         pattern = re.sub(r'/*$', '/', pattern)
 
         # get all permalink components and store into list
-        perms = filter(None, [base_url]) + re.findall(r'(.+?)/+(?!%)', pattern)
+        perms = re.findall(r'(.+?)/+(?!%)', pattern)
 
         # process components that are enclosed in {}
         for i in range(len(perms)):

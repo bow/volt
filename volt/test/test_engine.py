@@ -94,8 +94,8 @@ class TestBaseUnit(unittest.TestCase):
         permify = self.unit.permify
         self.unit.slug = 'yo-dawg'
         self.unit.time = datetime(2009, 1, 28, 16, 47)
-        self.assertEqual(permify('{time:%Y/%m/%d}/{slug}', '/base'),
-                '/base/2009/01/28/yo-dawg')
+        self.assertEqual(permify('{time:%Y/%m/%d}/{slug}'),
+                '2009/01/28/yo-dawg')
         self.assertEqual(permify('{time:%Y}/mustard/{time:%m}/{slug}/'),
                 '2009/mustard/01/yo-dawg')
         self.assertRaises(ContentError, permify, 'i/love /mustard')
@@ -140,7 +140,7 @@ class TestBlogUnit(unittest.TestCase):
         content = u'Should be parsed correctly.\n\nHey look, unicode: \u042d\u0439, \u0441\u043c\u043e\u0442\u0440\u0438, \u042e\u043d\u0438\u043a\u043e\u0434'
         self.assertEqual(unit_obj.content, content)
         self.assertEqual(unit_obj.slug, 'well-how-about-this')
-        self.assertEqual(unit_obj.permalink, '/blog/2004/03/13/well-how-about-this')
+        self.assertEqual(unit_obj.permalink, '2004/03/13/well-how-about-this')
 
     def test_init_header_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '02*'))[0]
