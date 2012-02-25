@@ -50,17 +50,17 @@ class TestBaseUnit(unittest.TestCase):
         prot = ('cats', )
         self.assertRaises(ContentError, self.unit.check_protected, 'cats', prot)
 
-    def test_process_into_list(self):
+    def test_as_into_list(self):
         # test if specified fields are processed into lists
         tags = 'ripley, ash, kane   '
         taglist = ['ripley', 'ash', 'kane'].sort()
-        self.assertEqual(self.unit.as_list(tags, ', '), taglist)
+        self.assertEqual(self.unit.as_list(tags, ', ').sort(), taglist)
         cats = 'wickus;christopher;koobus;'
         catlist = ['wickus', 'christopher', 'koobus'].sort()
-        self.assertEqual(self.unit.as_list(cats, ';'), catlist)
+        self.assertEqual(self.unit.as_list(cats, ';').sort(), catlist)
         grps = 'trinity, twin, twin, morpheus'
         grplist = ['trinity', 'twin', 'morpheus'].sort()
-        self.assertEqual(self.unit.as_list(grps, ', '), grplist)
+        self.assertEqual(self.unit.as_list(grps, ', ').sort(), grplist)
 
     def test_set_markup(self):
         # test if markup is set correctly
