@@ -10,6 +10,7 @@ VOLT = Config(
     CONTENT_DIR = "content",
     TEMPLATE_DIR = "templates",
     SITE_DIR = "site",
+    IGNORE_PATTERN = "_*.html",
 )
 
 SITE = Config(
@@ -27,8 +28,8 @@ BLOG = Config(
     POSTS_PER_PAGE = 10,
     EXCERPT_LENGTH = 50,
     CONTENT_DIR = join(VOLT.CONTENT_DIR, "blog"),
-    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "post.html"),
-    MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "pagination.html"),
+    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_post.html"),
+    MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_pagination.html"),
     SORT = ('time', 'title', 'category', 'author', ),
     PROTECTED = ('id', 'content', ),
     REQUIRED = ('title', 'time', ),

@@ -84,6 +84,3 @@ class BlogUnit(BaseUnit):
             self.slug = self.slugify(self.title)
         self.permalink = self.permify(conf.PERMALINK)
         self.set_markup(MARKUP)
-
-        print self.id
-        print self.__dict__

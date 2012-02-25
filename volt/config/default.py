@@ -19,6 +19,11 @@ VOLT = Config(
     TEMPLATE_DIR = "templates",
     SITE_DIR = "site",
 
+    # Ignore patterns
+    # Filenames that match this pattern will not be copied from template directory
+    # to site directory
+    IGNORE_PATTERN = "_*.html",
+
     # Flag for colored terminal output
     COLORED_TEXT = False,
 )
@@ -69,8 +74,8 @@ BLOG = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, "blog"),
 
     # File paths of blog template files relative to a project root
-    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "post.html"),
-    MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "pagination.html"),
+    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_post.html"),
+    MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_pagination.html"),
 
     # TODO
     # Sort order for paginated posts display
@@ -112,7 +117,7 @@ PAGE = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, "page"),
 
     # File paths of page template files relative to a project root
-    TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "page.html"),
+    TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_page.html"),
 
     # Required properties
     # These properties must be defined in each individual page unit header
@@ -133,8 +138,8 @@ COLLECTION = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, "collection"),
 
     # File paths of collection template files relative to a project root
-    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "single.html"),
-    MULTIPLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "multiple.html"),
+    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_single.html"),
+    MULTIPLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_multiple.html"),
 
     # Required properties
     # These properties must be defined for each collection unit individually

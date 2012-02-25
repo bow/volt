@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import shutil
 import sys
 
 from volt import util
@@ -62,6 +63,14 @@ def run_demo():
 def run_gen():
     """Generates the static site.
     """
+    conf = config.VOLT
+    # prepare output directory
+    if os.path.exists(conf.SITE_DIR):
+        shutil.rmtree(conf.SITE_DIR)
+    shutil.copytree(conf.TEMPLATE_DIR, conf.SITE_DIR, \
+            ignore=shutil.ignore_patterns(conf.IGNORE_PATTERN))
+
+    # generate the site!
     for e in config.SITE.ENGINES:
         # try import engines in user volt project directory first
         try:
