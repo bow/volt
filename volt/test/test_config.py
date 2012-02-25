@@ -7,6 +7,7 @@ import unittest
 
 from volt import ConfigError
 from volt.config import Session
+from volt.config.base import import_conf
 
 
 class TestConfig(unittest.TestCase):
@@ -51,14 +52,11 @@ class TestConfig(unittest.TestCase):
         # load config first since it's a lazy object
         self.config._load()
         # test for dotted notation import
-        self.assertIsNotNone(self.config.import_conf(\
-                self.default_conf))
+        self.assertIsNotNone(import_conf(self.default_conf))
         # test for absolute path notation import
-        self.assertIsNotNone(self.config.import_conf(\
-                self.user_conf, True))
+        self.assertIsNotNone(import_conf(self.user_conf, True))
         # test if exception is properly raised
-        self.assertRaises(ImportError, Session().import_conf, \
-                self.user_conf)
+        self.assertRaises(ImportError, import_conf, self.user_conf)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,6 @@
-# Volt base classes for configuration files
+import os
+import sys
+from itertools import ifilter
 
 
 class Config(dict):
@@ -16,3 +18,32 @@ class Config(dict):
         """
         for key in conf_obj.keys():
             self[key] = conf_obj[key]
+
+
+def import_conf(mod, path=False):
+    """Imports a Volt configuration.
+
+    Arguments:
+    mod: dotted package notation or an absolute path to the
+         configuration file.
+    path: boolean indicating if mod is absolute path or dotted package
+          notation
+    """
+    if path and os.path.isabs(mod):
+        mod_dir = os.path.dirname(mod)
+        mod_file = os.path.basename(mod)
+        mod_file = os.path.splitext(mod_file)[0]
+        sys.path.append(mod_dir)
+        return __import__(mod_file)
+    elif not path:
+        return __import__(mod, fromlist=[mod.split('.')[-1]])
+
+    raise ImportError("Could not import %s" % mod)
+
+def get_configs(mod):
+    """Returns an iterable returning all Config instances in the given module.
+
+    Arguments:
+    mod: module to be searched
+    """
+    return ifilter(lambda x: isinstance(getattr(mod, x), Config), dir(mod))
