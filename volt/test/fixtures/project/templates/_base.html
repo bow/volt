@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    {#
+    {% if page.section equals 'blog' and page.title %}
+    <title>{{ site.title }} | {{ page.section }} - {{ page.title }}</title>
+    {% elif page.section %}
+    <title>{{ site.title }} | {{ page.section }}</title>
+    {% else %} #}
+    <title>{{ site.title }}</title>
+    {# {% endif %} #}
+  </head>
+  <body>
+    <div id="wrapper">
+      <header name="header-top" id="top" class="body">
+        <h1><a href="{{ site.url  }}">{{ site.title  }}</a></h1>
+        <nav>
+          <ul>
+            <li><a href="/blog/" class="button green{% if page.section equals "blog" %} active{% endif %}">blog</a></li>
+            {# <li><a href="/about/" class="button red{% if page.section equals "about" %} active{% endif %}">about</a></li> #}
+          </ul>
+        </nav>
+      </header>
+      <hr />
+      <section name="section-content" id="content" class="body">
+        {% block content %}{% endblock %}
+      </section><!-- /#content -->
+      <hr />
+      <footer name="footer-bottom" id="bottom" class="body">
+        <section id="bottom-info">
+        </section>
+        <section id="bottom-nav">
+        </section>
+      </footer>
+    </div><!-- /#wrapper -->
+  </body>
+</html>
