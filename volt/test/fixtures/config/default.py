@@ -20,7 +20,7 @@ SITE = Config(
 )
 
 BLOG = Config(
-    URL = "/blog",
+    URL = "blog",
     PERMALINK = "{time:%Y/%m/%d}/{slug}",
     CONTENT_DATETIME_FORMAT = "%Y/%m/%d %H:%M",
     DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",

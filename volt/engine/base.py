@@ -181,11 +181,13 @@ class BaseUnit(object):
 
         return string.lower()
 
-    def get_permalist(self, pattern):
+    def get_permalist(self, pattern, unit_base_url='/'):
         """Returns a list of strings which will be used to construct permalinks.
 
         Arguments:
         pattern: string replacement pattern
+        unit_base_url: base URL of the engine, to be appended in front of each
+            unit URL
 
         The pattern argument may refer to the current object's attributes by
         enclosing them in square brackets. If the referred instance attribute 
@@ -226,7 +228,7 @@ class BaseUnit(object):
             else:
                 permalist.append(self.slugify(item))
 
-        return filter(None, permalist)
+        return [unit_base_url.strip('/')] + filter(None, permalist)
 
 
 def get_class(mod, cls):
