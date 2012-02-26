@@ -1,7 +1,11 @@
 demo/site
-volt/demo/site
+volt/demo/site/
 volt/demo/site_dev
-volt/demo/content
+volt/demo/site_old
+volt/demo/content/
 volt/demo/content_dev
+volt/demo/content_old
+volt/demo/templates/
 volt/demo/templates_dev
+volt/demo/templates_old
 ROADMAP
