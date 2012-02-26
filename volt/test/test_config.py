@@ -10,7 +10,7 @@ from volt.config import Session
 from volt.config.base import import_conf
 
 
-class TestConfig(unittest.TestCase):
+class TestSession(unittest.TestCase):
 
     def setUp(self):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
@@ -61,8 +61,3 @@ class TestConfig(unittest.TestCase):
         self.assertIsNotNone(import_conf(self.user_conf, True))
         # test if exception is properly raised
         self.assertRaises(ImportError, import_conf, self.user_conf)
-
-
-if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestConfig)
-    unittest.TextTestRunner(verbosity=2).run(suite)

@@ -37,13 +37,13 @@ class TestBlogUnit(unittest.TestCase):
         self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
         self.content_dir = os.path.join(self.project_dir, 'content', 'blog')
         default_conf = 'volt.test.fixtures.config.default'
-        self.config = Session(default_conf, self.project_dir)
+        self.config = Session(default_conf, self.project_dir).BLOG
         self.delim = re.compile(r'^---$', re.MULTILINE)
 
     def test_init(self):
         # test if blog post is processed correctly
         fname = glob.glob(os.path.join(self.content_dir, 'unit_pass', '*'))[0]
-        unit_obj = BlogUnit(fname, self.delim, self.config.BLOG)
+        unit_obj = BlogUnit(fname, self.delim, self.config)
         self.assertEqual(unit_obj.id, fname)
         self.assertEqual(unit_obj.time, datetime(2004, 3, 13, 22, 10))
         self.assertEqual(unit_obj.title, '3.14159265')
@@ -56,17 +56,17 @@ class TestBlogUnit(unittest.TestCase):
 
     def test_init_header_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '02*'))[0]
-        self.assertRaises(ParseError, BlogUnit, fname, self.delim, self.config.BLOG)
+        self.assertRaises(ParseError, BlogUnit, fname, self.delim, self.config)
 
     def test_init_header_typo(self):
         from yaml import scanner
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '03*'))[0]
-        self.assertRaises(scanner.ScannerError, BlogUnit, fname, self.delim, self.config.BLOG)
+        self.assertRaises(scanner.ScannerError, BlogUnit, fname, self.delim, self.config)
 
     def test_init_markup_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '04*'))[0]
-        self.assertEqual(BlogUnit(fname, self.delim, self.config.BLOG).markup, 'html')
+        self.assertEqual(BlogUnit(fname, self.delim, self.config).markup, 'html')
 
     def test_init_protected_set(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '05*'))[0]
-        self.assertRaises(ContentError, BlogUnit, fname, self.delim, self.config.BLOG)
+        self.assertRaises(ContentError, BlogUnit, fname, self.delim, self.config)
