@@ -24,10 +24,10 @@ MARKUP = { '.html': 'html',
 class BaseEngine(object):
 
     def __init__(self, unit_class=None):
-        """Initializes the engine
+        """Initializes the engine.
 
         Arguments:
-        content_container: content container class subclassing BaseUnit
+        unit_class: content container class subclassing BaseUnit
         """
         if not issubclass(unit_class, BaseUnit):
             raise TypeError("Engine must be initialized with a content container class.")
@@ -96,10 +96,10 @@ class BaseEngine(object):
         """
         raise NotImplementedError("Subclasses must implement build_paths().")
 
-    def write_single(self):
+    def write_single_unit(self):
         """Writes a single BaseUnit object to an output file.
         """
-        raise NotImplementedError("Subclasses must implement write_single().")
+        raise NotImplementedError("Subclasses must implement write_single_unit().")
 
     def write_multiple(self):
         """Writes an output file composed of multipe BaseUnit object.
@@ -121,6 +121,13 @@ class BaseUnit(object):
         id: any string that refers to the BaseUnit instance exclusively
         """
         self.id = id
+
+    def __repr__(self):
+        return str(self.__dict__)
+
+    @property
+    def fields(self):
+        return self.__dict__.keys()
 
     # convenience methods
     open_text = partial(codecs.open, encoding='utf8')
