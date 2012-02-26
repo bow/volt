@@ -4,7 +4,9 @@ import os
 import re
 from datetime import datetime
 
-from volt import ParseError
+from jinja2 import Environment, FileSystemLoader
+
+from volt import ParseError, ContentError
 from volt.config import config
 from volt.engine.base import BaseEngine, BaseUnit, MARKUP
 from volt.util import markupify
@@ -13,11 +15,48 @@ from volt.util import markupify
 class BlogEngine(BaseEngine):
     """Class for processing raw blog content into blog pages and directories.
     """
-    
+
     def run(self):
         self.process_units(content_dir=config.BLOG.CONTENT_DIR, conf=config)
+        self.write_single_unit(config.BLOG.SINGLE_TEMPLATE_FILE, site=config.SITE)
+        print "Success!"
 
-    def process_units(self, content_dir, conf=config):
+    def write_single_unit(self, template_file, **kwargs):
+        """Writes single blog post into its output file.
+
+        template_file: absolute path to template file
+        **kwargs: keyworded args that will be passed to the template
+        """
+        tpl_file = os.path.basename(template_file)
+        tpl_dir = os.path.dirname(template_file)
+        tpl_env = Environment(loader=FileSystemLoader(tpl_dir))
+        template = tpl_env.get_template(os.path.basename(tpl_file))
+
+        for id in self.units:
+            # warn if files are overwritten
+            # this indicates a duplicate post, which could result in
+            # unexptected results
+            unit = self.units[id]
+            if os.path.exists(unit.path):
+                # TODO: find a better exception name
+                raise ContentError("'%s' already exists!" % unit.path)
+            os.makedirs(os.path.dirname(unit.path))
+            with open(unit.path, 'w') as target:
+                rendered = template.render(page=unit.__dict__, **kwargs)
+                self.write_output(target, rendered)
+
+    def write_output(self, file_obj, string):
+        """Writes string to the open file object.
+
+        Arguments:
+        file_obj: open file object
+        string: string to write
+
+        This is written to facillitate testing of the calling method.
+        """
+        file_obj.write(string)
+
+    def process_units(self, content_dir, conf):
         """Process the individual blog posts.
 
         Arguments:
