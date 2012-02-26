@@ -43,6 +43,44 @@ class BaseEngine(object):
             return glob.iglob(pattern)
         return glob.glob(pattern)
 
+    def set_unit_paths(self, unit, site_dir, site_url, index_html=True):
+        """Sets the permalink and absolute file path for the given unit.
+
+        Arguments:
+        unit: BaseUnit instance whose path and URL are to be set
+        site_dir: absolute filesystem path to the output site directory
+        site_url: static site URL, usually set in config.SITE
+        index_html: boolean indicating output file name;  if False then
+            the output file name is the '%s.html' where %s is the last
+            string of the unit's permalist
+
+        Output file defaults to 'index' so each unit will be written to
+        'index.html' in its path. This allows nice URLs without fiddling
+        the .htaccess too much.
+        """
+        path = [site_dir]
+        url = [site_url]
+        permalist = unit.permalist
+
+        # set permalink
+        # we don't want double slashes in URL, so remove empty strings
+        url.extend(filter(None, unit.permalist))
+        # if index_html is False, then we have to refer to the file
+        # directly in the permalink
+        if index_html:
+            url[-1] = url[-1] + '/'
+        else:
+            url[-1] = url[-1] + '.html'
+        setattr(unit, 'permalink', '/'.join(url))
+
+        # set absolute path
+        path.extend(unit.permalist)
+        if index_html:
+            path.append('index.html')
+        else:
+            path[-1] = path[-1] + '.html'
+        setattr(unit, 'path', os.path.join(*(path)))
+
     def parse(self):
         """Parses the content, returning BaseUnit object.
         """

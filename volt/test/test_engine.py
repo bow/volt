@@ -9,6 +9,8 @@ import re
 import unittest
 from datetime import datetime
 
+from mock import Mock
+
 from volt import ConfigError, ContentError, ParseError
 from volt.config import Session
 from volt.engine.base import BaseEngine, BaseUnit, MARKUP
@@ -21,6 +23,8 @@ class TestBaseEngine(unittest.TestCase):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
         self.content_dir = os.path.join(self.test_dir, 'fixtures', 'project', \
                 'content', 'blog', '01')
+        self.unit = Mock(spec=BaseUnit)
+        self.engine = BaseEngine(BaseUnit)
 
     def test_init(self):
         # test if BaseUnit subclass is used to initialize engine
@@ -28,11 +32,46 @@ class TestBaseEngine(unittest.TestCase):
     
     def test_globdir(self):
         # test if whole directory globbing for files work
-        self.engine = BaseEngine(BaseUnit)
         dir_content = ['01_pass.md', 'mockdir']
         dir_content = [os.path.join(self.content_dir, x) for x in dir_content].sort()
         self.assertEqual(self.engine.globdir(self.content_dir).sort(), dir_content)
-      
+
+    def test_set_unit_paths(self):
+        path = self.test_dir
+        url = 'http://alay.com'
+        self.unit.permalist = ['blog', 'not', 'string']
+
+        # test for default settings
+        self.engine.set_unit_paths(self.unit, path, url)
+        self.assertEqual(self.unit.path, os.path.join(path, \
+                'blog', 'not', 'string', 'index.html'))
+        self.assertEqual(self.unit.permalink, 'http://alay.com/blog/not/string/')
+
+        # test for index_html = False
+        self.engine.set_unit_paths(self.unit, path, url, index_html=False)
+        self.assertEqual(self.unit.path, os.path.join(path, \
+                'blog', 'not', 'string.html'))
+        self.assertEqual(self.unit.permalink, 'http://alay.com/blog/not/string.html')
+
+        # test if URL is == '' (if set to '/' in voltconf.py)
+        # URLS should've been stripped of '/'s by config.Session._load
+        # so no need to test for all that different URLs
+        url = ''
+        self.engine.set_unit_paths(self.unit, path, url)
+        self.assertEqual(self.unit.permalink, '/blog/not/string/')
+
+        # test if unit.permalist[0] == '/' (if set to '/' in voltconf.py)
+        url = 'http://alay.com'
+        self.unit.permalist = ['', 'not', 'string']
+        self.engine.set_unit_paths(self.unit, path, url, os.path.join(path, \
+                'not', 'string'))
+        self.assertEqual(self.unit.permalink, 'http://alay.com/not/string/')
+
+    def test_parse(self):
+        self.assertRaises(NotImplementedError, self.engine.parse, )
+
+    def test_run(self):
+        self.assertRaises(NotImplementedError, self.engine.run, )
 
 class TestBaseUnit(unittest.TestCase):
 
