@@ -25,3 +25,16 @@ def show_info(text, c='grey', w='normal'):
 
 show_notif, show_warning, show_error = \
     [partial(show_info, c=x) for x in ['cyan', 'yellow', 'red']]
+
+def markupify(string, lang='html'):
+    """Returns the string after processing with the specified markup languaged.
+
+    Arguments:
+    string: string to process
+    lang: markup language to use; available options are 'html' or 'markdown'
+    """
+    if lang == 'html':
+        return string
+    elif lang == 'markdown':
+        import markdown
+        return markdown.markdown(string)

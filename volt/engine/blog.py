@@ -7,6 +7,7 @@ from datetime import datetime
 from volt import ParseError
 from volt.config import config
 from volt.engine.base import BaseEngine, BaseUnit, MARKUP
+from volt.util import markupify
 
 
 class BlogEngine(BaseEngine):
@@ -89,3 +90,6 @@ class BlogUnit(BaseUnit):
             self.slug = self.slugify(self.title)
         self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)
         self.set_markup(MARKUP)
+
+        # process content with the specified markup language
+        self.content = markupify(self.content, self.markup)
