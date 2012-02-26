@@ -127,6 +127,11 @@ class BlogUnit(BaseUnit):
         # if slug is not set in header, set it now
         if not hasattr(self, 'slug'):
             self.slug = self.slugify(self.title)
+        # author as well
+        if not hasattr(self, 'author'):
+            self.author = conf.AUTHOR
+        # set displayed time string
+        self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
         self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)
         self.set_markup(MARKUP)
 

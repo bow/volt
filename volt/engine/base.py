@@ -132,6 +132,7 @@ class BaseUnit(object):
     # convenience methods
     open_text = partial(codecs.open, encoding='utf8')
     as_datetime = datetime.strptime
+    get_display_time = datetime.strftime
 
     def parse_yaml(self, string):
         """Parses the yaml string.
