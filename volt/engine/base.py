@@ -81,10 +81,10 @@ class BaseEngine(object):
             path[-1] = path[-1] + '.html'
         setattr(unit, 'path', os.path.join(*(path)))
 
-    def parse(self):
-        """Parses the content, returning BaseUnit object.
+    def process_units(self):
+        """Process the the units used to initialize the engine and use the results to fill self.units.
         """
-        raise NotImplementedError("Subclasses must implement parse().")
+        raise NotImplementedError("Subclasses must implement process_units().")
 
     def create_dirs(self):
         """Creates all required directories in the site folder.

@@ -14,10 +14,10 @@ class BlogEngine(BaseEngine):
     """
     
     def run(self):
-        self.parse(content_dir=config.BLOG.CONTENT_DIR, conf=config.BLOG)
+        self.process_units(content_dir=config.BLOG.CONTENT_DIR, conf=config)
 
-    def parse(self, content_dir, conf):
-        """Parses all files in a directory.
+    def process_units(self, content_dir, conf=config):
+        """Process the individual blog posts.
 
         Arguments:
         content_dir: directory containing files to be parsed
@@ -31,8 +31,13 @@ class BlogEngine(BaseEngine):
         header_delim = re.compile(r'^---$', re.MULTILINE)
 
         # parse each file and fill self.contents with BlogUnit-s
+        # also set its URL and absolute file path to be written
         for fname in files:
-            self.units[fname] = self.unit_class(fname, header_delim, conf)
+            self.units[fname] = self.unit_class(fname, header_delim, conf.BLOG)
+            # paths and permalinks are not set in BlogUnit to facillitate
+            # testing; ideally, each xUnit should only be using one Config instance
+            self.set_unit_paths(self.units[fname], conf.VOLT.SITE_DIR, \
+                    conf.SITE.URL)
 
 
 class BlogUnit(BaseUnit):

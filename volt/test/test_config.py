@@ -38,7 +38,7 @@ class TestConfig(unittest.TestCase):
         # test for user-only defined Config
         self.assertEqual(self.config.ADDON.TITLE, 'Only in user')
         # test for different URL possibilities
-        self.assertEqual(self.config.SITE.A_URL, 'http://foo.com')
+        self.assertEqual(self.config.SITE.URL, 'http://foo.com')
         self.assertEqual(self.config.SITE.B_URL, 'http://foo.com')
         self.assertEqual(self.config.SITE.C_URL, '')
         # test for lazy loading flag
