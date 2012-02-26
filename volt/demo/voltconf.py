@@ -8,13 +8,6 @@ from volt.config.base import Config
 # Volt configurations
 VOLT = Config(
 
-    ###
-    # Temp options for development
-    CONTENT_DIR = "content_dev",
-    TEMPLATE_DIR = "templates_dev",
-    SITE_DIR = "site_dev",
-    ###
-
     # Flag for colored terminal output
     COLORED_TEXT = True,
 )
@@ -42,13 +35,8 @@ SITE = Config(
 # Blog engine configurations
 BLOG = Config(
   
-    ####
-    # Temp options for development
-    CONTENT_DIR = join(VOLT.CONTENT_DIR, 'blog'),
-    ####
-
     # URL for all blog content relative to root URL
-    URL = "/blog",
+    URL = "blog",
 
     # Blog posts permalink, relative to blog URL
     PERMALINK = "{time:%Y/%m/%d}/{slug}",
@@ -68,7 +56,7 @@ BLOG = Config(
 PAGE = Config(
 
     # URL for all page content relative to root URL
-    URL = "/page",
+    URL = "page",
 
     # Page permalink, relative to page URL
     PERMALINK = "{slug}",
