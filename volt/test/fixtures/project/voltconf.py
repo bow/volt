@@ -12,6 +12,9 @@ VOLT = Config(
 SITE = Config(
     TITLE = "Title in user",
     ENGINES = ['blog'],
+    A_URL = 'http://foo.com',
+    B_URL = 'http://foo.com/',
+    C_URL = '/',
 )
 
 BLOG = Config(

@@ -53,11 +53,14 @@ class Session(object):
                     obj.override(getattr(user, item))
             except:
                 obj = getattr(user, item)
-            # set directory + file items to absolute paths
-            # directory + file items has 'DIR' + 'FILE' in their items
-            paths = (x for x in obj if x.endswith('_FILE') or x.endswith('_DIR'))
-            for opt in paths:
-                obj[opt] = os.path.join(self.root, obj[opt])
+            for opt in obj:
+                # set directory + file items to absolute paths
+                # directory + file items has 'DIR' + 'FILE' in their items
+                if opt.endswith('_FILE') or opt.endswith('_DIR'):
+                    obj[opt] = os.path.join(self.root, obj[opt])
+                # strip '/'s from URL options
+                if opt.endswith('URL'):
+                    obj[opt] = obj[opt].strip('/')
             setattr(self, item, obj)
 
         self._loaded = True
