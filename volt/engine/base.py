@@ -19,6 +19,12 @@ MARKUP = { '.html': 'html',
            '.markdown': 'markdown',
          }
 
+# regex objects, so compilation is done efficiently
+_RE_SPACES = re.compile(r'\s([A|a]n??)\s|_|\s+')
+_RE_PRUNE = re.compile(r'A-|An-|[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]')
+_RE_MULTIPLE = re.compile(r'-+')
+_RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
+
 
 class BaseEngine(object):
 
@@ -204,27 +210,26 @@ class BaseUnit(object):
         """
         string = string.strip()
 
-        # remove english articles
-        string = re.sub('A\s|An\s', '', string)
-
         # replace spaces, etc with dash
-        string = re.sub(r'\s([A|a]n??)\s|_|\s+', '-', string)
+        string = re.sub(_RE_SPACES, '-', string)
 
-        # remove bad chars
-        bad_chars = r'[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]'
-        string = re.sub(bad_chars, '', string)
+        # remove english articles, bad chars, and dashes in front and end
+        string = re.sub(_RE_PRUNE, '', string)
+
         # warn if there are non-ascii chars
         assert string.decode('utf8') == string
 
         # slug should not begin or end with dash or contain multiple dashes
-        string = re.sub(r'^-+|-+$', '', string)
-        string = re.sub(r'-+', '-', string)
+        string = re.sub(_RE_MULTIPLE, '-', string)
+
+        # and finally, we string preceeding and succeeding dashes
+        string = string.lower().strip('-')
 
         # raise exception if slug results in an empty string
         if not string:
             raise ContentError("Slug for '%s' is an empty string." % self.id)
 
-        return string.lower()
+        return string
 
     def get_permalist(self, pattern, unit_base_url='/'):
         """Returns a list of strings which will be used to construct permalinks.
@@ -244,16 +249,15 @@ class BaseUnit(object):
         - '{time:%Y}/post/{time:%d}/blog/{id}'
         """
         # raise exception if there are spaces?
-        if pattern != re.sub(r'\s', '', pattern):
+        if pattern != pattern.replace(' ',''):
             raise ContentError("Permalink in '%s' contains whitespace(s)." \
                     % self.id)
         
         # strip preceeding '/' but make sure ends with '/'
-        pattern = re.sub(r'^/+', '', pattern)
-        pattern = re.sub(r'/*$', '/', pattern)
+        pattern = pattern.strip('/') + '/'
 
         # get all permalink components and store into list
-        perms = re.findall(r'(.+?)/+(?!%)', pattern)
+        perms = re.findall(_RE_PERMALINK, pattern)
 
         # process components that are enclosed in {}
         permalist = []
