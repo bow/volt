@@ -33,8 +33,13 @@ def markupify(string, lang='html'):
     string: string to process
     lang: markup language to use; available options are 'html' or 'markdown'
     """
-    if lang == 'html':
+    if lang == 'markdown':
+        try:
+            import discount
+            marked = discount.Markdown(string.encode('utf8')).get_html_content()
+            return marked.decode('utf8')
+        except ImportError:
+            import markdown
+            return markdown.markdown(string)
+    else:
         return string
-    elif lang == 'markdown':
-        import markdown
-        return markdown.markdown(string)

@@ -120,8 +120,10 @@ class BlogUnit(BaseUnit):
                 if isinstance(header[field], (int, float)):
                     header[field] = str(header[field])
                 setattr(self, field.lower(), header[field])
+
+            self.set_markup(MARKUP)
             # content is everything else after header
-            self.content = read.pop(0).strip()
+            self.content = markupify(read.pop(0).strip(), self.markup)
 
         # check if all required fields are present
         self.check_required(conf.REQUIRED)
@@ -136,7 +138,3 @@ class BlogUnit(BaseUnit):
         # set displayed time string
         self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
         self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)
-        self.set_markup(MARKUP)
-
-        # process content with the specified markup language
-        self.content = markupify(self.content, self.markup)

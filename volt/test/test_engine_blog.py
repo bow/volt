@@ -49,7 +49,7 @@ class TestBlogUnit(unittest.TestCase):
         self.assertEqual(unit_obj.title, '3.14159265')
         self.assertEqual(unit_obj.extra, 'ice cream please')
         self.assertIsNone(unit_obj.empty)
-        content = u'<p>Should be parsed correctly.</p>\n<p>Hey look, unicode: \u042d\u0439, \u0441\u043c\u043e\u0442\u0440\u0438, \u042e\u043d\u0438\u043a\u043e\u0434</p>'
+        content = u'<p>Should be parsed correctly.</p>\n\n<p>Hey look, unicode: \u042d\u0439, \u0441\u043c\u043e\u0442\u0440\u0438, \u042e\u043d\u0438\u043a\u043e\u0434</p>'
         self.assertEqual(unit_obj.content, content)
         self.assertEqual(unit_obj.slug, 'well-how-about-this')
         self.assertEqual(unit_obj.permalist, ['blog', '2004', '03', '13', 'well-how-about-this'])
