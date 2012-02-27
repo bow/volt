@@ -2,6 +2,8 @@ import os
 import sys
 from itertools import chain
 
+from jinja2 import Environment, FileSystemLoader
+
 from volt import ConfigError
 from volt.config.base import Config, get_configs, import_conf
 
@@ -63,6 +65,10 @@ class Session(object):
                     obj[opt] = obj[opt].strip('/')
             setattr(self, item, obj)
 
+        # set up jinja2 template environment in the SITE Config object
+        env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
+        setattr(self.SITE, 'template_env', env)
+        # and set the loaded flag
         self._loaded = True
 
     def get_root(self, start_dir):

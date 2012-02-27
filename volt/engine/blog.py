@@ -4,8 +4,6 @@ import os
 import re
 from datetime import datetime
 
-from jinja2 import Environment, FileSystemLoader
-
 from volt import ParseError, ContentError
 from volt.config import config
 from volt.engine.base import BaseEngine, BaseUnit, MARKUP
@@ -21,20 +19,18 @@ class BlogEngine(BaseEngine):
 
     def run(self):
         self.process_units(content_dir=config.BLOG.CONTENT_DIR, conf=config)
-        self.write_single_unit(config.BLOG.SINGLE_TEMPLATE_FILE, site=config.SITE)
+        self.write_single_unit(config.BLOG.SINGLE_TEMPLATE_FILE, site_conf=config.SITE)
         return self.units
-        print "Success!"
 
-    def write_single_unit(self, template_file, **kwargs):
+    def write_single_unit(self, template_file, site_conf):
         """Writes single blog post into its output file.
 
         template_file: absolute path to template file
-        **kwargs: keyworded args that will be passed to the template
+        site: Config object with site information
         """
-        tpl_file = os.path.basename(template_file)
-        tpl_dir = os.path.dirname(template_file)
-        tpl_env = Environment(loader=FileSystemLoader(tpl_dir))
-        template = tpl_env.get_template(os.path.basename(tpl_file))
+        template_file = os.path.basename(template_file)
+        template_env = site_conf.template_env
+        template = template_env.get_template(template_file)
 
         for unit in self.units:
             # warn if files are overwritten
@@ -45,7 +41,7 @@ class BlogEngine(BaseEngine):
                 raise ContentError("'%s' already exists!" % unit.path)
             os.makedirs(os.path.dirname(unit.path))
             with open(unit.path, 'w') as target:
-                rendered = template.render(page=unit.__dict__, **kwargs)
+                rendered = template.render(page=unit.__dict__, site=site_conf)
                 self.write_output(target, rendered)
 
     def write_output(self, file_obj, string):

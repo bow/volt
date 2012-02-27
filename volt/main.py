@@ -86,11 +86,15 @@ def run_gen():
         eng_unit = get_unit(eng_mod)
         # run engine and store resulting units in units
         units[eng_mod.__name__] = eng_class(eng_unit).run()
-        #active_eng = eng_class(eng_unit)
-        #active_eng.run()
-        #units[eng_mod.__name__] = active_eng.units
 
-    print units
+    tpl_file = '_index.html'
+    template = config.SITE.template_env.get_template(tpl_file)
+
+    outfile = os.path.join(config.VOLT.SITE_DIR, 'index.html')
+    with open(outfile, 'w') as target:
+        target.write(template.render(page={}, site=config.SITE, engine=units))
+
+    print 'Success!'
 
 def run_init():
     """Starts a new Volt project.
