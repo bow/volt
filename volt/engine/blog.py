@@ -12,6 +12,9 @@ from volt.engine.base import BaseEngine, BaseUnit, MARKUP
 from volt.util import markupify
 
 
+__name__ = 'blog'
+
+
 class BlogEngine(BaseEngine):
     """Class for processing raw blog content into blog pages and directories.
     """
@@ -19,6 +22,7 @@ class BlogEngine(BaseEngine):
     def run(self):
         self.process_units(content_dir=config.BLOG.CONTENT_DIR, conf=config)
         self.write_single_unit(config.BLOG.SINGLE_TEMPLATE_FILE, site=config.SITE)
+        return self.units
         print "Success!"
 
     def write_single_unit(self, template_file, **kwargs):

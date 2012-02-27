@@ -70,6 +70,10 @@ def run_gen():
     shutil.copytree(conf.TEMPLATE_DIR, conf.SITE_DIR, \
             ignore=shutil.ignore_patterns(conf.IGNORE_PATTERN))
 
+    # set up dict for storing all engine units
+    # so main index.html can access them
+    units = {}
+
     # generate the site!
     for e in config.SITE.ENGINES:
         # try import engines in user volt project directory first
@@ -80,7 +84,13 @@ def run_gen():
             eng_mod = import_conf('volt.engine.%s' % e)
         eng_class = get_engine(eng_mod)
         eng_unit = get_unit(eng_mod)
-        eng_class(eng_unit).run()
+        # run engine and store resulting units in units
+        units[eng_mod.__name__] = eng_class(eng_unit).run()
+        #active_eng = eng_class(eng_unit)
+        #active_eng.run()
+        #units[eng_mod.__name__] = active_eng.units
+
+    print units
 
 def run_init():
     """Starts a new Volt project.
