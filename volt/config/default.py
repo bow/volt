@@ -79,10 +79,10 @@ BLOG = Config(
 
     # TODO
     # Sort order for paginated posts display
-    # Valid options are 'date', 'title', 'category', 'author'
-    # Default order is A-Z (for alphabets) and present-past (for dates)
+    # Valid options are 'time', 'title', 'author'
+    # Default order is A-Z (for alphabets) and past-present (for dates)
     # To reverse order just add '-' in front, e.g. '-time'
-    SORT = ('time', 'title', 'category', 'author', ),
+    SORT = '-time',
 
     # Protected properties
     # These properties must not be defined by any individual blog post header,

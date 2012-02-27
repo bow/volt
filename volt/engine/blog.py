@@ -78,6 +78,22 @@ class BlogEngine(BaseEngine):
             self.set_unit_paths(self.units[-1], conf.VOLT.SITE_DIR, \
                     conf.SITE.URL)
 
+        # sort the units based on config
+        reversed = ('-' == config.BLOG.SORT[0])
+        sort_key = config.BLOG.SORT.strip('-')
+        self.units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+
+        # and set 'next' and 'prev' urls of each units according to the sort
+        # so each blog post can link to the next/previous
+        for i in range(len(self.units)):
+            if i == 0:
+                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
+            elif i == len(self.units)-1:
+                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
+            else:
+                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
+                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
+
 
 class BlogUnit(BaseUnit):
     """Class representation of a single blog post.
