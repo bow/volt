@@ -1,4 +1,5 @@
 demo/site
+volt/demo/profile.py
 volt/demo/site/
 volt/demo/site_dev
 volt/demo/site_old
