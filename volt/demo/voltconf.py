@@ -53,10 +53,10 @@ BLOG = Config(
 
 
 # Page engine configurations
-PAGE = Config(
+PLAIN = Config(
 
     # URL for all page content relative to root URL
-    URL = "page",
+    URL = "/",
 
     # Page permalink, relative to page URL
     PERMALINK = "{slug}",

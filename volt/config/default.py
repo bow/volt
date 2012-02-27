@@ -104,23 +104,23 @@ BLOG = Config(
 )
 
 
-# Default configurations for the page engine
-PAGE = Config(
+# Default configurations for the plain engine
+PLAIN = Config(
 
-    # URL for all page content relative to root URL
-    URL = "page",
+    # URL for all plain page content relative to root URL
+    URL = "/",
 
-    # Page permalink, relative to page URL
+    # Plain page permalink, relative to plain page URL
     PERMALINK = "{slug}",
 
-    # Directory path for storing page content relative to a project root
-    CONTENT_DIR = join(VOLT.CONTENT_DIR, "page"),
+    # Directory path for storing plain page content relative to a project root
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, "plain"),
 
-    # File paths of page template files relative to a project root
-    TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_page.html"),
+    # File paths of plain page template files relative to a project root
+    TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_plain.html"),
 
     # Required properties
-    # These properties must be defined in each individual page unit header
+    # These properties must be defined in each individual plain page unit header
     REQUIRED = ('title', ),
 )
 

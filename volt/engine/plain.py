@@ -3,9 +3,9 @@
 from volt.engine.base import BaseEngine, BaseUnit
 
 
-class PageEngine(BaseEngine):
+class PlainEngine(BaseEngine):
     pass
 
 
-class PageUnit(BaseUnit):
+class PlainUnit(BaseUnit):
     pass
