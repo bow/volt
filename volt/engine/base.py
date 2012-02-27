@@ -4,7 +4,6 @@ import codecs
 import glob
 import os
 import re
-from collections import OrderedDict
 from datetime import datetime
 from functools import partial
 from inspect import isclass
@@ -33,7 +32,7 @@ class BaseEngine(object):
             raise TypeError("Engine must be initialized with a content container class.")
 
         self.unit_class = unit_class
-        self.units = OrderedDict()
+        self.units = []
 
     def globdir(self, directory, pattern='*', iter=False):
         """Returns glob or iglob results for a given directory.

@@ -32,11 +32,10 @@ class BlogEngine(BaseEngine):
         tpl_env = Environment(loader=FileSystemLoader(tpl_dir))
         template = tpl_env.get_template(os.path.basename(tpl_file))
 
-        for id in self.units:
+        for unit in self.units:
             # warn if files are overwritten
             # this indicates a duplicate post, which could result in
             # unexptected results
-            unit = self.units[id]
             if os.path.exists(unit.path):
                 # TODO: find a better exception name
                 raise ContentError("'%s' already exists!" % unit.path)
@@ -73,10 +72,10 @@ class BlogEngine(BaseEngine):
         # parse each file and fill self.contents with BlogUnit-s
         # also set its URL and absolute file path to be written
         for fname in files:
-            self.units[fname] = self.unit_class(fname, header_delim, conf.BLOG)
+            self.units.append(self.unit_class(fname, header_delim, conf.BLOG))
             # paths and permalinks are not set in BlogUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(self.units[fname], conf.VOLT.SITE_DIR, \
+            self.set_unit_paths(self.units[-1], conf.VOLT.SITE_DIR, \
                     conf.SITE.URL)
 
 
