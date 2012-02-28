@@ -195,11 +195,13 @@ class BlogUnit(BaseUnit):
         # if slug is not set in header, set it now
         if not hasattr(self, 'slug'):
             self.slug = self.slugify(self.title)
-        # author as well
-        if not hasattr(self, 'author'):
-            self.author = conf.AUTHOR
+        # and set global values
+        for field in conf.GLOBAL_FIELDS:
+            if not hasattr(self, field):
+                setattr(self, field, conf.GLOBAL_FIELDS[field])
         # set displayed time string
         self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
+        # set permalink components
         self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)
 
 

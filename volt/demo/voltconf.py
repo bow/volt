@@ -41,8 +41,8 @@ BLOG = Config(
     # Blog posts permalink, relative to blog URL
     PERMALINK = "{time:%Y/%m/%d}/{slug}",
 
-    # Blog posts author, can be overwritten in individual blog posts
-    AUTHOR = "Admin",
+    # Global values to be set to all blog posts
+    GLOBAL_FIELDS = {'author': 'Ellen Ripley', },
 
     # The number of displayed posts per pagination page
     POSTS_PER_PAGE = 2, 

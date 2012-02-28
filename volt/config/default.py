@@ -61,8 +61,8 @@ BLOG = Config(
     # Default is e.g. "Saturday, 13 March 2004"
     DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
 
-    # Blog posts author, can be overwritten in individual blog posts
-    AUTHOR = "",
+    # Dictionary containing values to be globally set for all posts
+    GLOBAL_FIELDS = { 'author': '', },
 
     # The number of displayed posts per pagination page
     POSTS_PER_PAGE = 10,
