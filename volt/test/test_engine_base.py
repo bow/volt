@@ -12,16 +12,14 @@ from mock import Mock
 
 from volt import ContentError
 from volt.config import Session
-from volt.engine.base import BaseEngine, BaseUnit, MARKUP
+from volt.engine.base import BaseEngine, BaseUnit, BasePack, MARKUP
+from volt.test.mocks import session_mock, project_dir, test_dir
 
 
 class TestBaseEngine(unittest.TestCase):
 
     def setUp(self):
-        self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        self.content_dir = os.path.join(self.test_dir, 'fixtures', 'project', \
-                'content', 'blog', '01')
-        session_mock = Mock(spec=Session)
+        self.content_dir = os.path.join(project_dir, 'content', 'blog', '01')
         self.engine = BaseEngine(session_mock)
 
     def test_init(self):
@@ -36,7 +34,7 @@ class TestBaseEngine(unittest.TestCase):
         self.assertEqual(self.engine.globdir(self.content_dir).sort(), dir_content)
 
     def test_set_unit_paths(self):
-        path = self.test_dir
+        path = test_dir
         url = 'http://alay.com'
         self.unit_mock = Mock(spec=BaseUnit)
         self.unit_mock.permalist = ['blog', 'not', 'string']
