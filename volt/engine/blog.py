@@ -108,10 +108,10 @@ class BlogEngine(BaseEngine):
             start = i * units_per_pack
             if i != pagination - 1:
                 stop = (i + 1) * units_per_pack
-                packs.append(BasePack(unit_idxs[start:stop], i, \
+                packs.append(pack_class(unit_idxs[start:stop], i, \
                         self.config.VOLT.SITE_DIR, ['blog']))
             else:
-                packs.append(BasePack(unit_idxs[start:], i, \
+                packs.append(pack_class(unit_idxs[start:], i, \
                         self.config.VOLT.SITE_DIR, ['blog'], last=True))
 
         return packs
