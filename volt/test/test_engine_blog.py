@@ -12,22 +12,33 @@ from datetime import datetime
 from volt import ContentError, ParseError
 from volt.config import Session
 from volt.engine.blog import BlogEngine, BlogUnit
-from volt.test.mocks import session_mock, blog_content_dir
+from volt.test.mocks import session_mock, blog_content_dir, project_dir
 
 
-#class TestBlogEngine(unittest.TestCase):
-#
-#    def setUp(self):
-#        # set up dirs and Session
-#        self.test_dir = os.path.dirname(os.path.abspath(__file__))
-#        self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
-#        self.content_dir = os.path.join(self.project_dir, 'content', 'blog', 'engine_pass')
-#        default_conf = 'volt.test.fixtures.config.default'
-#        self.conf = Session(default_conf, self.project_dir)
-#        self.engine = BlogEngine()
-#
-#    def test_process_units(self):
-#        self.engine.process_units(self.content_dir, self.conf)
+class TestBlogEngine(unittest.TestCase):
+
+    def setUp(self):
+        self.engine = BlogEngine(session_mock)
+
+    def test_process_units(self):
+        self.engine.config.BLOG.CONTENT_DIR = os.path.join(\
+                self.engine.config.BLOG.CONTENT_DIR, 'engine_pass')
+        self.engine.process_units()
+
+        self.assertEqual(len(self.engine.units), 5)
+        for unit in self.engine.units:
+            self.assertTrue(hasattr(unit, 'path'))
+            self.assertTrue(hasattr(unit, 'permalink'))
+
+            if self.engine.units.index(unit) == 0:
+                self.assertRaises(AttributeError, getattr, unit, 'permalink_prev')
+                self.assertEqual('/blog/2010/09/30/one-simple-idea/', unit.permalink_next)
+            elif self.engine.units.index(unit) == 4:
+                self.assertEqual('/blog/2002/08/17/528491/', unit.permalink_prev)
+                self.assertRaises(AttributeError, getattr, unit, 'permalink_next')
+            else:
+                self.assertTrue(hasattr(unit, 'permalink_prev'))
+                self.assertTrue(hasattr(unit, 'permalink_next'))
 
 
 class TestBlogUnit(unittest.TestCase):
