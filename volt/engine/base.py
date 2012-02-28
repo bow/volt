@@ -39,6 +39,7 @@ class BaseEngine(object):
 
         self.unit_class = unit_class
         self.units = []
+        self.packs = []
 
     def globdir(self, directory, pattern='*', iter=False):
         """Returns glob or iglob results for a given directory.
@@ -278,6 +279,18 @@ class BaseUnit(object):
                 permalist.append(self.slugify(item))
 
         return [unit_base_url.strip('/')] + filter(None, permalist)
+
+
+class BasePack(object):
+    """Class for handling BaseUnit objects in packs.
+
+    We might want to use this to handle units togethers, such as when
+    we're handling summary pages for blog posts.
+
+    For now, this is just a namespace container; might add more methods
+    in the future.
+    """
+    pass
 
 
 def get_class(mod, cls):

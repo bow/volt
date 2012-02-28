@@ -6,7 +6,7 @@ from datetime import datetime
 
 from volt import ParseError, ContentError
 from volt.config import config
-from volt.engine.base import BaseEngine, BaseUnit, MARKUP
+from volt.engine.base import BaseEngine, BaseUnit, BasePack, MARKUP
 from volt.util import markupify
 
 
@@ -150,3 +150,51 @@ class BlogUnit(BaseUnit):
         # set displayed time string
         self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
         self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)
+
+
+class BlogPack(BasePack):
+
+    def __init__(self, unit_idxs, pack_idx, base_dir, site_url, conf, last=False):
+        """Initializes BlogPack instance.
+
+        Arguments:
+        unit_idxs: list or tuple containing the indexes of BlogEngine.units
+            to write. Packs are made according to unit_idxs' sorting order
+        pack_idx: index of the pack object relative to to other pack objects.
+        base_dir: absolute filesystem path to the output directory
+        site_url: static site URL, usually set in config.SITE
+        conf: Config object
+        last: boolean indicating whether this pack is the last one
+        """
+        self.unit_idxs = unit_idxs
+        # because page are 1-indexed and lists are 0-indexed
+        self.pack_idx = pack_idx + 1
+        self.base_dir = base_dir
+        self.site_url = site_url
+        # this will be appended for pack_idx > 1
+        # e.g. blog/page/2
+        self.extended_dir = 'page'
+
+        if self.pack_idx == 1:
+            # if it's the first pack page, use base_dir
+            self.permalist = [self.base_dir]
+        else:
+            # otherwise use base_dir/page/x
+            self.permalist = [self.base_dir, self.extended_dir, \
+                    str(self.pack_idx)]
+
+        # path is path to folder + index.html
+        path = [conf.VOLT.SITE_DIR] + self.permalist + ['index.html']
+        self.path = os.path.join(*(path))
+
+        url = [site_url] + self.permalist
+        self.permalink = '/'.join(url)
+
+        # since we can guess the permalink of next and previous pack objects
+        # we can set those attributes here (unlike in units)
+        if self.pack_idx != 1:
+            setattr(self, 'permalink_prev', '/'.join([self.permalink, \
+                    self.extended_dir, str(self.pack_idx - 1)]))
+        if not last:
+            setattr(self, 'permalink_next', '/'.join([self.permalink, \
+                    self.extended_dir, str(self.pack_idx + 1)]))
