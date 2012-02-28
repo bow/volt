@@ -19,14 +19,52 @@ class BlogEngine(BaseEngine):
 
     def run(self):
         self.process_units(content_dir=config.BLOG.CONTENT_DIR, conf=config)
-        self.write_single_unit(config.BLOG.SINGLE_TEMPLATE_FILE, site_conf=config.SITE)
+        self.write_units(config.BLOG.UNIT_TEMPLATE_FILE, site_conf=config.SITE)
+        self.process_packs(config.BLOG.POSTS_PER_PAGE, range(len(self.units)),\
+                conf=config)
+        self.write_packs(config.BLOG.PACK_TEMPLATE_FILE, site_conf=config.SITE)
         return self.units
 
-    def write_single_unit(self, template_file, site_conf):
+    def process_units(self, content_dir, conf):
+        """Process the individual blog posts.
+
+        Arguments:
+        content_dir: directory containing files to be parsed
+        conf: Config object containing blog options
+        """
+        # get absolute paths of content files
+        content_dir = self.globdir(content_dir, iter=True)
+        files = (x for x in content_dir if os.path.isfile(x))
+
+        # set pattern for header delimiter
+        header_delim = re.compile(r'^---$', re.MULTILINE)
+
+        # parse each file and fill self.contents with BlogUnit-s
+        # also set its URL and absolute file path to be written
+        for fname in files:
+            self.units.append(self.unit_class(fname, header_delim, conf.BLOG))
+            # paths and permalinks are not set in BlogUnit to facillitate
+            # testing; ideally, each xUnit should only be using one Config instance
+            self.set_unit_paths(self.units[-1], conf.VOLT.SITE_DIR, '')
+
+        # sort the units based on config
+        reversed = ('-' == conf.BLOG.SORT[0])
+        sort_key = conf.BLOG.SORT.strip('-')
+        self.units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+
+        # and set 'next' and 'prev' urls of each units according to the sort
+        # so each blog post can link to the next/previous
+        for i in range(len(self.units)):
+            if i != 0:
+                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
+            if i != len(self.units)-1:
+                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
+
+    def write_units(self, template_file, site_conf):
         """Writes single blog post into its output file.
 
         template_file: absolute path to template file
-        site: Config object with site information
+        site_conf: Config object with site information
         """
         template_file = os.path.basename(template_file)
         template_env = site_conf.template_env
@@ -55,45 +93,58 @@ class BlogEngine(BaseEngine):
         """
         file_obj.write(string)
 
-    def process_units(self, content_dir, conf):
-        """Process the individual blog posts.
+    def process_packs(self, units_per_pack, unit_idxs, conf):
+        """Process groups of blog posts.
 
-        Arguments:
-        content_dir: directory containing files to be parsed
-        conf: Config object containing blog options
+        units_per_pack: the number of units per pack object
+        unit_idxs: list or tuple containing the index of self.units to be packed;
+            the order of this index determines the order of packing
+        conf: Config object
         """
-        # get absolute paths of content files
-        content_dir = self.globdir(content_dir, iter=True)
-        files = (x for x in content_dir if os.path.isfile(x))
+        # count how many paginations we need
+        pagination = len(unit_idxs) / units_per_pack + \
+                (len(unit_idxs) % units_per_pack != 0)
 
-        # set pattern for header delimiter
-        header_delim = re.compile(r'^---$', re.MULTILINE)
-
-        # parse each file and fill self.contents with BlogUnit-s
-        # also set its URL and absolute file path to be written
-        for fname in files:
-            self.units.append(self.unit_class(fname, header_delim, conf.BLOG))
-            # paths and permalinks are not set in BlogUnit to facillitate
-            # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(self.units[-1], conf.VOLT.SITE_DIR, \
-                    conf.SITE.URL)
-
-        # sort the units based on config
-        reversed = ('-' == config.BLOG.SORT[0])
-        sort_key = config.BLOG.SORT.strip('-')
-        self.units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
-
-        # and set 'next' and 'prev' urls of each units according to the sort
-        # so each blog post can link to the next/previous
-        for i in range(len(self.units)):
-            if i == 0:
-                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
-            elif i == len(self.units)-1:
-                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
+        # construct pack objects for each pagination page
+        for i in range(pagination):
+            start = i * units_per_pack
+            if i != pagination - 1:
+                stop = (i + 1) * units_per_pack - 1
+                self.packs.append(BlogPack(unit_idxs[start:stop], i, 'blog', \
+                        '', conf))
             else:
-                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
-                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
+                self.packs.append(BlogPack(unit_idxs[start:], i, 'blog',\
+                        '', conf, last=False))
 
+    def write_packs(self, template_file, site_conf):
+        """Writes multiple blog posts to output file.
+
+        template_file: template for multiple units
+        site_conf: Config object with site information
+        """
+        template_file = os.path.basename(template_file)
+        template_env = site_conf.template_env
+        template = template_env.get_template(template_file)
+
+        for pack in self.packs:
+            # warn if files are overwritten
+            # this indicates a duplicate post, which could result in
+            # unexptected results
+            if os.path.exists(pack.path):
+                # TODO: find a better exception name
+                raise ContentError("'%s' already exists!" % pack.path)
+            # !!!
+            # this could be dangerous, check later
+            try:
+                os.makedirs(os.path.dirname(pack.path))
+            except OSError:
+                pass
+            with open(pack.path, 'w') as target:
+                # since pack object only stores indexes of unit in self.unit
+                # we need to get the actual unit items before writing
+                setattr(pack, 'units', [self.units[x] for x in pack.unit_idxs])
+                rendered = template.render(pack=pack.__dict__, site=site_conf, page={})
+                self.write_output(target, rendered)
 
 class BlogUnit(BaseUnit):
     """Class representation of a single blog post.
