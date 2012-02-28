@@ -224,14 +224,14 @@ class BlogPack(BasePack):
         self.site_url = site_url
         # this will be appended for pack_idx > 1
         # e.g. blog/page/2
-        self.extended_dir = 'page'
+        self.pagination_dir = 'page'
 
         if self.pack_idx == 1:
             # if it's the first pack page, use base_dir
             self.permalist = [self.base_dir]
         else:
             # otherwise use base_dir/page/x
-            self.permalist = [self.base_dir, self.extended_dir, \
+            self.permalist = [self.base_dir, self.pagination_dir, \
                     str(self.pack_idx)]
 
         # path is path to folder + index.html
@@ -246,11 +246,11 @@ class BlogPack(BasePack):
         # next permalinks
         if not last:
             self.permalink_next = '/'.join([site_url, self.base_dir, \
-                    self.extended_dir, str(self.pack_idx + 1)])
+                    self.pagination_dir, str(self.pack_idx + 1)])
         # prev permalinks
         if self.pack_idx == 2:
             # if pagination is at 2, previous permalink is to 1
             self.permalink_prev = '/'.join([site_url, self.base_dir])
         elif self.pack_idx != 1:
             self.permalink_prev = '/'.join([site_url, self.base_dir, \
-                    self.extended_dir, str(self.pack_idx - 1)])
+                    self.pagination_dir, str(self.pack_idx - 1)])
