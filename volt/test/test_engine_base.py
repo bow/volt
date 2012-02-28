@@ -54,14 +54,10 @@ class TestBaseEngine(unittest.TestCase):
         self.assertEqual(self.unit_mock.permalink, 'http://alay.com/blog/not/string.html')
 
         # test if URL is == '' (if set to '/' in voltconf.py)
-        # URLS should've been stripped of '/'s by config.Session._load
-        # so no need to test for all that different URLs
-        url = ''
-        self.engine.set_unit_paths(self.unit_mock, path, url)
+        self.engine.set_unit_paths(self.unit_mock, path)
         self.assertEqual(self.unit_mock.permalink, '/blog/not/string/')
 
         # test if unit.permalist[0] == '/' (if set to '/' in voltconf.py)
-        url = 'http://alay.com'
         self.unit_mock.permalist = ['', 'not', 'string']
         self.engine.set_unit_paths(self.unit_mock, path, url, os.path.join(path, \
                 'not', 'string'))

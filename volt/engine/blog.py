@@ -40,7 +40,7 @@ class BlogEngine(BaseEngine):
             self.units.append(BlogUnit(fname, header_delim, self.config.BLOG))
             # paths and permalinks are not set in BlogUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(self.units[-1], self.config.VOLT.SITE_DIR, '')
+            self.set_unit_paths(self.units[-1], self.config.VOLT.SITE_DIR)
 
         # sort the units based on config
         reversed = ('-' == self.config.BLOG.SORT[0])
