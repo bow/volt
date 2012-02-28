@@ -12,32 +12,29 @@ from datetime import datetime
 from volt import ContentError, ParseError
 from volt.config import Session
 from volt.engine.blog import BlogEngine, BlogUnit
+from volt.test.mocks import session_mock, blog_content_dir
 
 
-class TestBlogEngine(unittest.TestCase):
-
-    def setUp(self):
-        # set up dirs and Session
-        self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
-        self.content_dir = os.path.join(self.project_dir, 'content', 'blog', 'engine_pass')
-        default_conf = 'volt.test.fixtures.config.default'
-        self.conf = Session(default_conf, self.project_dir)
-        self.engine = BlogEngine()
-
-    def test_process_units(self):
-        self.engine.process_units(self.content_dir, self.conf)
+#class TestBlogEngine(unittest.TestCase):
+#
+#    def setUp(self):
+#        # set up dirs and Session
+#        self.test_dir = os.path.dirname(os.path.abspath(__file__))
+#        self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
+#        self.content_dir = os.path.join(self.project_dir, 'content', 'blog', 'engine_pass')
+#        default_conf = 'volt.test.fixtures.config.default'
+#        self.conf = Session(default_conf, self.project_dir)
+#        self.engine = BlogEngine()
+#
+#    def test_process_units(self):
+#        self.engine.process_units(self.content_dir, self.conf)
 
 
 class TestBlogUnit(unittest.TestCase):
 
     def setUp(self):
-        # set up dirs and Session
-        self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
-        self.content_dir = os.path.join(self.project_dir, 'content', 'blog')
-        default_conf = 'volt.test.fixtures.config.default'
-        self.config = Session(default_conf, self.project_dir).BLOG
+        self.config = session_mock.BLOG
+        self.content_dir = blog_content_dir
         self.delim = re.compile(r'^---$', re.MULTILINE)
 
     def test_init(self):
