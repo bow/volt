@@ -101,11 +101,11 @@ class BaseEngine(object):
         Using this method, each unit can link to the previous or next one
         according to the sorting order.
         """
-        for i in range(len(self.units)):
-            if i != 0:
-                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
-            if i != len(self.units)-1:
-                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
+        for idx, unit in enumerate(self.units):
+            if idx != 0:
+                setattr(unit, 'permalink_prev', self.units[idx-1].permalink)
+            if idx != len(self.units) - 1:
+                setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
     def process_units(self):
         """Process the units and use the results to fill self.units.
