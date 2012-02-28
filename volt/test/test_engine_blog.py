@@ -11,6 +11,7 @@ from datetime import datetime
 
 from volt import ContentError, ParseError
 from volt.config import Session
+from volt.engine.base import BasePack
 from volt.engine.blog import BlogEngine, BlogUnit
 from volt.test.mocks import session_mock, blog_content_dir, project_dir
 
@@ -39,6 +40,24 @@ class TestBlogEngine(unittest.TestCase):
             else:
                 self.assertTrue(hasattr(unit, 'permalink_prev'))
                 self.assertTrue(hasattr(unit, 'permalink_next'))
+
+    def test_process_packs(self):
+        self.engine.config.BLOG.POSTS_PER_PAGE = 3
+        packs = self.engine.process_packs(BasePack, range(10))
+        self.assertEqual(len(packs), 4)
+        for pack in packs:
+            if packs.index(pack) != 3:
+                self.assertEqual(len(pack.unit_idxs), 3)
+            else:
+                self.assertEqual(len(pack.unit_idxs), 1)
+
+        self.engine.config.BLOG.POSTS_PER_PAGE = 10
+        packs = self.engine.process_packs(BasePack, range(3))
+        self.assertEqual(len(packs), 1)
+        for pack in packs:
+            self.assertEqual(len(pack.unit_idxs), 3)
+
+
 
 
 class TestBlogUnit(unittest.TestCase):
