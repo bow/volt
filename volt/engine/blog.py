@@ -114,7 +114,7 @@ class BlogEngine(BaseEngine):
                         '', conf))
             else:
                 self.packs.append(BlogPack(unit_idxs[start:], i, 'blog',\
-                        '', conf, last=False))
+                        '', conf, last=True))
 
     def write_packs(self, template_file, site_conf):
         """Writes multiple blog posts to output file.
