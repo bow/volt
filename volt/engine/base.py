@@ -11,7 +11,7 @@ from inspect import isclass
 import yaml
 
 from volt import ConfigError, ContentError, ParseError
-from volt.config import config
+from volt.config import Session
 
 
 MARKUP = { '.html': 'html',
@@ -28,9 +28,13 @@ _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 class BaseEngine(object):
 
-    def __init__(self):
+    def __init__(self, config):
         """Initializes the engine.
         """
+        if not isinstance(config, Session):
+            raise TypeError("Engine objects must be initialized with Session object.")
+
+        self.config = config
         self.units = []
         self.packs = []
 
