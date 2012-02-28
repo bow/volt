@@ -81,29 +81,14 @@ class BaseEngine(object):
         setattr(unit, 'path', os.path.join(*(path)))
 
     def process_units(self):
-        """Process the the units used to initialize the engine and use the results to fill self.units.
+        """Process the units and use the results to fill self.units.
         """
         raise NotImplementedError("Subclasses must implement process_units().")
 
-    def create_dirs(self):
-        """Creates all required directories in the site folder.
+    def process_packs(self):
+        """Process the packs and use the results to fill self.packs.
         """
-        raise NotImplementedError("Subclasses must implement create_dirs().")
-
-    def build_paths(self):
-        """Builds all the required URLs.
-        """
-        raise NotImplementedError("Subclasses must implement build_paths().")
-
-    def write_single_unit(self):
-        """Writes a single BaseUnit object to an output file.
-        """
-        raise NotImplementedError("Subclasses must implement write_single_unit().")
-
-    def write_multiple(self):
-        """Writes an output file composed of multipe BaseUnit object.
-        """
-        raise NotImplementedError("Subclasses must implement write_multiple().")
+        raise NotImplementedError("Subclasses must implement process_packs().")
 
     def run(self):
         """Starts the engine processing.

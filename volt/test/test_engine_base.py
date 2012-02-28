@@ -67,6 +67,9 @@ class TestBaseEngine(unittest.TestCase):
     def test_process_units(self):
         self.assertRaises(NotImplementedError, self.engine.process_units, )
 
+    def test_process_packs(self):
+        self.assertRaises(NotImplementedError, self.engine.process_packs, )
+
     def test_run(self):
         self.assertRaises(NotImplementedError, self.engine.run, )
 
