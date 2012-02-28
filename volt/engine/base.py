@@ -84,6 +84,29 @@ class BaseEngine(object):
             path[-1] = path[-1] + '.html'
         setattr(unit, 'path', os.path.join(*(path)))
 
+    def sort_units(self, sort_key):
+        """Sorts the units in self.units.
+
+        Arguments:
+        sort_key: field name (string) indicating the key used for sorting;
+            if preceeded with  a dash ('-') then sorting is reversed
+        """
+        reversed = sort_key.startswith('-')
+        sort_key = sort_key.strip('-')
+        self.units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+
+    def chain_units(self):
+        """Set the 'previous' and 'next' permalink attributes for each unit.
+
+        Using this method, each unit can link to the previous or next one
+        according to the sorting order.
+        """
+        for i in range(len(self.units)):
+            if i != 0:
+                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
+            if i != len(self.units)-1:
+                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
+
     def process_units(self):
         """Process the units and use the results to fill self.units.
         """

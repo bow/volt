@@ -43,17 +43,11 @@ class BlogEngine(BaseEngine):
             self.set_unit_paths(self.units[-1], self.config.VOLT.SITE_DIR)
 
         # sort the units based on config
-        reversed = ('-' == self.config.BLOG.SORT[0])
-        sort_key = self.config.BLOG.SORT.strip('-')
-        self.units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+        self.sort_units(self.config.BLOG.SORT)
 
         # and set 'next' and 'prev' urls of each units according to the sort
         # so each blog post can link to the next/previous
-        for i in range(len(self.units)):
-            if i != 0:
-                setattr(self.units[i], 'permalink_prev', self.units[i-1].permalink)
-            if i != len(self.units)-1:
-                setattr(self.units[i], 'permalink_next', self.units[i+1].permalink)
+        self.chain_units()
 
     def write_units(self):
         """Writes single blog post into its output file.
