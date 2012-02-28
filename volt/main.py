@@ -9,7 +9,7 @@ import sys
 from volt import util
 from volt.config import config
 from volt.config.base import import_conf
-from volt.engine.base import get_engine, get_unit
+from volt.engine.base import get_engine
 
 
 __version__ = "0.0.1"
@@ -83,9 +83,8 @@ def run_gen():
         except ImportError:
             eng_mod = import_conf('volt.engine.%s' % e)
         eng_class = get_engine(eng_mod)
-        eng_unit = get_unit(eng_mod)
         # run engine and store resulting units in units
-        units[eng_mod.__name__] = eng_class(eng_unit).run()
+        units[eng_mod.__name__] = eng_class().run()
 
     tpl_file = '_index.html'
     template = config.SITE.template_env.get_template(tpl_file)

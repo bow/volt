@@ -23,7 +23,7 @@ class TestBlogEngine(unittest.TestCase):
         self.content_dir = os.path.join(self.project_dir, 'content', 'blog', 'engine_pass')
         default_conf = 'volt.test.fixtures.config.default'
         self.conf = Session(default_conf, self.project_dir)
-        self.engine = BlogEngine(BlogUnit)
+        self.engine = BlogEngine()
 
     def test_process_units(self):
         self.engine.process_units(self.content_dir, self.conf)

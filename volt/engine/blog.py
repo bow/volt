@@ -42,7 +42,7 @@ class BlogEngine(BaseEngine):
         # parse each file and fill self.contents with BlogUnit-s
         # also set its URL and absolute file path to be written
         for fname in files:
-            self.units.append(self.unit_class(fname, header_delim, conf.BLOG))
+            self.units.append(BlogUnit(fname, header_delim, conf.BLOG))
             # paths and permalinks are not set in BlogUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
             self.set_unit_paths(self.units[-1], conf.VOLT.SITE_DIR, '')

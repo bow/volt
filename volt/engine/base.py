@@ -28,16 +28,9 @@ _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 class BaseEngine(object):
 
-    def __init__(self, unit_class=None):
+    def __init__(self):
         """Initializes the engine.
-
-        Arguments:
-        unit_class: content container class subclassing BaseUnit
         """
-        if not issubclass(unit_class, BaseUnit):
-            raise TypeError("Engine must be initialized with a content container class.")
-
-        self.unit_class = unit_class
         self.units = []
         self.packs = []
 
@@ -307,4 +300,3 @@ def get_class(mod, cls):
             return item
 
 get_engine = partial(get_class, cls=BaseEngine)
-get_unit = partial(get_class, cls=BaseUnit)

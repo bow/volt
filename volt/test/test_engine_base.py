@@ -21,7 +21,7 @@ class TestBaseEngine(unittest.TestCase):
         self.content_dir = os.path.join(self.test_dir, 'fixtures', 'project', \
                 'content', 'blog', '01')
         self.unit = Mock(spec=BaseUnit)
-        self.engine = BaseEngine(BaseUnit)
+        self.engine = BaseEngine()
 
     def test_init(self):
         # test if BaseUnit subclass is used to initialize engine
