@@ -124,8 +124,8 @@ class TestBaseUnit(unittest.TestCase):
                 'kings-of-convenience-know-how-feat-feist')
         self.assertEqual(slugify('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest'),
                 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
-        self.assertRaises(AssertionError, slugify, 'Röyksopp - Eple')
-        self.assertRaises(AssertionError, slugify, '宇多田ヒカル')
+        self.assertRaises(ContentError, slugify, 'Röyksopp - Eple')
+        self.assertRaises(ContentError, slugify, '宇多田ヒカル')
         self.assertRaises(ContentError, slugify, '&**%&^%&$-')
 
     def test_get_permalist(self):

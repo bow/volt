@@ -200,8 +200,11 @@ class BaseUnit(object):
         # remove english articles, bad chars, and dashes in front and end
         string = re.sub(_RE_PRUNE, '', string)
 
-        # warn if there are non-ascii chars
-        assert string.decode('utf8') == string
+        # raise exception if there are non-ascii chars
+        try:
+            string.decode('ascii')
+        except UnicodeDecodeError:
+            raise ContentError("Slug in '%s' contains non-ascii characters." % self.id)
 
         # slug should not begin or end with dash or contain multiple dashes
         string = re.sub(_RE_MULTIPLE, '-', string)
