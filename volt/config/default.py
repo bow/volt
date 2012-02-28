@@ -74,8 +74,8 @@ BLOG = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, "blog"),
 
     # File paths of blog template files relative to a project root
-    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_post.html"),
-    MULTIPlE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_pagination.html"),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_post.html"),
+    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_pagination.html"),
 
     # TODO
     # Sort order for paginated posts display
@@ -138,8 +138,8 @@ COLLECTION = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, "collection"),
 
     # File paths of collection template files relative to a project root
-    SINGLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_single.html"),
-    MULTIPLE_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_multiple.html"),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_single.html"),
+    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_multiple.html"),
 
     # Required properties
     # These properties must be defined for each collection unit individually
