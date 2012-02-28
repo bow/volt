@@ -109,7 +109,7 @@ class BlogEngine(BaseEngine):
         for i in range(pagination):
             start = i * units_per_pack
             if i != pagination - 1:
-                stop = (i + 1) * units_per_pack - 1
+                stop = (i + 1) * units_per_pack
                 self.packs.append(BlogPack(unit_idxs[start:stop], i, 'blog', \
                         '', conf))
             else:
@@ -243,9 +243,14 @@ class BlogPack(BasePack):
 
         # since we can guess the permalink of next and previous pack objects
         # we can set those attributes here (unlike in units)
-        if self.pack_idx != 1:
-            setattr(self, 'permalink_prev', '/'.join([self.permalink, \
-                    self.extended_dir, str(self.pack_idx - 1)]))
+        # next permalinks
         if not last:
-            setattr(self, 'permalink_next', '/'.join([self.permalink, \
-                    self.extended_dir, str(self.pack_idx + 1)]))
+            self.permalink_next = '/'.join([site_url, self.base_dir, \
+                    self.extended_dir, str(self.pack_idx + 1)])
+        # prev permalinks
+        if self.pack_idx == 2:
+            # if pagination is at 2, previous permalink is to 1
+            self.permalink_prev = '/'.join([site_url, self.base_dir])
+        elif self.pack_idx != 1:
+            self.permalink_prev = '/'.join([site_url, self.base_dir, \
+                    self.extended_dir, str(self.pack_idx - 1)])
