@@ -143,7 +143,7 @@ class BlogEngine(BaseEngine):
                 # since pack object only stores indexes of unit in self.unit
                 # we need to get the actual unit items before writing
                 setattr(pack, 'units', [self.units[x] for x in pack.unit_idxs])
-                rendered = template.render(pack=pack.__dict__, site=site_conf, page={})
+                rendered = template.render(page=pack.__dict__, site=site_conf)
                 self.write_output(target, rendered)
 
 class BlogUnit(BaseUnit):

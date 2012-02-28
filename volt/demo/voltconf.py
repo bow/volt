@@ -45,9 +45,9 @@ BLOG = Config(
     AUTHOR = "Admin",
 
     # The number of displayed posts per pagination page
-    POSTS_PER_PAGE = 10, 
+    POSTS_PER_PAGE = 2, 
 
-    # Default length (in words) of blog post excerpts
+    # Default length (in chars) of blog post excerpts
     EXCERPT_LENGTH = 50, 
 )
 
