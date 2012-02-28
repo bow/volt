@@ -102,11 +102,11 @@ class BlogEngine(BaseEngine):
             start = i * units_per_pack
             if i != pagination - 1:
                 stop = (i + 1) * units_per_pack
-                self.packs.append(BlogPack(unit_idxs[start:stop], i, 'blog', \
-                        '', self.config))
+                self.packs.append(BlogPack(unit_idxs[start:stop], i, \
+                        self.config.VOLT.SITE_DIR, ['blog']))
             else:
-                self.packs.append(BlogPack(unit_idxs[start:], i, 'blog',\
-                        '', self.config, last=True))
+                self.packs.append(BlogPack(unit_idxs[start:], i, \
+                        self.config.VOLT.SITE_DIR, ['blog'], last=True))
 
     def write_packs(self):
         """Writes multiple blog posts to output file.
@@ -196,52 +196,53 @@ class BlogUnit(BaseUnit):
 
 class BlogPack(BasePack):
 
-    def __init__(self, unit_idxs, pack_idx, base_dir, site_url, conf, last=False):
+    def __init__(self, unit_idxs, pack_idx, base_dir, base_permalist=[''], \
+            base_url='', last=False, pagination_dir=''):
         """Initializes BlogPack instance.
 
         Arguments:
         unit_idxs: list or tuple containing the indexes of BlogEngine.units
             to write. Packs are made according to unit_idxs' sorting order
         pack_idx: index of the pack object relative to to other pack objects.
-        base_dir: absolute filesystem path to the output directory
-        site_url: static site URL, usually set in config.SITE
-        conf: Config object
+        base_dir: absolute file path to the output directory
+        base_permalist: list of URL components common to all pack permalinks;
+        base_url: base url to be set for the permalink; defaults to '' so
+            permalinks are relative
         last: boolean indicating whether this pack is the last one
+        pagination_dir: directory for paginated items with index > 1
         """
         self.unit_idxs = unit_idxs
         # because page are 1-indexed and lists are 0-indexed
         self.pack_idx = pack_idx + 1
-        self.base_dir = base_dir
-        self.site_url = site_url
-        # this will be appended for pack_idx > 1
-        # e.g. blog/page/2
-        self.pagination_dir = 'page'
+        # this will be appended for pack_idx > 1, e.g. .../page/2
+        self.pagination_dir = pagination_dir
 
         if self.pack_idx == 1:
-            # if it's the first pack page, use base_dir
-            self.permalist = [self.base_dir]
+            # if it's the first pack page, use base_permalist only
+            self.permalist = base_permalist
         else:
-            # otherwise use base_dir/page/x
-            self.permalist = [self.base_dir, self.pagination_dir, \
+            # otherwise add pagination dir and pack index
+            self.permalist = base_permalist + [self.pagination_dir, \
                     str(self.pack_idx)]
 
         # path is path to folder + index.html
-        path = [conf.VOLT.SITE_DIR] + self.permalist + ['index.html']
+        path = [base_dir] + self.permalist + ['index.html']
         self.path = os.path.join(*(path))
 
-        url = [site_url] + self.permalist
+        url = [base_url] + self.permalist
         self.permalink = '/'.join(url)
 
         # since we can guess the permalink of next and previous pack objects
         # we can set those attributes here (unlike in units)
+        pagination_url = [base_url] + base_permalist
         # next permalinks
         if not last:
-            self.permalink_next = '/'.join([site_url, self.base_dir, \
-                    self.pagination_dir, str(self.pack_idx + 1)])
+            self.permalink_next = '/'.join(pagination_url + filter(None, \
+                    [self.pagination_dir, str(self.pack_idx + 1)])) + '/'
         # prev permalinks
         if self.pack_idx == 2:
             # if pagination is at 2, previous permalink is to 1
-            self.permalink_prev = '/'.join([site_url, self.base_dir])
+            self.permalink_prev = '/'.join(pagination_url) + '/'
         elif self.pack_idx != 1:
-            self.permalink_prev = '/'.join([site_url, self.base_dir, \
-                    self.pagination_dir, str(self.pack_idx - 1)])
+            self.permalink_prev = '/'.join(pagination_url + filter(None, \
+                    [self.pagination_dir, str(self.pack_idx - 1)])) + '/'
