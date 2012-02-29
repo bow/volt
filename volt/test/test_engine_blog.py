@@ -11,8 +11,8 @@ from datetime import datetime
 
 from volt import ContentError, ParseError
 from volt.config import Session
-from volt.engine.base import BasePack
-from volt.engine.blog import BlogEngine, BlogUnit
+from volt.engine.base import BasePack, TextUnit
+from volt.engine.blog import BlogEngine
 from volt.test.mocks import session_mock, blog_content_dir, project_dir
 
 
@@ -21,25 +21,15 @@ class TestBlogEngine(unittest.TestCase):
     def setUp(self):
         self.engine = BlogEngine(session_mock)
 
-    def test_process_units(self):
+    def test_process_text_units(self):
         self.engine.config.BLOG.CONTENT_DIR = os.path.join(\
                 self.engine.config.BLOG.CONTENT_DIR, 'engine_pass')
-        self.engine.process_units()
+        self.engine.process_text_units(self.engine.config.BLOG)
 
         self.assertEqual(len(self.engine.units), 5)
         for unit in self.engine.units:
             self.assertTrue(hasattr(unit, 'path'))
             self.assertTrue(hasattr(unit, 'permalink'))
-
-            if self.engine.units.index(unit) == 0:
-                self.assertRaises(AttributeError, getattr, unit, 'permalink_prev')
-                self.assertEqual('/blog/2010/09/30/one-simple-idea/', unit.permalink_next)
-            elif self.engine.units.index(unit) == 4:
-                self.assertEqual('/blog/2002/08/17/528491/', unit.permalink_prev)
-                self.assertRaises(AttributeError, getattr, unit, 'permalink_next')
-            else:
-                self.assertTrue(hasattr(unit, 'permalink_prev'))
-                self.assertTrue(hasattr(unit, 'permalink_next'))
 
     def test_process_packs(self):
         self.engine.config.BLOG.POSTS_PER_PAGE = 3
@@ -60,7 +50,7 @@ class TestBlogEngine(unittest.TestCase):
 
 
 
-class TestBlogUnit(unittest.TestCase):
+class TestTextUnit(unittest.TestCase):
 
     def setUp(self):
         self.config = session_mock.BLOG
@@ -70,7 +60,7 @@ class TestBlogUnit(unittest.TestCase):
     def test_init(self):
         # test if blog post is processed correctly
         fname = glob.glob(os.path.join(self.content_dir, 'unit_pass', '*'))[0]
-        unit_obj = BlogUnit(fname, self.delim, self.config)
+        unit_obj = TextUnit(fname, self.delim, self.config)
         self.assertEqual(unit_obj.id, fname)
         self.assertEqual(unit_obj.time, datetime(2004, 3, 13, 22, 10))
         self.assertEqual(unit_obj.title, '3.14159265')
@@ -83,17 +73,17 @@ class TestBlogUnit(unittest.TestCase):
 
     def test_init_header_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '02*'))[0]
-        self.assertRaises(ParseError, BlogUnit, fname, self.delim, self.config)
+        self.assertRaises(ParseError, TextUnit, fname, self.delim, self.config)
 
     def test_init_header_typo(self):
         from yaml import scanner
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '03*'))[0]
-        self.assertRaises(scanner.ScannerError, BlogUnit, fname, self.delim, self.config)
+        self.assertRaises(scanner.ScannerError, TextUnit, fname, self.delim, self.config)
 
     def test_init_markup_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '04*'))[0]
-        self.assertEqual(BlogUnit(fname, self.delim, self.config).markup, 'html')
+        self.assertEqual(TextUnit(fname, self.delim, self.config).markup, 'html')
 
     def test_init_protected_set(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '05*'))[0]
-        self.assertRaises(ContentError, BlogUnit, fname, self.delim, self.config)
+        self.assertRaises(ContentError, TextUnit, fname, self.delim, self.config)

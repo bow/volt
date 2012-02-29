@@ -6,8 +6,7 @@ from datetime import datetime
 
 from volt import ParseError, ContentError
 from volt.config import config
-from volt.engine.base import BaseEngine, BaseUnit, BasePack, MARKUP
-from volt.util import markupify
+from volt.engine.base import BaseEngine, TextUnit, BasePack
 
 
 __name__ = 'blog'
@@ -136,61 +135,3 @@ class BlogEngine(BaseEngine):
                 setattr(pack, 'units', [self.units[x] for x in pack.unit_idxs])
                 rendered = template.render(page=pack.__dict__, site=self.config.SITE)
                 self.write_output(target, rendered)
-
-class BlogUnit(BaseUnit):
-    """Class representation of a single blog post.
-    """
-    
-    def __init__(self, fname, header_delim, conf):
-        """Initializes BlogUnit.
-
-        Arguments:
-        fname: blog post filename
-        header_delim: compiled regex pattern for header parsing
-        conf: Config object containing blog options
-        """
-        super(BlogUnit, self).__init__(fname)
-
-        with self.open_text(self.id) as source:
-            # open file and remove whitespaces
-            read = filter(None, header_delim.split(source.read()))
-
-            # header should be parsed by yaml into dict
-            header = self.parse_yaml(read.pop(0))
-            if not isinstance(header, dict):
-                raise ParseError("Header format unrecognizable in '%s'." \
-                        % fname)
-
-            # set blog unit file contents as attributes
-            for field in header:
-                self.check_protected(field, conf.PROTECTED)
-                if field in conf.FIELDS_AS_DATETIME:
-                    header[field] = self.as_datetime(\
-                            header[field], conf.CONTENT_DATETIME_FORMAT)
-                if field in conf.FIELDS_AS_LIST:
-                    header[field] = self.as_list(header[field], conf.LIST_SEP)
-                if field == 'slug':
-                    header[field] = self.slugify(header[field])
-                if isinstance(header[field], (int, float)):
-                    header[field] = str(header[field])
-                setattr(self, field.lower(), header[field])
-
-            self.set_markup(MARKUP)
-            # content is everything else after header
-            self.content = markupify(read.pop(0).strip(), self.markup)
-
-        # check if all required fields are present
-        self.check_required(conf.REQUIRED)
-
-        # set other attributes
-        # if slug is not set in header, set it now
-        if not hasattr(self, 'slug'):
-            self.slug = self.slugify(self.title)
-        # and set global values
-        for field in conf.GLOBAL_FIELDS:
-            if not hasattr(self, field):
-                setattr(self, field, conf.GLOBAL_FIELDS[field])
-        # set displayed time string
-        self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
-        # set permalink components
-        self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)

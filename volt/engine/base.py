@@ -12,6 +12,7 @@ import yaml
 
 from volt import ConfigError, ContentError, ParseError
 from volt.config import Session
+from volt.util import markupify
 
 
 MARKUP = { '.html': 'html',
@@ -288,6 +289,69 @@ class BaseUnit(object):
 
         return [unit_base_url.strip('/')] + filter(None, permalist)
 
+
+class TextUnit(BaseUnit):
+    """Class representation of text resources.
+
+    This unit represents resources whose metadata (YAML header) is contained
+    in the same file as the content. Some examples of resources like this 
+    is a single blog post or a single plain page. 
+    """
+
+    def __init__(self, fname, header_delim, conf):
+        """Initializes TextUnit.
+
+        Arguments:
+        fname: source filename
+        header_delim: compiled regex pattern for header parsing
+        conf: Config object containing unit options
+        """
+        super(TextUnit, self).__init__(fname)
+
+        with self.open_text(self.id) as source:
+            # open file and remove whitespaces
+            read = filter(None, header_delim.split(source.read()))
+            # header should be parsed by yaml into dict
+            header = self.parse_yaml(read.pop(0))
+            if not isinstance(header, dict):
+                raise ParseError("Header format unrecognizable in '%s'." \
+                        % fname)
+
+            # set blog unit file contents as attributes
+            for field in header:
+                self.check_protected(field, conf.PROTECTED)
+                if field in conf.FIELDS_AS_DATETIME:
+                    header[field] = self.as_datetime(\
+                            header[field], conf.CONTENT_DATETIME_FORMAT)
+                if field in conf.FIELDS_AS_LIST:
+                    header[field] = self.as_list(header[field], conf.LIST_SEP)
+                if field == 'slug':
+                    header[field] = self.slugify(header[field])
+                if isinstance(header[field], (int, float)):
+                    header[field] = str(header[field])
+                setattr(self, field.lower(), header[field])
+
+            self.set_markup(MARKUP)
+            # content is everything else after header
+            self.content = markupify(read.pop(0).strip(), self.markup)
+
+        # check if all required fields are present
+        self.check_required(conf.REQUIRED)
+
+        # set other attributes
+        # if slug is not set in header, set it now
+        if not hasattr(self, 'slug'):
+            self.slug = self.slugify(self.title)
+        # and set global values
+        for field in conf.GLOBAL_FIELDS:
+            if not hasattr(self, field):
+                setattr(self, field, conf.GLOBAL_FIELDS[field])
+
+        # set permalink components
+        self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)
+        # set displayed time string
+        if hasattr(self, 'time'):
+            self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
 
 class BasePack(object):
     """Class for handling BaseUnit objects in packs.
