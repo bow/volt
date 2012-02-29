@@ -13,7 +13,7 @@ project_dir = os.path.join(test_dir, 'fixtures', 'project')
 blog_content_dir = os.path.join(project_dir, 'content', 'blog')
 
 session_mock = Mock(spec=Session)
-config_mocks = ['VOLT', 'SITE', 'BLOG', ]
+config_mocks = ['VOLT', 'SITE', 'BLOG', 'PLAIN', ]
 
 # attach config mock objects to mock session
 for mock_obj in config_mocks:
@@ -61,3 +61,21 @@ blog_opts = {
 }
 for key in blog_opts:
     setattr(session_mock.BLOG, key, blog_opts[key])
+
+# plain options
+plain_opts = {
+        'URL': "/",
+        'PERMALINK': "{slug}",
+        'CONTENT_DATETIME_FORMAT': "%Y/%m/%d %H:%M",
+        'DISPLAY_DATETIME_FORMAT': "%A, %d %B %Y",
+        'CONTENT_DIR': os.path.join(volt_opts['CONTENT_DIR'], "plain"),
+        'TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], "_plain.html"),
+        'REQUIRED': ('title', ),
+        'GLOBAL_FIELDS': {},
+        'PROTECTED': ('id', 'content', 'parent', ),
+        'FIELDS_AS_DATETIME': ('time', ),
+        'FIELDS_AS_LIST': ('tags', 'categories', ),
+        'LIST_SEP': ', ',
+}
+for key in plain_opts:
+    setattr(session_mock.PLAIN, key, plain_opts[key])

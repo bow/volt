@@ -37,3 +37,18 @@ BLOG = Config(
     FIELDS_AS_LIST = ('tags', 'categories', ),
     LIST_SEP = ', '
 )
+
+PLAIN = Config(
+    URL = "/",
+    PERMALINK = "{slug}",
+    CONTENT_DATETIME_FORMAT = "%Y/%m/%d %H:%M",
+    DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, "plain"),
+    TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_plain.html"),
+    REQUIRED = ('title', ),
+    GLOBAL_FIELDS = {},
+    PROTECTED = ('id', 'content', 'parent', ),
+    FIELDS_AS_DATETIME = ('time', ),
+    FIELDS_AS_LIST = ('tags', 'categories', ),
+    LIST_SEP = ', '
+)
