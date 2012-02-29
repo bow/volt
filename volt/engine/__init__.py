@@ -11,7 +11,7 @@ from inspect import isclass
 import yaml
 
 from volt import ConfigError, ContentError, ParseError
-from volt.config import Session
+from volt.config import SessionConfig
 from volt.util import markupify
 
 
@@ -32,8 +32,8 @@ class BaseEngine(object):
     def __init__(self, config):
         """Initializes the engine.
         """
-        if not isinstance(config, Session):
-            raise TypeError("Engine objects must be initialized with Session object.")
+        if not isinstance(config, SessionConfig):
+            raise TypeError("Engine objects must be initialized with SessionConfig object.")
 
         self.config = config
         self.units = []

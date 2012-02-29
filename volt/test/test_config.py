@@ -6,18 +6,18 @@ import os
 import unittest
 
 from volt import ConfigError
-from volt.config import Session
+from volt.config import SessionConfig
 from volt.config.base import import_conf
 
 
-class TestSession(unittest.TestCase):
+class TestSessionConfig(unittest.TestCase):
 
     def setUp(self):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
         self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
         self.user_conf = os.path.join(self.project_dir, 'voltconf.py')
         self.default_conf = 'volt.test.fixtures.config.default'
-        self.config = Session(default_conf=self.default_conf, \
+        self.config = SessionConfig(default_conf=self.default_conf, \
                 start_dir=self.project_dir)
 
     def tearDown(self):
@@ -46,10 +46,10 @@ class TestSession(unittest.TestCase):
 
     def test_get_root(self):
         # test if exception is properly raised
-        self.assertRaises(ConfigError, Session().get_root, self.test_dir)
+        self.assertRaises(ConfigError, SessionConfig().get_root, self.test_dir)
         # test if root path resolution works properly for all dirs in project dir
         self.assertEqual(self.config.root, self.project_dir)
-        self.assertEqual(self.config.root, Session().get_root(\
+        self.assertEqual(self.config.root, SessionConfig().get_root(\
                 os.path.join(self.project_dir, "content")))
 
     def test_import_conf(self):

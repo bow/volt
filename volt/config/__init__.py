@@ -8,12 +8,12 @@ from volt import ConfigError
 from volt.config.base import Config, get_configs, import_conf
 
 
-class Session(object):
+class SessionConfig(object):
     """Container class for storing all configurations used in a Volt run.
     """
 
     def __init__(self, default_conf='volt.config.default', start_dir=os.getcwd()):
-        """Initializes Session.
+        """Initializes SessionConfig.
 
         Arguments:
             default_conf: default configurations, module or absolute path
@@ -106,4 +106,4 @@ class Session(object):
         return start_dir
 
 
-config = Session()
+config = SessionConfig()

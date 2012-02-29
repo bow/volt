@@ -4,7 +4,7 @@ import os
 
 from mock import Mock
 
-from volt.config import Session
+from volt.config import SessionConfig
 from volt.config.base import Config
 
 
@@ -12,7 +12,7 @@ test_dir = os.path.dirname(os.path.abspath(__file__))
 project_dir = os.path.join(test_dir, 'fixtures', 'project')
 blog_content_dir = os.path.join(project_dir, 'content', 'blog')
 
-session_mock = Mock(spec=Session)
+session_mock = Mock(spec=SessionConfig)
 config_mocks = ['VOLT', 'SITE', 'BLOG', 'PLAIN', ]
 
 # attach config mock objects to mock session
