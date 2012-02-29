@@ -92,35 +92,42 @@ class BaseEngine(object):
         """Process the units and fill self.units
         """
         # get absolute paths of content files
+        units = []
         content_dir = self.globdir(conf.CONTENT_DIR, iter=True)
         files = (x for x in content_dir if os.path.isfile(x))
 
         # parse each file and fill self.contents with TextUnit-s
         # also set its URL and absolute file path to be written
         for fname in files:
-            self.units.append(TextUnit(fname, conf))
+            units.append(TextUnit(fname, conf))
             # paths and permalinks are not set in TextUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(self.units[-1], self.config.VOLT.SITE_DIR)
+            self.set_unit_paths(units[-1], self.config.VOLT.SITE_DIR)
 
-    def sort_units(self, sort_key):
+        return units
+
+    def sort_units(self, units, sort_key):
         """Sorts the units in self.units.
 
         Arguments:
+        units: list containing units to sort
         sort_key: field name (string) indicating the key used for sorting;
             if preceeded with  a dash ('-') then sorting is reversed
         """
         reversed = sort_key.startswith('-')
         sort_key = sort_key.strip('-')
-        self.units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+        units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
 
-    def chain_units(self):
+    def chain_units(self, units):
         """Set the 'previous' and 'next' permalink attributes for each unit.
+
+        Arguments:
+        units: list containing units to chain
 
         Using this method, each unit can link to the previous or next one
         according to the sorting order.
         """
-        for idx, unit in enumerate(self.units):
+        for idx, unit in enumerate(units):
             if idx != 0:
                 setattr(unit, 'permalink_prev', self.units[idx-1].permalink)
             if idx != len(self.units) - 1:

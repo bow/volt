@@ -23,7 +23,7 @@ class TestBlogEngine(unittest.TestCase):
     def test_process_text_units(self):
         self.engine.config.BLOG.CONTENT_DIR = os.path.join(\
                 self.engine.config.BLOG.CONTENT_DIR, 'engine_pass')
-        self.engine.process_text_units(self.engine.config.BLOG)
+        self.engine.units = self.engine.process_text_units(self.engine.config.BLOG)
 
         self.assertEqual(len(self.engine.units), 5)
         for unit in self.engine.units:

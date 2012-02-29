@@ -18,11 +18,11 @@ class BlogEngine(BaseEngine):
 
     def run(self):
         # parse individual post and store the results in self.units
-        self.process_text_units(self.config.BLOG)
+        self.units = self.process_text_units(self.config.BLOG)
         # sort them according to the option
-        self.sort_units(self.config.BLOG.SORT)
+        self.sort_units(self.units, self.config.BLOG.SORT)
         # add prev and next permalinks so blog posts can link to each other
-        self.chain_units()
+        self.chain_units(self.units)
         # write each blog posts according to templae
         self.write_units(self.config.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
