@@ -67,7 +67,20 @@ class Session(object):
 
         # set up jinja2 template environment in the SITE Config object
         env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
+
+        # add user-defined jinja2 filters
+        if hasattr(user, 'JINJA_FILTERS'):
+            for func in user.JINJA_FILTERS:
+                env.filters[func] = user.JINJA_FILTERS[func]
+
+        # add user-defined jinja2 tests
+        if hasattr(user, 'JINJA_TESTS'):
+            for func in user.JINJA_TESTS:
+                env.tests[func] = user.JINJA_TESTS[func]
+
+        # setattr self jinja2 env
         setattr(self.SITE, 'template_env', env)
+
         # and set the loaded flag
         self._loaded = True
 
