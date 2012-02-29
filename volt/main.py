@@ -84,6 +84,7 @@ def run_gen():
             eng_mod = import_conf('volt.engine.%s' % e)
         eng_class = get_engine(eng_mod)
         # run engine and store resulting units in units
+        print 'Running %s engine...' % eng_mod.__name__
         units[eng_mod.__name__] = eng_class(config).run()
 
     tpl_file = '_index.html'

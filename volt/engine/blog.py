@@ -17,10 +17,19 @@ class BlogEngine(BaseEngine):
     """
 
     def run(self):
-        self.process_units()
+        # parse individual post and store the results in self.units
+        self.process_text_units(self.config.BLOG)
+        # sort them according to the option
+        self.sort_units(self.config.BLOG.SORT)
+        # add prev and next permalinks so blog posts can link to each other
+        self.chain_units()
+        # write each blog posts according to templae
         self.write_units()
+        # pack posts according to option
         self.packs = self.process_packs(BasePack, range(len(self.units)))
+        # write packs
         self.write_packs()
+        # (return units for other purposes?)
         return self.units
 
     def write_units(self):
