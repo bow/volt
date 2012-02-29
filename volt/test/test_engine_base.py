@@ -61,9 +61,6 @@ class TestBaseEngine(unittest.TestCase):
                 'not', 'string'))
         self.assertEqual(self.unit_mock.permalink, 'http://alay.com/not/string/')
 
-    def test_process_units(self):
-        self.assertRaises(NotImplementedError, self.engine.process_units, )
-
     def test_process_packs(self):
         self.assertRaises(NotImplementedError, self.engine.process_packs, )
 

@@ -85,6 +85,24 @@ class BaseEngine(object):
             path[-1] = path[-1] + '.html'
         setattr(unit, 'path', os.path.join(*(path)))
 
+    def process_text_units(self, conf):
+        """Process the units and fill self.units
+        """
+        # get absolute paths of content files
+        content_dir = self.globdir(conf.CONTENT_DIR, iter=True)
+        files = (x for x in content_dir if os.path.isfile(x))
+
+        # set pattern for header delimiter
+        header_delim = re.compile(r'^---$', re.MULTILINE)
+
+        # parse each file and fill self.contents with TextUnit-s
+        # also set its URL and absolute file path to be written
+        for fname in files:
+            self.units.append(TextUnit(fname, header_delim, conf))
+            # paths and permalinks are not set in TextUnit to facillitate
+            # testing; ideally, each xUnit should only be using one Config instance
+            self.set_unit_paths(self.units[-1], self.config.VOLT.SITE_DIR)
+
     def sort_units(self, sort_key):
         """Sorts the units in self.units.
 
@@ -108,10 +126,16 @@ class BaseEngine(object):
             if idx != len(self.units) - 1:
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
-    def process_units(self):
-        """Process the units and use the results to fill self.units.
+    def write_output(self, file_obj, string):
+        """Writes string to the open file object.
+
+        Arguments:
+        file_obj: open file object
+        string: string to write
+
+        This is written to facillitate testing of the calling method.
         """
-        raise NotImplementedError("Subclasses must implement process_units().")
+        file_obj.write(string.encode('utf8'))
 
     def process_packs(self):
         """Process the packs and use the results to fill self.packs.

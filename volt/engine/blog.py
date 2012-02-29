@@ -23,31 +23,6 @@ class BlogEngine(BaseEngine):
         self.write_packs()
         return self.units
 
-    def process_units(self):
-        """Process the individual blog posts.
-        """
-        # get absolute paths of content files
-        content_dir = self.globdir(self.config.BLOG.CONTENT_DIR, iter=True)
-        files = (x for x in content_dir if os.path.isfile(x))
-
-        # set pattern for header delimiter
-        header_delim = re.compile(r'^---$', re.MULTILINE)
-
-        # parse each file and fill self.contents with BlogUnit-s
-        # also set its URL and absolute file path to be written
-        for fname in files:
-            self.units.append(BlogUnit(fname, header_delim, self.config.BLOG))
-            # paths and permalinks are not set in BlogUnit to facillitate
-            # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(self.units[-1], self.config.VOLT.SITE_DIR)
-
-        # sort the units based on config
-        self.sort_units(self.config.BLOG.SORT)
-
-        # and set 'next' and 'prev' urls of each units according to the sort
-        # so each blog post can link to the next/previous
-        self.chain_units()
-
     def write_units(self):
         """Writes single blog post into its output file.
         """
@@ -66,17 +41,6 @@ class BlogEngine(BaseEngine):
             with open(unit.path, 'w') as target:
                 rendered = template.render(page=unit.__dict__, site=self.config.SITE)
                 self.write_output(target, rendered)
-
-    def write_output(self, file_obj, string):
-        """Writes string to the open file object.
-
-        Arguments:
-        file_obj: open file object
-        string: string to write
-
-        This is written to facillitate testing of the calling method.
-        """
-        file_obj.write(string)
 
     def process_packs(self, pack_class, unit_idxs):
         """Process groups of blog posts.
