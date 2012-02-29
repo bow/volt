@@ -92,13 +92,10 @@ class BaseEngine(object):
         content_dir = self.globdir(conf.CONTENT_DIR, iter=True)
         files = (x for x in content_dir if os.path.isfile(x))
 
-        # set pattern for header delimiter
-        header_delim = re.compile(r'^---$', re.MULTILINE)
-
         # parse each file and fill self.contents with TextUnit-s
         # also set its URL and absolute file path to be written
         for fname in files:
-            self.units.append(TextUnit(fname, header_delim, conf))
+            self.units.append(TextUnit(fname, conf))
             # paths and permalinks are not set in TextUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
             self.set_unit_paths(self.units[-1], self.config.VOLT.SITE_DIR)
@@ -322,19 +319,21 @@ class TextUnit(BaseUnit):
     is a single blog post or a single plain page. 
     """
 
-    def __init__(self, fname, header_delim, conf):
+    # set pattern for header delimiter as class attr
+    header_delim = re.compile(r'^---$', re.MULTILINE)
+
+    def __init__(self, fname, conf):
         """Initializes TextUnit.
 
         Arguments:
         fname: source filename
-        header_delim: compiled regex pattern for header parsing
         conf: Config object containing unit options
         """
         super(TextUnit, self).__init__(fname)
 
         with self.open_text(self.id) as source:
             # open file and remove whitespaces
-            read = filter(None, header_delim.split(source.read()))
+            read = filter(None, self.header_delim.split(source.read()))
             # header should be parsed by yaml into dict
             header = self.parse_yaml(read.pop(0))
             if not isinstance(header, dict):
