@@ -126,7 +126,7 @@ PLAIN = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, "plain"),
 
     # File paths of plain page template files relative to a project root
-    TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_plain.html"),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_plain.html"),
 
     # Required properties
     # These properties must be defined in each individual plain page unit header

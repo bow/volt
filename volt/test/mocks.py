@@ -69,7 +69,7 @@ plain_opts = {
         'CONTENT_DATETIME_FORMAT': "%Y/%m/%d %H:%M",
         'DISPLAY_DATETIME_FORMAT': "%A, %d %B %Y",
         'CONTENT_DIR': os.path.join(volt_opts['CONTENT_DIR'], "plain"),
-        'TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], "_plain.html"),
+        'UNIT_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], "_plain.html"),
         'REQUIRED': ('title', ),
         'GLOBAL_FIELDS': {},
         'PROTECTED': ('id', 'content', 'parent', ),
