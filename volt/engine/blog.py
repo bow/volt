@@ -43,6 +43,10 @@ class BlogEngine(BaseEngine):
         Returns a list of BasePack objects, representing the contents of a
             group of units
         """
+        # raise exception if pack_class is not BasePack subclass
+        if not issubclass(pack_class, BasePack):
+            raise TypeError("Pack class must be a subclass of BasePack.")
+
         packs = []
         units_per_pack = self.config.BLOG.POSTS_PER_PAGE
 

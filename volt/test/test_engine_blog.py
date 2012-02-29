@@ -46,3 +46,5 @@ class TestBlogEngine(unittest.TestCase):
         self.assertEqual(len(packs), 1)
         for pack in packs:
             self.assertEqual(len(pack.unit_idxs), 3)
+
+        self.assertRaises(TypeError, self.engine.process_packs, TextUnit, range(5))
