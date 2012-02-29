@@ -11,7 +11,7 @@ from datetime import datetime
 
 from volt import ContentError, ParseError
 from volt.config import Session
-from volt.engine.base import BasePack, TextUnit
+from volt.engine import BasePack, TextUnit
 from volt.engine.blog import BlogEngine
 from volt.test.mocks import session_mock, blog_content_dir, project_dir
 

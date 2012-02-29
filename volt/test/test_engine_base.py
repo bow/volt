@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-# tests for volt.engine.base
+# tests for volt.engine
 
 import glob
 import os
@@ -12,7 +12,7 @@ from mock import Mock
 
 from volt import ContentError, ParseError
 from volt.config import Session
-from volt.engine.base import BaseEngine, BaseUnit, TextUnit, BasePack, MARKUP
+from volt.engine import BaseEngine, BaseUnit, TextUnit, BasePack, MARKUP
 from volt.test.mocks import session_mock, project_dir, test_dir, blog_content_dir
 
 

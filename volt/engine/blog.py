@@ -6,7 +6,7 @@ from datetime import datetime
 
 from volt import ParseError, ContentError
 from volt.config import config
-from volt.engine.base import BaseEngine, TextUnit, BasePack
+from volt.engine import BaseEngine, TextUnit, BasePack
 
 
 __name__ = 'blog'

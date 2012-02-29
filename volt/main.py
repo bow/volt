@@ -9,7 +9,7 @@ import sys
 from volt import util
 from volt.config import config
 from volt.config.base import import_conf
-from volt.engine.base import get_engine
+from volt.engine import get_engine
 
 
 __version__ = "0.0.1"

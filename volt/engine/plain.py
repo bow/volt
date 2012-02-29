@@ -1,6 +1,6 @@
 # Volt plain engine
 
-from volt.engine.base import BaseEngine
+from volt.engine import BaseEngine
 
 
 __name__ = 'plain'
