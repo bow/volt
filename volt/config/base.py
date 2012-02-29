@@ -7,6 +7,19 @@ class Config(dict):
     """Container class for storing configuration options.
     """
 
+    # class attributes
+    # so xUnit.__init__ doesnt' fail if Config instance don't
+    # define these
+    PROTECTED = tuple()
+    REQUIRED = tuple()
+    FIELDS_AS_DATETIME = tuple()
+    CONTENT_DATETIME_FORMAT = str()
+    DISPLAY_DATETIME_FORMAT = str()
+    FIELDS_AS_LIST = tuple()
+    LIST_SEP = str()
+    GLOBAL_FIELDS = {}
+    PERMALINK = str()
+
     def __init__(self, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
         # set __dict__ to the dict contents itself
