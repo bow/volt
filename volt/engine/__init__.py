@@ -21,6 +21,9 @@ MARKUP = { '.html': 'html',
          }
 
 # regex objects, so compilation is done efficiently
+# for TextUnit header delimiter
+_RE_DELIM = re.compile(r'^---$', re.MULTILINE)
+# for BaseEngine.slugify
 _RE_SPACES = re.compile(r'\s([A|a]n??)\s|_|\s+')
 _RE_PRUNE = re.compile(r'A-|An-|[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]')
 _RE_MULTIPLE = re.compile(r'-+')
@@ -342,10 +345,7 @@ class TextUnit(BaseUnit):
     is a single blog post or a single plain page. 
     """
 
-    # set pattern for header delimiter as class attr
-    header_delim = re.compile(r'^---$', re.MULTILINE)
-
-    def __init__(self, fname, conf):
+    def __init__(self, fname, conf, delim=_RE_DELIM):
         """Initializes TextUnit.
 
         Arguments:
@@ -356,7 +356,7 @@ class TextUnit(BaseUnit):
 
         with self.open_text(self.id) as source:
             # open file and remove whitespaces
-            read = filter(None, self.header_delim.split(source.read()))
+            read = filter(None, delim.split(source.read()))
             # header should be parsed by yaml into dict
             header = self.parse_yaml(read.pop(0))
             if not isinstance(header, dict):
