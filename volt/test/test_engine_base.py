@@ -10,10 +10,10 @@ from datetime import datetime
 
 from mock import Mock
 
-from volt import ContentError
+from volt import ContentError, ParseError
 from volt.config import Session
-from volt.engine.base import BaseEngine, BaseUnit, BasePack, MARKUP
-from volt.test.mocks import session_mock, project_dir, test_dir
+from volt.engine.base import BaseEngine, BaseUnit, TextUnit, BasePack, MARKUP
+from volt.test.mocks import session_mock, project_dir, test_dir, blog_content_dir
 
 
 class TestBaseEngine(unittest.TestCase):
