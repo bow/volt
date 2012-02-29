@@ -123,6 +123,29 @@ class BaseEngine(object):
             if idx != len(self.units) - 1:
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
+    def write_units(self, template_path):
+        """Writes single units into its output file.
+
+        Arguments:
+        template_path: template file name; must exist in the defined template
+            directory
+        """
+        template_file = os.path.basename(template_path)
+        template_env = self.config.SITE.template_env
+        template = template_env.get_template(template_file)
+
+        for unit in self.units:
+            # warn if files are overwritten
+            # this indicates a duplicate post, which could result in
+            # unexptected results
+            if os.path.exists(unit.path):
+                # TODO: find a better exception name
+                raise ContentError("'%s' already exists!" % unit.path)
+            os.makedirs(os.path.dirname(unit.path))
+            with open(unit.path, 'w') as target:
+                rendered = template.render(page=unit.__dict__, site=self.config.SITE)
+                self.write_output(target, rendered)
+
     def write_output(self, file_obj, string):
         """Writes string to the open file object.
 

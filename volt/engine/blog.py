@@ -24,32 +24,13 @@ class BlogEngine(BaseEngine):
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units()
         # write each blog posts according to templae
-        self.write_units()
+        self.write_units(self.config.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
         self.packs = self.process_packs(BasePack, range(len(self.units)))
         # write packs
         self.write_packs()
         # (return units for other purposes?)
         return self.units
-
-    def write_units(self):
-        """Writes single blog post into its output file.
-        """
-        template_file = os.path.basename(self.config.BLOG.UNIT_TEMPLATE_FILE)
-        template_env = self.config.SITE.template_env
-        template = template_env.get_template(template_file)
-
-        for unit in self.units:
-            # warn if files are overwritten
-            # this indicates a duplicate post, which could result in
-            # unexptected results
-            if os.path.exists(unit.path):
-                # TODO: find a better exception name
-                raise ContentError("'%s' already exists!" % unit.path)
-            os.makedirs(os.path.dirname(unit.path))
-            with open(unit.path, 'w') as target:
-                rendered = template.render(page=unit.__dict__, site=self.config.SITE)
-                self.write_output(target, rendered)
 
     def process_packs(self, pack_class, unit_idxs):
         """Process groups of blog posts.
