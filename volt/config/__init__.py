@@ -33,8 +33,8 @@ class SessionConfig(object):
         """Loads the session instance.
         """
         # get root and modify path to user conf to absolute path
-        self.root = self.get_root(self.start_dir)
-        self._default.VOLT.USER_CONF = os.path.join(self.root, \
+        self.ROOT_DIR = self.get_root_dir(self.start_dir)
+        self._default.VOLT.USER_CONF = os.path.join(self.ROOT_DIR, \
                 self._default.VOLT.USER_CONF)
 
         # import user-defined configs as a module object
@@ -59,7 +59,7 @@ class SessionConfig(object):
                 # set directory + file items to absolute paths
                 # directory + file items has 'DIR' + 'FILE' in their items
                 if opt.endswith('_FILE') or opt.endswith('_DIR'):
-                    obj[opt] = os.path.join(self.root, obj[opt])
+                    obj[opt] = os.path.join(self.ROOT_DIR, obj[opt])
                 # strip '/'s from URL options
                 if opt.endswith('URL'):
                     obj[opt] = obj[opt].strip('/')
@@ -79,12 +79,12 @@ class SessionConfig(object):
                 env.tests[func] = user.JINJA_TESTS[func]
 
         # setattr self jinja2 env
-        setattr(self.SITE, 'template_env', env)
+        setattr(self.SITE, 'TEMPLATE_ENV', env)
 
         # and set the loaded flag
         self._loaded = True
 
-    def get_root(self, start_dir):
+    def get_root_dir(self, start_dir):
         """Returns the root directory of a Volt project.
 
         Arguments:
@@ -102,8 +102,8 @@ class SessionConfig(object):
         # recurse if config file not found
         if not os.path.exists(os.path.join(start_dir, self._default.VOLT.USER_CONF)):
             parent = os.path.dirname(start_dir)
-            return self.get_root(parent)
+            return self.get_root_dir(parent)
         return start_dir
 
 
-config = SessionConfig()
+CONFIG = SessionConfig()

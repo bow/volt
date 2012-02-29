@@ -6,7 +6,7 @@ import os
 import sys
 
 from volt import util
-from volt.config import config
+from volt.config import CONFIG
 from volt.config.base import import_conf
 
 
@@ -90,5 +90,5 @@ def main(cli_arglist=None):
     """Main execution routine.
     """
     # set command-line args accessible package-wide
-    config.CMD = build_parsers().parse_args(cli_arglist)
-    config.CMD.run()
+    CONFIG.CMD = build_parsers().parse_args(cli_arglist)
+    CONFIG.CMD.run()

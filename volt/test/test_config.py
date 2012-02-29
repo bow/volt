@@ -17,44 +17,44 @@ class TestSessionConfig(unittest.TestCase):
         self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
         self.user_conf = os.path.join(self.project_dir, 'voltconf.py')
         self.default_conf = 'volt.test.fixtures.config.default'
-        self.config = SessionConfig(default_conf=self.default_conf, \
+        self.CONFIG = SessionConfig(default_conf=self.default_conf, \
                 start_dir=self.project_dir)
 
     def tearDown(self):
         # destroy default config so default values are reset
-        del self.config._default
-        del self.config
+        del self.CONFIG._default
+        del self.CONFIG
 
     def test_load(self):
         # test if title is overwritten
-        self.assertEqual(self.config.SITE.TITLE, 'Title in user')
+        self.assertEqual(self.CONFIG.SITE.TITLE, 'Title in user')
         # test if default conf is preserved
-        self.assertEqual(self.config.SITE.DESC, 'Desc in default')
+        self.assertEqual(self.CONFIG.SITE.DESC, 'Desc in default')
         # test if user-defined path resolution works
-        self.assertEqual(self.config.VOLT.CUSTOM_DIR, \
+        self.assertEqual(self.CONFIG.VOLT.CUSTOM_DIR, \
                 os.path.join(self.project_dir, 'custom_dir_user'))
-        self.assertEqual(self.config.BLOG.CUSTOM_DIR, \
+        self.assertEqual(self.CONFIG.BLOG.CUSTOM_DIR, \
                 os.path.join(self.project_dir, 'custom_dir_user', 'user_join'))
         # test for user-only defined Config
-        self.assertEqual(self.config.ADDON.TITLE, 'Only in user')
+        self.assertEqual(self.CONFIG.ADDON.TITLE, 'Only in user')
         # test for different URL possibilities
-        self.assertEqual(self.config.SITE.URL, 'http://foo.com')
-        self.assertEqual(self.config.SITE.B_URL, 'http://foo.com')
-        self.assertEqual(self.config.SITE.C_URL, '')
+        self.assertEqual(self.CONFIG.SITE.URL, 'http://foo.com')
+        self.assertEqual(self.CONFIG.SITE.B_URL, 'http://foo.com')
+        self.assertEqual(self.CONFIG.SITE.C_URL, '')
         # test for lazy loading flag
-        self.assertTrue(self.config._loaded)
+        self.assertTrue(self.CONFIG._loaded)
 
-    def test_get_root(self):
+    def test_get_root_dir(self):
         # test if exception is properly raised
-        self.assertRaises(ConfigError, SessionConfig().get_root, self.test_dir)
+        self.assertRaises(ConfigError, SessionConfig().get_root_dir, self.test_dir)
         # test if root path resolution works properly for all dirs in project dir
-        self.assertEqual(self.config.root, self.project_dir)
-        self.assertEqual(self.config.root, SessionConfig().get_root(\
+        self.assertEqual(self.CONFIG.ROOT_DIR, self.project_dir)
+        self.assertEqual(self.CONFIG.ROOT_DIR, SessionConfig().get_root_dir(\
                 os.path.join(self.project_dir, "content")))
 
     def test_import_conf(self):
         # load config first since it's a lazy object
-        self.config._load()
+        self.CONFIG._load()
         # test for dotted notation import
         self.assertIsNotNone(import_conf(self.default_conf))
         # test for absolute path notation import

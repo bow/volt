@@ -5,13 +5,13 @@ import os
 import sys
 from functools import partial
 
-from volt.config import config
+from volt.config import CONFIG
 
 
 def show_info(text, c='grey', w='normal'):
     """Colors the text.
     """
-    if config.VOLT.COLORED_TEXT:
+    if CONFIG.VOLT.COLORED_TEXT:
         color_map = {'black': '30', 'red': '31', 
                      'green': '32', 'yellow': '33', 
                      'blue': '34', 'violet': '35',

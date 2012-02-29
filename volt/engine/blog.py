@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 
 from volt import ParseError, ContentError
-from volt.config import config
+from volt.config import CONFIG
 from volt.engine import BaseEngine, TextUnit, BasePack
 
 
@@ -18,13 +18,13 @@ class BlogEngine(BaseEngine):
 
     def run(self):
         # parse individual post and store the results in self.units
-        self.units = self.process_text_units(self.config.BLOG)
+        self.units = self.process_text_units(self.CONFIG.BLOG)
         # sort them according to the option
-        self.sort_units(self.units, self.config.BLOG.SORT)
+        self.sort_units(self.units, self.CONFIG.BLOG.SORT)
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units(self.units)
         # write each blog posts according to templae
-        self.write_units(self.config.BLOG.UNIT_TEMPLATE_FILE)
+        self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
         self.packs = self.process_packs(BasePack, range(len(self.units)))
         # write packs
@@ -48,7 +48,7 @@ class BlogEngine(BaseEngine):
             raise TypeError("Pack class must be a subclass of BasePack.")
 
         packs = []
-        units_per_pack = self.config.BLOG.POSTS_PER_PAGE
+        units_per_pack = self.CONFIG.BLOG.POSTS_PER_PAGE
 
         # count how many paginations we need
         pagination = len(unit_idxs) / units_per_pack + \
@@ -60,18 +60,18 @@ class BlogEngine(BaseEngine):
             if i != pagination - 1:
                 stop = (i + 1) * units_per_pack
                 packs.append(pack_class(unit_idxs[start:stop], i, \
-                        self.config.VOLT.SITE_DIR, ['blog']))
+                        self.CONFIG.VOLT.SITE_DIR, ['blog']))
             else:
                 packs.append(pack_class(unit_idxs[start:], i, \
-                        self.config.VOLT.SITE_DIR, ['blog'], last=True))
+                        self.CONFIG.VOLT.SITE_DIR, ['blog'], last=True))
 
         return packs
 
     def write_packs(self):
         """Writes multiple blog posts to output file.
         """
-        template_file = os.path.basename(self.config.BLOG.PACK_TEMPLATE_FILE)
-        template_env = self.config.SITE.template_env
+        template_file = os.path.basename(self.CONFIG.BLOG.PACK_TEMPLATE_FILE)
+        template_env = self.CONFIG.SITE.TEMPLATE_ENV
         template = template_env.get_template(template_file)
 
         for pack in self.packs:
@@ -91,5 +91,5 @@ class BlogEngine(BaseEngine):
                 # since pack object only stores indexes of unit in self.unit
                 # we need to get the actual unit items before writing
                 setattr(pack, 'units', [self.units[x] for x in pack.unit_idxs])
-                rendered = template.render(page=pack.__dict__, site=self.config.SITE)
+                rendered = template.render(page=pack.__dict__, site=self.CONFIG.SITE)
                 self.write_output(target, rendered)

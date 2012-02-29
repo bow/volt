@@ -15,7 +15,7 @@ from SocketServer import ThreadingTCPServer
 from socket import error, getfqdn
 
 from volt import util
-from volt.config import config
+from volt.config import CONFIG
 from volt.main import __version__
 
 
@@ -75,7 +75,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         path = posixpath.normpath(urllib.unquote(path))
         words = path.split('/')
         words = filter(None, words)
-        path = config.VOLT.SITE_DIR
+        path = CONFIG.VOLT.SITE_DIR
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
@@ -89,14 +89,14 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 def run():
     """Runs the server.
     """
-    address = ('127.0.0.1', config.CMD.server_port)
+    address = ('127.0.0.1', CONFIG.CMD.server_port)
     try:
         server = VoltHTTPServer(address, VoltHTTPRequestHandler)
     except Exception, e:
-        ERRORS = { 2: "Site directory '%s' not found" % config.VOLT.SITE_DIR,
+        ERRORS = { 2: "Site directory '%s' not found" % CONFIG.VOLT.SITE_DIR,
                   13: "You don't have permission to access port %s" % 
-                      (config.CMD.server_port),
-                  98: "Port %s already in use" % (config.CMD.server_port)}
+                      (CONFIG.CMD.server_port),
+                  98: "Port %s already in use" % (CONFIG.CMD.server_port)}
         try:
             error_message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):
@@ -111,7 +111,7 @@ def run():
     util.show_info("Serving %s/\n" 
                    "Running at http://%s:%s/\n"
                    "CTRL-C to stop.\n\n" % 
-                   (config.VOLT.SITE_DIR, run_address, run_port))
+                   (CONFIG.VOLT.SITE_DIR, run_address, run_port))
 
     try:
         server.serve_forever()

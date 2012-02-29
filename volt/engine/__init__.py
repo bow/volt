@@ -38,7 +38,7 @@ class BaseEngine(object):
         if not isinstance(config, SessionConfig):
             raise TypeError("Engine objects must be initialized with SessionConfig object.")
 
-        self.config = config
+        self.CONFIG = config
         self.units = []
 
     def globdir(self, directory, pattern='*', iter=False):
@@ -102,7 +102,7 @@ class BaseEngine(object):
             units.append(TextUnit(fname, conf))
             # paths and permalinks are not set in TextUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(units[-1], self.config.VOLT.SITE_DIR)
+            self.set_unit_paths(units[-1], self.CONFIG.VOLT.SITE_DIR)
 
         return units
 
@@ -141,7 +141,7 @@ class BaseEngine(object):
             directory
         """
         template_file = os.path.basename(template_path)
-        template_env = self.config.SITE.template_env
+        template_env = self.CONFIG.SITE.TEMPLATE_ENV
         template = template_env.get_template(template_file)
 
         for unit in self.units:
@@ -153,7 +153,7 @@ class BaseEngine(object):
                 raise ContentError("'%s' already exists!" % unit.path)
             os.makedirs(os.path.dirname(unit.path))
             with open(unit.path, 'w') as target:
-                rendered = template.render(page=unit.__dict__, site=self.config.SITE)
+                rendered = template.render(page=unit.__dict__, site=self.CONFIG.SITE)
                 self.write_output(target, rendered)
 
     def write_output(self, file_obj, string):

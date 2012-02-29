@@ -139,13 +139,13 @@ class TestTextUnit(unittest.TestCase):
     def setUp(self):
         # in theory, any engine that uses TextUnit can be used
         # blog is chosen just for convenience
-        self.config = session_mock.BLOG
+        self.CONFIG = session_mock.BLOG
         self.content_dir = blog_content_dir
 
     def test_init(self):
         # test if text unit is processed correctly
         fname = glob.glob(os.path.join(self.content_dir, 'unit_pass', '*'))[0]
-        unit_obj = TextUnit(fname, self.config)
+        unit_obj = TextUnit(fname, self.CONFIG)
         self.assertEqual(unit_obj.id, fname)
         self.assertEqual(unit_obj.time, datetime(2004, 3, 13, 22, 10))
         self.assertEqual(unit_obj.title, '3.14159265')
@@ -158,20 +158,20 @@ class TestTextUnit(unittest.TestCase):
 
     def test_init_header_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '02*'))[0]
-        self.assertRaises(ParseError, TextUnit, fname, self.config)
+        self.assertRaises(ParseError, TextUnit, fname, self.CONFIG)
 
     def test_init_header_typo(self):
         from yaml import scanner
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '03*'))[0]
-        self.assertRaises(scanner.ScannerError, TextUnit, fname, self.config)
+        self.assertRaises(scanner.ScannerError, TextUnit, fname, self.CONFIG)
 
     def test_init_markup_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '04*'))[0]
-        self.assertEqual(TextUnit(fname, self.config).markup, 'html')
+        self.assertEqual(TextUnit(fname, self.CONFIG).markup, 'html')
 
     def test_init_protected_set(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '05*'))[0]
-        self.assertRaises(ContentError, TextUnit, fname, self.config)
+        self.assertRaises(ContentError, TextUnit, fname, self.CONFIG)
 
 
 class TestBasePack(unittest.TestCase):
