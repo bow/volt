@@ -13,21 +13,21 @@ class BlogEngine(Engine):
     """Class for processing raw blog content into blog pages and directories.
     """
 
-    def run(self):
+    def parse(self):
         # parse individual post and store the results in self.units
         self.units = self.process_text_units(self.CONFIG.BLOG)
         # sort them according to the option
         self.sort_units(self.units, self.CONFIG.BLOG.SORT)
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units(self.units)
+
+    def write(self):
         # write each blog posts according to templae
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
         self.packs = self.process_packs(Pack, range(len(self.units)))
         # write packs
         self.write_packs()
-        # (return units for other purposes?)
-        return self.units
 
     def process_packs(self, pack_class, unit_idxs):
         """Process groups of blog posts.
