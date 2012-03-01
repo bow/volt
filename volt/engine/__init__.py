@@ -6,13 +6,12 @@ import os
 import re
 from datetime import datetime
 from functools import partial
-from inspect import isclass
 
 import yaml
 
 from volt import ContentError, ParseError
 from volt.config import SessionConfig
-from volt.util import markupify
+from volt.util import grab_class, markupify
 
 
 MARKUP = { '.html': 'html',
@@ -466,17 +465,4 @@ class Pack(object):
                     [self.pagination_dir, str(self.pack_idx - 1)])) + '/'
 
 
-def get_class(mod, cls):
-    """Returns a class defined in the given module that is a subclass of the given class.
-
-    Arguments:
-    cls: parent class of the class to return
-    mod: module to be searched
-    """
-    objs = (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x)))
-    # return if class is not itself
-    for item in objs:
-        if item.__name__ != cls.__name__ and issubclass(item, cls):
-            return item
-
-get_engine = partial(get_class, cls=Engine)
+get_engine = partial(grab_class, cls=Engine)

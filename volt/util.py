@@ -3,8 +3,23 @@
 
 import sys
 from functools import partial
+from inspect import isclass
 
 from volt.config import CONFIG
+
+
+def grab_class(mod, cls):
+    """Returns a class defined in the given module that is a subclass of the given class.
+
+    Arguments:
+    cls: parent class of the class to return
+    mod: module to be searched
+    """
+    objs = (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x)))
+    # return if class is not itself
+    for item in objs:
+        if item.__name__ != cls.__name__ and issubclass(item, cls):
+            return item
 
 
 def show_info(text, c='grey', w='normal'):
@@ -24,6 +39,7 @@ def show_info(text, c='grey', w='normal'):
 
 show_notif, show_warning, show_error = \
     [partial(show_info, c=x) for x in ['cyan', 'yellow', 'red']]
+
 
 def markupify(string, lang='html'):
     """Returns the string after processing with the specified markup languaged.

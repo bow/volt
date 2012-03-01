@@ -2,7 +2,7 @@
 
 from functools import partial
 
-from volt.engine import get_class
+from volt.util import grab_class
 
 
 class Plugin(object):
@@ -20,4 +20,4 @@ class Processor(Plugin):
         raise NotImplementedError("Processor plugins must implement a process() method.")
 
 
-get_plugin = partial(get_class, cls=Plugin)
+get_plugin = partial(grab_class, cls=Plugin)
