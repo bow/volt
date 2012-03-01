@@ -4,13 +4,14 @@ import shutil
 from volt.config import CONFIG
 from volt.config.base import import_conf
 from volt.engine import get_engine
+from volt.plugin import get_processor
 
 
 class Generator(object):
     """Class representing a Volt run.
     """
     def activate(self):
-        self.engines = {}
+        self.engines = dict()
 
         for e in CONFIG.SITE.ENGINES:
             try:
