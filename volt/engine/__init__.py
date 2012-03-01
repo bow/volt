@@ -10,7 +10,7 @@ from inspect import isclass
 
 import yaml
 
-from volt import ConfigError, ContentError, ParseError
+from volt import ContentError, ParseError
 from volt.config import SessionConfig
 from volt.util import markupify
 
@@ -67,7 +67,6 @@ class BaseEngine(object):
         """
         url = [base_url]
         path = [base_dir]
-        permalist = unit.permalist
 
         # set permalink
         # we don't want double slashes in URL, so remove empty strings

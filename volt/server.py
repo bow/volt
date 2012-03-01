@@ -5,14 +5,13 @@ log message and the option to set directory to serve. By default, it searches
 for the "site" directory and serves the contents.
 """
 
-import argparse
 import os
 import posixpath
 import sys
 import urllib
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingTCPServer
-from socket import error, getfqdn
+from socket import getfqdn
 
 from volt import util
 from volt.config import CONFIG

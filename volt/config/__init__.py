@@ -5,7 +5,7 @@ from itertools import chain
 from jinja2 import Environment, FileSystemLoader
 
 from volt import ConfigError
-from volt.config.base import Config, get_configs, import_conf
+from volt.config.base import get_configs, import_conf
 
 
 class SessionConfig(object):

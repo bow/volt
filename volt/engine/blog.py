@@ -1,12 +1,9 @@
 # Volt blog engine
 
 import os
-import re
-from datetime import datetime
 
-from volt import ParseError, ContentError
-from volt.config import CONFIG
-from volt.engine import BaseEngine, TextUnit, BasePack
+from volt import ContentError
+from volt.engine import BaseEngine, BasePack
 
 
 __name__ = 'blog'

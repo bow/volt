@@ -2,12 +2,10 @@
 """
 
 import argparse
-import os
 import sys
 
 from volt import util
 from volt.config import CONFIG
-from volt.config.base import import_conf
 
 
 __version__ = "0.0.1"

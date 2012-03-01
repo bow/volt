@@ -1,7 +1,6 @@
 """Collection of useful methods.
 """
 
-import os
 import sys
 from functools import partial
 
