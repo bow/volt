@@ -11,20 +11,20 @@ from datetime import datetime
 from mock import Mock
 
 from volt import ContentError, ParseError
-from volt.engine import BaseEngine, BaseUnit, TextUnit, BasePack, MARKUP
+from volt.engine import Engine, Unit, TextUnit, Pack, MARKUP
 from volt.test.mocks import session_mock, project_dir, test_dir, blog_content_dir
 
 
-class TestBaseEngine(unittest.TestCase):
+class TestEngine(unittest.TestCase):
 
     def setUp(self):
         self.content_dir = os.path.join(project_dir, 'content', 'blog', '01')
-        self.engine = BaseEngine(session_mock)
+        self.engine = Engine(session_mock)
 
     def test_init(self):
         # test if exception is raised if engine is not initialized
         # with a session object
-        self.assertRaises(TypeError, BaseEngine.__init__, ) 
+        self.assertRaises(TypeError, Engine.__init__, ) 
     
     def test_globdir(self):
         # test if whole directory globbing for files work
@@ -35,7 +35,7 @@ class TestBaseEngine(unittest.TestCase):
     def test_set_unit_paths(self):
         path = test_dir
         url = 'http://alay.com'
-        self.unit_mock = Mock(spec=BaseUnit)
+        self.unit_mock = Mock(spec=Unit)
         self.unit_mock.permalist = ['blog', 'not', 'string']
 
         # test for default settings
@@ -67,10 +67,10 @@ class TestBaseEngine(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.engine.run, )
 
 
-class TestBaseUnit(unittest.TestCase):
+class TestUnit(unittest.TestCase):
 
     def setUp(self):
-        self.unit = BaseUnit('01.md')
+        self.unit = Unit('01.md')
 
     def test_check_required(self):
         # test required fields check
@@ -174,7 +174,7 @@ class TestTextUnit(unittest.TestCase):
         self.assertRaises(ContentError, TextUnit, fname, self.CONFIG)
 
 
-class TestBasePack(unittest.TestCase):
+class TestPack(unittest.TestCase):
 
     def test_init(self):
         unit_idxs = range(10)
@@ -186,7 +186,7 @@ class TestBasePack(unittest.TestCase):
         base_url = ''
         last = False
         pagination_dir = ''
-        pack = BasePack(unit_idxs, pack_idx, site_dir, base_permalist, \
+        pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
         self.assertEqual(pack.path, os.path.join(project_dir, 'index.html'))
         self.assertEqual(pack.permalist, [])
@@ -200,7 +200,7 @@ class TestBasePack(unittest.TestCase):
         base_url = ''
         last = False
         pagination_dir = ''
-        pack = BasePack(unit_idxs, pack_idx, site_dir, base_permalist, \
+        pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
         self.assertEqual(pack.path, os.path.join(project_dir, '2', 'index.html'))
         self.assertEqual(pack.permalist, ['2'])
@@ -214,7 +214,7 @@ class TestBasePack(unittest.TestCase):
         base_url = ''
         last = True
         pagination_dir = ''
-        pack = BasePack(unit_idxs, pack_idx, site_dir, base_permalist, \
+        pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
         self.assertEqual(pack.path, os.path.join(project_dir, '3', 'index.html'))
         self.assertEqual(pack.permalist, ['3'])
@@ -228,7 +228,7 @@ class TestBasePack(unittest.TestCase):
         base_url = ''
         last = False
         pagination_dir = ''
-        pack = BasePack(unit_idxs, pack_idx, site_dir, base_permalist, \
+        pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
         self.assertEqual(pack.path, os.path.join(project_dir, 'tech', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['tech', '2'])
@@ -242,7 +242,7 @@ class TestBasePack(unittest.TestCase):
         base_url = 'http://foobar.com'
         last = False
         pagination_dir = ''
-        pack = BasePack(unit_idxs, pack_idx, site_dir, base_permalist, \
+        pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
         self.assertEqual(pack.path, os.path.join(project_dir, 'tech', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['tech', '2'])
@@ -256,7 +256,7 @@ class TestBasePack(unittest.TestCase):
         base_url = ''
         last = False
         pagination_dir = 'page'
-        pack = BasePack(unit_idxs, pack_idx, site_dir, base_permalist, \
+        pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
         self.assertEqual(pack.path, os.path.join(project_dir, 'page', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['page', '2'])

@@ -10,7 +10,7 @@ import unittest
 from datetime import datetime
 
 from volt import ContentError, ParseError
-from volt.engine import BasePack, TextUnit
+from volt.engine import Pack, TextUnit
 from volt.engine.blog import BlogEngine
 from volt.test.mocks import session_mock, blog_content_dir, project_dir
 
@@ -32,7 +32,7 @@ class TestBlogEngine(unittest.TestCase):
 
     def test_process_packs(self):
         self.engine.CONFIG.BLOG.POSTS_PER_PAGE = 3
-        packs = self.engine.process_packs(BasePack, range(10))
+        packs = self.engine.process_packs(Pack, range(10))
         self.assertEqual(len(packs), 4)
         for pack in packs:
             if packs.index(pack) != 3:
@@ -41,7 +41,7 @@ class TestBlogEngine(unittest.TestCase):
                 self.assertEqual(len(pack.unit_idxs), 1)
 
         self.engine.CONFIG.BLOG.POSTS_PER_PAGE = 10
-        packs = self.engine.process_packs(BasePack, range(3))
+        packs = self.engine.process_packs(Pack, range(3))
         self.assertEqual(len(packs), 1)
         for pack in packs:
             self.assertEqual(len(pack.unit_idxs), 3)

@@ -3,13 +3,13 @@
 import os
 
 from volt import ContentError
-from volt.engine import BaseEngine, BasePack
+from volt.engine import Engine, Pack
 
 
 __name__ = 'blog'
 
 
-class BlogEngine(BaseEngine):
+class BlogEngine(Engine):
     """Class for processing raw blog content into blog pages and directories.
     """
 
@@ -23,7 +23,7 @@ class BlogEngine(BaseEngine):
         # write each blog posts according to templae
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
-        self.packs = self.process_packs(BasePack, range(len(self.units)))
+        self.packs = self.process_packs(Pack, range(len(self.units)))
         # write packs
         self.write_packs()
         # (return units for other purposes?)
@@ -33,16 +33,16 @@ class BlogEngine(BaseEngine):
         """Process groups of blog posts.
 
         Arguments:
-        pack_class: subclass of BasePack used to contain unit objects
+        pack_class: subclass of Pack used to contain unit objects
         unit_idxs: list or tuple containing the index of self.units to be packed;
             the order of this index determines the order of packing
 
-        Returns a list of BasePack objects, representing the contents of a
+        Returns a list of Pack objects, representing the contents of a
             group of units
         """
-        # raise exception if pack_class is not BasePack subclass
-        if not issubclass(pack_class, BasePack):
-            raise TypeError("Pack class must be a subclass of BasePack.")
+        # raise exception if pack_class is not Pack subclass
+        if not issubclass(pack_class, Pack):
+            raise TypeError("Pack class must be a subclass of Pack.")
 
         packs = []
         units_per_pack = self.CONFIG.BLOG.POSTS_PER_PAGE

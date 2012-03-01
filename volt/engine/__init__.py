@@ -23,14 +23,14 @@ MARKUP = { '.html': 'html',
 # regex objects, so compilation is done efficiently
 # for TextUnit header delimiter
 _RE_DELIM = re.compile(r'^---$', re.MULTILINE)
-# for BaseEngine.slugify
+# for Engine.slugify
 _RE_SPACES = re.compile(r'\s([A|a]n??)\s|_|\s+')
 _RE_PRUNE = re.compile(r'A-|An-|[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]')
 _RE_MULTIPLE = re.compile(r'-+')
 _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 
-class BaseEngine(object):
+class Engine(object):
 
     def __init__(self, config):
         """Initializes the engine.
@@ -53,7 +53,7 @@ class BaseEngine(object):
         """Sets the permalink and absolute file path for the given unit.
 
         Arguments:
-        unit: BaseUnit instance whose path and URL are to be set
+        unit: Unit instance whose path and URL are to be set
         base_dir: absolute filesystem path to the output site directory
         base_url: base url to be set for the permalink; defaults to an empty
             string so permalinks are relative
@@ -177,13 +177,13 @@ class BaseEngine(object):
         raise NotImplementedError("Subclasses must implement run().")
 
 
-class BaseUnit(object):
+class Unit(object):
 
     def __init__(self, id):
-        """Initializes BaseUnit instance.
+        """Initializes Unit instance.
 
         Arguments:
-        id: any string that refers to the BaseUnit instance exclusively
+        id: any string that refers to the Unit instance exclusively
         """
         self.id = id
 
@@ -343,7 +343,7 @@ class BaseUnit(object):
         return [unit_base_url.strip('/')] + filter(None, permalist)
 
 
-class TextUnit(BaseUnit):
+class TextUnit(Unit):
     """Class representation of text resources.
 
     This unit represents resources whose metadata (YAML header) is contained
@@ -406,18 +406,18 @@ class TextUnit(BaseUnit):
             self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
 
 
-class BasePack(object):
-    """Class for handling BaseUnit objects in packs.
+class Pack(object):
+    """Class for handling Unit objects in packs.
 
     We might want to use this to handle units togethers, such as when
     we're handling summary pages for blog posts.
     """
     def __init__(self, unit_idxs, pack_idx, site_dir, base_permalist=[], \
             base_url='', last=False, pagination_dir=''):
-        """Initializes BasePack instance.
+        """Initializes Pack instance.
 
         Arguments:
-        unit_idxs: list or tuple containing the indexes of BaseEngine.units
+        unit_idxs: list or tuple containing the indexes of Engine.units
             to write. Packs are made according to unit_idxs' sorting order
         pack_idx: index of the pack object relative to to other pack objects.
         site_dir: absolute file path to the output directory
@@ -479,4 +479,4 @@ def get_class(mod, cls):
         if item.__name__ != cls.__name__ and issubclass(item, cls):
             return item
 
-get_engine = partial(get_class, cls=BaseEngine)
+get_engine = partial(get_class, cls=Engine)

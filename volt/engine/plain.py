@@ -1,12 +1,12 @@
 # Volt plain engine
 
-from volt.engine import BaseEngine
+from volt.engine import Engine
 
 
 __name__ = 'plain'
 
 
-class PlainEngine(BaseEngine):
+class PlainEngine(Engine):
     """Class for processing plain web pages.
     """
 

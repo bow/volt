@@ -1,10 +1,10 @@
 # Volt collection engine
 
-from volt.engine import BaseEngine, BaseUnit
+from volt.engine import Engine, Unit
 
 
-class CollectionEngine(BaseEngine):
+class CollectionEngine(Engine):
     pass
 
-class CollectionUnit(BaseUnit):
+class CollectionUnit(Unit):
     pass
