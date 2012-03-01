@@ -16,7 +16,7 @@ class Plugin(object):
 class Processor(Plugin):
     """Plugin class that manipulates units of an engine.
     """
-    def process(self, units):
+    def process(self):
         """Runs the processor.
         """
         raise NotImplementedError("Processor plugins must implement a process() method.")
