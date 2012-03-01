@@ -1,7 +1,5 @@
 # Volt configurations file
 
-from os.path import join
-
 from volt.config.base import Config
 
 
