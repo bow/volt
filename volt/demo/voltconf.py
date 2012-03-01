@@ -16,29 +16,24 @@ VOLT = Config(
 SITE = Config(
 
     # Your site name
-    TITLE = "Volt Demo Site",
+    TITLE = 'Volt Demo Site',
 
     # Your site URL
-    URL = "http://127.0.0.1",
+    URL = '',
 
     # Your site description
-    DESC = "Because static sites have potential",
+    DESC = 'because static sites have potential',
 
     # Engines used in generating the site
     # Available engines are 'page', 'blog', and 'collection'
     # To disable an engine, just remove its name from this list
-    ENGINES = [
-        'blog',
-        'plain',
-    ],
+    ENGINES = ('blog', 'plain', ),
 
-    # Plugins used in generating the site
-    # A list of tuples, each tuple containing the plugin name (string)
-    # and the list of engines to target (list)
-    # Plugins are run according to the order they are listed here
+    # Plugins used in site generation
+    # These are run according to the order they are listed here
     PLUGINS = (
-        ('syntax', ('blog',)),
-        ('markdown', ('blog', 'plain')),
+        ('syntax', ['blog']),
+        ('markdown', ['blog', 'plain']),
     ),
 )
 
@@ -46,10 +41,10 @@ SITE = Config(
 BLOG = Config(
   
     # URL for all blog content relative to root URL
-    URL = "blog",
+    URL = 'blog',
 
     # Blog posts permalink, relative to blog URL
-    PERMALINK = "{time:%Y/%m/%d}/{slug}",
+    PERMALINK = '{time:%Y/%m/%d}/{slug}',
 
     # Global values to be set to all blog posts
     GLOBAL_FIELDS = {'author': 'Ellen Ripley', },
@@ -62,14 +57,14 @@ BLOG = Config(
 PLAIN = Config(
 
     # URL for all page content relative to root URL
-    URL = "/",
+    URL = '/',
 
     # Page permalink, relative to page URL
-    PERMALINK = "{slug}",
+    PERMALINK = '{slug}',
 )
 
 # Plugin configurations
 PLUGINS = Config(
 
-    SYNTAX_CSS_FILE = os.path.join(os.getcwd(), "site", "css", "syntax_highlight.css"),
+    SYNTAX_CSS_FILE = os.path.join(os.getcwd(), 'site', 'css', 'syntax_highlight.css'),
 )

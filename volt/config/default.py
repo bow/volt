@@ -11,18 +11,18 @@ VOLT = Config(
 
     # User config file name
     # Used to determine project root
-    USER_CONF = "voltconf.py",
+    USER_CONF = 'voltconf.py',
 
     # Directory paths for content files, templates, and generated site
     # relative to a project root
-    CONTENT_DIR = "content",
-    TEMPLATE_DIR = "templates",
-    SITE_DIR = "site",
+    CONTENT_DIR = 'content',
+    TEMPLATE_DIR = 'templates',
+    SITE_DIR = 'site',
 
     # Ignore patterns
     # Filenames that match this pattern will not be copied from template directory
     # to site directory
-    IGNORE_PATTERN = "_*.html",
+    IGNORE_PATTERN = '_*.html',
 
     # Flag for colored terminal output
     COLORED_TEXT = False,
@@ -33,17 +33,20 @@ VOLT = Config(
 SITE = Config(
 
     # Site name, URL, and description
-    TITLE = "My Volt Site",
-    URL = "http://127.0.0.1",
-    DESC = "",
+    TITLE = 'My Volt Site',
+    URL = '',
+    DESC = '',
 
     # Engines used in generating the site
     # Defaults to none
     ENGINES = [],
 
     # Plugins used in site generation
+    # Tuple of tuples, each containing a string for the plugin file name
+    # and list of engine names indicating which engine to target
+    # Run according to order listed here
     # Defaults to none
-    PLUGINS = [('',[]),],
+    PLUGINS = (('',[]),),
 )
 
 
@@ -51,19 +54,19 @@ SITE = Config(
 BLOG = Config(
 
     # URL for all blog content relative to root URL
-    URL = "blog",
+    URL = 'blog',
 
     # Blog post permalink, relative to blog URL
-    PERMALINK = "{time:%Y/%m/%d}/{slug}",
+    PERMALINK = '{time:%Y/%m/%d}/{slug}',
 
     # Date and time format used in blog content headers
     # Used for parsing the headers
-    # Default is e.g. "2004-03-13 22:10"
-    CONTENT_DATETIME_FORMAT = "%Y/%m/%d %H:%M",
+    # Default is e.g. '2004-03-13 22:10'
+    CONTENT_DATETIME_FORMAT = '%Y/%m/%d %H:%M',
 
     # Date and time format displayed on the generated site
-    # Default is e.g. "Saturday, 13 March 2004"
-    DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
+    # Default is e.g. 'Saturday, 13 March 2004'
+    DISPLAY_DATETIME_FORMAT = '%A, %d %B %Y',
 
     # Dictionary containing values to be globally set for all posts
     GLOBAL_FIELDS = { 'author': '', },
@@ -71,15 +74,12 @@ BLOG = Config(
     # The number of displayed posts per pagination page
     POSTS_PER_PAGE = 10,
 
-    # Default length (in words) of blog post excerpts
-    EXCERPT_LENGTH = 50,
-
     # Directory path for storing blog content relative to a project root
-    CONTENT_DIR = join(VOLT.CONTENT_DIR, "blog"),
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, 'blog'),
 
     # File paths of blog template files relative to a project root
-    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_post.html"),
-    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_pagination.html"),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_post.html'),
+    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_pagination.html'),
 
     # TODO
     # Sort order for paginated posts display
@@ -112,25 +112,25 @@ BLOG = Config(
 PLAIN = Config(
 
     # URL for all plain page content relative to root URL
-    URL = "/",
+    URL = '/',
 
     # Plain page permalink, relative to plain page URL
-    PERMALINK = "{slug}",
+    PERMALINK = '{slug}',
 
     # Date and time format used in plain page content headers
     # Used for parsing the headers
-    # Default is e.g. "2004-03-13 22:10"
-    CONTENT_DATETIME_FORMAT = "%Y/%m/%d %H:%M",
+    # Default is e.g. '2004-03-13 22:10'
+    CONTENT_DATETIME_FORMAT = '%Y/%m/%d %H:%M',
 
     # Date and time format displayed on the generated site
-    # Default is e.g. "Saturday, 13 March 2004"
-    DISPLAY_DATETIME_FORMAT = "%A, %d %B %Y",
+    # Default is e.g. 'Saturday, 13 March 2004'
+    DISPLAY_DATETIME_FORMAT = '%A, %d %B %Y',
 
     # Directory path for storing plain page content relative to a project root
-    CONTENT_DIR = join(VOLT.CONTENT_DIR, "plain"),
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, 'plain'),
 
     # File paths of plain page template files relative to a project root
-    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_plain.html"),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_plain.html'),
 
     # Required properties
     # These properties must be defined in each individual plain page unit header
@@ -159,22 +159,23 @@ PLAIN = Config(
 COLLECTION = Config(
 
     # URL for all collection content relative to root URL
-    URL = "collection",
+    URL = 'collection',
 
     # Collection permalink, relative to collection URL
-    PERMALINK = "{slug}",
+    PERMALINK = '{slug}',
 
     # Directory path for storing collection content relative to a project root
-    CONTENT_DIR = join(VOLT.CONTENT_DIR, "collection"),
+    CONTENT_DIR = join(VOLT.CONTENT_DIR, 'collection'),
 
     # File paths of collection template files relative to a project root
-    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_single.html"),
-    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, "_multiple.html"),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_single.html'),
+    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_multiple.html'),
 
     # Required properties
     # These properties must be defined for each collection unit individually
     REQUIRED = ('title', 'unit', ),
 )
+
 
 # Default configurations for plugins
 # Empty since by default no plugins are used

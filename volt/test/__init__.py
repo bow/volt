@@ -35,8 +35,8 @@ for key in volt_opts:
 site_opts = {
         'TITLE': 'Mock Title',
         'DESC': 'Mock Desc',
-        'ENGINES': [],
-        'PLUGINS': [('', []),],
+        'ENGINES': (),
+        'PLUGINS': (('', []),),
 }
 for key in site_opts:
     setattr(session_mock.SITE, key, site_opts[key])
@@ -49,7 +49,6 @@ blog_opts = {
         'DISPLAY_DATETIME_FORMAT': '%A, %d %B %Y',
         'GLOBAL_FIELDS': {'author': ''},
         'POSTS_PER_PAGE': 10,
-        'EXCERPT_LENGTH': 50,
         'CONTENT_DIR': os.path.join(volt_opts['CONTENT_DIR'], 'blog'),
         'UNIT_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_post.html'),
         'PACK_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_pagination.html'),
@@ -65,12 +64,12 @@ for key in blog_opts:
 
 # plain options
 plain_opts = {
-        'URL': "/",
-        'PERMALINK': "{slug}",
-        'CONTENT_DATETIME_FORMAT': "%Y/%m/%d %H:%M",
-        'DISPLAY_DATETIME_FORMAT': "%A, %d %B %Y",
-        'CONTENT_DIR': os.path.join(volt_opts['CONTENT_DIR'], "plain"),
-        'UNIT_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], "_plain.html"),
+        'URL': '/',
+        'PERMALINK': '{slug}',
+        'CONTENT_DATETIME_FORMAT': '%Y/%m/%d %H:%M',
+        'DISPLAY_DATETIME_FORMAT': '%A, %d %B %Y',
+        'CONTENT_DIR': os.path.join(volt_opts['CONTENT_DIR'], 'plain'),
+        'UNIT_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_plain.html'),
         'REQUIRED': ('title', ),
         'GLOBAL_FIELDS': {},
         'PROTECTED': ('id', 'content', 'parent', ),
