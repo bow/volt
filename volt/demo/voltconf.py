@@ -1,5 +1,7 @@
 # Volt configurations file
 
+import os
+
 from volt.config.base import Config
 
 
@@ -9,7 +11,6 @@ VOLT = Config(
     # Flag for colored terminal output
     COLORED_TEXT = True,
 )
-
 
 # General project configurations
 SITE = Config(
@@ -26,15 +27,20 @@ SITE = Config(
     # Engines used in generating the site
     # Available engines are 'page', 'blog', and 'collection'
     # To disable an engine, just remove its name from this list
-    ENGINES = ['blog', 'plain'],
+    ENGINES = [
+        'blog',
+        'plain',
+    ],
 
     # Plugins used in generating the site
     # A list of tuples, each tuple containing the plugin name (string)
     # and the list of engines to target (list)
     # Plugins are run according to the order they are listed here
-    PLUGINS = [('', []),],
+    PLUGINS = (
+        ('syntax', ('blog',)),
+        ('markdown', ('blog', 'plain')),
+    ),
 )
-
 
 # Blog engine configurations
 BLOG = Config(
@@ -50,11 +56,7 @@ BLOG = Config(
 
     # The number of displayed posts per pagination page
     POSTS_PER_PAGE = 2, 
-
-    # Default length (in chars) of blog post excerpts
-    EXCERPT_LENGTH = 50, 
 )
-
 
 # Page engine configurations
 PLAIN = Config(
