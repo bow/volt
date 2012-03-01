@@ -24,3 +24,8 @@ BLOG = Config(
 ADDON = Config(
     TITLE = "Only in user",
 )
+
+PLUGINS = Config(
+    FOO = "foo",
+    BAR = "bar",
+)

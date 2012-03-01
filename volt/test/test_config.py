@@ -61,3 +61,16 @@ class TestSessionConfig(unittest.TestCase):
         self.assertIsNotNone(import_conf(self.user_conf, True))
         # test if exception is properly raised
         self.assertRaises(ImportError, import_conf, self.user_conf)
+
+    def test_set_plugin_defaults(self):
+        default_args = {"BAR" : "baz", "QUX": "qux"}
+        # check if PLUGINS is loaded correctly from user conf
+        self.assertEqual(self.CONFIG.PLUGINS.FOO, "foo")
+        self.assertEqual(self.CONFIG.PLUGINS.BAR, "bar")
+        self.CONFIG.set_plugin_defaults(default_args)
+        # check plugin values after function is run
+        self.assertEqual(self.CONFIG.PLUGINS.FOO, "foo")
+        # declared items should not be changed
+        self.assertEqual(self.CONFIG.PLUGINS.BAR, "bar")
+        # items previously undeclared should be added
+        self.assertEqual(self.CONFIG.PLUGINS.QUX, "qux")

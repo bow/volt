@@ -52,3 +52,5 @@ PLAIN = Config(
     FIELDS_AS_LIST = ('tags', 'categories', ),
     LIST_SEP = ', '
 )
+
+PLUGINS = Config()
