@@ -8,18 +8,17 @@ import os
 import unittest
 from datetime import datetime
 
-from mock import Mock
-
 from volt import ContentError, ParseError
 from volt.engine import Engine, Unit, TextUnit, Pack, MARKUP
-from volt.test import session_mock, project_dir, test_dir, blog_content_dir
+from volt.test import PROJECT_DIR, TEST_DIR
+from volt.test.mocks import SessionConfig_Mock, Unit_Mock
 
 
 class TestEngine(unittest.TestCase):
 
     def setUp(self):
-        self.content_dir = os.path.join(project_dir, 'content', 'blog', '01')
-        self.engine = Engine(session_mock)
+        self.content_dir = os.path.join(PROJECT_DIR, 'content', 'blog', '01')
+        self.engine = Engine(SessionConfig_Mock)
 
     def test_init(self):
         # test if exception is raised if engine is not initialized
@@ -33,32 +32,31 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(self.engine.globdir(self.content_dir).sort(), dir_content)
 
     def test_set_unit_paths(self):
-        path = test_dir
+        path = TEST_DIR
         url = 'http://alay.com'
-        self.unit_mock = Mock(spec=Unit)
-        self.unit_mock.permalist = ['blog', 'not', 'string']
+        Unit_Mock.permalist = ['blog', 'not', 'string']
 
         # test for default settings
-        self.engine.set_unit_paths(self.unit_mock, path, url)
-        self.assertEqual(self.unit_mock.path, os.path.join(path, \
+        self.engine.set_unit_paths(Unit_Mock, path, url)
+        self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string', 'index.html'))
-        self.assertEqual(self.unit_mock.permalink, 'http://alay.com/blog/not/string/')
+        self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string/')
 
         # test for index_html = False
-        self.engine.set_unit_paths(self.unit_mock, path, url, index_html=False)
-        self.assertEqual(self.unit_mock.path, os.path.join(path, \
+        self.engine.set_unit_paths(Unit_Mock, path, url, index_html=False)
+        self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string.html'))
-        self.assertEqual(self.unit_mock.permalink, 'http://alay.com/blog/not/string.html')
+        self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string.html')
 
         # test if URL is == '' (if set to '/' in voltconf.py)
-        self.engine.set_unit_paths(self.unit_mock, path)
-        self.assertEqual(self.unit_mock.permalink, '/blog/not/string/')
+        self.engine.set_unit_paths(Unit_Mock, path)
+        self.assertEqual(Unit_Mock.permalink, '/blog/not/string/')
 
         # test if unit.permalist[0] == '/' (if set to '/' in voltconf.py)
-        self.unit_mock.permalist = ['', 'not', 'string']
-        self.engine.set_unit_paths(self.unit_mock, path, url, os.path.join(path, \
+        Unit_Mock.permalist = ['', 'not', 'string']
+        self.engine.set_unit_paths(Unit_Mock, path, url, os.path.join(path, \
                 'not', 'string'))
-        self.assertEqual(self.unit_mock.permalink, 'http://alay.com/not/string/')
+        self.assertEqual(Unit_Mock.permalink, 'http://alay.com/not/string/')
 
     def test_process_packs(self):
         self.assertRaises(NotImplementedError, self.engine.process_packs, )
@@ -139,8 +137,8 @@ class TestTextUnit(unittest.TestCase):
     def setUp(self):
         # in theory, any engine that uses TextUnit can be used
         # blog is chosen just for convenience
-        self.CONFIG = session_mock.BLOG
-        self.content_dir = blog_content_dir
+        self.CONFIG = SessionConfig_Mock.BLOG
+        self.content_dir = os.path.join(PROJECT_DIR, "content", "blog")
 
     def test_init(self):
         # test if text unit is processed correctly
@@ -178,7 +176,7 @@ class TestPack(unittest.TestCase):
 
     def test_init(self):
         unit_idxs = range(10)
-        site_dir = project_dir
+        site_dir = PROJECT_DIR
 
         # test for pack_idx = 0
         pack_idx = 0
@@ -188,7 +186,7 @@ class TestPack(unittest.TestCase):
         pagination_dir = ''
         pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
-        self.assertEqual(pack.path, os.path.join(project_dir, 'index.html'))
+        self.assertEqual(pack.path, os.path.join(PROJECT_DIR, 'index.html'))
         self.assertEqual(pack.permalist, [])
         self.assertEqual(pack.permalink, '/')
         self.assertEqual(pack.permalink_next, '/2/')
@@ -202,7 +200,7 @@ class TestPack(unittest.TestCase):
         pagination_dir = ''
         pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
-        self.assertEqual(pack.path, os.path.join(project_dir, '2', 'index.html'))
+        self.assertEqual(pack.path, os.path.join(PROJECT_DIR, '2', 'index.html'))
         self.assertEqual(pack.permalist, ['2'])
         self.assertEqual(pack.permalink, '/2/')
         self.assertEqual(pack.permalink_next, '/3/')
@@ -216,7 +214,7 @@ class TestPack(unittest.TestCase):
         pagination_dir = ''
         pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
-        self.assertEqual(pack.path, os.path.join(project_dir, '3', 'index.html'))
+        self.assertEqual(pack.path, os.path.join(PROJECT_DIR, '3', 'index.html'))
         self.assertEqual(pack.permalist, ['3'])
         self.assertEqual(pack.permalink, '/3/')
         self.assertEqual(pack.permalink_prev, '/2/')
@@ -230,7 +228,7 @@ class TestPack(unittest.TestCase):
         pagination_dir = ''
         pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
-        self.assertEqual(pack.path, os.path.join(project_dir, 'tech', '2', 'index.html'))
+        self.assertEqual(pack.path, os.path.join(PROJECT_DIR, 'tech', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['tech', '2'])
         self.assertEqual(pack.permalink, '/tech/2/')
         self.assertEqual(pack.permalink_next, '/tech/3/')
@@ -244,7 +242,7 @@ class TestPack(unittest.TestCase):
         pagination_dir = ''
         pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
-        self.assertEqual(pack.path, os.path.join(project_dir, 'tech', '2', 'index.html'))
+        self.assertEqual(pack.path, os.path.join(PROJECT_DIR, 'tech', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['tech', '2'])
         self.assertEqual(pack.permalink, 'http://foobar.com/tech/2/')
         self.assertEqual(pack.permalink_next, 'http://foobar.com/tech/3/')
@@ -258,7 +256,7 @@ class TestPack(unittest.TestCase):
         pagination_dir = 'page'
         pack = Pack(unit_idxs, pack_idx, site_dir, base_permalist, \
                 base_url, last, pagination_dir)
-        self.assertEqual(pack.path, os.path.join(project_dir, 'page', '2', 'index.html'))
+        self.assertEqual(pack.path, os.path.join(PROJECT_DIR, 'page', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['page', '2'])
         self.assertEqual(pack.permalink, '/page/2/')
         self.assertEqual(pack.permalink_next, '/page/3/')

@@ -8,17 +8,16 @@ import unittest
 from volt import ConfigError
 from volt.config import SessionConfig
 from volt.config.base import import_conf
+from volt.test import TEST_DIR, PROJECT_DIR
 
 
 class TestSessionConfig(unittest.TestCase):
 
     def setUp(self):
-        self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        self.project_dir = os.path.join(self.test_dir, 'fixtures', 'project')
-        self.user_conf = os.path.join(self.project_dir, 'voltconf.py')
+        self.user_conf = os.path.join(PROJECT_DIR, 'voltconf.py')
         self.default_conf = 'volt.test.fixtures.config.default'
         self.CONFIG = SessionConfig(default_conf=self.default_conf, \
-                start_dir=self.project_dir)
+                start_dir=PROJECT_DIR)
 
     def tearDown(self):
         # destroy default config so default values are reset
@@ -32,9 +31,9 @@ class TestSessionConfig(unittest.TestCase):
         self.assertEqual(self.CONFIG.SITE.DESC, 'Desc in default')
         # test if user-defined path resolution works
         self.assertEqual(self.CONFIG.VOLT.CUSTOM_DIR, \
-                os.path.join(self.project_dir, 'custom_dir_user'))
+                os.path.join(PROJECT_DIR, 'custom_dir_user'))
         self.assertEqual(self.CONFIG.BLOG.CUSTOM_DIR, \
-                os.path.join(self.project_dir, 'custom_dir_user', 'user_join'))
+                os.path.join(PROJECT_DIR, 'custom_dir_user', 'user_join'))
         # test for user-only defined Config
         self.assertEqual(self.CONFIG.ADDON.TITLE, 'Only in user')
         # test for different URL possibilities
@@ -46,11 +45,11 @@ class TestSessionConfig(unittest.TestCase):
 
     def test_get_root_dir(self):
         # test if exception is properly raised
-        self.assertRaises(ConfigError, SessionConfig().get_root_dir, self.test_dir)
+        self.assertRaises(ConfigError, SessionConfig().get_root_dir, TEST_DIR)
         # test if root path resolution works properly for all dirs in project dir
-        self.assertEqual(self.CONFIG.ROOT_DIR, self.project_dir)
+        self.assertEqual(self.CONFIG.ROOT_DIR, PROJECT_DIR)
         self.assertEqual(self.CONFIG.ROOT_DIR, SessionConfig().get_root_dir(\
-                os.path.join(self.project_dir, "content")))
+                os.path.join(PROJECT_DIR, "content")))
 
     def test_import_conf(self):
         # load config first since it's a lazy object

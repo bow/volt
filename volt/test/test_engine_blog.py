@@ -8,13 +8,13 @@ import unittest
 
 from volt.engine import Pack, TextUnit
 from volt.engine.blog import BlogEngine
-from volt.test import session_mock
+from volt.test.mocks import SessionConfig_Mock
 
 
 class TestBlogEngine(unittest.TestCase):
 
     def setUp(self):
-        self.engine = BlogEngine(session_mock)
+        self.engine = BlogEngine(SessionConfig_Mock)
 
     def test_process_text_units(self):
         self.engine.CONFIG.BLOG.CONTENT_DIR = os.path.join(\
