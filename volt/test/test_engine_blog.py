@@ -3,16 +3,12 @@
 
 # tests for volt.engine
 
-import glob
 import os
-import re
 import unittest
-from datetime import datetime
 
-from volt import ContentError, ParseError
 from volt.engine import Pack, TextUnit
 from volt.engine.blog import BlogEngine
-from volt.test.mocks import session_mock, blog_content_dir, project_dir
+from volt.test import session_mock
 
 
 class TestBlogEngine(unittest.TestCase):

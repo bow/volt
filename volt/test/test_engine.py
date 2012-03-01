@@ -12,7 +12,7 @@ from mock import Mock
 
 from volt import ContentError, ParseError
 from volt.engine import Engine, Unit, TextUnit, Pack, MARKUP
-from volt.test.mocks import session_mock, project_dir, test_dir, blog_content_dir
+from volt.test import session_mock, project_dir, test_dir, blog_content_dir
 
 
 class TestEngine(unittest.TestCase):
