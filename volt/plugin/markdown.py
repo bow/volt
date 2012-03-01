@@ -20,7 +20,7 @@ class Markdown(Processor):
                 string = self.get_markdown(string)
                 setattr(unit, 'content', string)
 
-    def get_markdown(string):
+    def get_markdown(self, string):
         """Returns html string of a markdown content.
 
         Arguments:

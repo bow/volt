@@ -39,22 +39,3 @@ def show_info(text, c='grey', w='normal'):
 
 show_notif, show_warning, show_error = \
     [partial(show_info, c=x) for x in ['cyan', 'yellow', 'red']]
-
-
-def markupify(string, lang='html'):
-    """Returns the string after processing with the specified markup languaged.
-
-    Arguments:
-    string: string to process
-    lang: markup language to use; available options are 'html' or 'markdown'
-    """
-    if lang == 'markdown':
-        try:
-            import discount
-            marked = discount.Markdown(string.encode('utf8')).get_html_content()
-            return marked.decode('utf8')
-        except ImportError:
-            import markdown
-            return markdown.markdown(string)
-    else:
-        return string

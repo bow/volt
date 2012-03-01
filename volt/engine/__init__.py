@@ -11,7 +11,7 @@ import yaml
 
 from volt import ContentError, ParseError
 from volt.config import SessionConfig
-from volt.util import grab_class, markupify
+from volt.util import grab_class
 
 
 MARKUP = { '.html': 'html',
@@ -384,7 +384,7 @@ class TextUnit(Unit):
 
             self.set_markup(MARKUP)
             # content is everything else after header
-            self.content = markupify(read.pop(0).strip(), self.markup)
+            self.content = read.pop(0).strip()
 
         # check if all required fields are present
         self.check_required(conf.REQUIRED)
