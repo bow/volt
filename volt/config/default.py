@@ -175,3 +175,7 @@ COLLECTION = Config(
     # These properties must be defined for each collection unit individually
     REQUIRED = ('title', 'unit', ),
 )
+
+# Default configurations for plugins
+# Empty since by default no plugins are used
+PLUGINS = Config()

@@ -105,5 +105,19 @@ class SessionConfig(object):
             return self.get_root_dir(parent)
         return start_dir
 
+    def set_plugin_defaults(self, default_args):
+        """Set default values of options contained in a SessionConfig object.
+
+        Arguments:
+        default_args: dictionary that maps arguments and their default values
+
+        This method is mainly used in setting default values for plugins.
+        The value for the given name will only be set if the user has not
+        set any option with the same name in voltconfig.
+        """
+        for arg in default_args:
+            if not hasattr(self.PLUGINS, arg):
+                setattr(self.PLUGINS, arg, default_args[arg])
+
 
 CONFIG = SessionConfig()

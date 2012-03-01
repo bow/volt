@@ -65,3 +65,9 @@ PLAIN = Config(
     # Page permalink, relative to page URL
     PERMALINK = "{slug}",
 )
+
+# Plugin configurations
+PLUGINS = Config(
+
+    SYNTAX_CSS_FILE = os.path.join(os.getcwd(), "site", "css", "syntax_highlight.css"),
+)
