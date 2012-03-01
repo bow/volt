@@ -13,7 +13,7 @@ project_dir = os.path.join(test_dir, 'fixtures', 'project')
 blog_content_dir = os.path.join(project_dir, 'content', 'blog')
 
 session_mock = Mock(spec=SessionConfig)
-config_mocks = ['VOLT', 'SITE', 'BLOG', 'PLAIN', ]
+config_mocks = ['VOLT', 'SITE', 'BLOG', 'PLAIN', 'PLUGINS', ]
 
 # attach config mock objects to mock session
 for mock_obj in config_mocks:
