@@ -21,8 +21,28 @@ class Generator(object):
             eng_class = get_engine(eng_mod)
             self.engines[e] = eng_class(CONFIG)
 
-            print 'Running %s engine...' % e
-            self.engines[e].run()
+            print 'Parsing units for the %s engine...' % e
+            self.engines[e].parse()
+
+        for p, targets in CONFIG.SITE.PLUGINS:
+            try:
+                user_plug_path = os.path.join(CONFIG.ROOT_DIR, 'plugins', '%s.py' % p)
+                plug_mod = import_conf(user_plug_path, path=True)
+            except ImportError:
+                plug_mod = import_conf('volt.plugin.%s' % p)
+            plug_class = get_processor(plug_mod)
+
+            if plug_class:
+                # set default args in CONFIG first before instantiating
+                CONFIG.set_plugin_defaults(plug_class.DEFAULT_ARGS)
+                processor = plug_class()
+
+                for target in targets:
+                    print 'Running %s processor against the %s units...' % (p, target)
+                    processor.process(self.engines[target].units)
+
+        for e in self.engines.values():
+            e.write()
 
         # generate other pages
         tpl_file = '_index.html'

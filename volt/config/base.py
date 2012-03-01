@@ -33,21 +33,19 @@ class Config(dict):
             self[key] = conf_obj[key]
 
 
-def import_conf(mod, path=False):
+def import_conf(mod, path=False, name=''):
     """Imports a Volt configuration.
 
     Arguments:
     mod: dotted package notation or an absolute path to the
          configuration file.
+    name: module name to use if import is done by path
     path: boolean indicating if mod is absolute path or dotted package
           notation
     """
-    if path and os.path.isabs(mod):
-        mod_dir = os.path.dirname(mod)
-        mod_file = os.path.basename(mod)
-        mod_file = os.path.splitext(mod_file)[0]
-        sys.path.append(mod_dir)
-        return __import__(mod_file)
+    if path and os.path.exists(mod):
+        from imp import load_source
+        return load_source(name,  mod)
     elif not path:
         return __import__(mod, fromlist=[mod.split('.')[-1]])
 
