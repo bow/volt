@@ -9,7 +9,7 @@ import unittest
 from datetime import datetime
 
 from volt import ContentError, ParseError
-from volt.engine import Engine, Unit, TextUnit, Pack, MARKUP
+from volt.engine import Engine, Unit, TextUnit, Pack
 from volt.test import PROJECT_DIR, TEST_DIR
 from volt.test.mocks import SessionConfig_Mock, Unit_Mock
 
@@ -92,14 +92,6 @@ class TestUnit(unittest.TestCase):
         grplist = ['trinity', 'twin', 'morpheus'].sort()
         self.assertEqual(self.unit.as_list(grps, ', ').sort(), grplist)
 
-    def test_set_markup(self):
-        # test if markup is set correctly
-        self.unit.set_markup(MARKUP)
-        self.assertEqual(self.unit.markup, 'markdown')
-        # test if exception is raised for unlisted markup
-        setattr(self.unit, 'markup', 'xml')
-        self.assertRaises(ContentError, self.unit.set_markup, MARKUP)
-
     def test_slugify(self):
         slugify = self.unit.slugify
         self.assertEqual(slugify('Move along people, this is just a test'),
@@ -162,10 +154,6 @@ class TestTextUnit(unittest.TestCase):
         from yaml import scanner
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '03*'))[0]
         self.assertRaises(scanner.ScannerError, TextUnit, fname, self.CONFIG)
-
-    def test_init_markup_missing(self):
-        fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '04*'))[0]
-        self.assertEqual(TextUnit(fname, self.CONFIG).markup, 'html')
 
     def test_init_protected_set(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '05*'))[0]

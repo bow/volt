@@ -1,32 +1,53 @@
 # Volt plugin for markdown
 
+import os
+
 try:
     import discount
-    DISCOUNT = True
+    has_discount = True
 except ImportError:
     import markdown
-    DISCOUNT = False
+    has_discount = False
 
 from volt.plugin import Processor
 
 
 class Markdown(Processor):
     """Processor plugin for transforming markdown syntax to html.
+
+    The plugin can detect whether a unit is formatted using markdown from
+    the file extension ('.md' or '.markdown') or if a 'markup' field
+    is defined with 'markdown' in the header field. The header field value
+    takes precedence over the file extension.
+
+    The discount module is used for conversion to HTML, with the markdown
+    module as fallback. This is because markdown processing with discount
+    is much faster than by markdown since discount is actually a wrapper
+    for Discount, the markdown parser written in C.
     """
     def process(self, units):
+
         for unit in units:
-            if getattr(unit, 'markup') == 'markdown':
+            # markup lookup, in header field first then file extension
+            if hasattr(unit, 'markup'):
+                is_markdown = ('markdown' == getattr(unit, 'markup').lower())
+            else:
+                ext = os.path.splitext(unit.id)[1]
+                is_markdown = (ext.lower() in ['.md', '.markdown'])
+
+            # if markdown, then process
+            if is_markdown:
                 string = getattr(unit, 'content')
-                string = self.get_markdown(string)
+                string = self.get_html(string)
                 setattr(unit, 'content', string)
 
-    def get_markdown(self, string):
+    def get_html(self, string):
         """Returns html string of a markdown content.
 
         Arguments:
-        string: string to mark
+        string: string to process
         """
-        if DISCOUNT:
+        if has_discount:
             marked = discount.Markdown(string.encode('utf8'))
             html = marked.get_html_content()
             return html.decode('utf8')

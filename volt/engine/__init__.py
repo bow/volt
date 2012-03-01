@@ -14,11 +14,6 @@ from volt.config import SessionConfig
 from volt.util import grab_class
 
 
-MARKUP = { '.html': 'html',
-           '.md': 'markdown',
-           '.markdown': 'markdown',
-         }
-
 # regex objects, so compilation is done efficiently
 # for TextUnit header delimiter
 _RE_DELIM = re.compile(r'^---$', re.MULTILINE)
@@ -243,24 +238,6 @@ class Unit(object):
         """
         return list(set(filter(None, field.strip().split(sep))))
 
-    def set_markup(self, markup_dict):
-        """Sets the markup language into a header key-value pair.
-
-        Arguments:
-        markup_dict: dictionary with file extensions as keys and
-            their corresponding markup language as values
-        """
-        if not hasattr(self, 'markup'):
-            ext = os.path.splitext(self.id)[1].lower()
-            try:
-                setattr(self, 'markup', markup_dict[ext])
-            except:
-                setattr(self, 'markup', 'html')
-        setattr(self, 'markup', getattr(self, 'markup').lower())
-        if getattr(self, 'markup') not in markup_dict.values():
-            raise ContentError("Markup language '%s' is not supported." % \
-                    getattr(self, 'markup'))
-
     def slugify(self, string):
         """Returns a slugified version of the given string.
 
@@ -382,7 +359,6 @@ class TextUnit(Unit):
                     header[field] = str(header[field])
                 setattr(self, field.lower(), header[field])
 
-            self.set_markup(MARKUP)
             # content is everything else after header
             self.content = read.pop(0).strip()
 
