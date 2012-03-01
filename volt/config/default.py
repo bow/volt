@@ -40,6 +40,10 @@ SITE = Config(
     # Engines used in generating the site
     # Defaults to none
     ENGINES = [],
+
+    # Plugins used in site generation
+    # Defaults to none
+    PLUGINS = [('',[]),],
 )
 
 

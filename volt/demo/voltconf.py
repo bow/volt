@@ -27,6 +27,12 @@ SITE = Config(
     # Available engines are 'page', 'blog', and 'collection'
     # To disable an engine, just remove its name from this list
     ENGINES = ['blog', 'plain'],
+
+    # Plugins used in generating the site
+    # A list of tuples, each tuple containing the plugin name (string)
+    # and the list of engines to target (list)
+    # Plugins are run according to the order they are listed here
+    PLUGINS = [('', []),],
 )
 
 

@@ -16,7 +16,8 @@ VOLT = Config(
 SITE = Config(
     TITLE = "Title in default",
     DESC = "Desc in default", 
-    ENGINES = []
+    ENGINES = [],
+    PLUGINS = [('', []),],
 )
 
 BLOG = Config(
