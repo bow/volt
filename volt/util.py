@@ -1,5 +1,15 @@
-"""Collection of useful methods.
+# -*- coding: utf8 -*-
 """
+---------
+volt.util
+---------
+
+Collection of general handy methods used throughout Volt.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 import sys
 from functools import partial
@@ -9,11 +19,12 @@ from volt.config import CONFIG
 
 
 def grab_class(mod, cls):
-    """Returns a class defined in the given module that is a subclass of the given class.
+    """Returns a class from the given module that is a subclass of the given class.
 
-    Arguments:
-    cls: parent class of the class to return
-    mod: module to be searched
+    Args:
+        mod - Module to be searched.
+        cls - Parent class of the class to return.
+
     """
     objs = (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x)))
     # return if class is not itself
@@ -21,21 +32,34 @@ def grab_class(mod, cls):
         if item.__name__ != cls.__name__ and issubclass(item, cls):
             return item
 
+def show_info(string, col='grey', is_bright=False):
+    """Returns the string enclosed in color escape codes.
 
-def show_info(text, c='grey', w='normal'):
-    """Colors the text.
+    Args:
+        string - String to color.
+
+    Keyword Args:
+        col - String indicating color.
+        is_bright - Boolean indicating whether to return a bright version
+            of the colored string or not.
+
+    This method returns a color code-enclosed string according to the setting
+    in CONFIG.VOLT.
+
     """
     if CONFIG.VOLT.COLORED_TEXT:
         color_map = {'black': '30', 'red': '31', 
                      'green': '32', 'yellow': '33', 
                      'blue': '34', 'violet': '35',
                      'cyan': '36', 'grey': '37'}
-        weight_map = {'normal': '00', 'bold': '01'}
 
-        text = "\033[%s;%sm%s\033[m" % \
-               (weight_map[w], color_map[c], text)
+        brg = int(is_bright)
+        bright_map = {'normal': '00', 'bold': '01'}
 
-    sys.stderr.write(text)
+        string = "\033[%s;%sm%s\033[m" % \
+               (bright_map[brg], color_map[col], string)
+
+    sys.stderr.write(string)
 
 show_notif, show_warning, show_error = \
     [partial(show_info, c=x) for x in ['cyan', 'yellow', 'red']]
