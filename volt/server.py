@@ -7,14 +7,16 @@ volt.server
 Development server for Volt.
 
 This module provides a multithreading HTTP server that subclasses
-SocketServer.ThreadingTCPServer. A custom HTTP request handler subclassing
+SocketServer.ThreadingTCPServer. The server can auto-regenerate the Volt site
+after any file inside it is changed and a new HTTP request is sent. It can be
+run from any directory inside a Volt project directory and will always return
+resources relative to the Volt output site directory. If it is run outside of
+a Volt directory, an error will be raised.
+
+A custom HTTP request handler subclassing
 SimpleHTTPServer.SimpleHTTPRequestHandler is also provided. The methods defined
 in this class mostly alters the command line output. Processing logic is similar
 to the parent class.
-
-The server can be run from any directory inside a Volt project directory and
-will always return resources relative to the Volt output site directory.
-If it is run outside of a Volt directory, an error will be raised.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 
@@ -25,22 +27,70 @@ import os
 import posixpath
 import sys
 import urllib
+from itertools import chain
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingTCPServer
 from socket import getfqdn
 
 from volt import util
 from volt.config import CONFIG
-from volt.main import __version__
+from volt.main import __version__, run_gen
 
 
 class VoltHTTPServer(ThreadingTCPServer):
 
-    """A simple multi-threading HTTP server for Volt development."""
+    """A simple multithreading HTTP server for Volt development."""
 
     # copied from BaseHTTPServer.py since ThreadingTCPServer is used
     # instead of TCPServer
     allow_reuse_address = 1
+
+    def __init__(self, *args, **kwargs):
+        """Initializes Volt HTTP server.
+
+        In addition to performing BaseServer initialization, this method
+        also polls the timestamp of all directories inside the Volt project
+        directory except the site output directory. This is set as a self
+        atttribute and will be used later to generate the site everytime
+        a file inside these directories are modified.
+
+        """
+        self.last_mtime = self.check_dirs_mtime()
+        ThreadingTCPServer.__init__(self, *args, **kwargs)
+
+    def process_request(self, request, client_address):
+        """Finishes one request by instantiating the handler class.
+
+        Prior to handler class initialization, this method checks the latest
+        timestamp of all directories inside the Volt project. If the result
+        is higher than the prior timestamp (self.last_mtime), then the entire
+        site will be regenerated.
+
+        """
+        latest_mtime = self.check_dirs_mtime()
+        if self.last_mtime < latest_mtime:
+            self.last_mtime = latest_mtime
+            # generate the site
+            run_gen()
+        ThreadingTCPServer.process_request(self, request, client_address)
+
+    def check_dirs_mtime(self):
+        """Returns the latest timestamp of directories in a Volt project.
+
+        This method does not check the site output directory since the user
+        is not supposed to change the contents inside manually.
+
+        """
+        # we don't include the output site directory because it will have
+        # higher mtime than the user-modified file
+        # the root directory is also not included since it will have higher
+        # mtime due to the newly created output site directory
+        # but we do want to add voltconf.py, since the user might want to
+        # check the effects of changing certain configs
+        dirs = (x[0] for x in os.walk(CONFIG.ROOT_DIR) if
+                CONFIG.VOLT.SITE_DIR not in x[0] and x[0] != CONFIG.ROOT_DIR)
+        config_file = os.path.join(CONFIG.ROOT_DIR, 'voltconf.py')
+        return max(os.stat(x).st_mtime for x in chain(dirs, [config_file]))
 
     def server_bind(self):
         # overrides server_bind to store the server name.
