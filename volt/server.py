@@ -1,9 +1,25 @@
-"""HTTP server for Volt's static output.
-
-This module is just a simple wrapper for SimpleHTTPServer with more compact
-log message and the option to set directory to serve. By default, it searches
-for the "site" directory and serves the contents.
+# -*- coding: utf8 -*-
 """
+-----------
+volt.server
+-----------
+
+Development server for Volt.
+
+This module provides a multithreading HTTP server that subclasses
+SocketServer.ThreadingTCPServer. A custom HTTP request handler subclassing
+SimpleHTTPServer.SimpleHTTPRequestHandler is also provided. The methods defined
+in this class mostly alters the command line output. Processing logic is similar
+to the parent class.
+
+The server can be run from any directory inside a Volt project directory and
+will always return resources relative to the Volt output site directory.
+If it is run outside of a Volt directory, an error will be raised.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 import os
 import posixpath
@@ -19,8 +35,9 @@ from volt.main import __version__
 
 
 class VoltHTTPServer(ThreadingTCPServer):
-    """Volt HTTP Server
-    """
+
+    """A simple multi-threading HTTP server for Volt development."""
+
     # copied from BaseHTTPServer.py since ThreadingTCPServer is used
     # instead of TCPServer
     allow_reuse_address = 1
@@ -34,6 +51,19 @@ class VoltHTTPServer(ThreadingTCPServer):
                                                     
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
+
+    """HTTP request handler of the Volt HTTP server.
+
+    This request handler can only be used for serving files inside a
+    Volt project directory, since its path resolution is relative
+    to the Volt project path. In addition to that, the handler can
+    display colored text output according to the settings in voltconf.py
+    and outputs the size of the returned file in its HTTP log line.
+    404 error messages are suppressed to allow for more compact output.
+
+    Consult the SimpleHTTPRequestHandler documentation for more information.
+
+    """
 
     server_version = 'VoltHTTPServer/' + __version__
 
@@ -86,7 +116,10 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 
 def run():
-    """Runs the server.
+    """Runs the HTTP server.
+
+    Uses options parsed by argparse, accessible via CONFIG.CMD.
+
     """
     address = ('127.0.0.1', CONFIG.CMD.server_port)
     try:
