@@ -53,7 +53,7 @@ def show_info(string, col='grey', is_bright=False):
                      'blue': '34', 'violet': '35',
                      'cyan': '36', 'grey': '37'}
 
-        brg = int(is_bright)
+        brg = 'bold' if is_bright else 'normal'
         bright_map = {'normal': '00', 'bold': '01'}
 
         string = "\033[%s;%sm%s\033[m" % \
@@ -62,4 +62,4 @@ def show_info(string, col='grey', is_bright=False):
     sys.stderr.write(string)
 
 show_notif, show_warning, show_error = \
-    [partial(show_info, c=x) for x in ['cyan', 'yellow', 'red']]
+    [partial(show_info, col=x) for x in ['cyan', 'yellow', 'red']]
