@@ -1,4 +1,18 @@
-# Volt blog engine
+# -*- coding: utf8 -*-
+"""
+----------------
+volt.engine.blog
+----------------
+
+Volt Blog Engine.
+
+The blog engine takes text files as resources and writes the static files
+constituting a simple blog.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 import os
 
@@ -10,7 +24,14 @@ __name__ = 'blog'
 
 
 class BlogEngine(Engine):
-    """Class for processing raw blog content into blog pages and directories.
+
+    """Engine for processing text files into a blog.
+
+    This engine uses the TextUnit class to represent its resource. Prior to
+    writing the output, the TextUnit objects are sorted according to the
+    configuration. They are then chained together by adding to each unit
+    permalinks that link to the previous and/or next units.
+
     """
 
     def parse(self):
