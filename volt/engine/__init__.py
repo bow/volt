@@ -1,4 +1,19 @@
-# Volt base engine
+# -*- coding: utf8 -*-
+"""
+-----------
+volt.engine
+-----------
+
+Base Unit, Engines, and Pack classes.
+
+Units represent a resource used in the generated site, such as a blog post
+or an image. Engines are classes that perform initial processing of Unit
+objects. Packs are groups of several Units that will be written to a single
+HTML file, for example blog posts written in February 2009.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
 
 import codecs
 import glob
@@ -26,38 +41,69 @@ _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 class Engine(object):
 
-    def __init__(self, config=CONFIG):
-        """Initializes the engine.
-        """
-        if not isinstance(config, SessionConfig):
-            raise TypeError("Engine objects must be initialized with SessionConfig object.")
+    """Base Volt Engine class.
 
-        self.CONFIG = config
+    Engine is the core component of Volt that performs initial processing
+    of each Unit. This base engine class does not perform any processing by
+    itself, but provides convenient Unit processing methods for the
+    subclassing engine.
+
+    Subclassing classes must override the ``parse`` and ``write`` methods
+    of the base engine class.
+
+    """
+
+    def __init__(self, session_config=CONFIG):
+        """Initializes the engine.
+
+        Keyword Args:
+            session_config - SessionConfig instance from volt.config,
+                defaults to CONFIG.
+
+        """
+        if not isinstance(session_config, SessionConfig):
+            raise TypeError("Engine objects must be initialized with "
+                            "a SessionConfig instance.")
+
+        self.CONFIG = session_config
         self.units = []
 
-    def globdir(self, directory, pattern='*', iter=False):
+    def globdir(self, directory, pattern='*', is_gen=False):
         """Returns glob or iglob results for a given directory.
+
+        Args:
+            directory - Absolute path of the directory to glob.
+
+        Keyword Args:
+            pattern - File name pattern to search in the glob directory,
+                defaults to all files ('*').
+            is_gen - Boolean indicating whether to return a generator or a list.
+
         """
         pattern = os.path.join(directory, pattern)
-        if iter:
+        if is_gen:
             return glob.iglob(pattern)
+
         return glob.glob(pattern)
 
-    def set_unit_paths(self, unit, base_dir, base_url='', index_html=True):
+    def set_unit_paths(self, unit, base_dir, base_url='', set_index_html=True):
         """Sets the permalink and absolute file path for the given unit.
 
-        Arguments:
-        unit: Unit instance whose path and URL are to be set
-        base_dir: absolute filesystem path to the output site directory
-        base_url: base url to be set for the permalink; defaults to an empty
-            string so permalinks are relative
-        index_html: boolean indicating output file name;  if False then
-            the output file name is the '%s.html' where %s is the last
-            string of the unit's permalist
+        Args:
+            unit - Unit instance whose path and URL are to be set
+            base_dir - Absolute file system path to the output site directory
+
+        Keyword Args:
+            base_url - Base url to be set for the permalink, defaults to an empty
+                string so permalinks are relative
+            index_html -  Boolean indicating output file name;  if False then
+                the output file name is '%s.html' where %s is the last
+                string of the unit's permalist
 
         Output file defaults to 'index' so each unit will be written to
         'index.html' in its path. This allows nice URLs without fiddling
-        the .htaccess too much.
+        with .htaccess too much.
+
         """
         url = [base_url]
         path = [base_dir]
@@ -67,7 +113,7 @@ class Engine(object):
         url.extend(filter(None, unit.permalist))
         # if index_html is False, then we have to refer to the file
         # directly in the permalink
-        if index_html:
+        if set_index_html:
             url[-1] = url[-1] + '/'
         else:
             url[-1] = url[-1] + '.html'
@@ -75,24 +121,30 @@ class Engine(object):
 
         # set absolute path
         path.extend(unit.permalist)
-        if index_html:
+        if set_index_html:
             path.append('index.html')
         else:
             path[-1] = path[-1] + '.html'
         setattr(unit, 'path', os.path.join(*(path)))
 
-    def process_text_units(self, conf):
-        """Process the units and fill self.units
+    def process_text_units(self, config):
+        """Processes units into a TextUnit object and returns them in a list.
+
+        Args:
+            config - Config object corresponding to the engine settings,
+                e.g. config.BLOG for the BlogEngine or config.PLAIN
+                for the PlainEngine.
+
         """
         # get absolute paths of content files
         units = []
-        content_dir = self.globdir(conf.CONTENT_DIR, iter=True)
+        content_dir = self.globdir(config.CONTENT_DIR, is_gen=True)
         files = (x for x in content_dir if os.path.isfile(x))
 
         # parse each file and fill self.contents with TextUnit-s
         # also set its URL and absolute file path to be written
         for fname in files:
-            units.append(TextUnit(fname, conf))
+            units.append(TextUnit(fname, config))
             # paths and permalinks are not set in TextUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
             self.set_unit_paths(units[-1], self.CONFIG.VOLT.SITE_DIR)
@@ -100,25 +152,28 @@ class Engine(object):
         return units
 
     def sort_units(self, units, sort_key):
-        """Sorts the units in self.units.
+        """Sorts a list of units according to the given header field value.
 
-        Arguments:
-        units: list containing units to sort
-        sort_key: field name (string) indicating the key used for sorting;
-            if preceeded with  a dash ('-') then sorting is reversed
+        Args:
+            units - List containing units to sort
+            sort_key - String of field name indicating the key used for
+                sorting, if preceeded with  a dash ('-') then sorting is
+                reversed.
+
         """
         reversed = sort_key.startswith('-')
         sort_key = sort_key.strip('-')
         units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
 
     def chain_units(self, units):
-        """Set the 'previous' and 'next' permalink attributes for each unit.
+        """Sets the previous and next permalink attributes of units in a list.
 
-        Arguments:
-        units: list containing units to chain
+        Args:
+            units - List containing units to chain
 
-        Using this method, each unit can link to the previous or next one
-        according to the sorting order.
+        This method allows each unit in a list to link to its previous and/or
+        next unit according to the ordering in the list.
+
         """
         for idx, unit in enumerate(units):
             if idx != 0:
@@ -127,11 +182,11 @@ class Engine(object):
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
     def write_units(self, template_path):
-        """Writes single units into its output file.
+        """Writes single units into the given output file.
 
-        Arguments:
-        template_path: template file name; must exist in the defined template
-            directory
+        Args:
+            template_path - Template file name, must exist in the defined template
+                directory.
         """
         template_file = os.path.basename(template_path)
         template_env = self.CONFIG.SITE.TEMPLATE_ENV
@@ -152,32 +207,40 @@ class Engine(object):
     def write_output(self, file_obj, string):
         """Writes string to the open file object.
 
-        Arguments:
-        file_obj: open file object
-        string: string to write
+        Args:
+            file_obj - Opened fie object
+            string - String to write
 
         This is written to facillitate testing of the calling method.
+
         """
         file_obj.write(string.encode('utf8'))
 
-    def process_packs(self):
-        """Process the packs and use the results to fill self.packs.
-        """
-        raise NotImplementedError("Subclasses must implement process_packs().")
+    def parse(self):
+        """Performs initial processing of resources into unit objects."""
+        raise NotImplementedError("Engine subclass must implement a run method.")
 
-    def run(self):
-        """Starts the engine processing.
-        """
-        raise NotImplementedError("Subclasses must implement run().")
+    def write(self):
+        """Write processed units into the output file."""
+        raise NotImplementedError("Engine subclass must implement a write method.")
 
 
 class Unit(object):
 
-    def __init__(self, id):
-        """Initializes Unit instance.
+    """Base Volt Unit class.
 
-        Arguments:
-        id: any string that refers to the Unit instance exclusively
+    The unit class represent a single resource used for generating the site,
+    such as a blog post, an image, or a regular plain text file.
+
+    """
+
+    def __init__(self, id):
+        """Initializes a unit instance.
+
+        Args:
+            id - String that refers exclusively to the unit. For example,
+                if the resource is a text file then id can be the file path.
+
         """
         self.id = id
 
@@ -186,6 +249,7 @@ class Unit(object):
 
     @property
     def fields(self):
+        """Returns the unit namespace."""
         return self.__dict__.keys()
 
     # convenience methods
@@ -194,55 +258,58 @@ class Unit(object):
     get_display_time = datetime.strftime
 
     def parse_yaml(self, string):
-        """Parses the yaml string.
+        """Parses the YAML string into a dictionary object.
 
-        Arguments:
-        string: yaml-formatted string
+        Args:
+            string - YAML-formatted string
 
         This is a thin wrapper for yaml.load, so it's more convenient
-        for subclassing xUnits to parse yaml contents.
+        for subclassing unit classes to parse YAML contents.
+
         """
         # why can't this be assigned directly like the other wrappers?
         return yaml.load(string)
 
     def check_protected(self, field, prot):
-        """Raises ContentError if field is present in protected.
+        """Checks if the given field can be set by the user or not.
         
-        Arguments:
-        field: string to check against prot
-        prot: list containing protected fields
+        Args:
+            field - String to check against the list containing protected fields.
+            prot - Iterable containing protected fields.
+
         """
         if field in prot:
-            raise ContentError(\
-                    "'%s' should not define the protected header field '%s'" % \
-                    (self.id, field))
+            raise ContentError("'%s' should not define the protected header "
+                               "field '%s'" % (self.id, field))
 
     def check_required(self, req):
-        """Check if all the required header fields are present.
+        """Checks if all the required header fields are present.
 
-        Arguments:
-        req: iterable that contains required header fields
+        Args:
+            req -  Iterable that returns required header fields.
+
         """
         for field in req:
             if not hasattr(self, field):
-                raise ContentError(\
-                        "Required header field '%s' is missing in '%s'." % \
-                        (field, self.id))
+                raise ContentError("Required header field '%s' is missing "
+                                   "in '%s'." % (field, self.id))
 
     def as_list(self, field, sep):
         """Transforms a comma-separated tags or categories string into a list.
 
-        Arguments:
-        fields: string to transform into list
-        sep: field subitem separator
+        Args:
+            fields - String to transform into list.
+            sep - String used to split fields into list.
+
         """
         return list(set(filter(None, field.strip().split(sep))))
 
     def slugify(self, string):
         """Returns a slugified version of the given string.
 
-        Arguments:
-        string: string to transform into slug
+        Args:
+            string - String to transform into slug.
+
         """
         string = string.strip()
 
@@ -256,7 +323,8 @@ class Unit(object):
         try:
             string.decode('ascii')
         except UnicodeDecodeError:
-            raise ContentError("Slug in '%s' contains non-ascii characters." % self.id)
+            raise ContentError("Slug in '%s' contains non-ascii characters." \
+                               % self.id)
 
         # slug should not begin or end with dash or contain multiple dashes
         string = re.sub(_RE_MULTIPLE, '-', string)
@@ -273,25 +341,27 @@ class Unit(object):
     def get_permalist(self, pattern, unit_base_url='/'):
         """Returns a list of strings which will be used to construct permalinks.
 
-        Arguments:
-        pattern: string replacement pattern
-        unit_base_url: base URL of the engine, to be appended in front of each
-            unit URL
+        Args:
+            pattern - String replacement pattern.
+
+        Keyword Args:
+            unit_base_url - Base URL of the engine, to be appended in front of each
+                unit URL.
 
         The pattern argument may refer to the current object's attributes by
         enclosing them in square brackets. If the referred instance attribute 
         is a datetime object, it must be formatted by specifying a string format
         argument.
 
-        Here are several examples of a valid permalink pattern:
-        - '{time:%Y/%m/%d}/{slug}'
-        - '{time:%Y}/post/{time:%d}/blog/{id}'
-        """
-        # raise exception if there are spaces?
-        if pattern != pattern.replace(' ',''):
-            raise ContentError("Permalink in '%s' contains whitespace(s)." \
-                    % self.id)
+        Several examples of a valid permalink pattern:
         
+        '{time:%Y/%m/%d}/{slug}'
+            Returns, for example, ['2009', '10', '04', 'the-slug']
+
+        '{time:%Y}/post/{time:%d}/blog/{id}'
+            Returns, for example,  ['2009', 'post', '04', 'blog', 'item-103']
+
+        """
         # strip preceeding '/' but make sure ends with '/'
         pattern = pattern.strip('/') + '/'
 
@@ -320,19 +390,25 @@ class Unit(object):
 
 
 class TextUnit(Unit):
+
     """Class representation of text resources.
 
     This unit represents resources whose metadata (YAML header) is contained
     in the same file as the content. Some examples of resources like this 
     is a single blog post or a single plain page. 
+
     """
 
     def __init__(self, fname, conf, delim=_RE_DELIM):
         """Initializes TextUnit.
 
-        Arguments:
-        fname: source filename
-        conf: Config object containing unit options
+        Args:
+            fname - Absolute path to the source file.
+            conf - Config object containing unit options.
+
+        Keyword Args:
+            delim - Compiled regex object used for parsing the header.
+
         """
         super(TextUnit, self).__init__(fname)
 
@@ -382,26 +458,34 @@ class TextUnit(Unit):
 
 
 class Pack(object):
-    """Class for handling Unit objects in packs.
+
+    """Class for handling units into packs.
 
     We might want to use this to handle units togethers, such as when
     we're handling summary pages for blog posts.
-    """
-    def __init__(self, unit_idxs, pack_idx, site_dir, base_permalist=[], \
-            base_url='', last=False, pagination_dir=''):
-        """Initializes Pack instance.
 
-        Arguments:
-        unit_idxs: list or tuple containing the indexes of Engine.units
-            to write. Packs are made according to unit_idxs' sorting order
-        pack_idx: index of the pack object relative to to other pack objects.
-        site_dir: absolute file path to the output directory
-        base_permalist: list of URL components common to all pack permalinks;
-        base_url: base url to be set for the permalink; defaults to '' so
-            permalinks are relative
-        last: boolean indicating whether this pack is the last one
-        pagination_dir: directory for paginated items with index > 1
+    """
+
+    def __init__(self, unit_idxs, pack_idx, site_dir, base_permalist=[], \
+            base_url='', is_last=False, pagination_dir=''):
+        """Initializes a Pack instance.
+
+        Args:
+            unit_idxs - List or tuple containing the indexes of units.
+                to write. Packs are made according to unit_idxs' sorting order
+            pack_idx - Current pack object index.
+            site_dir - Absolute file path to the output directory.
+
+        Keyword Args:
+            base_permalist - List of URL components common to all pack
+                permalinks.
+            base_url - Base URL to be set for the permalink, defaults to '' so
+                permalinks are relative.
+            is_last - Boolean indicating whether this pack is the last one.
+            pagination_dir - Directory for paginated items with index > 1.
+
         """
+
         self.unit_idxs = unit_idxs
         # because page are 1-indexed and lists are 0-indexed
         self.pack_idx = pack_idx + 1
@@ -429,7 +513,7 @@ class Pack(object):
         # we can set those attributes here (unlike in units)
         pagination_url = [base_url] + base_permalist
         # next permalinks
-        if not last:
+        if not is_last:
             self.permalink_next = '/'.join(pagination_url + filter(None, \
                     [self.pagination_dir, str(self.pack_idx + 1)])) + '/'
         # prev permalinks

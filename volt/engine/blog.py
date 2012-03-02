@@ -60,7 +60,7 @@ class BlogEngine(Engine):
                         self.CONFIG.VOLT.SITE_DIR, ['blog']))
             else:
                 packs.append(pack_class(unit_idxs[start:], i, \
-                        self.CONFIG.VOLT.SITE_DIR, ['blog'], last=True))
+                        self.CONFIG.VOLT.SITE_DIR, ['blog'], is_last=True))
 
         return packs
 

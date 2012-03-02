@@ -42,8 +42,8 @@ class TestEngine(unittest.TestCase):
                 'blog', 'not', 'string', 'index.html'))
         self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string/')
 
-        # test for index_html = False
-        self.engine.set_unit_paths(Unit_Mock, path, url, index_html=False)
+        # test for set_index_html = False
+        self.engine.set_unit_paths(Unit_Mock, path, url, set_index_html=False)
         self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string.html'))
         self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string.html')
@@ -58,11 +58,11 @@ class TestEngine(unittest.TestCase):
                 'not', 'string'))
         self.assertEqual(Unit_Mock.permalink, 'http://alay.com/not/string/')
 
-    def test_process_packs(self):
-        self.assertRaises(NotImplementedError, self.engine.process_packs, )
+    def test_parse(self):
+        self.assertRaises(NotImplementedError, self.engine.parse, )
 
-    def test_run(self):
-        self.assertRaises(NotImplementedError, self.engine.run, )
+    def test_write(self):
+        self.assertRaises(NotImplementedError, self.engine.write, )
 
 
 class TestUnit(unittest.TestCase):
@@ -120,7 +120,8 @@ class TestUnit(unittest.TestCase):
                 ['', '2009', '01', '28', 'yo-dawg'])
         self.assertEqual(get_permalist('{time:%Y}/mustard/{time:%m}/{slug}/'),
                 ['', '2009', 'mustard', '01', 'yo-dawg'])
-        self.assertRaises(ContentError, get_permalist, 'i/love /mustard')
+        self.assertEqual(get_permalist('i/love /mustard'),
+                ['', 'i', 'love', 'mustard'])
         self.assertRaises(ContentError, get_permalist, 'bali/{beach}/party')
 
 
