@@ -20,7 +20,7 @@ class Generator(object):
             except ImportError:
                 eng_mod = import_conf('volt.engine.%s' % e)
             eng_class = get_engine(eng_mod)
-            self.engines[e] = eng_class(CONFIG)
+            self.engines[e] = eng_class()
 
             print 'Parsing units for the %s engine...' % e
             self.engines[e].parse()

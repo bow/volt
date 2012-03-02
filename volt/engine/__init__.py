@@ -10,7 +10,7 @@ from functools import partial
 import yaml
 
 from volt import ContentError, ParseError
-from volt.config import SessionConfig
+from volt.config import CONFIG, SessionConfig
 from volt.util import grab_class
 
 
@@ -26,7 +26,7 @@ _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 class Engine(object):
 
-    def __init__(self, config):
+    def __init__(self, config=CONFIG):
         """Initializes the engine.
         """
         if not isinstance(config, SessionConfig):
