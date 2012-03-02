@@ -1,4 +1,14 @@
-# Volt plugin for markdown
+# -*- coding: utf8 -*-
+"""
+--------------------
+volt.plugin.markdown
+--------------------
+
+Markdown processor plugin for Volt units.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
 
 import os
 
@@ -13,6 +23,7 @@ from volt.plugin import Processor
 
 
 class Markdown(Processor):
+
     """Processor plugin for transforming markdown syntax to html.
 
     The plugin can detect whether a unit is formatted using markdown from
@@ -24,9 +35,11 @@ class Markdown(Processor):
     module as fallback. This is because markdown processing with discount
     is much faster than by markdown since discount is actually a wrapper
     for Discount, the markdown parser written in C.
-    """
-    def process(self, units):
 
+    """
+
+    def process(self, units):
+        """Process the given units."""
         for unit in units:
             # markup lookup, in header field first then file extension
             if hasattr(unit, 'markup'):
@@ -44,8 +57,8 @@ class Markdown(Processor):
     def get_html(self, string):
         """Returns html string of a markdown content.
 
-        Arguments:
-        string: string to process
+        Args:
+            string - string to process
         """
         if has_discount:
             marked = discount.Markdown(string.encode('utf8'))

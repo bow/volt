@@ -1,4 +1,14 @@
-# Volt plugin for syntax highlight
+# -*- coding: utf8 -*-
+"""
+------------------
+volt.plugin.syntax
+------------------
+
+Syntax highlighter processor plugin for Volt.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
 
 import os
 import re
@@ -77,8 +87,8 @@ class SyntaxHighlighter(Processor):
     def highlight_syntax(self, string):
         """Highlights syntaxes in the given string.
 
-        Arguments:
-        string: string containing the code to highlight.
+        Args:
+            string - string containing the code to highlight.
         """
         codeblocks = re.findall(_RE_SYNTAX, string)
         # results: list of tuples of 3 items
