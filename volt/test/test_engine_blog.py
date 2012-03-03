@@ -40,14 +40,14 @@ class TestBlogEngine(unittest.TestCase):
         self.assertEqual(len(packs), 4)
         for pack in packs:
             if packs.index(pack) != 3:
-                self.assertEqual(len(pack.unit_idxs), 3)
+                self.assertEqual(len(pack.units), 3)
             else:
-                self.assertEqual(len(pack.unit_idxs), 1)
+                self.assertEqual(len(pack.units), 1)
 
         self.engine.CONFIG.BLOG.POSTS_PER_PAGE = 10
         packs = self.engine.process_packs(Pack, range(3))
         self.assertEqual(len(packs), 1)
         for pack in packs:
-            self.assertEqual(len(pack.unit_idxs), 3)
+            self.assertEqual(len(pack.units), 3)
 
         self.assertRaises(TypeError, self.engine.process_packs, TextUnit, range(5))

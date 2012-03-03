@@ -466,13 +466,12 @@ class Pack(object):
 
     """
 
-    def __init__(self, unit_idxs, pack_idx, base_permalist=[], \
+    def __init__(self, units, pack_idx, base_permalist=[], \
             is_last=False, config=CONFIG):
         """Initializes a Pack instance.
 
         Args:
-            unit_idxs - List or tuple containing the indexes of units.
-                to write. Packs are made according to unit_idxs' sorting order
+            units - List containing units to pack.
             pack_idx - Current pack object index.
 
         Keyword Args:
@@ -483,7 +482,7 @@ class Pack(object):
 
         """
 
-        self.unit_idxs = unit_idxs
+        self.units = units
         # because page are 1-indexed and lists are 0-indexed
         self.pack_idx = pack_idx + 1
         # this will be appended for pack_idx > 1, e.g. .../page/2

@@ -46,16 +46,16 @@ class BlogEngine(Engine):
         # write each blog posts according to templae
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
-        self.packs = self.process_packs(Pack, range(len(self.units)))
+        self.packs = self.process_packs(Pack, self.units)
         # write packs
         self.write_packs()
 
-    def process_packs(self, pack_class, unit_idxs):
+    def process_packs(self, pack_class, units):
         """Process groups of blog posts.
 
         Arguments:
         pack_class: subclass of Pack used to contain unit objects
-        unit_idxs: list or tuple containing the index of self.units to be packed;
+        units: list or tuple containing the index of self.units to be packed;
             the order of this index determines the order of packing
 
         Returns a list of Pack objects, representing the contents of a
@@ -69,18 +69,18 @@ class BlogEngine(Engine):
         units_per_pack = self.CONFIG.BLOG.POSTS_PER_PAGE
 
         # count how many paginations we need
-        pagination = len(unit_idxs) / units_per_pack + \
-                (len(unit_idxs) % units_per_pack != 0)
+        pagination = len(units) / units_per_pack + \
+                (len(units) % units_per_pack != 0)
 
         # construct pack objects for each pagination page
         for i in range(pagination):
             start = i * units_per_pack
             if i != pagination - 1:
                 stop = (i + 1) * units_per_pack
-                packs.append(pack_class(unit_idxs[start:stop], i, ['blog'], \
+                packs.append(pack_class(units[start:stop], i, ['blog'], \
                         config=self.CONFIG))
             else:
-                packs.append(pack_class(unit_idxs[start:], i, ['blog'], \
+                packs.append(pack_class(units[start:], i, ['blog'], \
                         is_last=True, config=self.CONFIG))
 
         return packs
@@ -108,6 +108,5 @@ class BlogEngine(Engine):
             with open(pack.path, 'w') as target:
                 # since pack object only stores indexes of unit in self.unit
                 # we need to get the actual unit items before writing
-                setattr(pack, 'units', [self.units[x] for x in pack.unit_idxs])
                 rendered = template.render(page=pack.__dict__, site=self.CONFIG.SITE)
                 self.write_output(target, rendered)

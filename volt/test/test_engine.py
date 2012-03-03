@@ -172,14 +172,14 @@ class TestTextUnit(unittest.TestCase):
 class TestPack(unittest.TestCase):
 
     def test_init(self):
-        unit_idxs = range(10)
+        units = [Unit_Mock] * 10
         site_dir = os.path.join(PROJECT_DIR, 'site')
 
         # test for pack_idx = 0
         pack_idx = 0
         base_permalist = []
         is_last = False
-        pack = Pack(unit_idxs, pack_idx, base_permalist, is_last, \
+        pack = Pack(units, pack_idx, base_permalist, is_last, \
                 config=SessionConfig_Mock)
         self.assertEqual(pack.path, os.path.join(site_dir, 'index.html'))
         self.assertEqual(pack.permalist, [])
@@ -191,7 +191,7 @@ class TestPack(unittest.TestCase):
         pack_idx = 1
         base_permalist = []
         is_last = False
-        pack = Pack(unit_idxs, pack_idx, base_permalist, is_last, \
+        pack = Pack(units, pack_idx, base_permalist, is_last, \
                 config=SessionConfig_Mock)
         self.assertEqual(pack.path, os.path.join(site_dir, 'page', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['page', '2'])
@@ -203,7 +203,7 @@ class TestPack(unittest.TestCase):
         pack_idx = 2
         base_permalist = []
         is_last = True
-        pack = Pack(unit_idxs, pack_idx, base_permalist, is_last, \
+        pack = Pack(units, pack_idx, base_permalist, is_last, \
                 config=SessionConfig_Mock)
         self.assertEqual(pack.path, os.path.join(site_dir, 'page', '3', 'index.html'))
         self.assertEqual(pack.permalist, ['page', '3'])
@@ -215,7 +215,7 @@ class TestPack(unittest.TestCase):
         pack_idx = 1
         base_permalist = ['tech']
         is_last = False
-        pack = Pack(unit_idxs, pack_idx, base_permalist, is_last, \
+        pack = Pack(units, pack_idx, base_permalist, is_last, \
                 config=SessionConfig_Mock)
         self.assertEqual(pack.path, os.path.join(site_dir, 'tech', 'page', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['tech', 'page', '2'])
@@ -228,7 +228,7 @@ class TestPack(unittest.TestCase):
         base_permalist = []
         is_last = False
         SessionConfig_Mock.SITE.PAGINATION_URL = ''
-        pack = Pack(unit_idxs, pack_idx, base_permalist, is_last, \
+        pack = Pack(units, pack_idx, base_permalist, is_last, \
                 config=SessionConfig_Mock)
         self.assertEqual(pack.path, os.path.join(site_dir, '', '2', 'index.html'))
         self.assertEqual(pack.permalist, ['2'])
