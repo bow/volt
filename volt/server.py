@@ -28,13 +28,14 @@ import posixpath
 import sys
 import urllib
 from itertools import chain
+from socket import getfqdn
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingTCPServer
-from socket import getfqdn
 
+from volt import gen
+from volt import main
 from volt import util
 from volt.config import CONFIG
-from volt.main import __version__, run_gen
 
 
 class VoltHTTPServer(ThreadingTCPServer):
@@ -55,6 +56,7 @@ class VoltHTTPServer(ThreadingTCPServer):
         a file inside these directories are modified.
 
         """
+        self.config_file = os.path.join(CONFIG.ROOT_DIR, 'voltconf.py')
         self.last_mtime = self.check_dirs_mtime()
         ThreadingTCPServer.__init__(self, *args, **kwargs)
 
@@ -71,7 +73,7 @@ class VoltHTTPServer(ThreadingTCPServer):
         if self.last_mtime < latest_mtime:
             self.last_mtime = latest_mtime
             # generate the site
-            run_gen()
+            gen.run()
         ThreadingTCPServer.process_request(self, request, client_address)
 
     def check_dirs_mtime(self):
@@ -88,9 +90,8 @@ class VoltHTTPServer(ThreadingTCPServer):
         # but we do want to add voltconf.py, since the user might want to
         # check the effects of changing certain configs
         dirs = (x[0] for x in os.walk(CONFIG.ROOT_DIR) if
-                CONFIG.VOLT.SITE_DIR not in x[0] and x[0] != CONFIG.ROOT_DIR)
-        config_file = os.path.join(CONFIG.ROOT_DIR, 'voltconf.py')
-        return max(os.stat(x).st_mtime for x in chain(dirs, [config_file]))
+                CONFIG.VOLT.SITE_DIR not in x[0] and CONFIG.ROOT_DIR != x[0])
+        return max(os.stat(x).st_mtime for x in chain(dirs, [self.config_file]))
 
     def server_bind(self):
         # overrides server_bind to store the server name.
@@ -104,18 +105,18 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     """HTTP request handler of the Volt HTTP server.
 
-    This request handler can only be used for serving files inside a
-    Volt project directory, since its path resolution is relative
-    to the Volt project path. In addition to that, the handler can
-    display colored text output according to the settings in voltconf.py
-    and outputs the size of the returned file in its HTTP log line.
-    404 error messages are suppressed to allow for more compact output.
+    This request handler can only be used for serving files inside a Volt
+    site directory, since its path resolution is relative to that  directory.
+    In addition to that, the handler can display colored text output according
+    to the settings in voltconf.py and outputs the size of the returned file
+    in its HTTP log line. 404 error messages are suppressed to allow for more
+    compact output.
 
     Consult the SimpleHTTPRequestHandler documentation for more information.
 
     """
 
-    server_version = 'VoltHTTPServer/' + __version__
+    server_version = 'VoltHTTPServer/' + main.__version__
 
     def log_error(self, format, *args):
         # overwritten to unclutter log message.
@@ -158,7 +159,8 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
-            if word in (os.curdir, os.pardir): continue
+            if word in (os.curdir, os.pardir): 
+                continue
             path = os.path.join(path, word)
         # set file path as attribute, to get size in log_request()
         self.file_path = path
@@ -189,7 +191,7 @@ def run():
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-    util.show_notif("\nVolt %s Development Server\n" % __version__)
+    util.show_notif("\nVolt %s Development Server\n" % main.__version__)
     util.show_info("Serving %s/\n" 
                    "Running at http://%s:%s/\n"
                    "CTRL-C to stop.\n\n" % 
