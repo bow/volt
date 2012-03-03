@@ -92,8 +92,8 @@ class SessionConfig(object):
 
         """
         # get root and modify path to user conf to absolute path
-        self.ROOT_DIR = self.get_root_dir(self.start_dir)
-        self._default.VOLT.USER_CONF = os.path.join(self.ROOT_DIR, \
+        root_dir = self.get_root_dir(self.start_dir)
+        self._default.VOLT.USER_CONF = os.path.join(root_dir, \
                 self._default.VOLT.USER_CONF)
 
         # import user-defined configs as a module object
@@ -118,11 +118,14 @@ class SessionConfig(object):
                 # set directory + file items to absolute paths
                 # directory + file items has 'DIR' + 'FILE' in their items
                 if opt.endswith('_FILE') or opt.endswith('_DIR'):
-                    obj[opt] = os.path.join(self.ROOT_DIR, obj[opt])
+                    obj[opt] = os.path.join(root_dir, obj[opt])
                 # strip '/'s from URL options
                 if opt.endswith('URL'):
                     obj[opt] = obj[opt].strip('/')
             setattr(self, item, obj)
+
+        # set root dir as config in VOLT
+        setattr(self.VOLT, 'ROOT_DIR', root_dir)
 
         # and set the loaded flag to True here
         # so we can start referring to the resolved configs

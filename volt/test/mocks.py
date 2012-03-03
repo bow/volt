@@ -26,6 +26,7 @@ for config in configs:
 # volt options
 volt_opts = {
         'USER_CONF': 'voltconf.py',
+        'ROOT_DIR': PROJECT_DIR,
         'CONTENT_DIR': os.path.join(PROJECT_DIR, 'content'),
         'TEMPLATE_DIR': os.path.join(PROJECT_DIR, 'templates'),
         'LAYOUT_DIR': os.path.join(PROJECT_DIR, 'layout'),

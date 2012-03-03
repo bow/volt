@@ -15,7 +15,7 @@ class Generator(object):
 
         for e in CONFIG.SITE.ENGINES:
             try:
-                user_eng_path = os.path.join(CONFIG.ROOT_DIR, 'engines', '%s.py' % e)
+                user_eng_path = os.path.join(CONFIG.VOLT.ROOT_DIR, 'engines', '%s.py' % e)
                 eng_mod = import_conf(user_eng_path, path=True)
             except ImportError:
                 eng_mod = import_conf('volt.engine.%s' % e)
@@ -27,7 +27,7 @@ class Generator(object):
 
         for p, targets in CONFIG.SITE.PLUGINS:
             try:
-                user_plug_path = os.path.join(CONFIG.ROOT_DIR, 'plugins', '%s.py' % p)
+                user_plug_path = os.path.join(CONFIG.VOLT.ROOT_DIR, 'plugins', '%s.py' % p)
                 plug_mod = import_conf(user_plug_path, path=True)
             except ImportError:
                 plug_mod = import_conf('volt.plugin.%s' % p)

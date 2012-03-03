@@ -56,8 +56,8 @@ class TestSessionConfig(unittest.TestCase):
         # test if exception is properly raised if dir is not a Volt dir
         self.assertRaises(ConfigError, SessionConfig().get_root_dir, TEST_DIR)
         # test if root path resolution works properly for all dirs in project dir
-        self.assertEqual(self.CONFIG.ROOT_DIR, PROJECT_DIR)
-        self.assertEqual(self.CONFIG.ROOT_DIR, SessionConfig().get_root_dir(\
+        self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, PROJECT_DIR)
+        self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, SessionConfig().get_root_dir(\
                 os.path.join(PROJECT_DIR, "content")))
 
     def test_import_conf(self):
