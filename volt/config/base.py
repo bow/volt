@@ -1,15 +1,38 @@
+# -*- coding: utf-8 -*-
+"""
+----------------
+volt.config.base
+----------------
+
+Volt configuration base class and methods.
+
+This module provides Config, the class used for containing all configurations
+in Volt, and two additional methods for importing Config, import_conf and
+grab_config.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
+
 import os
-import sys
 from itertools import ifilter
 
 
 class Config(dict):
+
     """Container class for storing configuration options.
+
+    Config is basically a dictionary subclass with predefined class
+    attributes and dot-notation access. Additionally, it also defines
+    override(), a method used to subsume values from another Config
+    object.
+
     """
 
     # class attributes
-    # so xUnit.__init__ doesnt' fail if Config instance don't
-    # define these
+    # so Unit.__init__ doesnt' fail if Config instance don't
+    # define these, since these are checked by the base Unit class.
     PROTECTED = tuple()
     REQUIRED = tuple()
     FIELDS_AS_DATETIME = tuple()
@@ -17,10 +40,11 @@ class Config(dict):
     DISPLAY_DATETIME_FORMAT = str()
     FIELDS_AS_LIST = tuple()
     LIST_SEP = str()
-    GLOBAL_FIELDS = {}
+    GLOBAL_FIELDS = dict()
     PERMALINK = str()
 
     def __init__(self, *args, **kwargs):
+        """Initializes Config."""
         super(Config, self).__init__(*args, **kwargs)
         # set __dict__ to the dict contents itself
         # enables value access by dot notation
@@ -28,6 +52,10 @@ class Config(dict):
 
     def override(self, conf_obj):
         """Overrides options of the current Config object with another one.
+
+        Args:
+            conf_obj - Config object whose values will be used for overriding.
+
         """
         for key in conf_obj.keys():
             self[key] = conf_obj[key]
@@ -36,12 +64,13 @@ class Config(dict):
 def import_conf(mod, path=False, name=''):
     """Imports a Volt configuration.
 
-    Arguments:
-    mod: dotted package notation or an absolute path to the
-         configuration file.
-    name: module name to use if import is done by path
-    path: boolean indicating if mod is absolute path or dotted package
-          notation
+    Args:
+        mod - Dotted package notation or an absolute path to the configuration
+            file.
+        path - Boolean indicating if mod is absolute path or dotted package
+              notation.
+        name - Module name to use if import is done by path.
+
     """
     if path and os.path.exists(mod):
         from imp import load_source
@@ -54,7 +83,8 @@ def import_conf(mod, path=False, name=''):
 def get_configs(mod):
     """Returns an iterable returning all Config instances in the given module.
 
-    Arguments:
-    mod: module to be searched
+    Args
+        mod - Module to be searched.
+
     """
     return ifilter(lambda x: isinstance(getattr(mod, x), Config), dir(mod))

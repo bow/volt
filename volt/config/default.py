@@ -1,11 +1,21 @@
-# Volt default configurations file
+# -*- coding: utf-8 -*-
+"""
+-------------------
+volt.config.default
+-------------------
+
+Volt default configurations.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 from os.path import join
 
 from volt.config.base import Config
 
 
-# Volt configurations
 # Changing values in this Config is allowed but not recommended
 VOLT = Config(
 
@@ -34,12 +44,12 @@ SITE = Config(
 
     # Site name, URL, and description
     TITLE = 'My Volt Site',
-    URL = '',
-    DESC = '',
+    URL = str(),
+    DESC = str(),
 
     # Engines used in generating the site
     # Defaults to none
-    ENGINES = [],
+    ENGINES = tuple(),
 
     # Plugins used in site generation
     # Tuple of tuples, each containing a string for the plugin file name
@@ -137,7 +147,7 @@ PLAIN = Config(
     REQUIRED = ('title', ),
 
     # Dictionary containing values to be globally set for all posts
-    GLOBAL_FIELDS = {},
+    GLOBAL_FIELDS = dict(),
 
     # Protected properties
     # These properties must not be defined by any individual plain page header,

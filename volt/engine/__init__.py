@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 """
 -----------
 volt.engine
@@ -214,7 +214,7 @@ class Engine(object):
         This is written to facillitate testing of the calling method.
 
         """
-        file_obj.write(string.encode('utf8'))
+        file_obj.write(string.encode('utf-8'))
 
     def parse(self):
         """Performs initial processing of resources into unit objects."""
@@ -253,7 +253,7 @@ class Unit(object):
         return self.__dict__.keys()
 
     # convenience methods
-    open_text = partial(codecs.open, encoding='utf8')
+    open_text = partial(codecs.open, encoding='utf-8')
     as_datetime = datetime.strptime
     get_display_time = datetime.strftime
 

@@ -1,4 +1,17 @@
-# Volt plain engine
+# -*- coding: utf-8 -*-
+"""
+----------------
+volt.engine.plain
+----------------
+
+Volt Plain Engine.
+
+The plain engine takes text files as resources and writes single web pages.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 from volt.engine import Engine
 

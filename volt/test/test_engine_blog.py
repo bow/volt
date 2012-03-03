@@ -1,7 +1,15 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
+"""
+--------------------------
+volt.test.test_engine_blog
+--------------------------
 
-# tests for volt.engine
+Tests for volt.engine.blog.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 import os
 import unittest

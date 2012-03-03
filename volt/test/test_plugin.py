@@ -1,7 +1,15 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
+"""
+---------------------
+volt.test.test_plugin
+---------------------
 
-# tests for volt.plugin
+Tests for the volt.plugin module.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 import unittest
 

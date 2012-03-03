@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 """
 --------------------
 volt.plugin.markdown
@@ -61,8 +61,8 @@ class Markdown(Processor):
             string - string to process
         """
         if has_discount:
-            marked = discount.Markdown(string.encode('utf8'))
+            marked = discount.Markdown(string.encode('utf-8'))
             html = marked.get_html_content()
-            return html.decode('utf8')
+            return html.decode('utf-8')
 
         return markdown.markdown(string)

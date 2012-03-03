@@ -1,7 +1,15 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
+"""
+---------------------
+volt.test.test_engine
+---------------------
 
-# tests for volt.engine
+Tests for volt.engine.__init__.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 import glob
 import os
