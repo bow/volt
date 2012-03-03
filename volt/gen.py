@@ -60,7 +60,7 @@ def run():
     # prepare output directory
     if os.path.exists(CONFIG.VOLT.SITE_DIR):
         shutil.rmtree(CONFIG.VOLT.SITE_DIR)
-    shutil.copytree(CONFIG.VOLT.TEMPLATE_DIR, CONFIG.VOLT.SITE_DIR, \
+    shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
             ignore=shutil.ignore_patterns(CONFIG.VOLT.IGNORE_PATTERN))
 
     # generate the site!

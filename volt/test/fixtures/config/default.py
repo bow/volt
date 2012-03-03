@@ -9,8 +9,9 @@ VOLT = Config(
     USER_CONF = 'voltconf.py',
     CONTENT_DIR = 'content',
     TEMPLATE_DIR = 'templates',
+    LAYOUT_DIR = 'layout',
     SITE_DIR = 'site',
-    IGNORE_PATTERN = '_*.html',
+    IGNORE_PATTERN = str(),
 )
 
 SITE = Config(

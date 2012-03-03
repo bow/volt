@@ -27,12 +27,13 @@ VOLT = Config(
     # relative to a project root
     CONTENT_DIR = 'content',
     TEMPLATE_DIR = 'templates',
+    LAYOUT_DIR = 'layout',
     SITE_DIR = 'site',
 
     # Ignore patterns
     # Filenames that match this pattern will not be copied from template directory
     # to site directory
-    IGNORE_PATTERN = '_*.html',
+    IGNORE_PATTERN = str(),
 
     # Flag for colored terminal output
     COLORED_TEXT = False,

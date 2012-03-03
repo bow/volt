@@ -28,8 +28,9 @@ volt_opts = {
         'USER_CONF': 'voltconf.py',
         'CONTENT_DIR': os.path.join(PROJECT_DIR, 'content'),
         'TEMPLATE_DIR': os.path.join(PROJECT_DIR, 'templates'),
+        'LAYOUT_DIR': os.path.join(PROJECT_DIR, 'layout'),
         'SITE_DIR': os.path.join(PROJECT_DIR, 'site'),
-        'IGNORE_PATTERN': '_*.html',
+        'IGNORE_PATTERN': str(),
 }
 for key in volt_opts:
     setattr(SessionConfig_Mock.VOLT, key, volt_opts[key])
