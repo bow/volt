@@ -19,6 +19,7 @@ SITE = Config(
     DESC = 'Desc in default', 
     ENGINES = (),
     PLUGINS = (('',[]),),
+    PAGINATION_URL = 'page',
 )
 
 BLOG = Config(

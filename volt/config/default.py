@@ -58,6 +58,12 @@ SITE = Config(
     # Run according to order listed here
     # Defaults to none
     PLUGINS = (('',[]),),
+
+    # URL to use for pagination
+    # This will be used for paginated items after the first one
+    # For example, if the pagination URL is 'page', then the second
+    # pagination page will have '.../page/2/', the third '.../page/3/', etc.
+    PAGINATION_URL = 'page',
 )
 
 
@@ -82,9 +88,6 @@ BLOG = Config(
     # Dictionary containing values to be globally set for all posts
     GLOBAL_FIELDS = { 'author': '', },
 
-    # The number of displayed posts per pagination page
-    POSTS_PER_PAGE = 10,
-
     # Directory path for storing blog content relative to a project root
     CONTENT_DIR = join(VOLT.CONTENT_DIR, 'blog'),
 
@@ -98,6 +101,18 @@ BLOG = Config(
     # Default order is A-Z (for alphabets) and past-present (for dates)
     # To reverse order just add '-' in front, e.g. '-time'
     SORT = '-time',
+
+    # The number of displayed posts per pagination page
+    POSTS_PER_PAGE = 10,
+
+    # Packs to build for the static site
+    # Keys are pack URL relative to the blog URL, values are header field
+    # used in splitting blog units into the pack
+    # Use an empty string ('') to apply packing to all blog units
+    PACKS = {
+        '/': '',
+        '/category': 'category',
+    },
 
     # Protected properties
     # These properties must not be defined by any individual blog post header,

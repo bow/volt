@@ -466,23 +466,20 @@ class Pack(object):
 
     """
 
-    def __init__(self, unit_idxs, pack_idx, site_dir, base_permalist=[], \
-            base_url='', is_last=False, pagination_dir=''):
+    def __init__(self, unit_idxs, pack_idx, base_permalist=[], \
+            is_last=False, config=CONFIG):
         """Initializes a Pack instance.
 
         Args:
             unit_idxs - List or tuple containing the indexes of units.
                 to write. Packs are made according to unit_idxs' sorting order
             pack_idx - Current pack object index.
-            site_dir - Absolute file path to the output directory.
 
         Keyword Args:
             base_permalist - List of URL components common to all pack
                 permalinks.
-            base_url - Base URL to be set for the permalink, defaults to '' so
-                permalinks are relative.
             is_last - Boolean indicating whether this pack is the last one.
-            pagination_dir - Directory for paginated items with index > 1.
+            config - SessionConfig instance.
 
         """
 
@@ -490,7 +487,6 @@ class Pack(object):
         # because page are 1-indexed and lists are 0-indexed
         self.pack_idx = pack_idx + 1
         # this will be appended for pack_idx > 1, e.g. .../page/2
-        self.pagination_dir = pagination_dir
         # precautions for empty string, so double '/'s are not introduced
         base_permalist = filter(None, base_permalist)
 
@@ -499,30 +495,30 @@ class Pack(object):
             self.permalist = base_permalist
         else:
             # otherwise add pagination dir and pack index
-            self.permalist = base_permalist + filter(None, [self.pagination_dir,\
+            self.permalist = base_permalist + filter(None, [config.SITE.PAGINATION_URL,\
                     str(self.pack_idx)])
 
         # path is path to folder + index.html
-        path = [site_dir] + self.permalist + ['index.html']
+        path = [config.VOLT.SITE_DIR] + self.permalist + ['index.html']
         self.path = os.path.join(*(path))
 
-        url = [base_url] + self.permalist
+        url = [''] + self.permalist
         self.permalink = '/'.join(url) + '/'
 
         # since we can guess the permalink of next and previous pack objects
         # we can set those attributes here (unlike in units)
-        pagination_url = [base_url] + base_permalist
+        pagination_url = [''] + base_permalist
         # next permalinks
         if not is_last:
             self.permalink_next = '/'.join(pagination_url + filter(None, \
-                    [self.pagination_dir, str(self.pack_idx + 1)])) + '/'
+                    [config.SITE.PAGINATION_URL, str(self.pack_idx + 1)])) + '/'
         # prev permalinks
         if self.pack_idx == 2:
             # if pagination is at 2, previous permalink is to 1
             self.permalink_prev = '/'.join(pagination_url) + '/'
         elif self.pack_idx != 1:
             self.permalink_prev = '/'.join(pagination_url + filter(None, \
-                    [self.pagination_dir, str(self.pack_idx - 1)])) + '/'
+                    [config.SITE.PAGINATION_URL, str(self.pack_idx - 1)])) + '/'
 
 
 get_engine = partial(grab_class, cls=Engine)

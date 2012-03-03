@@ -42,6 +42,7 @@ site_opts = {
         'DESC': 'Mock Desc',
         'ENGINES': (),
         'PLUGINS': (('', []),),
+        'PAGINATION_URL': 'page',
 }
 for key in site_opts:
     setattr(SessionConfig_Mock.SITE, key, site_opts[key])
