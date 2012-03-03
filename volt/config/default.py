@@ -177,6 +177,19 @@ COLLECTION = Config(
 )
 
 
+# Settings to be passed on to Jinja2
+JINJA2 = Config(
+
+    # Jinja2 filters
+    # Dictionary of function names mapped to the functions themselves
+    FILTERS = dict(),
+
+    # Jinja2 tests
+    # Dictionary of function names mapped to the functions themselves
+    TESTS = dict(),
+)
+
+
 # Default configurations for plugins
 # Empty since by default no plugins are used
 PLUGINS = Config()

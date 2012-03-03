@@ -54,3 +54,8 @@ PLAIN = Config(
 )
 
 PLUGINS = Config()
+
+JINJA2 = Config(
+    TESTS = dict(),
+    FILTERS = dict(),
+)

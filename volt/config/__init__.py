@@ -65,18 +65,18 @@ class SessionConfig(object):
                     obj[opt] = obj[opt].strip('/')
             setattr(self, item, obj)
 
+        # and set the loaded flag to True here
+        # so we can start referring to the resolved configs
+        self._loaded = True
+
         # set up jinja2 template environment in the SITE Config object
         env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
 
-        # add user-defined jinja2 filters
-        if hasattr(user, 'JINJA_FILTERS'):
-            for func in user.JINJA_FILTERS:
-                env.filters[func] = user.JINJA_FILTERS[func]
-
-        # add user-defined jinja2 tests
-        if hasattr(user, 'JINJA_TESTS'):
-            for func in user.JINJA_TESTS:
-                env.tests[func] = user.JINJA_TESTS[func]
+        # pass jinja filters and tests
+        for filter in self.JINJA2.FILTERS:
+            env.filters[filter] = self.JINJA2.FILTERS[filter]
+        for test in self.JINJA2.TESTS:
+            env.tests[test] = self.JINJA2.TESTS[test]
 
         # setattr self jinja2 env
         setattr(self.SITE, 'TEMPLATE_ENV', env)

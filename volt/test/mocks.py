@@ -17,7 +17,7 @@ Unit_Mock = Mock(spec=Unit)
 # Session mock
 SessionConfig_Mock = Mock(spec=SessionConfig)
 
-configs = ['VOLT', 'SITE', 'BLOG', 'PLAIN', 'PLUGINS', ]
+configs = ['VOLT', 'SITE', 'BLOG', 'PLAIN', 'PLUGINS', 'JINJA2', ]
 
 # attach config mock objects to mock session
 for config in configs:
@@ -82,3 +82,9 @@ plain_opts = {
 }
 for key in plain_opts:
     setattr(SessionConfig_Mock.PLAIN, key, plain_opts[key])
+
+# jinja2 tests and filters
+jinja2_opts = {
+        'TESTS': dict(),
+        'FILTERS': dict(),
+}
