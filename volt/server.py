@@ -56,7 +56,6 @@ class VoltHTTPServer(ThreadingTCPServer):
         a file inside these directories are modified.
 
         """
-        self.config_file = os.path.join(CONFIG.ROOT_DIR, 'voltconf.py')
         self.last_mtime = self.check_dirs_mtime()
         ThreadingTCPServer.__init__(self, *args, **kwargs)
 
@@ -89,9 +88,9 @@ class VoltHTTPServer(ThreadingTCPServer):
         # mtime due to the newly created output site directory
         # but we do want to add voltconf.py, since the user might want to
         # check the effects of changing certain configs
-        dirs = (x[0] for x in os.walk(CONFIG.ROOT_DIR) if
-                CONFIG.VOLT.SITE_DIR not in x[0] and CONFIG.ROOT_DIR != x[0])
-        return max(os.stat(x).st_mtime for x in chain(dirs, [self.config_file]))
+        dirs = (x[0] for x in os.walk(CONFIG.VOLT.ROOT_DIR) if
+                CONFIG.VOLT.SITE_DIR not in x[0] and CONFIG.VOLT.ROOT_DIR != x[0])
+        return max(os.stat(x).st_mtime for x in chain(dirs, [CONFIG.VOLT.USER_CONF]))
 
     def server_bind(self):
         # overrides server_bind to store the server name.
