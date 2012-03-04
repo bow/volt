@@ -110,8 +110,10 @@ BLOG = Config(
     # used in splitting blog units into the pack
     # Use an empty string ('') to apply packing to all blog units
     PACKS = {
-        '/': '',
-        '/category': 'category',
+        '': '',
+        'tag': 'tags',
+        '%Y': 'time',
+        '%Y/%m': 'time',
     },
 
     # Protected properties

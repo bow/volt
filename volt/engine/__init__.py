@@ -466,7 +466,7 @@ class Pack(object):
 
     """
 
-    def __init__(self, units, pack_idx, base_permalist=[], \
+    def __init__(self, units, pack_idx, base_permalist=[], title='',
             is_last=False, config=CONFIG):
         """Initializes a Pack instance.
 
@@ -481,7 +481,7 @@ class Pack(object):
             config - SessionConfig instance.
 
         """
-
+        self.title = title
         self.units = units
         # because page are 1-indexed and lists are 0-indexed
         self.pack_idx = pack_idx + 1
@@ -497,6 +497,7 @@ class Pack(object):
             self.permalist = base_permalist + filter(None, [config.SITE.PAGINATION_URL,\
                     str(self.pack_idx)])
 
+        print self.permalist
         # path is path to folder + index.html
         path = [config.VOLT.SITE_DIR] + self.permalist + ['index.html']
         self.path = os.path.join(*(path))

@@ -15,6 +15,7 @@ constituting a simple blog.
 
 
 import os
+from datetime import datetime
 
 from volt import ContentError
 from volt.engine import Engine, Pack
@@ -46,17 +47,60 @@ class BlogEngine(Engine):
         # write each blog posts according to templae
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
-        self.packs = self.process_packs(Pack, self.units)
-        # write packs
-        self.write_packs()
+        for pagination in self.CONFIG.BLOG.PACKS:
+            field = self.CONFIG.BLOG.PACKS[pagination]
+            pagination = pagination.strip('/').split('/')
 
-    def process_packs(self, pack_class, units):
+            # pagination for all items
+            if not field:
+                unit_groups = [self.units]
+                for units in unit_groups:
+                    self.process_packs(Pack, units, pagination)
+
+            # pagination for all item if field is list or tuple
+            elif isinstance(getattr(self.units[0], field), (list, tuple)):
+                # append empty string to pagination URL as placeholder for list item
+                pagination.append('')
+                # get item list for each unit
+                item_list_per_unit = (getattr(x, field) for x in self.units)
+                # get unique list item in all units
+                all_items = (reduce(set.union, [set(x) for x in item_list_per_unit]))
+                # iterate and paginate over each unique list item
+                for item in all_items:
+                    unit_groups = [x for x in self.units if item in getattr(x, field)]
+                    pagination[-1] = item
+                    self.process_packs(Pack, unit_groups, pagination)
+
+            elif isinstance(getattr(self.units[0], field), datetime):
+                # get all the date.strftime tokens in a list
+                date_tokens = pagination
+                # get all datetime fields from units
+                all_datetime = [getattr(x, field) for x in self.units]
+                # construct set of all datetime combinations in self.units
+                # according to the user's supplied pagination URL
+                # e.g. if URL == '%Y/%m' and there are two units with 2009/10
+                # and one with 2010/03 then
+                # all_items == set([('2009', '10), ('2010', '03'])
+                all_items = set(zip(*[[x.strftime(y) for x in all_datetime] \
+                        for y in date_tokens]))
+
+                for item in all_items:
+                    unit_groups = [x for x in self.units if \
+                            zip(*[[getattr(x, 'time').strftime(y)] for y in date_tokens])[0] == item]
+                    pagination = list(item)
+                    self.process_packs(Pack, unit_groups, pagination)
+
+        # write packs
+        #self.write_packs()
+
+    def process_packs(self, pack_class, units, base_permalist=[]):
         """Process groups of blog posts.
 
         Arguments:
         pack_class: subclass of Pack used to contain unit objects
         units: list or tuple containing the index of self.units to be packed;
             the order of this index determines the order of packing
+        base_permalist - ...
 
         Returns a list of Pack objects, representing the contents of a
             group of units
@@ -64,6 +108,9 @@ class BlogEngine(Engine):
         # raise exception if pack_class is not Pack subclass
         if not issubclass(pack_class, Pack):
             raise TypeError("Pack class must be a subclass of Pack.")
+
+        # construct permalist components, relative to blog URL
+        base_permalist = filter(None, [self.CONFIG.BLOG.URL] + base_permalist)
 
         packs = []
         units_per_pack = self.CONFIG.BLOG.POSTS_PER_PAGE
@@ -77,22 +124,17 @@ class BlogEngine(Engine):
             start = i * units_per_pack
             if i != pagination - 1:
                 stop = (i + 1) * units_per_pack
-                packs.append(pack_class(units[start:stop], i, ['blog'], \
+                packs.append(pack_class(units[start:stop], i, base_permalist, \
                         config=self.CONFIG))
             else:
-                packs.append(pack_class(units[start:], i, ['blog'], \
+                packs.append(pack_class(units[start:], i, base_permalist, \
                         is_last=True, config=self.CONFIG))
 
-        return packs
-
-    def write_packs(self):
-        """Writes multiple blog posts to output file.
-        """
         template_file = os.path.basename(self.CONFIG.BLOG.PACK_TEMPLATE_FILE)
         template_env = self.CONFIG.SITE.TEMPLATE_ENV
         template = template_env.get_template(template_file)
 
-        for pack in self.packs:
+        for pack in packs:
             # warn if files are overwritten
             # this indicates a duplicate post, which could result in
             # unexptected results
