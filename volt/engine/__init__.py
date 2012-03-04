@@ -4,11 +4,11 @@
 volt.engine
 -----------
 
-Base Unit, Engines, and Pack classes.
+Base Unit, Engines, and Pagination classes.
 
 Units represent a resource used in the generated site, such as a blog post
 or an image. Engines are classes that perform initial processing of Unit
-objects. Packs are groups of several Units that will be written to a single
+objects. Paginations are groups of several Units that will be written to a single
 HTML file, for example blog posts written in February 2009.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
@@ -457,18 +457,14 @@ class TextUnit(Unit):
             self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
 
 
-class Pack(object):
+class Pagination(object):
 
-    """Class for handling units into packs.
-
-    We might want to use this to handle units togethers, such as when
-    we're handling summary pages for blog posts.
-
+    """TODO
     """
 
     def __init__(self, units, pack_idx, base_permalist=[], title='',
             is_last=False, config=CONFIG):
-        """Initializes a Pack instance.
+        """Initializes a Pagination instance.
 
         Args:
             units - List containing units to pack.

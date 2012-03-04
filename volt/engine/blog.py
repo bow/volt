@@ -18,7 +18,8 @@ import os
 import re
 
 from volt import ContentError
-from volt.engine import Engine, Pack, _RE_PERMALINK
+from volt.config import CONFIG
+from volt.engine import Engine, _RE_PERMALINK
 
 
 __name__ = 'blog'
@@ -42,24 +43,58 @@ class BlogEngine(Engine):
         self.sort_units(self.units, self.CONFIG.BLOG.SORT)
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units(self.units)
+        # pack units
+        self.packs = self.build_packs(self.CONFIG.BLOG.PACKS)
 
     def write(self):
-        # write each blog posts according to templae
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
-        # pack posts according to option
-        for pagination in self.CONFIG.BLOG.PACKS:
+        self.write_packs(self.CONFIG.BLOG.PACK_TEMPLATE_FILE)
 
-            pagination = re.findall(_RE_PERMALINK, pagination.strip('/') + '/')
-            if pagination == []:
+
+    def write_packs(self, template_file):
+
+        for pack in self.packs:
+
+            template_file = os.path.basename(template_file)
+            template_env = self.CONFIG.SITE.TEMPLATE_ENV
+            template = template_env.get_template(template_file)
+
+            for pagination in self.packs[pack].paginations:
+                # warn if files are overwritten
+                # this indicates a duplicate post, which could result in
+                # unexptected results
+                if os.path.exists(pagination.path):
+                    # TODO: find a better exception name
+                    raise ContentError("'%s' already exists!" % pagination.path)
+                # !!!
+                # this could be dangerous, check later
+                try:
+                    os.makedirs(os.path.dirname(pagination.path))
+                except OSError:
+                    pass
+                with open(pagination.path, 'w') as target:
+                    # since pack object only stores indexes of unit in self.unit
+                    # we need to get the actual unit items before writing
+                    rendered = template.render(page=pagination.__dict__, site=self.CONFIG.SITE)
+                    self.write_output(target, rendered)
+
+    def build_packs(self, pack_list):
+
+        packs = dict()
+
+        for pack in pack_list:
+
+            base_permalist = re.findall(_RE_PERMALINK, pack.strip('/') + '/')
+            if base_permalist == []:
                 # pagination for all items
                 unit_groups = [self.units]
                 for units in unit_groups:
-                    self.process_packs(Pack, units, pagination)
+                    packs[''] = Pack(units, base_permalist)
 
             else:
-                field_token_idx = [pagination.index(token) for token in pagination if \
+                field_token_idx = [base_permalist.index(token) for token in base_permalist if \
                         token.startswith('{') and token.endswith('}')].pop(0)
-                field = pagination[field_token_idx][1:-1]
+                field = base_permalist[field_token_idx][1:-1]
 
                 if ':' in field:
                     field, strftime = field.split(':')
@@ -77,18 +112,18 @@ class BlogEngine(Engine):
 
                     for item in all_items:
                         unit_groups = [x for x in self.units if \
-                                zip(*[[getattr(x, 'time').strftime(y)] for y in date_tokens])[0] == item]
-                        pagination[field_token_idx:] = item
-
-                        self.process_packs(Pack, unit_groups, pagination)
+                                zip(*[[getattr(x, field).strftime(y)] for y in date_tokens])[0] == item]
+                        base_permalist[field_token_idx:] = item
+                        key = '/'.join(base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist)
 
                 elif isinstance(getattr(self.units[0], field), basestring):
                     all_items = set([getattr(x, field) for x in self.units])
                     for item in all_items:
                         unit_groups = [x for x in self.units if item == getattr(x, field)]
-                        pagination[field_token_idx] = item
-
-                        self.process_packs(Pack, unit_groups, pagination)
+                        base_permalist[field_token_idx] = item
+                        key = '/'.join(base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist)
 
                 # pagination for all item if field is list or tuple
                 elif isinstance(getattr(self.units[0], field), (list, tuple)):
@@ -100,69 +135,95 @@ class BlogEngine(Engine):
                     # iterate and paginate over each unique list item
                     for item in all_items:
                         unit_groups = [x for x in self.units if item in getattr(x, field)]
-                        pagination[field_token_idx] = item
+                        base_permalist[field_token_idx] = item
+                        key = '/'.join(base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist)
 
-                        self.process_packs(Pack, unit_groups, pagination)
+        return packs
 
-        # write packs
-        #self.write_packs()
 
-    def process_packs(self, pack_class, units, base_permalist=[]):
-        """Process groups of blog posts.
+class Pack(object):
+    """Packs are URL sections
+    """
+    def __init__(self, unit_matches, base_permalist):
 
-        Arguments:
-        pack_class: subclass of Pack used to contain unit objects
-        units: list or tuple containing the index of self.units to be packed;
-            the order of this index determines the order of packing
-        base_permalist - ...
-
-        Returns a list of Pack objects, representing the contents of a
-            group of units
-        """
-        # raise exception if pack_class is not Pack subclass
-        if not issubclass(pack_class, Pack):
-            raise TypeError("Pack class must be a subclass of Pack.")
+        self.paginations = []
 
         # construct permalist components, relative to blog URL
-        base_permalist = filter(None, [self.CONFIG.BLOG.URL] + base_permalist)
+        base_permalist = filter(None, [CONFIG.BLOG.URL] + base_permalist)
 
-        packs = []
-        units_per_pack = self.CONFIG.BLOG.POSTS_PER_PAGE
+        units_per_pack = CONFIG.BLOG.POSTS_PER_PAGE
 
         # count how many paginations we need
-        pagination = len(units) / units_per_pack + \
-                (len(units) % units_per_pack != 0)
+        pagination = len(unit_matches) / units_per_pack + \
+                (len(unit_matches) % units_per_pack != 0)
 
         # construct pack objects for each pagination page
         for i in range(pagination):
             start = i * units_per_pack
             if i != pagination - 1:
                 stop = (i + 1) * units_per_pack
-                packs.append(pack_class(units[start:stop], i, base_permalist, \
-                        config=self.CONFIG))
+                self.paginations.append(Pagination(unit_matches[start:stop], \
+                        i, base_permalist, config=CONFIG))
             else:
-                packs.append(pack_class(units[start:], i, base_permalist, \
-                        is_last=True, config=self.CONFIG))
+                self.paginations.append(Pagination(unit_matches[start:], \
+                        i, base_permalist, is_last=True, config=CONFIG))
 
-        template_file = os.path.basename(self.CONFIG.BLOG.PACK_TEMPLATE_FILE)
-        template_env = self.CONFIG.SITE.TEMPLATE_ENV
-        template = template_env.get_template(template_file)
 
-        for pack in packs:
-            # warn if files are overwritten
-            # this indicates a duplicate post, which could result in
-            # unexptected results
-            if os.path.exists(pack.path):
-                # TODO: find a better exception name
-                raise ContentError("'%s' already exists!" % pack.path)
-            # !!!
-            # this could be dangerous, check later
-            try:
-                os.makedirs(os.path.dirname(pack.path))
-            except OSError:
-                pass
-            with open(pack.path, 'w') as target:
-                # since pack object only stores indexes of unit in self.unit
-                # we need to get the actual unit items before writing
-                rendered = template.render(page=pack.__dict__, site=self.CONFIG.SITE)
-                self.write_output(target, rendered)
+class Pagination(object):
+
+    """TODO
+    """
+
+    def __init__(self, units, pack_idx, base_permalist=[], title='',
+            is_last=False, config=CONFIG):
+        """Initializes a Pagination instance.
+
+        Args:
+            units - List containing units to pack.
+            pack_idx - Current pack object index.
+
+        Keyword Args:
+            base_permalist - List of URL components common to all pack
+                permalinks.
+            is_last - Boolean indicating whether this pack is the last one.
+            config - SessionConfig instance.
+
+        """
+        self.title = title
+        self.units = units
+        # because page are 1-indexed and lists are 0-indexed
+        self.pack_idx = pack_idx + 1
+        # this will be appended for pack_idx > 1, e.g. .../page/2
+        # precautions for empty string, so double '/'s are not introduced
+        base_permalist = filter(None, base_permalist)
+
+        if self.pack_idx == 1:
+            # if it's the first pack page, use base_permalist only
+            self.permalist = base_permalist
+        else:
+            # otherwise add pagination dir and pack index
+            self.permalist = base_permalist + filter(None, [config.SITE.PAGINATION_URL,\
+                    str(self.pack_idx)])
+
+        # path is path to folder + index.html
+        path = [config.VOLT.SITE_DIR] + self.permalist + ['index.html']
+        self.path = os.path.join(*(path))
+
+        url = [''] + self.permalist
+        self.permalink = '/'.join(url) + '/'
+
+        # since we can guess the permalink of next and previous pack objects
+        # we can set those attributes here (unlike in units)
+        pagination_url = [''] + base_permalist
+        # next permalinks
+        if not is_last:
+            self.permalink_next = '/'.join(pagination_url + filter(None, \
+                    [config.SITE.PAGINATION_URL, str(self.pack_idx + 1)])) + '/'
+        # prev permalinks
+        if self.pack_idx == 2:
+            # if pagination is at 2, previous permalink is to 1
+            self.permalink_prev = '/'.join(pagination_url) + '/'
+        elif self.pack_idx != 1:
+            self.permalink_prev = '/'.join(pagination_url + filter(None, \
+                    [config.SITE.PAGINATION_URL, str(self.pack_idx - 1)])) + '/'
