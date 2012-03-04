@@ -51,7 +51,7 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string/')
 
         # test for set_index_html = False
-        self.engine.set_unit_paths(Unit_Mock, path, url, set_index_html=False)
+        self.engine.set_unit_paths(Unit_Mock, path, url, index_html_only=False)
         self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string.html'))
         self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string.html')

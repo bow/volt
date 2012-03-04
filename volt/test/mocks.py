@@ -43,6 +43,7 @@ site_opts = {
         'ENGINES': (),
         'PLUGINS': (('', []),),
         'PAGINATION_URL': '',
+        'INDEX_HTML_ONLY': True,
 }
 for key in site_opts:
     setattr(SessionConfig_Mock.SITE, key, site_opts[key])

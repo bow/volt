@@ -88,7 +88,7 @@ class Engine(object):
 
         return glob.glob(pattern)
 
-    def set_unit_paths(self, unit, base_dir, base_url='', set_index_html=True):
+    def set_unit_paths(self, unit, base_dir, base_url='', index_html_only=True):
         """Sets the permalink and absolute file path for the given unit.
 
         Args:
@@ -98,7 +98,7 @@ class Engine(object):
         Keyword Args:
             base_url - Base url to be set for the permalink, defaults to an empty
                 string so permalinks are relative
-            index_html -  Boolean indicating output file name;  if False then
+            index_html_only -  Boolean indicating output file name;  if False then
                 the output file name is '%s.html' where %s is the last
                 string of the unit's permalist
 
@@ -107,26 +107,19 @@ class Engine(object):
         with .htaccess too much.
 
         """
-        url = [base_url]
         path = [base_dir]
+        url = [base_url]
 
-        # set permalink
-        # we don't want double slashes in URL, so remove empty strings
-        url.extend(filter(None, unit.permalist))
-        # if index_html is False, then we have to refer to the file
-        # directly in the permalink
-        if set_index_html:
-            url[-1] = url[-1] + '/'
-        else:
-            url[-1] = url[-1] + '.html'
-        setattr(unit, 'permalink', '/'.join(url))
-
-        # set absolute path
+        # set path and urls
         path.extend(unit.permalist)
-        if set_index_html:
+        url.extend(filter(None, unit.permalist))
+        if index_html_only:
+            url[-1] = url[-1] + '/'
             path.append('index.html')
         else:
+            url[-1] = url[-1] + '.html'
             path[-1] = path[-1] + '.html'
+        setattr(unit, 'permalink', '/'.join(url))
         setattr(unit, 'path', os.path.join(*(path)))
 
     def process_text_units(self, config):
@@ -149,7 +142,8 @@ class Engine(object):
             units.append(TextUnit(fname, config))
             # paths and permalinks are not set in TextUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(units[-1], self.CONFIG.VOLT.SITE_DIR)
+            self.set_unit_paths(units[-1], self.CONFIG.VOLT.SITE_DIR, \
+                    index_html_only=self.CONFIG.SITE.INDEX_HTML_ONLY)
 
         return units
 
@@ -302,7 +296,10 @@ class Engine(object):
             if os.path.exists(unit.path):
                 # TODO: find a better exception name
                 raise ContentError("'%s' already exists!" % unit.path)
-            os.makedirs(os.path.dirname(unit.path))
+            try:
+                os.makedirs(os.path.dirname(unit.path))
+            except OSError:
+                pass
             with open(unit.path, 'w') as target:
                 rendered = template.render(page=unit.__dict__, site=self.CONFIG.SITE)
                 self.write_output(target, rendered)
@@ -594,7 +591,7 @@ class Pagination(object):
     """
 
     def __init__(self, units, pack_idx, base_permalist=[], title='',
-            is_last=False, config=CONFIG):
+            is_last=False, config=CONFIG, index_html_only=True):
         """Initializes a Pagination instance.
 
         Args:
@@ -625,12 +622,18 @@ class Pagination(object):
             self.permalist = base_permalist + filter(None, [config.SITE.PAGINATION_URL,\
                     str(self.pack_idx)])
 
-        # path is path to folder + index.html
-        path = [config.VOLT.SITE_DIR] + self.permalist + ['index.html']
-        self.path = os.path.join(*(path))
-
+        # set path and url
+        path = [config.VOLT.SITE_DIR]
+        path.extend(self.permalist)
         url = [''] + self.permalist
-        self.permalink = '/'.join(url) + '/'
+        if index_html_only:
+            path.append('index.html')
+            url[-1] = url[-1] + '/'
+        else:
+            path[-1] = path[-1] + '.html'
+            url[-1] = url[-1] + '.html'
+        setattr(self, 'path', os.path.join(*(path)))
+        setattr(self, 'permalink', '/'.join(url))
 
         # since we can guess the permalink of next and previous pack objects
         # we can set those attributes here (unlike in units)
@@ -638,14 +641,27 @@ class Pagination(object):
         # next permalinks
         if not is_last:
             self.permalink_next = '/'.join(pagination_url + filter(None, \
-                    [config.SITE.PAGINATION_URL, str(self.pack_idx + 1)])) + '/'
+                    [config.SITE.PAGINATION_URL, str(self.pack_idx + 1)]))
         # prev permalinks
         if self.pack_idx == 2:
             # if pagination is at 2, previous permalink is to 1
-            self.permalink_prev = '/'.join(pagination_url) + '/'
+            self.permalink_prev = '/'.join(pagination_url)
         elif self.pack_idx != 1:
             self.permalink_prev = '/'.join(pagination_url + filter(None, \
-                    [config.SITE.PAGINATION_URL, str(self.pack_idx - 1)])) + '/'
+                    [config.SITE.PAGINATION_URL, str(self.pack_idx - 1)]))
+
+        # set final chain permalink url according to index_html_only
+        if hasattr(self, 'permalink_next'):
+            if index_html_only:
+                self.permalink_next += '/'
+            else:
+                self.permalink_next += '.html'
+
+        if hasattr(self, 'permalink_prev'):
+            if index_html_only:
+                self.permalink_prev += '/'
+            else:
+                self.permalink_prev += '.html'
 
 
 class Pack(object):
@@ -707,11 +723,13 @@ class Pack(object):
                 stop = (i + 1) * units_per_pagination
                 self.paginations.append(pagination_class(\
                         unit_matches[start:stop], i, \
-                        base_permalist, title='', config=config))
+                        base_permalist, title='', config=config, \
+                        index_html_only=config.SITE.INDEX_HTML_ONLY))
             else:
                 self.paginations.append(pagination_class(\
                         unit_matches[start:], i, \
-                        base_permalist, title='', is_last=True, config=config))
+                        base_permalist, title='', is_last=True, config=config, \
+                        index_html_only=config.SITE.INDEX_HTML_ONLY))
 
 
 get_engine = partial(grab_class, cls=Engine)

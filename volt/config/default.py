@@ -64,6 +64,12 @@ SITE = Config(
     # For example, if the pagination URL is 'page', then the second
     # pagination page will have '.../page/2/', the third '.../page/3/', etc.
     PAGINATION_URL = '',
+
+    # Boolean to set if output file names should all be 'index.html' or vary
+    # according to the last token in its self.permalist attribute
+    # index.html-only outputs allows for nice URLS without fiddling too much
+    # with .htaccess
+    INDEX_HTML_ONLY = True,
 )
 
 

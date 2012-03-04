@@ -20,6 +20,7 @@ SITE = Config(
     ENGINES = (),
     PLUGINS = (('',[]),),
     PAGINATION_URL = '',
+    INDEX_HTML_ONLY = True,
 )
 
 BLOG = Config(
