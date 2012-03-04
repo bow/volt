@@ -181,6 +181,81 @@ class Engine(object):
             if idx != len(self.units) - 1:
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
+    def build_packs(self, pack_list):
+
+        packs = dict()
+
+        for pack in pack_list:
+
+            base_permalist = re.findall(_RE_PERMALINK, pack.strip('/') + '/')
+            if base_permalist == []:
+                # pagination for all items
+                unit_groups = [self.units]
+                for units in unit_groups:
+                    packs[''] = Pack(units, base_permalist)
+
+            else:
+                field_token_idx = [base_permalist.index(token) for token in base_permalist if \
+                        token.startswith('{') and token.endswith('}')].pop(0)
+                field = base_permalist[field_token_idx][1:-1]
+
+                if ':' in field:
+                    field, strftime = field.split(':')
+                    # get all the date.strftime tokens in a list
+                    date_tokens = strftime.strip('/').split('/')
+                    # get all datetime fields from units
+                    datetime_per_unit = [getattr(x, field) for x in self.units]
+                    # construct set of all datetime combinations in self.units
+                    # according to the user's supplied pagination URL
+                    # e.g. if URL == '%Y/%m' and there are two units with 2009/10
+                    # and one with 2010/03 then
+                    # all_items == set([('2009', '10), ('2010', '03'])
+                    all_items = set(zip(*[[x.strftime(y) for x in datetime_per_unit] \
+                            for y in date_tokens]))
+
+                    for item in all_items:
+                        unit_groups = [x for x in self.units if \
+                                zip(*[[getattr(x, field).strftime(y)] for y in date_tokens])[0] == item]
+                        base_permalist[field_token_idx:] = item
+                        key = '/'.join(base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist)
+
+                elif isinstance(getattr(self.units[0], field), basestring):
+                    all_items = set([getattr(x, field) for x in self.units])
+                    for item in all_items:
+                        unit_groups = [x for x in self.units if item == getattr(x, field)]
+                        base_permalist[field_token_idx] = item
+                        key = '/'.join(base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist)
+
+                # pagination for all item if field is list or tuple
+                elif isinstance(getattr(self.units[0], field), (list, tuple)):
+                    # append empty string to pagination URL as placeholder for list item
+                    # get item list for each unit
+                    item_list_per_unit = (getattr(x, field) for x in self.units)
+                    # get unique list item in all units
+                    all_items = reduce(set.union, [set(x) for x in item_list_per_unit])
+                    # iterate and paginate over each unique list item
+                    for item in all_items:
+                        unit_groups = [x for x in self.units if item in getattr(x, field)]
+                        base_permalist[field_token_idx] = item
+                        key = '/'.join(base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist)
+
+        return packs
+
+    def write_output(self, file_obj, string):
+        """Writes string to the open file object.
+
+        Args:
+            file_obj - Opened fie object
+            string - String to write
+
+        This is written to facillitate testing of the calling method.
+
+        """
+        file_obj.write(string.encode('utf-8'))
+
     def write_units(self, template_path):
         """Writes single units into the given output file.
 
@@ -204,17 +279,31 @@ class Engine(object):
                 rendered = template.render(page=unit.__dict__, site=self.CONFIG.SITE)
                 self.write_output(target, rendered)
 
-    def write_output(self, file_obj, string):
-        """Writes string to the open file object.
+    def write_packs(self, template_path):
 
-        Args:
-            file_obj - Opened fie object
-            string - String to write
+        template_file = os.path.basename(template_path)
+        template_env = self.CONFIG.SITE.TEMPLATE_ENV
+        template = template_env.get_template(template_file)
 
-        This is written to facillitate testing of the calling method.
-
-        """
-        file_obj.write(string.encode('utf-8'))
+        for pack in self.packs:
+            for pagination in self.packs[pack].paginations:
+                # warn if files are overwritten
+                # this indicates a duplicate post, which could result in
+                # unexptected results
+                if os.path.exists(pagination.path):
+                    # TODO: find a better exception name
+                    raise ContentError("'%s' already exists!" % pagination.path)
+                # !!!
+                # this could be dangerous, check later
+                try:
+                    os.makedirs(os.path.dirname(pagination.path))
+                except OSError:
+                    pass
+                with open(pagination.path, 'w') as target:
+                    # since pack object only stores indexes of unit in self.unit
+                    # we need to get the actual unit items before writing
+                    rendered = template.render(page=pagination.__dict__, site=self.CONFIG.SITE)
+                    self.write_output(target, rendered)
 
     def parse(self):
         """Performs initial processing of resources into unit objects."""
@@ -455,6 +544,34 @@ class TextUnit(Unit):
         # set displayed time string
         if hasattr(self, 'time'):
             self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
+
+
+class Pack(object):
+    """Packs are URL sections
+    """
+    def __init__(self, unit_matches, base_permalist):
+
+        self.paginations = []
+
+        # construct permalist components, relative to blog URL
+        base_permalist = filter(None, [CONFIG.BLOG.URL] + base_permalist)
+
+        units_per_pack = CONFIG.BLOG.POSTS_PER_PAGE
+
+        # count how many paginations we need
+        pagination = len(unit_matches) / units_per_pack + \
+                (len(unit_matches) % units_per_pack != 0)
+
+        # construct pack objects for each pagination page
+        for i in range(pagination):
+            start = i * units_per_pack
+            if i != pagination - 1:
+                stop = (i + 1) * units_per_pack
+                self.paginations.append(Pagination(unit_matches[start:stop], \
+                        i, base_permalist, config=CONFIG))
+            else:
+                self.paginations.append(Pagination(unit_matches[start:], \
+                        i, base_permalist, is_last=True, config=CONFIG))
 
 
 class Pagination(object):
