@@ -42,6 +42,7 @@ class Config(dict):
     LIST_SEP = str()
     GLOBAL_FIELDS = dict()
     PERMALINK = str()
+    PACKS = tuple()
 
     def __init__(self, *args, **kwargs):
         """Initializes Config."""

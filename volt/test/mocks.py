@@ -59,6 +59,7 @@ blog_opts = {
         'UNIT_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_post.html'),
         'PACK_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_pagination.html'),
         'SORT': '-time',
+        'PACKS': ('',),
         'PROTECTED': ('id', 'content', ),
         'REQUIRED': ('title', 'time', ),
         'FIELDS_AS_DATETIME': ('time', ),

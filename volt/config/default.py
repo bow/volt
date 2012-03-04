@@ -95,9 +95,8 @@ BLOG = Config(
     UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_post.html'),
     PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_pagination.html'),
 
-    # TODO
     # Sort order for paginated posts display
-    # Valid options are 'time', 'title', 'author'
+    # Valid options are any field present in all units
     # Default order is A-Z (for alphabets) and past-present (for dates)
     # To reverse order just add '-' in front, e.g. '-time'
     SORT = '-time',
@@ -106,12 +105,12 @@ BLOG = Config(
     POSTS_PER_PAGE = 10,
 
     # Packs to build for the static site
-    # Items in this tuple will be used to set site paginations
-    # e.g. 'tag/{tags}' will be expanded to 'tag/x' for x in each tags
+    # Items in this tuple will be used to set the paginations relative to
+    # the blog URL. Items enclosed in '{}' are pulled from the unit values,
+    # e.g. 'tag/{tags}' will be expanded to 'tag/x' for x in each tags in the
+    # site. These field tokens must be the last token of the pattern.
     # Use an empty string ('') to apply packing to all blog units
-    # If field tokens are used (tokens enclosed in '{}') they must be the last
-    # token of the pattern
-    PACKS = ('', 'tag/{tags}', 'author/{author}', '{time:%Y}', '{time:%Y/%m}', ),
+    PACKS = ('',),
 
     # Protected properties
     # These properties must not be defined by any individual blog post header,
