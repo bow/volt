@@ -106,15 +106,12 @@ BLOG = Config(
     POSTS_PER_PAGE = 10,
 
     # Packs to build for the static site
-    # Keys are pack URL relative to the blog URL, values are header field
-    # used in splitting blog units into the pack
+    # Items in this tuple will be used to set site paginations
+    # e.g. 'tag/{tags}' will be expanded to 'tag/x' for x in each tags
     # Use an empty string ('') to apply packing to all blog units
-    PACKS = {
-        '': '',
-        'tag': 'tags',
-        '%Y': 'time',
-        '%Y/%m': 'time',
-    },
+    # If field tokens are used (tokens enclosed in '{}') they must be the last
+    # token of the pattern
+    PACKS = ('', 'tag/{tags}', 'author/{author}', '{time:%Y}', '{time:%Y/%m}', ),
 
     # Protected properties
     # These properties must not be defined by any individual blog post header,

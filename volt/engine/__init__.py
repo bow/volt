@@ -497,7 +497,6 @@ class Pack(object):
             self.permalist = base_permalist + filter(None, [config.SITE.PAGINATION_URL,\
                     str(self.pack_idx)])
 
-        print self.permalist
         # path is path to folder + index.html
         path = [config.VOLT.SITE_DIR] + self.permalist + ['index.html']
         self.path = os.path.join(*(path))

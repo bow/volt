@@ -15,10 +15,10 @@ constituting a simple blog.
 
 
 import os
-from datetime import datetime
+import re
 
 from volt import ContentError
-from volt.engine import Engine, Pack
+from volt.engine import Engine, Pack, _RE_PERMALINK
 
 
 __name__ = 'blog'
@@ -48,47 +48,61 @@ class BlogEngine(Engine):
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         # pack posts according to option
         for pagination in self.CONFIG.BLOG.PACKS:
-            field = self.CONFIG.BLOG.PACKS[pagination]
-            pagination = pagination.strip('/').split('/')
 
-            # pagination for all items
-            if not field:
+            pagination = re.findall(_RE_PERMALINK, pagination.strip('/') + '/')
+            if pagination == []:
+                # pagination for all items
                 unit_groups = [self.units]
                 for units in unit_groups:
                     self.process_packs(Pack, units, pagination)
 
-            # pagination for all item if field is list or tuple
-            elif isinstance(getattr(self.units[0], field), (list, tuple)):
-                # append empty string to pagination URL as placeholder for list item
-                pagination.append('')
-                # get item list for each unit
-                item_list_per_unit = (getattr(x, field) for x in self.units)
-                # get unique list item in all units
-                all_items = (reduce(set.union, [set(x) for x in item_list_per_unit]))
-                # iterate and paginate over each unique list item
-                for item in all_items:
-                    unit_groups = [x for x in self.units if item in getattr(x, field)]
-                    pagination[-1] = item
-                    self.process_packs(Pack, unit_groups, pagination)
+            else:
+                field_token_idx = [pagination.index(token) for token in pagination if \
+                        token.startswith('{') and token.endswith('}')].pop(0)
+                field = pagination[field_token_idx][1:-1]
 
-            elif isinstance(getattr(self.units[0], field), datetime):
-                # get all the date.strftime tokens in a list
-                date_tokens = pagination
-                # get all datetime fields from units
-                all_datetime = [getattr(x, field) for x in self.units]
-                # construct set of all datetime combinations in self.units
-                # according to the user's supplied pagination URL
-                # e.g. if URL == '%Y/%m' and there are two units with 2009/10
-                # and one with 2010/03 then
-                # all_items == set([('2009', '10), ('2010', '03'])
-                all_items = set(zip(*[[x.strftime(y) for x in all_datetime] \
-                        for y in date_tokens]))
+                if ':' in field:
+                    field, strftime = field.split(':')
+                    # get all the date.strftime tokens in a list
+                    date_tokens = strftime.strip('/').split('/')
+                    # get all datetime fields from units
+                    datetime_per_unit = [getattr(x, field) for x in self.units]
+                    # construct set of all datetime combinations in self.units
+                    # according to the user's supplied pagination URL
+                    # e.g. if URL == '%Y/%m' and there are two units with 2009/10
+                    # and one with 2010/03 then
+                    # all_items == set([('2009', '10), ('2010', '03'])
+                    all_items = set(zip(*[[x.strftime(y) for x in datetime_per_unit] \
+                            for y in date_tokens]))
 
-                for item in all_items:
-                    unit_groups = [x for x in self.units if \
-                            zip(*[[getattr(x, 'time').strftime(y)] for y in date_tokens])[0] == item]
-                    pagination = list(item)
-                    self.process_packs(Pack, unit_groups, pagination)
+                    for item in all_items:
+                        unit_groups = [x for x in self.units if \
+                                zip(*[[getattr(x, 'time').strftime(y)] for y in date_tokens])[0] == item]
+                        pagination[field_token_idx:] = item
+
+                        self.process_packs(Pack, unit_groups, pagination)
+
+                elif isinstance(getattr(self.units[0], field), basestring):
+                    all_items = set([getattr(x, field) for x in self.units])
+                    for item in all_items:
+                        unit_groups = [x for x in self.units if item == getattr(x, field)]
+                        pagination[field_token_idx] = item
+
+                        self.process_packs(Pack, unit_groups, pagination)
+
+                # pagination for all item if field is list or tuple
+                elif isinstance(getattr(self.units[0], field), (list, tuple)):
+                    # append empty string to pagination URL as placeholder for list item
+                    # get item list for each unit
+                    item_list_per_unit = (getattr(x, field) for x in self.units)
+                    # get unique list item in all units
+                    all_items = reduce(set.union, [set(x) for x in item_list_per_unit])
+                    # iterate and paginate over each unique list item
+                    for item in all_items:
+                        unit_groups = [x for x in self.units if item in getattr(x, field)]
+                        pagination[field_token_idx] = item
+
+                        self.process_packs(Pack, unit_groups, pagination)
 
         # write packs
         #self.write_packs()
