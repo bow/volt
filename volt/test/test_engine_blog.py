@@ -33,21 +33,3 @@ class TestBlogEngine(unittest.TestCase):
         for unit in self.engine.units:
             self.assertTrue(hasattr(unit, 'path'))
             self.assertTrue(hasattr(unit, 'permalink'))
-
-    def test_process_packs(self):
-        self.engine.CONFIG.BLOG.POSTS_PER_PAGE = 3
-        packs = self.engine.process_packs(Pack, range(10))
-        self.assertEqual(len(packs), 4)
-        for pack in packs:
-            if packs.index(pack) != 3:
-                self.assertEqual(len(pack.units), 3)
-            else:
-                self.assertEqual(len(pack.units), 1)
-
-        self.engine.CONFIG.BLOG.POSTS_PER_PAGE = 10
-        packs = self.engine.process_packs(Pack, range(3))
-        self.assertEqual(len(packs), 1)
-        for pack in packs:
-            self.assertEqual(len(pack.units), 3)
-
-        self.assertRaises(TypeError, self.engine.process_packs, TextUnit, range(5))
