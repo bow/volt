@@ -34,16 +34,17 @@ class BlogEngine(Engine):
 
     """
 
-    def parse(self):
+    def activate(self):
         # parse individual post and store the results in self.units
         self.units = self.process_text_units(self.CONFIG.BLOG)
         # sort units
         self.sort_units(self.units, self.CONFIG.BLOG.SORT)
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units(self.units)
+
+    def dispatch(self):
         # build packs
         self.packs = self.build_packs(self.CONFIG.BLOG.PACKS)
-
-    def write(self):
+        # write output files
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         self.write_packs(self.CONFIG.BLOG.PACK_TEMPLATE_FILE)

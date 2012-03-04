@@ -23,7 +23,7 @@ class Generator(object):
             self.engines[e] = eng_class()
 
             print 'Parsing units for the %s engine...' % e
-            self.engines[e].parse()
+            self.engines[e].activate()
 
         for p, targets in CONFIG.SITE.PLUGINS:
             try:
@@ -43,7 +43,7 @@ class Generator(object):
                     processor.process(self.engines[target].units)
 
         for e in self.engines.values():
-            e.write()
+            e.dispatch()
 
         # generate other pages
         tpl_file = '_index.html'

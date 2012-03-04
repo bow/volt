@@ -339,13 +339,13 @@ class Engine(object):
                     rendered = template.render(page=pagination.__dict__, site=self.CONFIG.SITE)
                     self.write_output(target, rendered)
 
-    def parse(self):
+    def activate(self):
         """Performs initial processing of resources into unit objects."""
-        raise NotImplementedError("Engine subclass must implement a run method.")
+        raise NotImplementedError("Engine subclass must implement an activate method.")
 
-    def write(self):
-        """Write processed units into the output file."""
-        raise NotImplementedError("Engine subclass must implement a write method.")
+    def dispatch(self):
+        """Performs final processing after all plugins are run."""
+        raise NotImplementedError("Engine subclass must implement a dispatch method.")
 
 
 class Unit(object):

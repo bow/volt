@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-----------------
+-----------------
 volt.engine.plain
-----------------
+-----------------
 
 Volt Plain Engine.
 
@@ -23,10 +23,10 @@ class PlainEngine(Engine):
     """Class for processing plain web pages.
     """
 
-    def parse(self):
+    def activate(self):
         # parse plain page units
         self.units = self.process_text_units(self.CONFIG.PLAIN)
 
-    def write(self):
+    def dispatch(self):
         # write them according to template
         self.write_units(self.CONFIG.PLAIN.UNIT_TEMPLATE_FILE)
