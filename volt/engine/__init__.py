@@ -4,11 +4,12 @@
 volt.engine
 -----------
 
-Base Unit, Engines, and Pagination classes.
+Base Unit, Engine, Pack, and Pagination classes.
 
 Units represent a resource used in the generated site, such as a blog post
 or an image. Engines are classes that perform initial processing of Unit
-objects. Paginations are groups of several Units that will be written to a single
+objects. Packs represent a collection of Units sharing similar attributes.
+Paginations are groups of several Units that will be written to a single
 HTML file, for example blog posts written in February 2009.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
@@ -44,8 +45,8 @@ class Engine(object):
     """Base Volt Engine class.
 
     Engine is the core component of Volt that performs initial processing
-    of each Unit. This base engine class does not perform any processing by
-    itself, but provides convenient Unit processing methods for the
+    of each unit. This base engine class does not perform any processing by
+    itself, but provides convenient unit processing methods for the
     subclassing engine.
 
     Subclassing classes must override the ``parse`` and ``write`` methods
@@ -66,7 +67,8 @@ class Engine(object):
                             "a SessionConfig instance.")
 
         self.CONFIG = session_config
-        self.units = []
+        self.units = list()
+        self.packs = dict()
 
     def globdir(self, directory, pattern='*', is_gen=False):
         """Returns glob or iglob results for a given directory.
@@ -101,7 +103,7 @@ class Engine(object):
                 string of the unit's permalist
 
         Output file defaults to 'index' so each unit will be written to
-        'index.html' in its path. This allows nice URLs without fiddling
+        'index.html' in its path. This allows for nice URLs without fiddling
         with .htaccess too much.
 
         """
@@ -181,25 +183,45 @@ class Engine(object):
             if idx != len(self.units) - 1:
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
-    def build_packs(self, pack_list):
+    def build_packs(self, pack_patterns):
+        """Build packs of units and return them in a dictionary.
 
+        Args:
+            pack_patterns - List containing packs patterns to build.
+
+        This method will expand the supplied pack_pattern according to
+        the values present in all units. For example, if the pack_pattern
+        is '{time:%Y}' and there are ten posts written with a 2010 year,
+        build_pack will return a dictionary containing one entry with '2010'
+        as the key and a Pack object containing the ten posts as the value.
+
+        """
+        # dictionary to contain all built packs
         packs = dict()
 
-        for pack in pack_list:
+        for pack in pack_patterns:
 
+            # get all tokens in the pack pattern
             base_permalist = re.findall(_RE_PERMALINK, pack.strip('/') + '/')
+
+            # if token is not set, build pack for all units
             if base_permalist == []:
-                # pagination for all items
                 unit_groups = [self.units]
                 for units in unit_groups:
                     packs[''] = Pack(units, base_permalist)
 
             else:
-                field_token_idx = [base_permalist.index(token) for token in base_permalist if \
-                        token.startswith('{') and token.endswith('}')].pop(0)
+                # get the index of the field token to replace
+                field_token_idx = [base_permalist.index(token) for token in \
+                        base_permalist if token.startswith('{') and \
+                        token.endswith('}')].pop(0)
+                # and discard the curly braces
                 field = base_permalist[field_token_idx][1:-1]
 
+                # ':' should only be present if the field value is a datetime
+                # object
                 if ':' in field:
+                    # separate the field name from the datetime formatting
                     field, strftime = field.split(':')
                     # get all the date.strftime tokens in a list
                     date_tokens = strftime.strip('/').split('/')
@@ -213,14 +235,20 @@ class Engine(object):
                     all_items = set(zip(*[[x.strftime(y) for x in datetime_per_unit] \
                             for y in date_tokens]))
 
+                    # now build the pack for each time points
                     for item in all_items:
+                        # get all units whose datetime values match 'item'
                         unit_groups = [x for x in self.units if \
                                 zip(*[[getattr(x, field).strftime(y)] for y in date_tokens])[0] == item]
+                        # the base permalist if the pack URL tokens
                         base_permalist[field_token_idx:] = item
                         key = '/'.join(base_permalist)
                         packs[key] = Pack(unit_groups, base_permalist)
 
+                # similar logic as before, but this time for string field values
+                # much simpler
                 elif isinstance(getattr(self.units[0], field), basestring):
+                    # get a set of all string values
                     all_items = set([getattr(x, field) for x in self.units])
                     for item in all_items:
                         unit_groups = [x for x in self.units if item == getattr(x, field)]
@@ -228,9 +256,8 @@ class Engine(object):
                         key = '/'.join(base_permalist)
                         packs[key] = Pack(unit_groups, base_permalist)
 
-                # pagination for all item if field is list or tuple
+                # and finally for list or tuple field values
                 elif isinstance(getattr(self.units[0], field), (list, tuple)):
-                    # append empty string to pagination URL as placeholder for list item
                     # get item list for each unit
                     item_list_per_unit = (getattr(x, field) for x in self.units)
                     # get unique list item in all units
@@ -262,6 +289,7 @@ class Engine(object):
         Args:
             template_path - Template file name, must exist in the defined template
                 directory.
+
         """
         template_file = os.path.basename(template_path)
         template_env = self.CONFIG.SITE.TEMPLATE_ENV
@@ -280,7 +308,13 @@ class Engine(object):
                 self.write_output(target, rendered)
 
     def write_packs(self, template_path):
+        """Writes packs into the given output file.
 
+        Args:
+            template_path - Template file name, must exist in the defined template
+                directory.
+
+        """
         template_file = os.path.basename(template_path)
         template_env = self.CONFIG.SITE.TEMPLATE_ENV
         template = template_env.get_template(template_file)
@@ -447,8 +481,8 @@ class Unit(object):
         '{time:%Y/%m/%d}/{slug}'
             Returns, for example, ['2009', '10', '04', 'the-slug']
 
-        '{time:%Y}/post/{time:%d}/blog/{id}'
-            Returns, for example,  ['2009', 'post', '04', 'blog', 'item-103']
+        'post/{time:%d}/{id}'
+            Returns, for example,  ['post', '04', 'item-103']
 
         """
         # strip preceeding '/' but make sure ends with '/'
@@ -546,37 +580,17 @@ class TextUnit(Unit):
             self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
 
 
-class Pack(object):
-    """Packs are URL sections
-    """
-    def __init__(self, unit_matches, base_permalist):
-
-        self.paginations = []
-
-        # construct permalist components, relative to blog URL
-        base_permalist = filter(None, [CONFIG.BLOG.URL] + base_permalist)
-
-        units_per_pack = CONFIG.BLOG.POSTS_PER_PAGE
-
-        # count how many paginations we need
-        pagination = len(unit_matches) / units_per_pack + \
-                (len(unit_matches) % units_per_pack != 0)
-
-        # construct pack objects for each pagination page
-        for i in range(pagination):
-            start = i * units_per_pack
-            if i != pagination - 1:
-                stop = (i + 1) * units_per_pack
-                self.paginations.append(Pagination(unit_matches[start:stop], \
-                        i, base_permalist, config=CONFIG))
-            else:
-                self.paginations.append(Pagination(unit_matches[start:], \
-                        i, base_permalist, is_last=True, config=CONFIG))
-
-
 class Pagination(object):
 
-    """TODO
+    """Class representing a single paginated HTML file.
+
+    The pagination class computes the necessary attributes required to write
+    a single HTML file containing the desired units. It is the __dict__ object
+    of this Pagination class that will be passed on to the template writing
+    environment. However, the division of which units go to which pagination
+    page is done by another class instantiating Pagination, for example the
+    Pack class.
+
     """
 
     def __init__(self, units, pack_idx, base_permalist=[], title='',
@@ -588,6 +602,7 @@ class Pagination(object):
             pack_idx - Current pack object index.
 
         Keyword Args:
+            title - String denoting the title of the pagination page.
             base_permalist - List of URL components common to all pack
                 permalinks.
             is_last - Boolean indicating whether this pack is the last one.
@@ -631,6 +646,72 @@ class Pagination(object):
         elif self.pack_idx != 1:
             self.permalink_prev = '/'.join(pagination_url + filter(None, \
                     [config.SITE.PAGINATION_URL, str(self.pack_idx - 1)])) + '/'
+
+
+class Pack(object):
+
+    """Pack represent a collection of units sharing a similar field value.
+
+    The pack class is used mainly to create sub-sections of an Engine as
+    denoted by its URL. For example, if we are creating a blog using Volt,
+    we might want to have a page containing all posts with the 'foo' tag,
+    or perhaps a page containing all posts written in January 2011. In these
+    two cases, pack will be an object representing all posts whose tag contains
+    'foo' or all posts whose datetime.year is 2011 and datetime.month is 1,
+    respectively.
+
+    Of course, listing all possible units sharing a given field value might
+    not be practical if there are hundreds of units. That's why Pack can also
+    handle paginating these units into HTML files with the desired number of
+    units per page. Pack does this by using the Pagination class, which is
+    a class that represents single HTML pages in a Pack. See Pagination's
+    documentation for more information.
+
+    """
+
+    def __init__(self, unit_matches, base_permalist, \
+            pagination_class=Pagination, config=CONFIG):
+        """Initializes a Pack object.
+
+        Args:
+            unit_matches - List of all units sharing a certain field value.
+            base_permalist - Permalink tokens that will be used by all
+                paginations of the given units.
+
+        Keyword Args:
+            pagination_class - Pagination class to use. Most of the time,
+                the base Pagination class is sufficient.
+            config - SessionConfig object.
+
+        Selection of the units to pass on to initialize Pack is done by an
+        Engine object. An example of method that does this in the base Engine
+        class is the build_packs method.
+
+        """
+        # list to contain all paginations
+        self.paginations = []
+
+        # construct permalist tokens, relative to blog URL
+        base_permalist = filter(None, [config.BLOG.URL] + base_permalist)
+
+        units_per_pagination = config.BLOG.POSTS_PER_PAGE
+
+        # count how many paginations we need
+        pagination = len(unit_matches) / units_per_pagination + \
+                (len(unit_matches) % units_per_pagination != 0)
+
+        # construct pagination bjects for each pagination page
+        for i in range(pagination):
+            start = i * units_per_pagination
+            if i != pagination - 1:
+                stop = (i + 1) * units_per_pagination
+                self.paginations.append(pagination_class(\
+                        unit_matches[start:stop], i, \
+                        base_permalist, title='', config=config))
+            else:
+                self.paginations.append(pagination_class(\
+                        unit_matches[start:], i, \
+                        base_permalist, title='', is_last=True, config=config))
 
 
 get_engine = partial(grab_class, cls=Engine)
