@@ -184,7 +184,7 @@ class TestPagination(unittest.TestCase):
         self.assertEqual(pagination.path, os.path.join(site_dir, 'index.html'))
         self.assertEqual(pagination.permalist, [])
         self.assertEqual(pagination.permalink, '/')
-        self.assertEqual(pagination.permalink_next, '/page/2/')
+        self.assertEqual(pagination.permalink_next, '/2/')
         self.assertFalse(hasattr(pagination, 'permalink_prev'))
 
         # test for pack_idx = 1
@@ -193,10 +193,10 @@ class TestPagination(unittest.TestCase):
         is_last = False
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
                 config=SessionConfig_Mock)
-        self.assertEqual(pagination.path, os.path.join(site_dir, 'page', '2', 'index.html'))
-        self.assertEqual(pagination.permalist, ['page', '2'])
-        self.assertEqual(pagination.permalink, '/page/2/')
-        self.assertEqual(pagination.permalink_next, '/page/3/')
+        self.assertEqual(pagination.path, os.path.join(site_dir, '2', 'index.html'))
+        self.assertEqual(pagination.permalist, ['2'])
+        self.assertEqual(pagination.permalink, '/2/')
+        self.assertEqual(pagination.permalink_next, '/3/')
         self.assertEqual(pagination.permalink_prev, '/')
 
         # test for pack_idx = 2 and is_last
@@ -205,10 +205,10 @@ class TestPagination(unittest.TestCase):
         is_last = True
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
                 config=SessionConfig_Mock)
-        self.assertEqual(pagination.path, os.path.join(site_dir, 'page', '3', 'index.html'))
-        self.assertEqual(pagination.permalist, ['page', '3'])
-        self.assertEqual(pagination.permalink, '/page/3/')
-        self.assertEqual(pagination.permalink_prev, '/page/2/')
+        self.assertEqual(pagination.path, os.path.join(site_dir, '3', 'index.html'))
+        self.assertEqual(pagination.permalist, ['3'])
+        self.assertEqual(pagination.permalink, '/3/')
+        self.assertEqual(pagination.permalink_prev, '/2/')
         self.assertFalse(hasattr(pagination, 'permalink_next'))
 
         # test for base_permalist
@@ -217,21 +217,21 @@ class TestPagination(unittest.TestCase):
         is_last = False
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
                 config=SessionConfig_Mock)
-        self.assertEqual(pagination.path, os.path.join(site_dir, 'tech', 'page', '2', 'index.html'))
-        self.assertEqual(pagination.permalist, ['tech', 'page', '2'])
-        self.assertEqual(pagination.permalink, '/tech/page/2/')
-        self.assertEqual(pagination.permalink_next, '/tech/page/3/')
+        self.assertEqual(pagination.path, os.path.join(site_dir, 'tech', '2', 'index.html'))
+        self.assertEqual(pagination.permalist, ['tech', '2'])
+        self.assertEqual(pagination.permalink, '/tech/2/')
+        self.assertEqual(pagination.permalink_next, '/tech/3/')
         self.assertEqual(pagination.permalink_prev, '/tech/')
 
         # test for pagination_url
         pack_idx = 1
         base_permalist = []
         is_last = False
-        SessionConfig_Mock.SITE.PAGINATION_URL = ''
+        SessionConfig_Mock.SITE.PAGINATION_URL = 'page'
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
                 config=SessionConfig_Mock)
-        self.assertEqual(pagination.path, os.path.join(site_dir, '', '2', 'index.html'))
-        self.assertEqual(pagination.permalist, ['2'])
-        self.assertEqual(pagination.permalink, '/2/')
-        self.assertEqual(pagination.permalink_next, '/3/')
+        self.assertEqual(pagination.path, os.path.join(site_dir, 'page', '2', 'index.html'))
+        self.assertEqual(pagination.permalist, ['page', '2'])
+        self.assertEqual(pagination.permalink, '/page/2/')
+        self.assertEqual(pagination.permalink_next, '/page/3/')
         self.assertEqual(pagination.permalink_prev, '/')

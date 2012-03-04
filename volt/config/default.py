@@ -63,7 +63,7 @@ SITE = Config(
     # This will be used for paginated items after the first one
     # For example, if the pagination URL is 'page', then the second
     # pagination page will have '.../page/2/', the third '.../page/3/', etc.
-    PAGINATION_URL = 'page',
+    PAGINATION_URL = '',
 )
 
 
