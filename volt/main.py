@@ -1,5 +1,15 @@
-"""Entry point for Volt
+# -*- coding: utf-8 -*-
 """
+---------
+volt.main
+---------
+
+Entry point for Volt run.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+
+"""
+
 
 import argparse
 import sys
@@ -12,16 +22,14 @@ __version__ = "0.0.1"
 
 
 class ArgParser(argparse.ArgumentParser):
-    """Custom parser that prints help message when an error occurs.
-    """
+    """Custom parser that prints help message when an error occurs."""
     def error(self, message):
         util.show_error("Error: %s\n" % message.capitalize())
         self.print_usage()
         sys.exit(1)
 
 def build_parsers():
-    """Build parser for arguments.
-    """
+    """Build parser for arguments."""
     parser = ArgParser()
     subparsers = parser.add_subparsers(title='subcommands')
 
@@ -57,35 +65,32 @@ def run_demo():
     #run_server()
 
 def run_gen():
-    """Generates the static site.
-    """
+    """Generates the static site."""
     from volt import gen
+    util.show_info("Volt site generation start!\n", is_bright=True)
     gen.run()
+    util.show_info("Site generation finished.\n", is_bright=True)
 
 def run_init():
-    """Starts a new Volt project.
-    """
+    """Starts a new Volt project."""
     # TODO
     pass
 
 def run_serve():
-    """Runs the volt server.
-    """
+    """Runs the volt server."""
     from volt import server
     server.run()
 
-def run_switch():
-    """Switches an engine on or off.
-    """
-    pass
-
 def run_version():
-    """Shows version number.
-    """
+    """Shows version number."""
     print "Volt %s" % __version__
 
 def main(cli_arglist=None):
     """Main execution routine.
+
+    Args:
+        cli_arglist - List of arguments passed to the command line.
+
     """
     # set command-line args accessible package-wide
     CONFIG.CMD = build_parsers().parse_args(cli_arglist)
