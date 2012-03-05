@@ -77,6 +77,10 @@ class SessionConfig(object):
     def __getattr__(self, name):
         if not self._loaded:
             self._load()
+        # enable access using small caps if attr exist in upper caps only
+        # for convenience's sake - (is this dangerous?)
+        if not hasattr(self, name) and hasattr(self, name.upper()):
+            return object.__getattribute__(self, name.upper())
         return object.__getattribute__(self, name)
 
     def _load(self):
