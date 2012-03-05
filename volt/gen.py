@@ -71,7 +71,7 @@ class Generator(object):
 
         outfile = os.path.join(CONFIG.VOLT.SITE_DIR, 'index.html')
         with open(outfile, 'w') as target:
-            target.write(template.render(page={}, site=CONFIG.SITE))
+            target.write(template.render(page={}, config=CONFIG))
 
 
 def run():

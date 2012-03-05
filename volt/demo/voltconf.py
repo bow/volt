@@ -52,6 +52,9 @@ BLOG = Config(
     # The number of displayed posts per pagination page
     POSTS_PER_PAGE = 2, 
 
+    # Excerpt length (in characters) for paginated items
+    EXCERPT_LENGTH = 400,
+
     # Packs to build for the static site
     # Items in this tuple will be used to set the paginations relative to
     # the blog URL. Items enclosed in '{}' are pulled from the unit values,

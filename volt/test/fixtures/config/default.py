@@ -30,6 +30,7 @@ BLOG = Config(
     DISPLAY_DATETIME_FORMAT = '%A, %d %B %Y',
     GLOBAL_FIELDS = {'author': ''},
     POSTS_PER_PAGE = 10,
+    EXCERPT_LENGTH = 400,
     CONTENT_DIR = join(VOLT.CONTENT_DIR, 'blog'),
     UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_post.html'),
     PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_pagination.html'),

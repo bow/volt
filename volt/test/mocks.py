@@ -89,6 +89,7 @@ blog_opts = {
         'DISPLAY_DATETIME_FORMAT': '%A, %d %B %Y',
         'GLOBAL_FIELDS': {'author': ''},
         'POSTS_PER_PAGE': 2,
+        'EXCERPT_LENGTH': 400,
         'CONTENT_DIR': os.path.join(volt_opts['CONTENT_DIR'], 'blog'),
         'UNIT_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_post.html'),
         'PACK_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_pagination.html'),
