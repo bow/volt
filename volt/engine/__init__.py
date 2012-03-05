@@ -203,7 +203,7 @@ class Engine(object):
             if idx != len(self.units) - 1:
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
-    def build_packs(self, pack_patterns, units, config=CONFIG):
+    def build_packs(self, pack_patterns, units):
         """Build packs of units and return them in a dictionary.
 
         Args:
@@ -228,7 +228,7 @@ class Engine(object):
             if base_permalist == []:
                 unit_groups = [units]
                 for units in unit_groups:
-                    packs[''] = Pack(units, base_permalist, config=config)
+                    packs[''] = Pack(units, base_permalist, config=self.CONFIG)
 
             else:
                 # get the index of the field token to replace
@@ -263,7 +263,7 @@ class Engine(object):
                         # the base permalist if the pack URL tokens
                         base_permalist[field_token_idx:] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist, config=config)
+                        packs[key] = Pack(unit_groups, base_permalist, config=self.CONFIG)
 
                 # similar logic as before, but this time for string field values
                 # much simpler
@@ -274,7 +274,7 @@ class Engine(object):
                         unit_groups = [x for x in units if item == getattr(x, field)]
                         base_permalist[field_token_idx] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist, config=config)
+                        packs[key] = Pack(unit_groups, base_permalist, config=self.CONFIG)
 
                 # and finally for list or tuple field values
                 elif isinstance(getattr(units[0], field), (list, tuple)):
@@ -287,7 +287,7 @@ class Engine(object):
                         unit_groups = [x for x in units if item in getattr(x, field)]
                         base_permalist[field_token_idx] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist, config=config)
+                        packs[key] = Pack(unit_groups, base_permalist, config=self.CONFIG)
 
         return packs
 

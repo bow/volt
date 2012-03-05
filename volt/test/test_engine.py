@@ -75,7 +75,7 @@ class TestEngine(unittest.TestCase):
                          '{time:%Y}',
                          '{time:%Y/%m}',)
         # test for pack pattern listing all
-        packs = self.engine.build_packs(pack_patterns, units, SessionConfig_Mock)
+        packs = self.engine.build_packs(pack_patterns, units)
         self.assertEqual(len(packs), 18)
         # check amount of paginations per pack
         self.assertEqual(len(packs[''].paginations), 3)
