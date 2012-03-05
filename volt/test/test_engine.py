@@ -20,7 +20,7 @@ from volt.engine import Engine, Unit, TextUnit, Pagination, \
                         HeaderFieldError, PermalinkTemplateError, \
                         ContentError, ParseError
 from volt.test import PROJECT_DIR, TEST_DIR
-from volt.test.mocks import SessionConfig_Mock, Unit_Mock
+from volt.test.mocks import SessionConfig_Mock, Unit_Mock, Unitlist_Mock
 
 
 class TestEngine(unittest.TestCase):
@@ -66,6 +66,35 @@ class TestEngine(unittest.TestCase):
         self.engine.set_unit_paths(Unit_Mock, path, url, os.path.join(path, \
                 'not', 'string'))
         self.assertEqual(Unit_Mock.permalink, 'http://alay.com/not/string/')
+
+    def test_build_packs(self):
+        units = Unitlist_Mock
+        pack_patterns = ('',
+                         'tag/{tags}',
+                         'author/{author}',
+                         '{time:%Y}',
+                         '{time:%Y/%m}',)
+        # test for pack pattern listing all
+        packs = self.engine.build_packs(pack_patterns, units, SessionConfig_Mock)
+        self.assertEqual(len(packs), 18)
+        # check amount of paginations per pack
+        self.assertEqual(len(packs[''].paginations), 3)
+        self.assertEqual(len(packs['tag/arthur'].paginations), 1)
+        self.assertEqual(len(packs['tag/eames'].paginations), 2)
+        self.assertEqual(len(packs['tag/fischer'].paginations), 1)
+        self.assertEqual(len(packs['tag/yusuf'].paginations), 1)
+        self.assertEqual(len(packs['tag/ariadne'].paginations), 1)
+        self.assertEqual(len(packs['tag/cobb'].paginations), 2)
+        self.assertEqual(len(packs['tag/saito'].paginations), 1)
+        # that's enough ~ now check if all pack patterns are present
+        expected = ['', 'tag/arthur', 'tag/eames', 'tag/fischer', 'tag/yusuf',
+                    'tag/ariadne', 'tag/cobb', 'tag/saito', '2011', '2010',
+                    '2002', '1998', '2011/09', '2010/09', '2002/08', '1998/04',
+                    'author/Smith', 'author/Johnson',]
+        expected.sort()
+        observed = packs.keys()
+        observed.sort()
+        self.assertEqual(observed, expected)
 
     def test_activate(self):
         self.assertRaises(NotImplementedError, self.engine.activate, )

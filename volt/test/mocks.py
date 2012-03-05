@@ -1,6 +1,7 @@
 # Mock objects for testing
 
 import os
+from datetime import datetime
 
 from mock import Mock
 
@@ -12,6 +13,38 @@ from volt.test import PROJECT_DIR
 
 # Engine mocks
 Unit_Mock = Mock(spec=Unit)
+
+Unitlist_Mock = list()
+for i in range(5):
+    Unitlist_Mock.append(Mock(spec=Unit))
+
+# set unit attributes
+unitlist_attrs = [
+        {'title': 'Dream is Collapsing',
+         'time': datetime(2011, 9, 5, 8, 0),
+         'author': 'Johnson',
+         'tags': ['cobb', 'ariadne', 'fischer'],},
+        {'title': 'One Simple Idea',
+         'time': datetime(2010, 9, 30, 4, 31),
+         'author': 'Smith',
+         'tags': ['cobb', 'eames', 'arthur', 'ariadne', 'yusuf'],},
+        {'title': 'Radical Notion',
+         'time': datetime(2010, 9, 5, 8, 0),
+         'author': 'Smith',
+         'tags': ['cobb', 'eames', 'arthur'],},
+        {'title': '528491',
+         'time': datetime(2002, 8, 17, 14, 35),
+         'author': 'Smith',
+         'tags': ['eames', 'saito', 'cobb'],},
+        {'title': 'Dream Within A Dream',
+         'time': datetime(1998, 4, 5, 8, 0),
+         'author': 'Johnson',
+         'tags': ['fischer', 'saito', 'eames'],},
+        ]
+for idx, attr in enumerate(unitlist_attrs):
+    for field in attr:
+        setattr(Unitlist_Mock[idx], field, attr[field])
+
 
 
 # Session mock
@@ -55,7 +88,7 @@ blog_opts = {
         'CONTENT_DATETIME_FORMAT': '%Y/%m/%d %H:%M',
         'DISPLAY_DATETIME_FORMAT': '%A, %d %B %Y',
         'GLOBAL_FIELDS': {'author': ''},
-        'POSTS_PER_PAGE': 10,
+        'POSTS_PER_PAGE': 2,
         'CONTENT_DIR': os.path.join(volt_opts['CONTENT_DIR'], 'blog'),
         'UNIT_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_post.html'),
         'PACK_TEMPLATE_FILE': os.path.join(volt_opts['TEMPLATE_DIR'], '_pagination.html'),

@@ -44,7 +44,7 @@ class BlogEngine(Engine):
 
     def dispatch(self):
         # build packs
-        self.packs = self.build_packs(self.CONFIG.BLOG.PACKS)
+        self.packs = self.build_packs(self.CONFIG.BLOG.PACKS, self.units)
         # write output files
         self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
         self.write_packs(self.CONFIG.BLOG.PACK_TEMPLATE_FILE)

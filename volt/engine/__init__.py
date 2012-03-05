@@ -203,7 +203,7 @@ class Engine(object):
             if idx != len(self.units) - 1:
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
-    def build_packs(self, pack_patterns):
+    def build_packs(self, pack_patterns, units, config=CONFIG):
         """Build packs of units and return them in a dictionary.
 
         Args:
@@ -226,9 +226,9 @@ class Engine(object):
 
             # if token is not set, build pack for all units
             if base_permalist == []:
-                unit_groups = [self.units]
+                unit_groups = [units]
                 for units in unit_groups:
-                    packs[''] = Pack(units, base_permalist)
+                    packs[''] = Pack(units, base_permalist, config=config)
 
             else:
                 # get the index of the field token to replace
@@ -246,8 +246,8 @@ class Engine(object):
                     # get all the date.strftime tokens in a list
                     date_tokens = strftime.strip('/').split('/')
                     # get all datetime fields from units
-                    datetime_per_unit = [getattr(x, field) for x in self.units]
-                    # construct set of all datetime combinations in self.units
+                    datetime_per_unit = [getattr(x, field) for x in units]
+                    # construct set of all datetime combinations in units
                     # according to the user's supplied pagination URL
                     # e.g. if URL == '%Y/%m' and there are two units with 2009/10
                     # and one with 2010/03 then
@@ -258,36 +258,36 @@ class Engine(object):
                     # now build the pack for each time points
                     for item in all_items:
                         # get all units whose datetime values match 'item'
-                        unit_groups = [x for x in self.units if \
+                        unit_groups = [x for x in units if \
                                 zip(*[[getattr(x, field).strftime(y)] for y in date_tokens])[0] == item]
                         # the base permalist if the pack URL tokens
                         base_permalist[field_token_idx:] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist, config=config)
 
                 # similar logic as before, but this time for string field values
                 # much simpler
-                elif isinstance(getattr(self.units[0], field), basestring):
+                elif isinstance(getattr(units[0], field), basestring):
                     # get a set of all string values
-                    all_items = set([getattr(x, field) for x in self.units])
+                    all_items = set([getattr(x, field) for x in units])
                     for item in all_items:
-                        unit_groups = [x for x in self.units if item == getattr(x, field)]
+                        unit_groups = [x for x in units if item == getattr(x, field)]
                         base_permalist[field_token_idx] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist, config=config)
 
                 # and finally for list or tuple field values
-                elif isinstance(getattr(self.units[0], field), (list, tuple)):
+                elif isinstance(getattr(units[0], field), (list, tuple)):
                     # get item list for each unit
-                    item_list_per_unit = (getattr(x, field) for x in self.units)
+                    item_list_per_unit = (getattr(x, field) for x in units)
                     # get unique list item in all units
                     all_items = reduce(set.union, [set(x) for x in item_list_per_unit])
                     # iterate and paginate over each unique list item
                     for item in all_items:
-                        unit_groups = [x for x in self.units if item in getattr(x, field)]
+                        unit_groups = [x for x in units if item in getattr(x, field)]
                         base_permalist[field_token_idx] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist)
+                        packs[key] = Pack(unit_groups, base_permalist, config=config)
 
         return packs
 
