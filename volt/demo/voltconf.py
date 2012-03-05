@@ -32,8 +32,8 @@ SITE = Config(
     # Plugins used in site generation
     # These are run according to the order they are listed here
     PLUGINS = (
-        ('syntax', ['blog']),
-        ('markdown', ['blog', 'plain']),
+        ('volt-syntax', ['blog']),
+        ('volt-markdown', ['blog', 'plain']),
     ),
 )
 

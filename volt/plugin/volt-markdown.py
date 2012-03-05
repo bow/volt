@@ -65,5 +65,5 @@ class Markdown(Processor):
             marked = discount.Markdown(string.encode('utf-8'))
             html = marked.get_html_content()
             return html.decode('utf-8')
-
-        return markdown.markdown(string)
+        else:
+            return markdown.markdown(string)
