@@ -14,8 +14,7 @@ Tests for the volt.config module.
 import os
 import unittest
 
-from volt import ConfigError
-from volt.config import SessionConfig
+from volt.config import SessionConfig, ConfigNotFoundError
 from volt.config.base import import_conf
 from volt.test import TEST_DIR, PROJECT_DIR
 
@@ -54,7 +53,7 @@ class TestSessionConfig(unittest.TestCase):
 
     def test_get_root_dir(self):
         # test if exception is properly raised if dir is not a Volt dir
-        self.assertRaises(ConfigError, SessionConfig().get_root_dir, TEST_DIR)
+        self.assertRaises(ConfigNotFoundError, SessionConfig().get_root_dir, TEST_DIR)
         # test if root path resolution works properly for all dirs in project dir
         self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, PROJECT_DIR)
         self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, SessionConfig().get_root_dir(\

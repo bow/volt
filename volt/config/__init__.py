@@ -37,8 +37,12 @@ from itertools import chain
 
 from jinja2 import Environment, FileSystemLoader
 
-from volt import ConfigError
 from volt.config.base import get_configs, import_conf
+
+
+class ConfigNotFoundError(Exception):
+    """Raised when Volt fails to find voltconf.py."""
+    pass
 
 
 class SessionConfig(object):
@@ -152,13 +156,13 @@ class SessionConfig(object):
         Checks the current directory for a Volt settings file. If it is not
         present, parent directories of the current directory is checked until
         a Volt settings file is found. If no Volt settings file is found up to
-        '/', raise ConfigError.
+        '/', raise ConfigNotFoundError.
 
         """
         # raise error if search goes all the way to root without any results
         if os.path.dirname(start_dir) == start_dir:
-            raise ConfigError("'%s' is not part of a Volt directory." % \
-                    os.getcwd())
+            raise ConfigNotFoundError("Failed to find Volt config file in "
+                    "'%s' or its parent directories." % os.getcwd())
 
         # recurse if config file not found
         if not os.path.exists(os.path.join(start_dir, \

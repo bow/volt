@@ -25,7 +25,6 @@ from functools import partial
 
 import yaml
 
-from volt import ContentError, ParseError
 from volt.config import CONFIG, SessionConfig
 from volt.util import grab_class
 
@@ -38,6 +37,33 @@ _RE_SPACES = re.compile(r'\s([A|a]n??)\s|_|\s+')
 _RE_PRUNE = re.compile(r'A-|An-|[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]')
 _RE_MULTIPLE = re.compile(r'-+')
 _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
+
+
+class DuplicateOutputError(Exception):
+    """Raised when Volt tries to overwrite an existing HTML output file.
+
+    This is an exception because in a normal Volt run, there should be no
+    duplicate output file. Each unit and pack should have its own unique
+    absolute path.
+
+    """
+    pass
+
+class ContentError(Exception):
+    """Base exception for content-related error."""
+    pass
+
+class HeaderFieldError(ContentError):
+    """Raised if a unit header field defines a protected field."""
+    pass
+
+class PermalinkTemplateError(ContentError):
+    """Raised if a header field value defined in the permalink template is not found."""
+    pass
+
+class ParseError(ContentError):
+    """Raised if a content-parsing related error occurs."""
+    pass
 
 
 class Engine(object):
@@ -294,8 +320,7 @@ class Engine(object):
             # this indicates a duplicate post, which could result in
             # unexptected results
             if os.path.exists(unit.path):
-                # TODO: find a better exception name
-                raise ContentError("'%s' already exists!" % unit.path)
+                raise DuplicateOutputError("'%s' already exists." % unit.path)
             try:
                 os.makedirs(os.path.dirname(unit.path))
             except OSError:
@@ -322,8 +347,7 @@ class Engine(object):
                 # this indicates a duplicate post, which could result in
                 # unexptected results
                 if os.path.exists(pagination.path):
-                    # TODO: find a better exception name
-                    raise ContentError("'%s' already exists!" % pagination.path)
+                    raise DuplicateOutputError("'%s' already exists." % pagination.path)
                 # !!!
                 # this could be dangerous, check later
                 try:
@@ -399,8 +423,8 @@ class Unit(object):
 
         """
         if field in prot:
-            raise ContentError("'%s' should not define the protected header "
-                               "field '%s'" % (self.id, field))
+            raise HeaderFieldError("'%s' should not define the protected "
+                               " header field '%s'" % (self.id, field))
 
     def check_required(self, req):
         """Checks if all the required header fields are present.
@@ -411,8 +435,8 @@ class Unit(object):
         """
         for field in req:
             if not hasattr(self, field):
-                raise ContentError("Required header field '%s' is missing "
-                                   "in '%s'." % (field, self.id))
+                raise HeaderFieldError("Required header field '%s' is "
+                                   "missing in '%s'." % (field, self.id))
 
     def as_list(self, field, sep):
         """Transforms a comma-separated tags or categories string into a list.
@@ -496,7 +520,7 @@ class Unit(object):
                 if ':' in cmp:
                     cmp, fmt = cmp.split(':')
                 if not hasattr(self, cmp):
-                    raise ContentError("'%s' has no '%s' attribute." % \
+                    raise PermalinkTemplateError("'%s' has no '%s' attribute." % \
                             (self.id, cmp))
                 if isinstance(getattr(self, cmp), datetime):
                     strftime = datetime.strftime(getattr(self, cmp), fmt)

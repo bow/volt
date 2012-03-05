@@ -16,8 +16,9 @@ import os
 import unittest
 from datetime import datetime
 
-from volt import ContentError, ParseError
-from volt.engine import Engine, Unit, TextUnit, Pagination
+from volt.engine import Engine, Unit, TextUnit, Pagination, \
+                        HeaderFieldError, PermalinkTemplateError, \
+                        ContentError, ParseError
 from volt.test import PROJECT_DIR, TEST_DIR
 from volt.test.mocks import SessionConfig_Mock, Unit_Mock
 
@@ -81,12 +82,12 @@ class TestUnit(unittest.TestCase):
     def test_check_required(self):
         # test required fields check
         req = ('title', 'surprise', )
-        self.assertRaises(ContentError, self.unit.check_required, req)
+        self.assertRaises(HeaderFieldError, self.unit.check_required, req)
 
     def test_check_protected(self):
         # test protected fields check
         prot = ('cats', )
-        self.assertRaises(ContentError, self.unit.check_protected, 'cats', prot)
+        self.assertRaises(HeaderFieldError, self.unit.check_protected, 'cats', prot)
 
     def test_as_into_list(self):
         # test if specified fields are processed into lists
@@ -130,7 +131,7 @@ class TestUnit(unittest.TestCase):
                 ['', '2009', 'mustard', '01', 'yo-dawg'])
         self.assertEqual(get_permalist('i/love /mustard'),
                 ['', 'i', 'love', 'mustard'])
-        self.assertRaises(ContentError, get_permalist, 'bali/{beach}/party')
+        self.assertRaises(PermalinkTemplateError, get_permalist, 'bali/{beach}/party')
 
 
 class TestTextUnit(unittest.TestCase):
@@ -166,7 +167,7 @@ class TestTextUnit(unittest.TestCase):
 
     def test_init_protected_set(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '05*'))[0]
-        self.assertRaises(ContentError, TextUnit, fname, self.CONFIG)
+        self.assertRaises(HeaderFieldError, TextUnit, fname, self.CONFIG)
 
 
 class TestPagination(unittest.TestCase):
