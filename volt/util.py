@@ -17,6 +17,7 @@ from functools import partial
 from inspect import isclass
 
 from volt.config import CONFIG
+from volt.config.base import ConfigNotFoundError
 
 
 def grab_class(mod, cls):
@@ -48,17 +49,20 @@ def show_info(string, col='grey', is_bright=False):
     in CONFIG.VOLT.
 
     """
-    if CONFIG.VOLT.COLORED_TEXT:
-        color_map = {'black': '30', 'red': '31', 
-                     'green': '32', 'yellow': '33', 
-                     'blue': '34', 'violet': '35',
-                     'cyan': '36', 'grey': '37'}
+    try:
+        if CONFIG.VOLT.COLORED_TEXT:
+            color_map = {'black': '30', 'red': '31',
+                         'green': '32', 'yellow': '33',
+                         'blue': '34', 'violet': '35',
+                         'cyan': '36', 'grey': '37'}
 
-        brg = 'bold' if is_bright else 'normal'
-        bright_map = {'normal': '00', 'bold': '01'}
+            brg = 'bold' if is_bright else 'normal'
+            bright_map = {'normal': '00', 'bold': '01'}
 
-        string = "\033[%s;%sm%s\033[m" % \
-               (bright_map[brg], color_map[col], string)
+            string = "\033[%s;%sm%s\033[m" % \
+                   (bright_map[brg], color_map[col], string)
+    except ConfigNotFoundError:
+        pass
 
     sys.stderr.write(string)
 

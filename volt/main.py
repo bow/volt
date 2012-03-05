@@ -14,11 +14,10 @@ Entry point for Volt run.
 import argparse
 import sys
 
+from volt import __version__
 from volt import util
+from volt.config.base import ConfigNotFoundError
 from volt.config import CONFIG
-
-
-__version__ = "0.0.1"
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -93,5 +92,10 @@ def main(cli_arglist=None):
 
     """
     # set command-line args accessible package-wide
-    CONFIG.CMD = build_parsers().parse_args(cli_arglist)
-    CONFIG.CMD.run()
+    try:
+        CONFIG.CMD = build_parsers().parse_args(cli_arglist)
+        CONFIG.CMD.run()
+    except ConfigNotFoundError:
+        sys.stderr.write("You can only run 'volt %s' inside a Volt project "
+                         "directory.\n" % CONFIG.CMD.name)
+        sys.stderr.write("Start a Volt project by running 'volt init'.\n")

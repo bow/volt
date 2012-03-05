@@ -33,8 +33,8 @@ from socket import getfqdn
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingTCPServer
 
+from volt import __version__
 from volt import gen
-from volt import main
 from volt import util
 from volt.config import CONFIG
 
@@ -116,7 +116,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     """
 
-    server_version = 'VoltHTTPServer/' + main.__version__
+    server_version = 'VoltHTTPServer/' + __version__
 
     def log_error(self, format, *args):
         # overwritten to unclutter log message.
@@ -191,7 +191,7 @@ def run():
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-    util.show_notif("\nVolt %s Development Server\n" % main.__version__)
+    util.show_notif("\nVolt %s Development Server\n" % __version__)
     util.show_info("Serving %s/\n" 
                    "Running at http://%s:%s/\n"
                    "CTRL-C to stop.\n\n" % 

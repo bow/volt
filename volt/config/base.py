@@ -20,6 +20,11 @@ import os
 from itertools import ifilter
 
 
+class ConfigNotFoundError(Exception):
+    """Raised when Volt fails to find voltconf.py."""
+    pass
+
+
 class Config(dict):
 
     """Container class for storing configuration options.

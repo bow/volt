@@ -38,12 +38,7 @@ from itertools import chain
 
 from jinja2 import Environment, FileSystemLoader
 
-from volt.config.base import get_configs, import_conf
-
-
-class ConfigNotFoundError(Exception):
-    """Raised when Volt fails to find voltconf.py."""
-    pass
+from volt.config.base import ConfigNotFoundError, get_configs, import_conf
 
 
 class SessionConfig(object):
