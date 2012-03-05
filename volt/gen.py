@@ -76,11 +76,14 @@ class Generator(object):
 
 def run():
     """Generates the site."""
+
     # prepare output directory
     if os.path.exists(CONFIG.VOLT.SITE_DIR):
         shutil.rmtree(CONFIG.VOLT.SITE_DIR)
     shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
             ignore=shutil.ignore_patterns(CONFIG.VOLT.IGNORE_PATTERN))
+
+    util.show_info("Volt site generation start!\n", is_bright=True)
 
     # generate the site!
     Generator().activate()

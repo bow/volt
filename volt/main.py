@@ -50,7 +50,7 @@ def build_parsers():
     # sets the function to run for each subparser option
     # e.g. subcmd = 'server', it will set the function to run_server
     for subcmd in subparsers.choices.keys():
-        eval('%s_parser' % subcmd).set_defaults(run=eval('run_%s' % subcmd))
+        eval('%s_parser' % subcmd).set_defaults(run=eval('run_%s' % subcmd), name=subcmd)
 
     return parser
 
@@ -66,7 +66,6 @@ def run_demo():
 def run_gen():
     """Generates the static site."""
     from volt import gen
-    util.show_info("Volt site generation start!\n", is_bright=True)
     gen.run()
     util.show_info("Site generation finished.\n", is_bright=True)
 
