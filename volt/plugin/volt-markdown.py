@@ -20,10 +20,10 @@ except ImportError:
     import markdown
     has_discount = False
 
-from volt.plugin import Processor
+from volt.plugin import Plugin
 
 
-class Markdown(Processor):
+class Markdown(Plugin):
 
     """Processor plugin for transforming markdown syntax to html.
 
@@ -39,7 +39,7 @@ class Markdown(Processor):
 
     """
 
-    def process(self, units):
+    def run(self, units):
         """Process the given units."""
         for unit in units:
             # markup lookup, in header field first then file extension

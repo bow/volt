@@ -19,7 +19,7 @@ from volt import util
 from volt.config import CONFIG
 from volt.config.base import import_conf
 from volt.engine import get_engine
-from volt.plugin import get_processor
+from volt.plugin import get_plugin
 
 
 class Generator(object):
@@ -49,18 +49,18 @@ class Generator(object):
                 plug_mod = import_conf(user_plug_path, path=True)
             except ImportError:
                 plug_mod = import_conf('volt.plugin.%s' % p)
-            plug_class = get_processor(plug_mod)
+            plug_class = get_plugin(plug_mod)
 
             if plug_class:
                 # set default args in CONFIG first before instantiating
                 CONFIG.set_plugin_defaults(plug_class.DEFAULT_ARGS)
-                processor = plug_class()
+                plugin = plug_class()
 
                 for target in targets:
                     util.show_warning("  => ", is_bright=True)
                     util.show_info("%s plugin activated -- running on %s units\n" % \
                             (p.capitalize(), target.capitalize()))
-                    processor.process(self.engines[target].units)
+                    plugin.run(self.engines[target].units)
 
         for e in self.engines.values():
             e.dispatch()

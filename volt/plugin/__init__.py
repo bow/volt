@@ -35,7 +35,9 @@ class Plugin(object):
     the ``CONFIG`` object from ``volt.config``, to allow for the Volt user
     to override them. Users can override any values in ``DEFAULT_ARGS``
     by instantiating a ``Config`` object named ``PLUGINS`` in ``voltconf.py``
-    with the desired overrides.
+    with the desired overrides. Finally, all ``Plugin`` subclasses must
+    implement a ``run`` method, which is the entry point for plugin execution
+    by the ``Generator`` class.
 
     """
 
@@ -45,22 +47,9 @@ class Plugin(object):
     # change for any given plugin through his/her voltconf
     DEFAULT_ARGS = dict()
 
-
-class Processor(Plugin):
-    """Processor plugin base class.
-
-    Processors are a type of Volt plugins that performs manipulation on units
-    of a given gene. They might or might not output files during their
-    execution. Two processor examples are included in the default Volt
-    installation: the ``Markdown`` and ``SyntaxHighlighter`` processors. Both
-    of these processors manipulate the content field of their target engines.
-
-    Processors must implement a ``process`` function. This function is the entry
-    point for processor execution by the ``Generator`` object.
-    """
-    def process(self):
-        """Runs the processor."""
-        raise NotImplementedError("Processor plugins must implement a process() method.")
+    def run(self):
+        """Runs the plugin."""
+        raise NotImplementedError("Processor plugins must implement a run method.")
 
 
-get_processor = partial(grab_class, cls=Processor)
+get_plugin = partial(grab_class, cls=Plugin)

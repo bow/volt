@@ -19,13 +19,13 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 
 from volt.config import CONFIG
-from volt.plugin import Processor
+from volt.plugin import Plugin
 
 
 _RE_SYNTAX = re.compile(r'(<syntax:(.*?)>(.*?)</syntax>)', re.DOTALL)
 
 
-class SyntaxHighlighter(Processor):
+class SyntaxHighlighter(Plugin):
 
     """Highlights code syntax using pygments.
 
@@ -69,7 +69,7 @@ class SyntaxHighlighter(Processor):
             'SYNTAX_UNIT_FIELD': 'content',
     }
 
-    def process(self, units):
+    def run(self, units):
         """Process the given units."""
         for unit in units:
             # get content from unit

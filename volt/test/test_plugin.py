@@ -14,10 +14,10 @@ Tests for the volt.plugin module.
 
 import unittest
 
-from volt.plugin import Processor
+from volt.plugin import Plugin
 
 
 class TestPlugin(unittest.TestCase):
 
-    def test_processor(self):
-        self.assertRaises(NotImplementedError, Processor().process, )
+    def test_run(self):
+        self.assertRaises(NotImplementedError, Plugin().run, )
