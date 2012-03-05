@@ -7,6 +7,7 @@ volt.test.test_plugin
 Tests for the volt.plugin module.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

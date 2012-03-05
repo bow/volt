@@ -7,6 +7,7 @@ volt.config.default
 Volt default configurations.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

@@ -7,6 +7,7 @@ volt.test.test_engine
 Tests for volt.engine.__init__.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

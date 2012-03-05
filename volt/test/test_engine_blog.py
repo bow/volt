@@ -7,6 +7,7 @@ volt.test.test_engine_blog
 Tests for volt.engine.blog.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

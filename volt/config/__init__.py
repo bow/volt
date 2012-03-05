@@ -27,6 +27,7 @@ into a Volt site generation, providing them with a flexible and centralized way
 of configuring the generated static site.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

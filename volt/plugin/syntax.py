@@ -7,6 +7,7 @@ volt.plugin.syntax
 Syntax highlighter processor plugin for Volt.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

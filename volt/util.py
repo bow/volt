@@ -7,6 +7,7 @@ volt.util
 Collection of general handy methods used throughout Volt.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

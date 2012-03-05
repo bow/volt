@@ -7,6 +7,7 @@ volt.plugin
 Base Volt plugin classes and functions.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

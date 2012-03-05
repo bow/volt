@@ -7,6 +7,7 @@ volt.gen
 Volt site generator.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

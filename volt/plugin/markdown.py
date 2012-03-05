@@ -7,6 +7,7 @@ volt.plugin.markdown
 Markdown processor plugin for Volt units.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

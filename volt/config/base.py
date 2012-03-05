@@ -11,6 +11,7 @@ in Volt, and two additional methods for importing Config, import_conf and
 grab_config.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

@@ -19,6 +19,7 @@ in this class mostly alters the command line output. Processing logic is similar
 to the parent class.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

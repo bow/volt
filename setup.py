@@ -19,7 +19,7 @@ setup(
     author = "Wibowo Arindrarto",
     author_email = "bow@bow.web.id",
     url = "",
-    license = "MIT",
+    license = "BSD",
     packages = find_packages(),
     install_requires = [
         "pyyaml", 

@@ -7,6 +7,7 @@ volt.test.test_config
 Tests for the volt.config module.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

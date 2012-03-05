@@ -10,6 +10,7 @@ The blog engine takes text files as resources and writes the static files
 constituting a simple blog.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 

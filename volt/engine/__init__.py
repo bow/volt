@@ -13,6 +13,7 @@ Paginations are groups of several Units that will be written to a single
 HTML file, for example blog posts written in February 2009.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
 
 """
 
