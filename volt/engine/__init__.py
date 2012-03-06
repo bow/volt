@@ -561,7 +561,10 @@ class TextUnit(Unit):
             # open file and remove whitespaces
             read = filter(None, delim.split(source.read()))
             # header should be parsed by yaml into dict
-            header = self.parse_yaml(read.pop(0))
+            try:
+                header = self.parse_yaml(read.pop(0))
+            except IndexError:
+                raise ParseError("Header not detected in '%s'." % fname)
             if not isinstance(header, dict):
                 raise ParseError("Header format unrecognizable in '%s'." \
                         % fname)

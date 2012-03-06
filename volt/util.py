@@ -68,3 +68,4 @@ def show_info(string, col='grey', is_bright=False):
 
 show_notif, show_warning, show_error = \
     [partial(show_info, col=x) for x in ['cyan', 'yellow', 'red']]
+show_error = partial(show_error, is_bright=True)

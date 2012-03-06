@@ -18,6 +18,7 @@ from volt import __version__
 from volt import util
 from volt.config.base import ConfigNotFoundError
 from volt.config import CONFIG
+from volt.engine import ContentError
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -98,3 +99,5 @@ def main(cli_arglist=None):
         sys.stderr.write("You can only run 'volt %s' inside a Volt project "
                          "directory.\n" % CONFIG.CMD.name)
         sys.stderr.write("Start a Volt project by running 'volt init'.\n")
+    except ContentError, e:
+        util.show_error("Error: %s\n" % e)
