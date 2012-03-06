@@ -1,4 +1,4 @@
-include README.rst TODO MANIFEST.in LICENSE
+include README.rst TODO MANIFEST.in LICENSE distribute_setup.py
 recursive-include docs *
 recursive-include extras *
 recursive-include volt *
