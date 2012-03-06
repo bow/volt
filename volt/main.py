@@ -33,6 +33,9 @@ def build_parsers():
     parser = ArgParser()
     subparsers = parser.add_subparsers(title='subcommands')
 
+    # parser for init
+    demo_parser = subparsers.add_parser('demo',
+                                        help="quick Volt demo")
     # parser for gen
     gen_parser = subparsers.add_parser('gen',
                                        help="generates Volt site using the specified engines")
@@ -59,10 +62,28 @@ def run_demo():
     """Starts a new project with pre-made demo files, generates the static
     site, and starts the server.
     """
-    # TODO
-    #run_init()
-    #run_gen()
-    #run_server()
+    import os
+    import shutil
+
+    # get volt installation directory and demo dir
+    demo_path = os.path.join(os.path.dirname(__file__), "data", "demo")
+
+    # we only need the first layer to do the copying
+    targets = os.walk(demo_path).next()
+
+    # copy to new folder inside current directory and cd into it
+    if os.listdir('.') == []:
+        # copy all files
+        for f in targets[2]:
+            shutil.copy2(os.path.join(targets[0], f), ".")
+        # copy all dirs
+        for child_dir in targets[1]:
+            shutil.copytree(os.path.join(targets[0], child_dir), child_dir)
+        run_gen()
+        # need to pass arglist to serve
+        main(['serve'])
+    else:
+        util.show_error("'volt demo' must be run inside an empty directory.\n")
 
 def run_gen():
     """Generates the static site."""
@@ -96,8 +117,8 @@ def main(cli_arglist=None):
         CONFIG.CMD = build_parsers().parse_args(cli_arglist)
         CONFIG.CMD.run()
     except ConfigNotFoundError:
-        sys.stderr.write("You can only run 'volt %s' inside a Volt project "
-                         "directory.\n" % CONFIG.CMD.name)
-        sys.stderr.write("Start a Volt project by running 'volt init'.\n")
+        util.show_error("You can only run 'volt %s' inside a Volt project "
+                        "directory.\n" % CONFIG.CMD.name)
+        util.show_error("Start a Volt project by running 'volt init'.\n")
     except ContentError, e:
         util.show_error("Error: %s\n" % e)
