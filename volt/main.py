@@ -34,6 +34,9 @@ def build_parsers():
     subparsers = parser.add_subparsers(title='subcommands')
 
     # parser for init
+    init_parser = subparsers.add_parser('init',
+                                        help="starts a bare Volt project")
+    # parser for demo
     demo_parser = subparsers.add_parser('demo',
                                         help="quick Volt demo")
     # parser for gen
@@ -71,7 +74,7 @@ def run_demo():
     # we only need the first layer to do the copying
     targets = os.walk(demo_path).next()
 
-    # copy to new folder inside current directory and cd into it
+    # only copy if curdir is empty
     if os.listdir('.') == []:
         # copy all files
         for f in targets[2]:
@@ -93,8 +96,26 @@ def run_gen():
 
 def run_init():
     """Starts a new Volt project."""
-    # TODO
-    pass
+    import os
+    import shutil
+
+    # get volt installation directory and init dir
+    init_path = os.path.join(os.path.dirname(__file__), "data", "init")
+
+    # we only need the first layer to do the copying
+    targets = os.walk(init_path).next()
+
+    # only copy if curdir is empty
+    if os.listdir('.') == []:
+        # copy all files
+        for f in targets[2]:
+            shutil.copy2(os.path.join(targets[0], f), ".")
+        # copy all dirs
+        for child_dir in targets[1]:
+            shutil.copytree(os.path.join(targets[0], child_dir), child_dir)
+    else:
+        util.show_error("'volt init' must be run inside an empty directory.\n")
+
 
 def run_serve():
     """Runs the volt server."""
