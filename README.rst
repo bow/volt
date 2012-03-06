@@ -76,6 +76,9 @@ INSTALLATION
 
 ``pip install volt``
 
+Volt is still in alpha ~ it's usable enough to be used for making 
+`a real website`_, but many things might still break here and there.
+
 By default Volt will install the `python markdown module`_. You can install
 `python-discount`_ to improve markdown processing speed. `python-discount`_
 is a wrapper for `Discount`_, a fast markdown parser written in C.
@@ -85,14 +88,31 @@ is a wrapper for `Discount`_, a fast markdown parser written in C.
 USAGE
 -----
 
-Go through a superquick demo of Volt by running ``volt demo`` and opening
-``localhost:8000`` in your browser.
+Go through a superquick demo of Volt by running ``volt demo`` in an empty
+directory and opening ``localhost:8000`` in your browser.
 
-Start building your static site using ``volt init``, use ``volt gen`` to
-generate it and ``volt serve`` to run the server.
+Here's a quick summary of the currently available commands:
+
+* ``volt init``: Starts a Volt project, must be run inside an empty directory.
+  The ``voltconf.py`` file created by this command currently contains all the default
+  settings. You can safely edit or remove them.
+
+* ``volt gen``: Generates the website into a ``site`` folder in your current
+  project directory.
+
+* ``volt serve``: Starts the server pointing to the ``site`` directory. Can be
+  run from anywhere inside a Volt directory.
+
+* ``volt demo``: Starts the demo.
+
+* ``volt version``: Show the current Volt version.
+
+Use your own engines by writing them in an ``engines`` directory inside your
+Volt project directory. Plugins follow the same rule: ``plugins`` inside your
+Volt project directory.
 
 The docs are, unfortunately, not that well-organized at the moment. For now,
-the source is the primary documentation :).
+the source is the primary documentation.
 
 
 -----
@@ -115,6 +135,7 @@ is one of my reasons I wrote Volt. Go check it out still if you're interested.
 .. _See how simple the blog engine code: http://github.com/bow/volt/blob/master/volt/engine/blog.py
 .. _main site generator function: http://github.com/bow/volt/blob/master/volt/gen.py
 .. _Take a peek at their codes: http://github.com/bow/volt/tree/master/volt/plugin
+.. _a real website: http://bow.web.id
 .. _python markdown: http://freewisdom.org/projects/python-markdown/Installation
 .. _python-discount: http://github.com/trapeze/python-discount
 .. _Discount: http://www.pell.portland.or.us/~orc/Code/discount/
