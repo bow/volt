@@ -44,19 +44,25 @@ Here are some of my favorite features:
    automatically generates your static site whenever it detects changes in the
    source, so you can focus on experimenting with your actual site contents.
 
+
 3. **Modularity and extensibility**
 
    Under the hood, Volt is actually a collection of different engines
    responsible for different sections of your site. The blog engine, for
    example generates the blog section of your site, while the plain engine,
-   generates simple web pages. `See how simple the blog engine code`_ is and 
-   take a peek at the `main site generator function`_ to get a picture of how
-   these engines work.
+   generates simple web pages. `See how simple the blog engine code
+   <http://github.com/bow/volt/blob/master/volt/engine/blog.py>`_ take a peek
+   at the `main site generator function 
+   <http://github.com/bow/volt/blob/master/volt/gen.py>`_ to get a picture of
+   how these engines work.
   
    Finally, Volt comes with a plugin architecture that lets you hook into the
    engines' actions. Three plugins comes packed in with volt: plugins for
    atom feed generation, for syntax highlighting, and for markdown processing. 
-   `Browse their code`_ to see how you can easily write your own plugin.
+   `Browse their code <http://github.com/bow/volt/tree/master/volt/plugin>`_ 
+   to see how you can easily write your own plugin.
+
+
 
 4. **Centrally-managed configuration with flexible options**
 
@@ -65,6 +71,7 @@ Here are some of my favorite features:
    blog posts. Define your own Jinja2 tests or filters. Set the plugin options.
    You can do all these in Volt through one central configuration file: 
    ``voltconf.py``, conveniently accessible in your project folder.
+
 
 All these with the perks of static websites, of course (easy deployment,
 easy back-up and tracking, security, speed, etc.)
@@ -77,11 +84,17 @@ INSTALLATION
 ``pip install volt``
 
 Volt is still in alpha ~ it's usable enough to be used for making 
-`a real website`_, but many things might still break here and there.
+`a real website <http://bow.web.id>`_, but many things might still break
+here and there.
 
-By default Volt will install the `python markdown module`_. You can install
-`python-discount`_ to improve markdown processing speed. `python-discount`_
-is a wrapper for `Discount`_, a fast markdown parser written in C.
+By default Volt will install the `python markdown module 
+<http://freewisdom.org/projects/python-markdown/Installation>`_. You can
+install `python-discount <http://github.com/trapeze/python-discount>`_ to
+improve markdown processing speed. `python-discount 
+<http://github.com/trapeze/python-discount>`_ is a wrapper for `Discount
+<http://www.pell.portland.or.us/~orc/Code/discount/>`_, a fast markdown
+parser written in C.
+
 
 
 -----
@@ -114,12 +127,11 @@ Volt project directory.
 The docs are, unfortunately, minimum at the moment. For now, the source is the
 primary documentation.
 
-
 -----
 PLANS
 -----
 
-See the `TODO`_ list.
+See the `TODO <https://github.com/bow/volt/blob/master/TODO>`_ list.
 
 
 ----------------------
@@ -127,18 +139,8 @@ CREDITS & ATTRIBUTIONS
 ----------------------
 
 Although Volt was written completely from the ground up, it is in many ways
-inspired by `Blogofile`_, another Python static website generator written by 
-`Ryan McGuire`_. It hasn't been updated for some time now, unfortunately, which
-is one of my reasons I wrote Volt. Go check it out still if you're interested.
-
-
-.. _See how simple the blog engine code: http://github.com/bow/volt/blob/master/volt/engine/blog.py
-.. _main site generator function: http://github.com/bow/volt/blob/master/volt/gen.py
-.. _Browse their code: http://github.com/bow/volt/tree/master/volt/plugin
-.. _a real website: http://bow.web.id
-.. _python markdown module: http://freewisdom.org/projects/python-markdown/Installation
-.. _python-discount: http://github.com/trapeze/python-discount
-.. _Discount: http://www.pell.portland.or.us/~orc/Code/discount/
-.. _TODO: http://github.com/bow/volt/blob/master/TODO
-.. _Blogofile: http://github.com/EnigmaCurry/blogofile
-.. _Ryan McGuire: http://www.enigmacurry.com/
+inspired by `Blogofile <http://github.com/EnigmaCurry/blogofile>`_, another
+Python static website generator written by 
+`Ryan McGuire <http://github.com/EnigmaCurry/blogofile>`_. It hasn't been
+updated for some time now, unfortunately, which is one of my reasons I wrote
+Volt. Go check it out still if you're interested.
