@@ -14,7 +14,7 @@ Volt default configurations.
 
 from os.path import join
 
-from volt.config.base import Config
+from volt.config.base import Config, JINJA2_FILTERS
 
 
 # Changing values in this Config is allowed but not recommended
@@ -216,7 +216,9 @@ JINJA2 = Config(
 
     # Jinja2 filters
     # Dictionary of function names mapped to the functions themselves
-    FILTERS = dict(),
+    FILTERS = {
+        'displaytime': JINJA2_FILTERS['displaytime'],
+    },
 
     # Jinja2 tests
     # Dictionary of function names mapped to the functions themselves

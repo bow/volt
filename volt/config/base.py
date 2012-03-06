@@ -103,3 +103,16 @@ def get_configs(mod):
 
     """
     return ifilter(lambda x: isinstance(getattr(mod, x), Config), dir(mod))
+
+
+# built-in volt jinja2 filters
+def displaytime(time, format):
+    """Show time according to format."""
+    return time.strftime(format)
+
+JINJA2_FILTERS = {
+    'displaytime': displaytime,
+}
+
+JINJA2_TESTS = dict()
+
