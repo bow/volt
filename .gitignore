@@ -1,8 +1,4 @@
-demo/site
 distribute-*
-volt/data/demo/profile.py
+volt/data/sandbox/
 volt/data/demo/site/
-volt/data/demo/content/
-volt/data/demo/templates/
-volt/data/demo/layout/
 ROADMAP
