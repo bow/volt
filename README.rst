@@ -33,7 +33,7 @@ Here are some of my favorite features:
 
    All with a simple URL pattern in the configuration file, like so ::
 
-   PACKS = ('', 'tag/{tags}', '{time:%Y}', '{time:%Y/%m}', '{time:%Y/%m/%d}')
+       PACKS = ('', 'tag/{tags}', '{time:%Y}', '{time:%Y/%m}', '{time:%Y/%m/%d}')
 
 
 2. Built-in server capable of rebuilding your entire site whenever it detects a
@@ -134,9 +134,9 @@ is one of my reasons I wrote Volt. Go check it out still if you're interested.
 
 .. _See how simple the blog engine code: http://github.com/bow/volt/blob/master/volt/engine/blog.py
 .. _main site generator function: http://github.com/bow/volt/blob/master/volt/gen.py
-.. _Take a peek at their codes: http://github.com/bow/volt/tree/master/volt/plugin
+.. _Browse their code: http://github.com/bow/volt/tree/master/volt/plugin
 .. _a real website: http://bow.web.id
-.. _python markdown: http://freewisdom.org/projects/python-markdown/Installation
+.. _python markdown module: http://freewisdom.org/projects/python-markdown/Installation
 .. _python-discount: http://github.com/trapeze/python-discount
 .. _Discount: http://www.pell.portland.or.us/~orc/Code/discount/
 .. _TODO: http://github.com/bow/volt/blob/master/TODO
