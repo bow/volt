@@ -70,8 +70,9 @@ class Generator(object):
         template = CONFIG.SITE.TEMPLATE_ENV.get_template(tpl_file)
 
         outfile = os.path.join(CONFIG.VOLT.SITE_DIR, 'index.html')
-        with open(outfile, 'w') as target:
-            target.write(template.render(page={}, CONFIG=CONFIG))
+        if not os.path.exists(outfile):
+            with open(outfile, 'w') as target:
+                target.write(template.render(page={}, CONFIG=CONFIG))
 
 
 def run():
