@@ -14,8 +14,7 @@ needs. So I decided to write my own.
 
 **What's so different about Volt?**
 
-I think it's best to show them to you directly. Here are some of my favorite 
-Volt features:
+Here are some of my favorite features:
 
 1. Automatic generation of paginations according to content attributes
 
@@ -25,13 +24,13 @@ Volt features:
    paginated to your liking.
 
    For example, you only need to supply ``tag/{tags}`` and Volt will generate
-   links to ``tag/foo``, ``tag/bar``, ``tag/baz``, where each of these page (or pack,
-   in Volt's terms) will contain all the posts sharing that tag.
+   links to ``tag/foo``, ``tag/bar``, ``tag/baz``, where each of these page
+   (or ``Pack``, in Volt's internals) will contain all the posts sharing that tag.
 
    And this doesn't apply only to tags. You can use it to create pages based on
-   authors, on time (year, day, date, whatever you want), and any other data you
+   authors, time (year, day, date, whatever you want), and any other data you
    put in your posts. 
-   
+
    All with a simple URL pattern in the configuration file, like so ::
 
    PACKS = ('', 'tag/{tags}', '{time:%Y}', '{time:%Y/%m}', '{time:%Y/%m/%d}')
@@ -40,7 +39,7 @@ Volt features:
 2. Built-in server capable of rebuilding your entire site whenever it detects a
    change in any of the source files
 
-   Static sites need to be generated repeatedly to reflect changes in its source.
+   Static sites need to be generated repeatedly to reflect changes in their source.
    After a while, doing this becomes cumbersome and annoying. Volt's server
    automatically generates your static site whenever it detects changes in the
    source, so you can focus on experimenting with your actual site contents.
@@ -48,10 +47,11 @@ Volt features:
 3. Modularity and extensibility
 
    Under the hood, Volt is actually a collection of different engines
-   responsible for different sections of your site. The blog engine, for example
-   generates the blog section of your site, while the plain engine, generates
-   simple web pages. `See how simple the blog engine code`_ is and take a peek
-   at the `main site generator function`_ to get a picture of how these engines work.
+   responsible for different sections of your site. The blog engine, for
+   example generates the blog section of your site, while the plain engine,
+   generates simple web pages. `See how simple the blog engine code`_ is and 
+   take a peek at the `main site generator function`_ to get a picture of how
+   these engines work.
   
    Finally, Volt comes with a plugin architecture that lets you hook into the
    engines' actions. Three plugins comes packed in with volt: plugins for
@@ -62,7 +62,7 @@ Volt features:
 
    Sort your content according to time, or title, or author name, or tags,
    anything you want. Set global values for all content, e.g. authors for all
-   blog posts. Define your own Jinja2 tests or filters. Set all plugin options.
+   blog posts. Define your own Jinja2 tests or filters. Set the plugin options.
    You can do all these in Volt through one central configuration file: 
    ``voltconf.py``, conveniently accessible in your project folder.
 
@@ -94,25 +94,25 @@ directory and opening ``localhost:8000`` in your browser.
 Here's a quick summary of the currently available commands:
 
 * ``volt init``: Starts a Volt project, must be run inside an empty directory.
-  The ``voltconf.py`` file created by this command currently contains all the default
-  settings. You can safely edit or remove them.
+  The ``voltconf.py`` file created by this command currently contains almost all
+  the default settings. You can safely edit or remove them.
 
 * ``volt gen``: Generates the website into a ``site`` folder in your current
   project directory.
 
 * ``volt serve``: Starts the server pointing to the ``site`` directory. Can be
-  run from anywhere inside a Volt directory.
+  run from anywhere inside a Volt project directory.
 
-* ``volt demo``: Starts the demo.
+* ``volt demo``: Starts the demo, must be run inside an empty directory.
 
-* ``volt version``: Show the current Volt version.
+* ``volt version``: Shows the current Volt version.
 
 Use your own engines by writing them in an ``engines`` directory inside your
 Volt project directory. Plugins follow the same rule: ``plugins`` inside your
 Volt project directory.
 
-The docs are, unfortunately, not that well-organized at the moment. For now,
-the source is the primary documentation.
+The docs are, unfortunately, minimum at the moment. For now, the source is the
+primary documentation.
 
 
 -----

@@ -1,0 +1,6 @@
+include README.rst TODO MANIFEST.in LICENSE
+recursive-include docs *
+recursive-include extras *
+recursive-include volt *
+recursive-exclude volt *.pyc
+prune volt/data/sandbox
