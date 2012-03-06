@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section id="chronological" class="body">
+{% for unit in page.units %}
+  <article id="blog" class="body">
+    <header>
+      <a name="{{ unit.slug }}"></a>
+      <h1><a href="{{ unit.permalink }}">{{ unit.title }}</a></h1>
+      <p id="meta">
+      <a href="/{{ unit.time|displaytime("%Y/%m")  }}/" class="button green">{{ unit.display_time }}</a>
+      | {{ unit.tags|catlist }}
+    </header>
+    {{ unit.content|striptags|truncate(length=CONFIG.BLOG.EXCERPT_LENGTH, end='...') }} <a href="{{ unit.permalink }}"><small>(more)</small></a>
+    {{ engine }}
+  </article>
+  {% if not loop.last %}
+  <hr class="interblog">
+  {% endif %}
+{% endfor %}
+</section>
+{% if page.permalink_prev or page.permalink_next %}
+<hr id="paginate" class="body">
+<section id="paginate" class="body">
+{% endif %}    
+{% if page.permalink_prev %}
+<a href="{{ page.permalink_prev }}" id="prev" class="button green">previous</a>
+{% endif %}
+{% if page.permalink_next %}
+<a href="{{ page.permalink_next }}" id="next" class="button green">next</a>
+{% endif %}
+{% if page.permalink_prev or page.permalink_next %}
+</section>
+{% endif %}
+{% endblock %}

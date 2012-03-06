@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<article id="blog" class="body">
+  <header>
+  <a name="{{ page.slug }}"></a>
+  <h1><a href="{{ page.permalink }}" rel="bookmark" title="permalink to {{ page.title }}">{{ page.title }}</a></h1>
+  <p id="meta">
+  <a href="/{{ page.time|displaytime("%Y/%m")  }}/" class="button green">{{ page.time|displaytime(CONFIG.BLOG.CONTENT_DATETIME_FORMAT) }}</a>
+  | {{ page.tags|catlist }}
+  </header>
+  {{ page.content }}
+</article>
+{% if page.permalink_prev or page.permalink_next %}
+<hr id="paginate" class="body">
+<section id="paginate" class="body">
+{% endif %}    
+{% if page.permalink_prev %}
+<a href="{{ page.permalink_prev }}" id="prev" class="button green">previous</a>
+{% endif %}
+{% if page.permalink_next %}
+<a href="{{ page.permalink_next }}" id="next" class="button green">next</a>
+{% endif %}
+{% if page.permalink_prev or page.permalink_next %}
+</section>
+{% endif %}
+{% endblock %}
