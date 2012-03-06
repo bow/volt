@@ -1,0 +1,19 @@
+====
+TODO
+====
+
+* Docs, docs, docs!
+
+* Plugins for more markup languages, e.g. rST, textile
+
+* Wider platform and Python support. The initial build and testing was done
+  using python2.7 on Archlinux x86_64. Haven't tested on other Python versions
+  and/or other platforms yet. Should also check on Python 3.
+
+* Add more built-in engines, e.g. to generate photo galleries
+
+* Improve the extras: better bash completion script, better demo project
+
+* Higher test coverage
+
+* ???
