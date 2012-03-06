@@ -191,15 +191,16 @@ def run():
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-    util.show_notif("\nVolt %s Development Server\n" % __version__)
-    util.show_info("Serving %s/\n" 
-                   "Running at http://%s:%s/\n"
-                   "CTRL-C to stop.\n\n" % 
-                   (CONFIG.VOLT.SITE_DIR, run_address, run_port))
+    util.show_info("\nVolt %s Development Server\n" % __version__, is_bright=True)
+    util.show_notif("  => ", is_bright=True)
+    util.show_info("Serving %s/\n" % CONFIG.VOLT.SITE_DIR)
+    util.show_notif("  => ", is_bright=True)
+    util.show_info("Running at http://%s:%s/\n"
+                   "(CTRL-C to stop)\n\n" % (run_address, run_port))
 
     try:
         server.serve_forever()
     except:
         server.shutdown()
-        util.show_notif("\nServer stopped.\n\n")
+        util.show_info("\nServer stopped.\n\n", is_bright=True)
         sys.exit(0)
