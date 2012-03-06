@@ -65,7 +65,15 @@ class Config(dict):
 
         """
         for key in conf_obj.keys():
-            self[key] = conf_obj[key]
+            # if key is a dictionary
+            # merge the two dictionaries instead of overwriting
+            # override occurs if conf_obj (user's config) has a key also
+            # present in self (default config)
+            # (will this bite me later?)
+            if isinstance(conf_obj[key], dict):
+                self[key] = dict(self[key].items() + conf_obj[key].items())
+            else:
+                self[key] = conf_obj[key]
 
 
 def import_conf(mod, path=False, name=''):

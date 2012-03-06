@@ -93,7 +93,7 @@ BLOG = Config(
     DISPLAY_DATETIME_FORMAT = '%A, %d %B %Y',
 
     # Dictionary containing values to be globally set for all posts
-    GLOBAL_FIELDS = { 'author': '', },
+    GLOBAL_FIELDS = dict(),
 
     # Directory path for storing blog content relative to a project root
     CONTENT_DIR = join(VOLT.CONTENT_DIR, 'blog'),
