@@ -32,7 +32,7 @@ class Atomic(Plugin):
 
     DEFAULT_ARGS = {
         # jinja2 template file
-        'ATOM_TEMPLATE_FILE': 'volt-atomic.xml',
+        'ATOM_TEMPLATE_FILE': 'atom_template.xml',
         # output file name
         # by default, the feed is written to the current directory
         'ATOM_OUTPUT_FILE': 'atom.xml',
