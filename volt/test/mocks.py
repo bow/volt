@@ -72,6 +72,7 @@ for key in volt_opts:
 # site options
 site_opts = {
         'TITLE': 'Mock Title',
+        'URL': 'http://alay.com',
         'DESC': 'Mock Desc',
         'ENGINES': (),
         'PLUGINS': (('', []),),

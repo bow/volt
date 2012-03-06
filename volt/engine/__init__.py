@@ -115,7 +115,7 @@ class Engine(object):
 
         return glob.glob(pattern)
 
-    def set_unit_paths(self, unit, base_dir, base_url='', index_html_only=True):
+    def set_unit_paths(self, unit, base_dir, index_html_only=True):
         """Sets the permalink and absolute file path for the given unit.
 
         Args:
@@ -123,10 +123,8 @@ class Engine(object):
             base_dir - Absolute file system path to the output site directory
 
         Keyword Args:
-            base_url - Base url to be set for the permalink, defaults to an empty
-                string so permalinks are relative
-            index_html_only -  Boolean indicating output file name;  if False then
-                the output file name is '%s.html' where %s is the last
+            index_html_only -  Boolean indicating output file name;  if False
+                then the output file name is '%s.html' where %s is the last
                 string of the unit's permalist
 
         Output file defaults to 'index' so each unit will be written to
@@ -135,18 +133,20 @@ class Engine(object):
 
         """
         path = [base_dir]
-        url = [base_url]
+        abs_url = self.CONFIG.SITE.URL
+        rel_url = ['']
 
         # set path and urls
         path.extend(unit.permalist)
-        url.extend(filter(None, unit.permalist))
+        rel_url.extend(filter(None, unit.permalist))
         if index_html_only:
-            url[-1] = url[-1] + '/'
+            rel_url[-1] = rel_url[-1] + '/'
             path.append('index.html')
         else:
-            url[-1] = url[-1] + '.html'
+            rel_url[-1] = rel_url[-1] + '.html'
             path[-1] = path[-1] + '.html'
-        setattr(unit, 'permalink', '/'.join(url))
+        setattr(unit, 'permalink', '/'.join(rel_url))
+        setattr(unit, 'permalink_abs', '/'.join([abs_url] + rel_url[1:]).strip('/'))
         setattr(unit, 'path', os.path.join(*(path)))
 
     def process_text_units(self, config):
@@ -169,7 +169,7 @@ class Engine(object):
             units.append(TextUnit(fname, config))
             # paths and permalinks are not set in TextUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(units[-1], self.CONFIG.VOLT.SITE_DIR, \
+            self.set_unit_paths(units[-1], base_dir=self.CONFIG.VOLT.SITE_DIR, \
                     index_html_only=self.CONFIG.SITE.INDEX_HTML_ONLY)
 
         return units

@@ -43,30 +43,27 @@ class TestEngine(unittest.TestCase):
 
     def test_set_unit_paths(self):
         path = TEST_DIR
-        url = 'http://alay.com'
         Unit_Mock.permalist = ['blog', 'not', 'string']
 
         # test for default settings
-        self.engine.set_unit_paths(Unit_Mock, path, url)
+        self.engine.set_unit_paths(Unit_Mock, path)
         self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string', 'index.html'))
-        self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string/')
+        self.assertEqual(Unit_Mock.permalink, '/blog/not/string/')
+        self.assertEqual(Unit_Mock.permalink_abs, 'http://alay.com/blog/not/string')
 
         # test for set_index_html = False
-        self.engine.set_unit_paths(Unit_Mock, path, url, index_html_only=False)
+        self.engine.set_unit_paths(Unit_Mock, path, index_html_only=False)
         self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string.html'))
-        self.assertEqual(Unit_Mock.permalink, 'http://alay.com/blog/not/string.html')
-
-        # test if URL is == '' (if set to '/' in voltconf.py)
-        self.engine.set_unit_paths(Unit_Mock, path)
-        self.assertEqual(Unit_Mock.permalink, '/blog/not/string/')
+        self.assertEqual(Unit_Mock.permalink, '/blog/not/string.html')
+        self.assertEqual(Unit_Mock.permalink_abs, 'http://alay.com/blog/not/string.html')
 
         # test if unit.permalist[0] == '/' (if set to '/' in voltconf.py)
         Unit_Mock.permalist = ['', 'not', 'string']
-        self.engine.set_unit_paths(Unit_Mock, path, url, os.path.join(path, \
+        self.engine.set_unit_paths(Unit_Mock, path, os.path.join(path, \
                 'not', 'string'))
-        self.assertEqual(Unit_Mock.permalink, 'http://alay.com/not/string/')
+        self.assertEqual(Unit_Mock.permalink, '/not/string/')
 
     def test_build_packs(self):
         units = Unitlist_Mock
