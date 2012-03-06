@@ -34,6 +34,7 @@ SITE = Config(
     PLUGINS = (
         ('volt-syntax', ['blog']),
         ('volt-markdown', ['blog', 'plain']),
+        ('volt-atomic', ['blog']),
     ),
 )
 
@@ -84,4 +85,5 @@ PLAIN = Config(
 PLUGINS = Config(
 
     SYNTAX_CSS_FILE = os.path.join(os.getcwd(), 'site', 'css', 'syntax_highlight.css'),
+    ATOM_OUTPUT_FILE = os.path.join(os.getcwd(), 'site', 'atom.xml'),
 )
