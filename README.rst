@@ -16,7 +16,7 @@ needs. So I decided to write my own.
 
 Here are some of my favorite features:
 
-1. Automatic generation of paginations according to content attributes
+1. **Automatic generation of paginations according to content attributes**
 
    Say you have a blog with 10 posts, each with its own set of tags that might
    might not be present in all posts. By only by supplying the URL pattern,
@@ -36,15 +36,15 @@ Here are some of my favorite features:
        PACKS = ('', 'tag/{tags}', '{time:%Y}', '{time:%Y/%m}', '{time:%Y/%m/%d}')
 
 
-2. Built-in server capable of rebuilding your entire site whenever it detects a
-   change in any of the source files
+2. **Built-in server capable of rebuilding your entire site whenever it detects a
+   change in any of the source files**
 
    Static sites need to be generated repeatedly to reflect changes in their source.
    After a while, doing this becomes cumbersome and annoying. Volt's server
    automatically generates your static site whenever it detects changes in the
    source, so you can focus on experimenting with your actual site contents.
 
-3. Modularity and extensibility
+3. **Modularity and extensibility**
 
    Under the hood, Volt is actually a collection of different engines
    responsible for different sections of your site. The blog engine, for
@@ -58,7 +58,7 @@ Here are some of my favorite features:
    atom feed generation, for syntax highlighting, and for markdown processing. 
    `Browse their code`_ to see how you can easily write your own plugin.
 
-4. Centrally-managed configuration with flexible options
+4. **Centrally-managed configuration with flexible options**
 
    Sort your content according to time, or title, or author name, or tags,
    anything you want. Set global values for all content, e.g. authors for all
