@@ -99,8 +99,8 @@ BLOG = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, 'blog'),
 
     # File paths of blog template files relative to a project root
-    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_post.html'),
-    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_pagination.html'),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, 'blog_post.html'),
+    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, 'blog_pagination.html'),
 
     # Sort order for paginated posts display
     # Valid options are any field present in all units
@@ -164,7 +164,7 @@ PLAIN = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, 'plain'),
 
     # File paths of plain page template files relative to a project root
-    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_plain.html'),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, 'page.html'),
 
     # Required properties
     # These properties must be defined in each individual plain page unit header
@@ -202,8 +202,8 @@ COLLECTION = Config(
     CONTENT_DIR = join(VOLT.CONTENT_DIR, 'collection'),
 
     # File paths of collection template files relative to a project root
-    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_single.html'),
-    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, '_multiple.html'),
+    UNIT_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, 'single.html'),
+    PACK_TEMPLATE_FILE = join(VOLT.TEMPLATE_DIR, 'multiple.html'),
 
     # Required properties
     # These properties must be defined for each collection unit individually

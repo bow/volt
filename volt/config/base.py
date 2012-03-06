@@ -57,14 +57,6 @@ class Config(dict):
         # enables value access by dot notation
         self.__dict__ = self
 
-
-    def __getitem__(self, name):
-        # enable access using small caps if attr exist in upper caps only
-        # for convenience's sake - (is this dangerous?)
-        if not name in self and name.upper() in self:
-            return dict.__getitem__(self, name.upper())
-        return dict.__getitem__(self, name)
-
     def override(self, conf_obj):
         """Overrides options of the current Config object with another one.
 

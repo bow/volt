@@ -66,12 +66,12 @@ class Generator(object):
             e.dispatch()
 
         # generate other pages
-        tpl_file = '_index.html'
+        tpl_file = 'index.html'
         template = CONFIG.SITE.TEMPLATE_ENV.get_template(tpl_file)
 
         outfile = os.path.join(CONFIG.VOLT.SITE_DIR, 'index.html')
         with open(outfile, 'w') as target:
-            target.write(template.render(page={}, config=CONFIG))
+            target.write(template.render(page={}, CONFIG=CONFIG))
 
 
 def run():

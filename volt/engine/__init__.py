@@ -327,7 +327,7 @@ class Engine(object):
             except OSError:
                 pass
             with open(unit.path, 'w') as target:
-                rendered = template.render(page=unit.__dict__, config=self.CONFIG)
+                rendered = template.render(page=unit.__dict__, CONFIG=self.CONFIG)
                 self.write_output(target, rendered)
 
     def write_packs(self, template_path):
@@ -358,7 +358,7 @@ class Engine(object):
                 with open(pagination.path, 'w') as target:
                     # since pack object only stores indexes of unit in self.unit
                     # we need to get the actual unit items before writing
-                    rendered = template.render(page=pagination.__dict__, config=self.CONFIG)
+                    rendered = template.render(page=pagination.__dict__, CONFIG=self.CONFIG)
                     self.write_output(target, rendered)
 
     def activate(self):
