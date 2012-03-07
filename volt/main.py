@@ -61,61 +61,58 @@ def build_parsers():
 
     return parser
 
-def run_demo():
-    """Starts a new project with pre-made demo files, generates the static
-    site, and starts the server.
+def run_init(cmd_name='init'):
+    """Starts a new Volt project.
+
+    Args:
+        init - String, must be 'init' or 'demo', denotes which starting files
+            will be copied into the current directory.
+
     """
+    # cmd_name must not be other than 'init' or 'demo'
+    assert cmd_name in ['init', 'demo',]
+
     import os
     import shutil
 
+    if not os.listdir(os.curdir) == []:
+        util.show_error("'volt %s' must be run inside an empty directory.\n" % cmd_name)
+        sys.exit(1)
+
     # get volt installation directory and demo dir
-    demo_path = os.path.join(os.path.dirname(__file__), "data", "demo")
+    target_path = os.path.join(os.path.dirname(__file__), "data", cmd_name)
 
     # we only need the first layer to do the copying
-    targets = os.walk(demo_path).next()
+    parent_dir, child_dirs, top_files = os.walk(target_path).next()
 
-    # only copy if curdir is empty
-    if os.listdir('.') == []:
-        # copy all files
-        for f in targets[2]:
-            shutil.copy2(os.path.join(targets[0], f), ".")
-        # copy all dirs
-        for child_dir in targets[1]:
-            shutil.copytree(os.path.join(targets[0], child_dir), child_dir)
-        run_gen()
-        # need to pass arglist to serve
-        main(['serve'])
-    else:
-        util.show_error("'volt demo' must be run inside an empty directory.\n")
+    # copy all files in parent
+    for top in top_files:
+        shutil.copy2(os.path.join(parent_dir, top), os.curdir)
+    # copy all child directories
+    for child in child_dirs:
+        shutil.copytree(os.path.join(parent_dir, child), child)
+
+    if cmd_name == 'init':
+        util.show_info("Volt project started. Have fun!\n", is_bright=True)
+
+def run_demo():
+    """Starts a new project with pre-made demo files, generates the static
+    site, and starts the server.
+
+    """
+    # copy demo files
+    run_init(cmd_name='demo')
+    util.show_info("\nPreparing your lightning-quick Volt tour...\n\n")
+    # generate the site
+    run_gen()
+    # need to pass arglist to serve, so we'll call main
+    main(['serve'])
 
 def run_gen():
     """Generates the static site."""
     from volt import gen
     gen.run()
     util.show_info("Site generation finished.\n", is_bright=True)
-
-def run_init():
-    """Starts a new Volt project."""
-    import os
-    import shutil
-
-    # get volt installation directory and init dir
-    init_path = os.path.join(os.path.dirname(__file__), "data", "init")
-
-    # we only need the first layer to do the copying
-    targets = os.walk(init_path).next()
-
-    # only copy if curdir is empty
-    if os.listdir('.') == []:
-        # copy all files
-        for f in targets[2]:
-            shutil.copy2(os.path.join(targets[0], f), ".")
-        # copy all dirs
-        for child_dir in targets[1]:
-            shutil.copytree(os.path.join(targets[0], child_dir), child_dir)
-    else:
-        util.show_error("'volt init' must be run inside an empty directory.\n")
-
 
 def run_serve():
     """Runs the volt server."""
