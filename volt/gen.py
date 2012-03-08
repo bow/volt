@@ -42,7 +42,8 @@ class Generator(object):
 
         """
         # check first if determinant is 'plugins' or 'engines'
-        assert determinant in ['engines', 'plugins']
+        assert determinant in ['engines', 'plugins'], \
+            "Determinant must be 'engines' or 'plugins'"
 
         # get base class to check against
         if determinant == 'engines':
@@ -51,11 +52,10 @@ class Generator(object):
             determinant_class = Plugin
 
         # load engine or plugin
-        try:
-            user_path = os.path.join(CONFIG.VOLT.ROOT_DIR, determinant)
-            mod = path_import(processor, user_path)
-        except ImportError:
-            mod = path_import(processor, os.path.join(volt.__path__[0], determinant))
+        # user_path has priority over volt_path
+        user_path = os.path.join(CONFIG.VOLT.ROOT_DIR, determinant)
+        volt_path = os.path.join(volt.__path__[0], determinant)
+        mod = path_import(processor, [user_path, volt_path])
 
         return grab_class(mod, determinant_class)
 

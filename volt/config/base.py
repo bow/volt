@@ -76,15 +76,19 @@ class Config(dict):
             else:
                 self[key] = conf_obj[key]
 
-def path_import(name, path):
+def path_import(name, paths):
     """Imports a module from the specified path.
 
     Args:
         name - String denoting target module name.
-        path - Absolute directory path of the target module.
+        paths - List of possible absolute directory paths or string of an
+            absolute directory path that may contain the target module.
 
     """
-    mod_tuple = imp.find_module(name, [path])
+    # convert to list if paths is string
+    if isinstance(paths, basestring):
+        paths = [paths]
+    mod_tuple = imp.find_module(name, paths)
     return imp.load_module(name, *mod_tuple)
 
 def get_configs(mod):
