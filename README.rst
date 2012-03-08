@@ -42,7 +42,8 @@ Here are some of my favorite features:
    Static sites need to be generated repeatedly to reflect changes in their source.
    After a while, doing this becomes cumbersome and annoying. Volt's server
    automatically generates your static site whenever it detects changes in the
-   source, so you can focus on experimenting with your actual site contents.
+   source and the configuration file, so you can focus on experimenting with your
+   actual site contents.
 
 
 3. **Modularity and extensibility**
@@ -50,16 +51,16 @@ Here are some of my favorite features:
    Under the hood, Volt is actually a collection of different engines
    responsible for different sections of your site. The blog engine, for
    example generates the blog section of your site, while the plain engine,
-   generates simple web pages. `See how simple the blog engine code
-   <http://github.com/bow/volt/blob/master/volt/engine/blog.py>`_ take a peek
-   at the `main site generator function 
+   generates simple web pages. `See how simple the blog engine code is
+   <http://github.com/bow/volt/blob/master/volt/engines/blog.py>`_ or take a
+   peek at the `main site generator function 
    <http://github.com/bow/volt/blob/master/volt/gen.py>`_ to get a picture of
-   how these engines work.
+   how the engines work.
   
    Finally, Volt comes with a plugin architecture that lets you hook into the
    engines' actions. Three plugins comes packed in with volt: plugins for
    atom feed generation, for syntax highlighting, and for markdown processing. 
-   `Browse their code <http://github.com/bow/volt/tree/master/volt/plugin>`_ 
+   `Browse their code <http://github.com/bow/volt/tree/master/volt/plugins>`_ 
    to see how you can easily write your own plugin.
 
 

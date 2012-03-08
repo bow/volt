@@ -27,7 +27,6 @@ from functools import partial
 import yaml
 
 from volt.config import CONFIG, SessionConfig
-from volt.util import grab_class
 
 
 # regex objects, so compilation is done efficiently

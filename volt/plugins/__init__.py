@@ -11,10 +11,6 @@ Base Volt plugin classes and functions.
 
 """
 
-from functools import partial
-
-from volt.util import grab_class
-
 
 class Plugin(object):
 
@@ -49,4 +45,4 @@ class Plugin(object):
 
     def run(self):
         """Runs the plugin."""
-        raise NotImplementedError("Processor plugins must implement a run method.")
+        raise NotImplementedError("Plugins must implement a run method.")
