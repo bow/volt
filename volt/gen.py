@@ -15,55 +15,108 @@ Volt site generator.
 import os
 import shutil
 
+import volt
 from volt import util
 from volt.config import CONFIG
-from volt.config.base import import_conf
-from volt.engine import get_engine
-from volt.plugin import get_plugin
+from volt.config.base import path_import
+from volt.engines import Engine
+from volt.plugins import Plugin
+from volt.util import grab_class
 
 
 class Generator(object):
 
     """Class representing a Volt run."""
 
+    def get_processor_class(self, processor, determinant):
+        """Returns the engine or plugin class used in site generation.
+
+        Args:
+            processor - String denoting engine or plugin name.
+            determinant - String denoting processor type. Must be 'engines'
+                or 'plugins'.
+        
+        This method tries to load engines or plugins from the user's Volt
+        project directory first. Failing that, it will try to import engines
+        or plugins from Volt's installation directory.
+
+        """
+        # check first if determinant is 'plugins' or 'engines'
+        assert determinant in ['engines', 'plugins']
+
+        # get base class to check against
+        if determinant == 'engines':
+            determinant_class = Engine
+        else:
+            determinant_class = Plugin
+
+        # load engine or plugin
+        try:
+            user_path = os.path.join(CONFIG.VOLT.ROOT_DIR, determinant)
+            mod = path_import(processor, user_path)
+        except ImportError:
+            mod = path_import(processor, os.path.join(volt.__path__[0], determinant))
+
+        return grab_class(mod, determinant_class)
+
+
     def activate(self):
-        """Runs all the engines and plugins according to the configurations."""
+        """Runs all the engines and plugins according to the configurations.
+
+        This method consists of four distinct steps that results in the final
+        site generation:
+
+            1. Engine activation: all engines listed in CONFIG.SITE.ENGINES are
+               loaded. Any engines found in the user directory takes
+               precedence over built-in engines. The engines' activate() method
+               are then run. This usually means the engines' units are parsed
+               and stored as its instance attributes in self.units.
+
+            2. Plugin run: plugins listed in CONFIG.SITE.PLUGINS are loaded and
+               run against their target engines.
+
+            3. Engine dispatch: after the engine units have been processed by
+               the plugins, the engines are then dispatched. This will involve
+               writing the actual HTML files for each engine. Pack-building, if
+               defined for an engine, should be run in this step prior to
+               writing.
+
+            4. Non-engine template processing: site pages that do not belong to
+               any engines are then processed. Examples of pages in this
+               category are the main index.html and the 404 page. If any engine
+               has defined a main index.html, this method will not write
+               another index.html.
+
+        """
         self.engines = dict()
 
-        for e in CONFIG.SITE.ENGINES:
-            try:
-                user_eng_path = os.path.join(CONFIG.VOLT.ROOT_DIR, 'engines', '%s.py' % e)
-                eng_mod = import_conf(user_eng_path, path=True)
-            except ImportError:
-                eng_mod = import_conf('volt.engine.%s' % e)
-            eng_class = get_engine(eng_mod)
-            self.engines[e] = eng_class()
+        # activate engines
+        for engine in CONFIG.SITE.ENGINES:
+            engine_class = self.get_processor_class(engine, 'engines')
+            self.engines[engine] = engine_class()
 
             util.show_notif("  => ", is_bright=True)
-            util.show_info("%s engine activated\n" % e.capitalize())
-            self.engines[e].activate()
+            util.show_info("%s engine activated\n" % engine.capitalize())
+            self.engines[engine].activate()
 
-        for p, targets in CONFIG.SITE.PLUGINS:
-            try:
-                user_plug_path = os.path.join(CONFIG.VOLT.ROOT_DIR, 'plugins', '%s.py' % p)
-                plug_mod = import_conf(user_plug_path, path=True)
-            except ImportError:
-                plug_mod = import_conf('volt.plugin.%s' % p)
-            plug_class = get_plugin(plug_mod)
+        # run plugins
+        for plugin, target_engine in CONFIG.SITE.PLUGINS:
+            plugin_class = self.get_processor_class(plugin, 'plugins')
 
-            if plug_class:
+            if plugin_class:
                 # set default args in CONFIG first before instantiating
-                CONFIG.set_plugin_defaults(plug_class.DEFAULT_ARGS)
-                plugin = plug_class()
+                CONFIG.set_plugin_defaults(plugin_class.DEFAULT_ARGS)
+                plugin_obj = plugin_class()
 
-                for target in targets:
+                for engine in target_engine:
                     util.show_warning("  => ", is_bright=True)
                     util.show_info("%s plugin activated -- running on %s units\n" % \
-                            (p.capitalize(), target.capitalize()))
-                    plugin.run(self.engines[target].units)
+                            (plugin.capitalize(), engine.capitalize()))
+                    plugin_obj.run(self.engines[engine].units)
 
-        for e in self.engines.values():
-            e.dispatch()
+        # dispatch engines
+        for engine in self.engines.values():
+            engine.dispatch()
 
         # generate other pages
         tpl_file = 'index.html'

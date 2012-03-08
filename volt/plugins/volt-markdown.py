@@ -20,7 +20,7 @@ except ImportError:
     import markdown
     has_discount = False
 
-from volt.plugin import Plugin
+from volt.plugins import Plugin
 
 
 class Markdown(Plugin):

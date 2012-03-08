@@ -50,6 +50,3 @@ class Plugin(object):
     def run(self):
         """Runs the plugin."""
         raise NotImplementedError("Processor plugins must implement a run method.")
-
-
-get_plugin = partial(grab_class, cls=Plugin)

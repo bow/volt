@@ -38,7 +38,7 @@ from itertools import chain
 
 from jinja2 import Environment, FileSystemLoader
 
-from volt.config.base import ConfigNotFoundError, get_configs, import_conf
+from volt.config.base import ConfigNotFoundError, get_configs, path_import
 
 
 class SessionConfig(object):
@@ -60,17 +60,18 @@ class SessionConfig(object):
 
     """
 
-    def __init__(self, default_conf='volt.config.default', start_dir=os.getcwd()):
+    def __init__(self, default_dir=os.path.dirname(__file__), \
+            start_dir=os.getcwd(), default_conf_name='default'):
         """Initializes SessionConfig.
 
         Keyword Args:
-            default_conf - Default configurations, module or absolute path.
+            default_dir - Absolute directory path of the default configuration.
             start_dir - Starting directory for user configuration lookup.
 
         """
         self.py3 = (sys.version_info.major > 2)
         self.start_dir = start_dir
-        self._default = import_conf(default_conf)
+        self._default = path_import(default_conf_name, default_dir)
         # set flag for lazy-loading
         self._loaded = False
     
@@ -97,7 +98,9 @@ class SessionConfig(object):
                 self._default.VOLT.USER_CONF)
 
         # import user-defined configs as a module object
-        user = import_conf(self._default.VOLT.USER_CONF, path=True)
+        user_conf_name = os.path.splitext(os.path.basename(\
+                self._default.VOLT.USER_CONF))[0]
+        user = path_import(user_conf_name, root_dir)
 
         # process default and user-defined Configs
         default_configs = get_configs(self._default)

@@ -17,9 +17,9 @@ import os
 import unittest
 from datetime import datetime
 
-from volt.engine import Engine, Unit, TextUnit, Pagination, \
-                        HeaderFieldError, PermalinkTemplateError, \
-                        ContentError, ParseError
+from volt.engines import Engine, Unit, TextUnit, Pagination, \
+                         HeaderFieldError, PermalinkTemplateError, \
+                         ContentError, ParseError
 from volt.test import PROJECT_DIR, TEST_DIR
 from volt.test.mocks import SessionConfig_Mock, Unit_Mock, Unitlist_Mock
 

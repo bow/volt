@@ -14,7 +14,7 @@ Tests for the volt.plugin module.
 
 import unittest
 
-from volt.plugin import Plugin
+from volt.plugins import Plugin
 
 
 class TestPlugin(unittest.TestCase):

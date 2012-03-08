@@ -16,17 +16,15 @@ import os
 import unittest
 
 from volt.config import SessionConfig, ConfigNotFoundError
-from volt.config.base import import_conf
+from volt.config.base import path_import
 from volt.test import TEST_DIR, PROJECT_DIR
 
 
 class TestSessionConfig(unittest.TestCase):
 
     def setUp(self):
-        self.user_conf = os.path.join(PROJECT_DIR, 'voltconf.py')
-        self.default_conf = 'volt.test.fixtures.config.default'
-        self.CONFIG = SessionConfig(default_conf=self.default_conf, \
-                start_dir=PROJECT_DIR)
+        self.CONFIG = SessionConfig(default_dir=os.path.join(TEST_DIR, \
+                'fixtures', 'config'), start_dir=PROJECT_DIR)
 
     def tearDown(self):
         # destroy default config so default values are reset
@@ -59,16 +57,6 @@ class TestSessionConfig(unittest.TestCase):
         self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, PROJECT_DIR)
         self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, SessionConfig().get_root_dir(\
                 os.path.join(PROJECT_DIR, "content")))
-
-    def test_import_conf(self):
-        # load config first since it's a lazy object
-        self.CONFIG._load()
-        # test for dotted notation import
-        self.assertIsNotNone(import_conf(self.default_conf))
-        # test for absolute path notation import
-        self.assertIsNotNone(import_conf(self.user_conf, True))
-        # test if exception is properly raised
-        self.assertRaises(ImportError, import_conf, self.user_conf)
 
     def test_set_plugin_defaults(self):
         default_args = {"BAR" : "baz", "QUX": "qux"}

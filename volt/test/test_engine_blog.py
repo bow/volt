@@ -15,7 +15,7 @@ Tests for volt.engine.blog.
 import os
 import unittest
 
-from volt.engine.blog import BlogEngine
+from volt.engines.blog import BlogEngine
 from volt.test.mocks import SessionConfig_Mock
 
 

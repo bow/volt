@@ -16,6 +16,7 @@ grab_config.
 """
 
 
+import imp
 import os
 from itertools import ifilter
 
@@ -75,25 +76,16 @@ class Config(dict):
             else:
                 self[key] = conf_obj[key]
 
-
-def import_conf(mod, path=False, name=''):
-    """Imports a Volt configuration.
+def path_import(name, path):
+    """Imports a module from the specified path.
 
     Args:
-        mod - Dotted package notation or an absolute path to the configuration
-            file.
-        path - Boolean indicating if mod is absolute path or dotted package
-              notation.
-        name - Module name to use if import is done by path.
+        name - String denoting target module name.
+        path - Absolute directory path of the target module.
 
     """
-    if path and os.path.exists(mod):
-        from imp import load_source
-        return load_source(name,  mod)
-    elif not path:
-        return __import__(mod, fromlist=[mod.split('.')[-1]])
-
-    raise ImportError("Could not import %s" % mod)
+    mod_tuple = imp.find_module(name, [path])
+    return imp.load_module(name, *mod_tuple)
 
 def get_configs(mod):
     """Returns an iterable returning all Config instances in the given module.
@@ -115,4 +107,3 @@ JINJA2_FILTERS = {
 }
 
 JINJA2_TESTS = dict()
-

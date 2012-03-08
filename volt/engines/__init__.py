@@ -758,6 +758,3 @@ class Pack(object):
                         unit_matches[start:], i, \
                         base_permalist, title='', is_last=True, config=config, \
                         index_html_only=config.SITE.INDEX_HTML_ONLY))
-
-
-get_engine = partial(grab_class, cls=Engine)

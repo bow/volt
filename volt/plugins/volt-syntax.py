@@ -19,7 +19,7 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 
 from volt.config import CONFIG
-from volt.plugin import Plugin
+from volt.plugins import Plugin
 
 
 _RE_SYNTAX = re.compile(r'(<syntax:(.*?)>(.*?)</syntax>)', re.DOTALL)

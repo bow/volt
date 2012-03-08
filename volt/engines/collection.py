@@ -1,6 +1,6 @@
 # Volt collection engine
 
-from volt.engine import Engine, Unit
+from volt.engines import Engine, Unit
 
 
 class CollectionEngine(Engine):

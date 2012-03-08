@@ -18,7 +18,7 @@ from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 
 from volt.config import CONFIG
-from volt.plugin import Plugin
+from volt.plugins import Plugin
 
 
 class Atomic(Plugin):

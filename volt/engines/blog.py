@@ -15,7 +15,7 @@ constituting a simple blog.
 """
 
 
-from volt.engine import Engine
+from volt.engines import Engine
 
 
 __name__ = 'blog'
