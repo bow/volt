@@ -73,6 +73,9 @@ class VoltHTTPServer(ThreadingTCPServer):
         if self.last_mtime < latest_mtime:
             self.last_mtime = latest_mtime
             # generate the site
+            # not sure I understand why it needs to load first
+            # but hey it works (possible bug later on?)
+            CONFIG._load()
             gen.run()
         ThreadingTCPServer.process_request(self, request, client_address)
 

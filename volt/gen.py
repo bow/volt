@@ -17,7 +17,7 @@ import shutil
 
 import volt
 from volt import util
-from volt.config import CONFIG
+from volt.config import CONFIG, SessionConfig
 from volt.config.base import path_import
 from volt.engines import Engine
 from volt.plugins import Plugin
@@ -131,6 +131,9 @@ class Generator(object):
 def run():
     """Generates the site."""
 
+    # reload config to reflect any new changes that may have been made
+    CONFIG = SessionConfig()
+
     # prepare output directory
     if os.path.exists(CONFIG.VOLT.SITE_DIR):
         shutil.rmtree(CONFIG.VOLT.SITE_DIR)
@@ -141,3 +144,5 @@ def run():
 
     # generate the site!
     Generator().activate()
+
+    util.show_info("Site generation finished.\n", is_bright=True)

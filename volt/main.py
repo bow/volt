@@ -112,7 +112,6 @@ def run_gen():
     """Generates the static site."""
     from volt import gen
     gen.run()
-    util.show_info("Site generation finished.\n", is_bright=True)
 
 def run_serve():
     """Runs the volt server."""
