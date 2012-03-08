@@ -36,6 +36,7 @@ setup(
     tests_require=[
         'nose>=1.1.2',
         'mock>=0.8.0',
+        'tox>=1.3',
     ],
     zip_safe = False,
     entry_points = """

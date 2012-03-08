@@ -3,4 +3,5 @@ recursive-include docs *
 recursive-include extras *
 recursive-include volt *
 recursive-exclude volt *.pyc
+prune .tox
 prune volt/data/sandbox
