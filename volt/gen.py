@@ -15,7 +15,6 @@ Volt site generator.
 import os
 import shutil
 
-import volt
 from volt import util
 from volt.config import CONFIG, SessionConfig
 from volt.config.base import path_import
@@ -24,41 +23,54 @@ from volt.plugins import Plugin
 from volt.util import grab_class
 
 
+# maps processor type and its class
+PROCESSOR_MAP = {
+    'engines': Engine,
+    'plugins': Plugin,
+}
+
+
 class Generator(object):
 
     """Class representing a Volt run."""
 
-    def get_processor_class(self, processor, determinant):
+    def get_processor_class(self, processor_name, processor_type, \
+            volt_dir=os.path.dirname(__file__), user_dir=None):
         """Returns the engine or plugin class used in site generation.
 
         Args:
-            processor - String denoting engine or plugin name.
-            determinant - String denoting processor type. Must be 'engines'
+            processor_name - String denoting engine or plugin name.
+            processor_type - String denoting processor type. Must be 'engines'
                 or 'plugins'.
+            volt_dir - String denoting absolute path to Volt's installation
+                directory.
+            user_dir - String denoting absolute path to user's Volt project
+                directory.
         
         This method tries to load engines or plugins from the user's Volt
         project directory first. Failing that, it will try to import engines
         or plugins from Volt's installation directory.
 
         """
-        # check first if determinant is 'plugins' or 'engines'
-        assert determinant in ['engines', 'plugins'], \
-            "Determinant must be 'engines' or 'plugins'"
+        # check first if processor type is 'plugins' or 'engines'
+        assert processor_type in ['engines', 'plugins'], \
+            "Processor type must be 'engines' or 'plugins'"
+
+        # because if we set user_dir default value in arglist
+        # it's harder to test
+        if not user_dir:
+            user_dir = CONFIG.VOLT.ROOT_DIR
 
         # get base class to check against
-        if determinant == 'engines':
-            determinant_class = Engine
-        else:
-            determinant_class = Plugin
+        processor_class = PROCESSOR_MAP[processor_type]
 
         # load engine or plugin
         # user_path has priority over volt_path
-        user_path = os.path.join(CONFIG.VOLT.ROOT_DIR, determinant)
-        volt_path = os.path.join(volt.__path__[0], determinant)
-        mod = path_import(processor, [user_path, volt_path])
+        user_path = os.path.join(user_dir, processor_type)
+        volt_path = os.path.join(volt_dir, processor_type)
+        mod = path_import(processor_name, [user_path, volt_path])
 
-        return grab_class(mod, determinant_class)
-
+        return grab_class(mod, processor_class)
 
     def activate(self):
         """Runs all the engines and plugins according to the configurations.
