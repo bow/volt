@@ -14,8 +14,10 @@ Tests for the volt.config module.
 
 import os
 import unittest
+from inspect import ismodule
 
 from volt.config import SessionConfig, ConfigNotFoundError
+from volt.config.base import path_import, get_configs
 from volt.test import INSTALL_DIR, USER_DIR
 
 
@@ -68,3 +70,18 @@ class TestSessionConfig(unittest.TestCase):
         self.assertEqual(self.CONFIG.PLUGINS.BAR, "bar")
         # items previously undeclared should be added
         self.assertEqual(self.CONFIG.PLUGINS.QUX, "qux")
+
+
+class TestConfigBase(unittest.TestCase):
+
+    def test_path_import(self):
+        self.assertTrue(ismodule(path_import('in_install', \
+                os.path.join(INSTALL_DIR, 'engines'))))
+        self.assertTrue(ismodule(path_import('in_both', \
+                [os.path.join(x, 'engines') for x in [INSTALL_DIR, USER_DIR]])))
+
+    def test_get_configs(self):
+        mod = path_import('voltconf', [USER_DIR])
+        total = 0
+        for i in get_configs(mod): total += 1
+        self.assertEqual(5, total)
