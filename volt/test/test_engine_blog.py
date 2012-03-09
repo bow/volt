@@ -16,6 +16,7 @@ import os
 import unittest
 
 from volt.engines.blog import BlogEngine
+from volt.test import FIXTURE_DIR
 from volt.test.mocks import SessionConfig_Mock
 
 
@@ -25,8 +26,8 @@ class TestBlogEngine(unittest.TestCase):
         self.engine = BlogEngine(SessionConfig_Mock)
 
     def test_process_text_units(self):
-        self.engine.CONFIG.BLOG.CONTENT_DIR = os.path.join(\
-                self.engine.CONFIG.BLOG.CONTENT_DIR, 'engine_pass')
+        self.engine.CONFIG.BLOG.CONTENT_DIR = os.path.join(FIXTURE_DIR, \
+                'engines', 'engine_pass')
         self.engine.units = self.engine.process_text_units(self.engine.CONFIG.BLOG)
 
         self.assertEqual(len(self.engine.units), 5)

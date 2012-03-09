@@ -8,7 +8,7 @@ from mock import Mock
 from volt.config import SessionConfig
 from volt.config.base import Config
 from volt.engines import Unit
-from volt.test import PROJECT_DIR
+from volt.test import USER_DIR
 
 
 # Engine mocks
@@ -59,11 +59,11 @@ for config in configs:
 # volt options
 volt_opts = {
         'USER_CONF': 'voltconf.py',
-        'ROOT_DIR': PROJECT_DIR,
-        'CONTENT_DIR': os.path.join(PROJECT_DIR, 'content'),
-        'TEMPLATE_DIR': os.path.join(PROJECT_DIR, 'templates'),
-        'LAYOUT_DIR': os.path.join(PROJECT_DIR, 'layout'),
-        'SITE_DIR': os.path.join(PROJECT_DIR, 'site'),
+        'ROOT_DIR': USER_DIR,
+        'CONTENT_DIR': os.path.join(USER_DIR, 'content'),
+        'TEMPLATE_DIR': os.path.join(USER_DIR, 'templates'),
+        'LAYOUT_DIR': os.path.join(USER_DIR, 'layout'),
+        'SITE_DIR': os.path.join(USER_DIR, 'site'),
         'IGNORE_PATTERN': str(),
 }
 for key in volt_opts:

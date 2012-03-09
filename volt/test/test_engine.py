@@ -20,14 +20,14 @@ from datetime import datetime
 from volt.engines import Engine, Unit, TextUnit, Pagination, \
                          HeaderFieldError, PermalinkTemplateError, \
                          ContentError, ParseError
-from volt.test import PROJECT_DIR, TEST_DIR
+from volt.test import TEST_DIR, USER_DIR, FIXTURE_DIR
 from volt.test.mocks import SessionConfig_Mock, Unit_Mock, Unitlist_Mock
 
 
 class TestEngine(unittest.TestCase):
 
     def setUp(self):
-        self.content_dir = os.path.join(PROJECT_DIR, 'content', 'blog', '01')
+        self.content_dir = os.path.join(FIXTURE_DIR, 'units', '01')
         self.engine = Engine(SessionConfig_Mock)
 
     def test_init(self):
@@ -167,7 +167,7 @@ class TestTextUnit(unittest.TestCase):
         # in theory, any engine that uses TextUnit can be used
         # blog is chosen just for convenience
         self.CONFIG = SessionConfig_Mock.BLOG
-        self.content_dir = os.path.join(PROJECT_DIR, "content", "blog")
+        self.content_dir = os.path.join(FIXTURE_DIR, 'units')
 
     def test_init(self):
         # test if text unit is processed correctly
@@ -201,7 +201,7 @@ class TestPagination(unittest.TestCase):
 
     def test_init(self):
         units = [Unit_Mock] * 10
-        site_dir = os.path.join(PROJECT_DIR, 'site')
+        site_dir = os.path.join(USER_DIR, 'site')
 
         # test for pack_idx = 0
         pack_idx = 0
