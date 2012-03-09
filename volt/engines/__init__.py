@@ -543,12 +543,12 @@ class TextUnit(Unit):
 
     """
 
-    def __init__(self, fname, conf, delim=_RE_DELIM):
+    def __init__(self, fname, config, delim=_RE_DELIM):
         """Initializes TextUnit.
 
         Args:
             fname - Absolute path to the source file.
-            conf - Config object containing unit options.
+            config - Config object containing unit options.
 
         Keyword Args:
             delim - Compiled regex object used for parsing the header.
@@ -570,12 +570,12 @@ class TextUnit(Unit):
 
             # set blog unit file contents as attributes
             for field in header:
-                self.check_protected(field, conf.PROTECTED)
-                if field in conf.FIELDS_AS_DATETIME:
+                self.check_protected(field, config.PROTECTED)
+                if field in config.FIELDS_AS_DATETIME:
                     header[field] = self.as_datetime(\
-                            header[field], conf.CONTENT_DATETIME_FORMAT)
-                if field in conf.FIELDS_AS_LIST:
-                    header[field] = self.as_list(header[field], conf.LIST_SEP)
+                            header[field], config.CONTENT_DATETIME_FORMAT)
+                if field in config.FIELDS_AS_LIST:
+                    header[field] = self.as_list(header[field], config.LIST_SEP)
                 if field == 'slug':
                     header[field] = self.slugify(header[field])
                 if isinstance(header[field], (int, float)):
@@ -586,22 +586,22 @@ class TextUnit(Unit):
             self.content = read.pop(0).strip()
 
         # check if all required fields are present
-        self.check_required(conf.REQUIRED)
+        self.check_required(config.REQUIRED)
 
         # set other attributes
         # if slug is not set in header, set it now
         if not hasattr(self, 'slug'):
             self.slug = self.slugify(self.title)
         # and set global values
-        for field in conf.GLOBAL_FIELDS:
+        for field in config.GLOBAL_FIELDS:
             if not hasattr(self, field):
-                setattr(self, field, conf.GLOBAL_FIELDS[field])
+                setattr(self, field, config.GLOBAL_FIELDS[field])
 
         # set permalink components
-        self.permalist = self.get_permalist(conf.PERMALINK, conf.URL)
+        self.permalist = self.get_permalist(config.PERMALINK, config.URL)
         # set displayed time string
         if hasattr(self, 'time'):
-            self.display_time = self.time.strftime(conf.DISPLAY_DATETIME_FORMAT)
+            self.display_time = self.time.strftime(config.DISPLAY_DATETIME_FORMAT)
 
 
 class Pagination(object):
