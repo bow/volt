@@ -23,18 +23,11 @@ from volt.plugins import Plugin
 from volt.util import grab_class
 
 
-# maps processor type and its class
-PROCESSOR_MAP = {
-    'engines': Engine,
-    'plugins': Plugin,
-}
-
-
 class Generator(object):
 
     """Class representing a Volt run."""
 
-    def get_processor_class(self, processor_name, processor_type, \
+    def get_processor_mod(self, processor_name, processor_type, \
             volt_dir=os.path.dirname(__file__), user_dir=None):
         """Returns the engine or plugin class used in site generation.
 
@@ -61,16 +54,13 @@ class Generator(object):
         if not user_dir:
             user_dir = CONFIG.VOLT.ROOT_DIR
 
-        # get base class to check against
-        processor_class = PROCESSOR_MAP[processor_type]
-
         # load engine or plugin
         # user_path has priority over volt_path
         user_path = os.path.join(user_dir, processor_type)
         volt_path = os.path.join(volt_dir, processor_type)
-        mod = path_import(processor_name, [user_path, volt_path])
 
-        return grab_class(mod, processor_class)
+        return path_import(processor_name, [user_path, volt_path])
+
 
     def activate(self):
         """Runs all the engines and plugins according to the configurations.
@@ -104,7 +94,8 @@ class Generator(object):
 
         # activate engines
         for engine in CONFIG.SITE.ENGINES:
-            engine_class = self.get_processor_class(engine, 'engines')
+            engine_mod = self.get_processor_mod(engine, 'engines')
+            engine_class = grab_class(engine_mod, Engine)
             self.engines[engine] = engine_class()
 
             util.show_notif("  => ", is_bright=True)
@@ -113,7 +104,8 @@ class Generator(object):
 
         # run plugins
         for plugin, target_engine in CONFIG.SITE.PLUGINS:
-            plugin_class = self.get_processor_class(plugin, 'plugins')
+            plugin_mod = self.get_processor_mod(plugin, 'plugins')
+            plugin_class = grab_class(plugin_mod, Plugin)
 
             if plugin_class:
                 # set default args in CONFIG first before instantiating
