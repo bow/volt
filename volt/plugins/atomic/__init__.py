@@ -18,10 +18,11 @@ from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 
 from volt.config import CONFIG
+from volt.config.base import Config
 from volt.plugins import Plugin
 
 
-class Atomic(Plugin):
+class AtomicPlugin(Plugin):
 
     """Creates atom feed of engine units.
 
@@ -29,6 +30,18 @@ class Atomic(Plugin):
     The processed units must have a datetime header field.
 
     """
+
+    DEFAULTS = Config(
+        # jinja2 template file
+        TEMPLATE_FILE = 'atom_template.xml',
+        # output file name
+        # by default, the feed is written to the current directory
+        ATOM_OUTPUT_FILE = 'atom.xml',
+        # name to put in feed
+        ATOM_NAME = '',
+        # unit field containing datetime object
+        ATOM_TIME_FIELD = 'time',
+    )
 
     DEFAULT_ARGS = {
         # jinja2 template file

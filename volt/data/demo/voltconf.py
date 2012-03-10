@@ -25,9 +25,9 @@ SITE = Config(
     # These are run according to the order they are listed here
     PLUGINS = (
         # volt-markdown enables posting with markdown
-        ('volt-markdown', ['blog', 'plain']),
+        ('markdown', ['blog', 'plain']),
         # volt-atomic generates atom feed for the target engine
-        ('volt-atomic', ['blog']),
+        ('atomic', ['blog']),
     ),
 )
 
