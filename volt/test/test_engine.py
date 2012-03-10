@@ -17,7 +17,9 @@ import os
 import unittest
 from datetime import datetime
 
-from volt.engines import Engine, Unit, TextUnit, Pagination, \
+from mock import MagicMock
+
+from volt.engines import Engine, Unit, TextUnit, Pack, Pagination, \
                          HeaderFieldError, PermalinkTemplateError, \
                          ContentError, ParseError
 from volt.test import TEST_DIR, USER_DIR, FIXTURE_DIR
@@ -28,7 +30,7 @@ class TestEngine(unittest.TestCase):
 
     def setUp(self):
         self.content_dir = os.path.join(FIXTURE_DIR, 'units', '01')
-        self.engine = Engine(SessionConfig_Mock)
+        self.engine = Engine()
 
     def test_init(self):
         # test if exception is raised if engine is not initialized
@@ -43,17 +45,18 @@ class TestEngine(unittest.TestCase):
 
     def test_set_unit_paths(self):
         path = TEST_DIR
+        abs_url = 'http://alay.com'
         Unit_Mock.permalist = ['blog', 'not', 'string']
 
         # test for default settings
-        self.engine.set_unit_paths(Unit_Mock, path)
+        self.engine.set_unit_paths(Unit_Mock, path, abs_url=abs_url)
         self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string', 'index.html'))
         self.assertEqual(Unit_Mock.permalink, '/blog/not/string/')
         self.assertEqual(Unit_Mock.permalink_abs, 'http://alay.com/blog/not/string')
 
         # test for set_index_html = False
-        self.engine.set_unit_paths(Unit_Mock, path, index_html_only=False)
+        self.engine.set_unit_paths(Unit_Mock, path, index_html_only=False, abs_url=abs_url)
         self.assertEqual(Unit_Mock.path, os.path.join(path, \
                 'blog', 'not', 'string.html'))
         self.assertEqual(Unit_Mock.permalink, '/blog/not/string.html')
@@ -66,31 +69,26 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(Unit_Mock.permalink, '/not/string/')
 
     def test_build_packs(self):
-        units = Unitlist_Mock
+        config = SessionConfig_Mock
+        self.engine.units = Unitlist_Mock
         pack_patterns = ('',
                          'tag/{tags}',
                          'author/{author}',
                          '{time:%Y}',
                          '{time:%Y/%m}',)
-        # test for pack pattern listing all
-        packs = self.engine.build_packs(pack_patterns, units)
-        self.assertEqual(len(packs), 18)
-        # check amount of paginations per pack
-        self.assertEqual(len(packs[''].paginations), 3)
-        self.assertEqual(len(packs['tag/arthur'].paginations), 1)
-        self.assertEqual(len(packs['tag/eames'].paginations), 2)
-        self.assertEqual(len(packs['tag/fischer'].paginations), 1)
-        self.assertEqual(len(packs['tag/yusuf'].paginations), 1)
-        self.assertEqual(len(packs['tag/ariadne'].paginations), 1)
-        self.assertEqual(len(packs['tag/cobb'].paginations), 2)
-        self.assertEqual(len(packs['tag/saito'].paginations), 1)
-        # that's enough ~ now check if all pack patterns are present
-        expected = ['', 'tag/arthur', 'tag/eames', 'tag/fischer', 'tag/yusuf',
-                    'tag/ariadne', 'tag/cobb', 'tag/saito', '2011', '2010',
-                    '2002', '1998', '2011/09', '2010/09', '2002/08', '1998/04',
-                    'author/Smith', 'author/Johnson',]
-        expected.sort()
+        expected = ['',
+                    'tag/arthur', 'tag/eames', 'tag/fischer', 'tag/yusuf',
+                    'tag/ariadne', 'tag/cobb', 'tag/saito',
+                    'author/Smith', 'author/Johnson',
+                    '2011', '2010', '2002', '1998',
+                    '2011/09', '2010/09', '2002/08', '1998/04',]
+
+        self.engine.pack_class = MagicMock(spec=Pack)
+        packs = self.engine.build_packs(pack_patterns, config.BLOG.URL, \
+                config.BLOG.POSTS_PER_PAGE, config.SITE.INDEX_HTML_ONLY)
+
         observed = packs.keys()
+        expected.sort()
         observed.sort()
         self.assertEqual(observed, expected)
 
@@ -201,6 +199,8 @@ class TestPagination(unittest.TestCase):
 
     def test_init(self):
         units = [Unit_Mock] * 10
+        config = SessionConfig_Mock
+        pagination_url = ''
         site_dir = os.path.join(USER_DIR, 'site')
 
         # test for pack_idx = 0
@@ -208,7 +208,7 @@ class TestPagination(unittest.TestCase):
         base_permalist = []
         is_last = False
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
-                config=SessionConfig_Mock)
+                pagination_url=pagination_url, site_dir=site_dir)
         self.assertEqual(pagination.path, os.path.join(site_dir, 'index.html'))
         self.assertEqual(pagination.permalist, [])
         self.assertEqual(pagination.permalink, '/')
@@ -220,7 +220,7 @@ class TestPagination(unittest.TestCase):
         base_permalist = []
         is_last = False
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
-                config=SessionConfig_Mock)
+                pagination_url=pagination_url, site_dir=site_dir)
         self.assertEqual(pagination.path, os.path.join(site_dir, '2', 'index.html'))
         self.assertEqual(pagination.permalist, ['2'])
         self.assertEqual(pagination.permalink, '/2/')
@@ -232,7 +232,7 @@ class TestPagination(unittest.TestCase):
         base_permalist = []
         is_last = True
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
-                config=SessionConfig_Mock)
+                pagination_url=pagination_url, site_dir=site_dir)
         self.assertEqual(pagination.path, os.path.join(site_dir, '3', 'index.html'))
         self.assertEqual(pagination.permalist, ['3'])
         self.assertEqual(pagination.permalink, '/3/')
@@ -244,7 +244,7 @@ class TestPagination(unittest.TestCase):
         base_permalist = ['tech']
         is_last = False
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
-                config=SessionConfig_Mock)
+                pagination_url=pagination_url, site_dir=site_dir)
         self.assertEqual(pagination.path, os.path.join(site_dir, 'tech', '2', 'index.html'))
         self.assertEqual(pagination.permalist, ['tech', '2'])
         self.assertEqual(pagination.permalink, '/tech/2/')
@@ -255,9 +255,8 @@ class TestPagination(unittest.TestCase):
         pack_idx = 1
         base_permalist = []
         is_last = False
-        SessionConfig_Mock.SITE.PAGINATION_URL = 'page'
         pagination = Pagination(units, pack_idx, base_permalist, is_last=is_last, \
-                config=SessionConfig_Mock)
+                pagination_url='page', site_dir=site_dir)
         self.assertEqual(pagination.path, os.path.join(site_dir, 'page', '2', 'index.html'))
         self.assertEqual(pagination.permalist, ['page', '2'])
         self.assertEqual(pagination.permalink, '/page/2/')

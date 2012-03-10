@@ -14,6 +14,7 @@ The plain engine takes text files as resources and writes single web pages.
 """
 
 
+from volt.config import CONFIG
 from volt.engines import Engine
 
 
@@ -26,8 +27,8 @@ class PlainEngine(Engine):
 
     def activate(self):
         # parse plain page units
-        self.units = self.process_text_units(self.CONFIG.PLAIN)
+        self.units = self.process_text_units(CONFIG.PLAIN, CONFIG.PLAIN.CONTENT_DIR)
 
     def dispatch(self):
         # write them according to template
-        self.write_units(self.CONFIG.PLAIN.UNIT_TEMPLATE_FILE)
+        self.write_units(CONFIG.PLAIN.UNIT_TEMPLATE_FILE)

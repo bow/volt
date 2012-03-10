@@ -21,12 +21,13 @@ import codecs
 import glob
 import os
 import re
+import warnings
 from datetime import datetime
 from functools import partial
 
 import yaml
 
-from volt.config import CONFIG, SessionConfig
+from volt.config import CONFIG
 
 
 # regex objects, so compilation is done efficiently
@@ -65,6 +66,9 @@ class ParseError(ContentError):
     """Raised if a content-parsing related error occurs."""
     pass
 
+class EmptyUnitsWarning(RuntimeWarning):
+    """Issued when build_packs is called without any units to pack in self.units."""
+
 
 class Engine(object):
 
@@ -80,7 +84,7 @@ class Engine(object):
 
     """
 
-    def __init__(self, session_config=CONFIG):
+    def __init__(self):
         """Initializes the engine.
 
         Keyword Args:
@@ -88,13 +92,9 @@ class Engine(object):
                 defaults to CONFIG.
 
         """
-        if not isinstance(session_config, SessionConfig):
-            raise TypeError("Engine objects must be initialized with "
-                            "a SessionConfig instance.")
-
-        self.CONFIG = session_config
         self.units = list()
         self.packs = dict()
+        self.pack_class = Pack
 
     def globdir(self, directory, pattern='*', is_gen=False):
         """Returns glob or iglob results for a given directory.
@@ -114,14 +114,16 @@ class Engine(object):
 
         return glob.glob(pattern)
 
-    def set_unit_paths(self, unit, base_dir, index_html_only=True):
+    def set_unit_paths(self, unit, base_dir=None, abs_url=None, \
+            index_html_only=None):
         """Sets the permalink and absolute file path for the given unit.
 
         Args:
             unit - Unit instance whose path and URL are to be set
-            base_dir - Absolute file system path to the output site directory
 
         Keyword Args:
+            base_dir - Absolute file system path to the output site directory
+            abs_url - String of base absolute URL (e.g. http://foo.com)
             index_html_only -  Boolean indicating output file name;  if False
                 then the output file name is '%s.html' where %s is the last
                 string of the unit's permalist
@@ -131,9 +133,15 @@ class Engine(object):
         with .htaccess too much.
 
         """
-        path = [base_dir]
-        abs_url = self.CONFIG.SITE.URL
+        if abs_url is None:
+            abs_url = CONFIG.SITE.URL
+        if base_dir is None:
+            base_dir = CONFIG.VOLT.SITE_DIR
+        if index_html_only is None:
+            index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
+
         rel_url = ['']
+        path = [base_dir]
 
         # set path and urls
         path.extend(unit.permalist)
@@ -148,19 +156,22 @@ class Engine(object):
         setattr(unit, 'permalink_abs', '/'.join([abs_url] + rel_url[1:]).strip('/'))
         setattr(unit, 'path', os.path.join(*(path)))
 
-    def process_text_units(self, config):
+    def process_text_units(self, config, content_dir):
         """Processes units into a TextUnit object and returns them in a list.
 
         Args:
             config - Config object corresponding to the engine settings,
                 e.g. config.BLOG for the BlogEngine or config.PLAIN
                 for the PlainEngine.
+            content_dir - Absolute path to directory containing text files
+                to process.
 
         """
+
         # get absolute paths of content files
         units = []
-        content_dir = self.globdir(config.CONTENT_DIR, is_gen=True)
-        files = (x for x in content_dir if os.path.isfile(x))
+        targets = self.globdir(content_dir, is_gen=True)
+        files = (x for x in targets if os.path.isfile(x))
 
         # parse each file and fill self.contents with TextUnit-s
         # also set its URL and absolute file path to be written
@@ -168,8 +179,7 @@ class Engine(object):
             units.append(TextUnit(fname, config))
             # paths and permalinks are not set in TextUnit to facillitate
             # testing; ideally, each xUnit should only be using one Config instance
-            self.set_unit_paths(units[-1], base_dir=self.CONFIG.VOLT.SITE_DIR, \
-                    index_html_only=self.CONFIG.SITE.INDEX_HTML_ONLY)
+            self.set_unit_paths(units[-1])
 
         return units
 
@@ -203,11 +213,19 @@ class Engine(object):
             if idx != len(self.units) - 1:
                 setattr(unit, 'permalink_next', self.units[idx+1].permalink)
 
-    def build_packs(self, pack_patterns, units):
+    def build_packs(self, pack_patterns, base_url=None, \
+            units_per_pagination=None, index_html_only=None):
         """Build packs of units and return them in a dictionary.
 
         Args:
             pack_patterns - List containing packs patterns to build.
+
+        Keyword Args:
+            base_url - String indicating base URL common to all paginations.
+            units_per_pagination - Integer indicating how many units to include
+                per pagination.
+            index_html_only - Boolean indicating whether to print output HTML
+                as index.html files or not.
 
         This method will expand the supplied pack_pattern according to
         the values present in all units. For example, if the pack_pattern
@@ -216,8 +234,22 @@ class Engine(object):
         as the key and a Pack object containing the ten posts as the value.
 
         """
+        # set shared options (which defaults to None for testing purposes)
+        if base_url is None:
+            base_url = CONFIG.BLOG.URL
+        if units_per_pagination is None:
+            units_per_pagination = CONFIG.BLOG.POSTS_PER_PAGE
+        if index_html_only is None:
+            index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
+
+        shared_pack_config = [base_url, units_per_pagination, index_html_only]
+
         # dictionary to contain all built packs
         packs = dict()
+        # build_packs should operate on self.units
+        units = self.units
+        if not units:
+            warnings.warn("%s has no units to pack.", EmptyUnitsWarning)
 
         for pack in pack_patterns:
 
@@ -228,7 +260,8 @@ class Engine(object):
             if base_permalist == []:
                 unit_groups = [units]
                 for units in unit_groups:
-                    packs[''] = Pack(units, base_permalist, config=self.CONFIG)
+                    packs[''] = self.pack_class(units, base_permalist, \
+                            *shared_pack_config)
 
             else:
                 # get the index of the field token to replace
@@ -263,10 +296,10 @@ class Engine(object):
                         # the base permalist if the pack URL tokens
                         base_permalist[field_token_idx:] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist, config=self.CONFIG)
+                        packs[key] = self.pack_class(unit_groups, base_permalist, \
+                                *shared_pack_config)
 
                 # similar logic as before, but this time for string field values
-                # much simpler
                 elif isinstance(getattr(units[0], field), basestring):
                     # get a set of all string values
                     all_items = set([getattr(x, field) for x in units])
@@ -274,7 +307,8 @@ class Engine(object):
                         unit_groups = [x for x in units if item == getattr(x, field)]
                         base_permalist[field_token_idx] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist, config=self.CONFIG)
+                        packs[key] = self.pack_class(unit_groups, base_permalist, 
+                                *shared_pack_config)
 
                 # and finally for list or tuple field values
                 elif isinstance(getattr(units[0], field), (list, tuple)):
@@ -287,7 +321,8 @@ class Engine(object):
                         unit_groups = [x for x in units if item in getattr(x, field)]
                         base_permalist[field_token_idx] = item
                         key = '/'.join(base_permalist)
-                        packs[key] = Pack(unit_groups, base_permalist, config=self.CONFIG)
+                        packs[key] = self.pack_class(unit_groups, base_permalist, \
+                                *shared_pack_config)
 
         return packs
 
@@ -303,17 +338,23 @@ class Engine(object):
         """
         file_obj.write(string.encode('utf-8'))
 
-    def write_units(self, template_path):
+    def write_units(self, template_path, template_env=None, config_context=None):
         """Writes single units into the given output file.
 
         Args:
             template_path - Template file name, must exist in the defined template
                 directory.
+            template_env - Jinja2 template environment.
+            config_context - SessionConfig instance.
 
         """
+        if template_env is None:
+            template_env = CONFIG.SITE.TEMPLATE_ENV
         template_file = os.path.basename(template_path)
-        template_env = self.CONFIG.SITE.TEMPLATE_ENV
         template = template_env.get_template(template_file)
+
+        if config_context is None:
+            config_context = CONFIG
 
         for unit in self.units:
             # warn if files are overwritten
@@ -326,20 +367,27 @@ class Engine(object):
             except OSError:
                 pass
             with open(unit.path, 'w') as target:
-                rendered = template.render(page=unit.__dict__, CONFIG=self.CONFIG)
+                rendered = template.render(page=unit.__dict__, \
+                        CONFIG=config_context)
                 self.write_output(target, rendered)
 
-    def write_packs(self, template_path):
+    def write_packs(self, template_path, template_env=None, config_context=None):
         """Writes packs into the given output file.
 
         Args:
             template_path - Template file name, must exist in the defined template
                 directory.
+            template_env - Jinja2 template environment.
+            config_context - SessionConfig instance.
 
         """
+        if template_env is None:
+            template_env = CONFIG.SITE.TEMPLATE_ENV
         template_file = os.path.basename(template_path)
-        template_env = self.CONFIG.SITE.TEMPLATE_ENV
         template = template_env.get_template(template_file)
+
+        if config_context is None:
+            config_context = CONFIG
 
         for pack in self.packs:
             for pagination in self.packs[pack].paginations:
@@ -357,7 +405,8 @@ class Engine(object):
                 with open(pagination.path, 'w') as target:
                     # since pack object only stores indexes of unit in self.unit
                     # we need to get the actual unit items before writing
-                    rendered = template.render(page=pagination.__dict__, CONFIG=self.CONFIG)
+                    rendered = template.render(page=pagination.__dict__, \
+                            CONFIG=config_context)
                     self.write_output(target, rendered)
 
     def activate(self):
@@ -389,7 +438,7 @@ class Unit(object):
         self.id = id
 
     def __repr__(self):
-        return str(self.__dict__)
+        return '%s(id=%s)' % (self.__class__.__name__, self.id)
 
     @property
     def fields(self):
@@ -603,6 +652,9 @@ class TextUnit(Unit):
         if hasattr(self, 'time'):
             self.display_time = self.time.strftime(config.DISPLAY_DATETIME_FORMAT)
 
+    def __repr__(self):
+        return 'TextUnit(id=%s)' % os.path.basename(self.id)
+
 
 class Pagination(object):
 
@@ -618,7 +670,8 @@ class Pagination(object):
     """
 
     def __init__(self, units, pack_idx, base_permalist=[], title='',
-            is_last=False, config=CONFIG, index_html_only=True):
+            is_last=False, index_html_only=True, pagination_url=None,
+            site_dir=None):
         """Initializes a Pagination instance.
 
         Args:
@@ -630,7 +683,9 @@ class Pagination(object):
             base_permalist - List of URL components common to all pack
                 permalinks.
             is_last - Boolean indicating whether this pack is the last one.
-            config - SessionConfig instance.
+            pagination_url - String denoting the URL token appended to
+                paginations after the first one.
+            site_dir - String denoting absolute path to site output directory.
 
         """
         self.title = title
@@ -641,16 +696,21 @@ class Pagination(object):
         # precautions for empty string, so double '/'s are not introduced
         base_permalist = filter(None, base_permalist)
 
+        if pagination_url is None:
+            pagination_url = CONFIG.SITE.PAGINATION_URL
+        if site_dir is None:
+            site_dir = CONFIG.VOLT.SITE_DIR
+
         if self.pack_idx == 1:
             # if it's the first pack page, use base_permalist only
             self.permalist = base_permalist
         else:
             # otherwise add pagination dir and pack index
-            self.permalist = base_permalist + filter(None, [config.SITE.PAGINATION_URL,\
+            self.permalist = base_permalist + filter(None, [pagination_url, \
                     str(self.pack_idx)])
 
         # set path and url
-        path = [config.VOLT.SITE_DIR]
+        path = [site_dir]
         path.extend(self.permalist)
         url = [''] + self.permalist
         if index_html_only:
@@ -664,18 +724,18 @@ class Pagination(object):
 
         # since we can guess the permalink of next and previous pack objects
         # we can set those attributes here (unlike in units)
-        pagination_url = [''] + base_permalist
+        base_pagination_url = [''] + base_permalist
         # next permalinks
         if not is_last:
-            self.permalink_next = '/'.join(pagination_url + filter(None, \
-                    [config.SITE.PAGINATION_URL, str(self.pack_idx + 1)]))
+            self.permalink_next = '/'.join(base_pagination_url + filter(None, \
+                    [pagination_url, str(self.pack_idx + 1)]))
         # prev permalinks
         if self.pack_idx == 2:
             # if pagination is at 2, previous permalink is to 1
-            self.permalink_prev = '/'.join(pagination_url)
+            self.permalink_prev = '/'.join(base_pagination_url)
         elif self.pack_idx != 1:
-            self.permalink_prev = '/'.join(pagination_url + filter(None, \
-                    [config.SITE.PAGINATION_URL, str(self.pack_idx - 1)]))
+            self.permalink_prev = '/'.join(base_pagination_url + filter(None, \
+                    [pagination_url, str(self.pack_idx - 1)]))
 
         # set final chain permalink url according to index_html_only
         if hasattr(self, 'permalink_next'):
@@ -712,8 +772,8 @@ class Pack(object):
 
     """
 
-    def __init__(self, unit_matches, base_permalist, \
-            pagination_class=Pagination, config=CONFIG):
+    def __init__(self, unit_matches, base_permalist, base_url, \
+            units_per_pagination, index_html_only, pagination_class=Pagination):
         """Initializes a Pack object.
 
         Args:
@@ -724,7 +784,11 @@ class Pack(object):
         Keyword Args:
             pagination_class - Pagination class to use. Most of the time,
                 the base Pagination class is sufficient.
-            config - SessionConfig object.
+            base_url - String indicating base URL common to all paginations.
+            units_per_pagination - Integer indicating how many units to include
+                per pagination.
+            index_html_only - Boolean indicating whether to print output HTML
+                as index.html files or not.
 
         Selection of the units to pass on to initialize Pack is done by an
         Engine object. An example of method that does this in the base Engine
@@ -735,9 +799,7 @@ class Pack(object):
         self.paginations = []
 
         # construct permalist tokens, relative to blog URL
-        base_permalist = filter(None, [config.BLOG.URL] + base_permalist)
-
-        units_per_pagination = config.BLOG.POSTS_PER_PAGE
+        base_permalist = filter(None, [base_url] + base_permalist)
 
         # count how many paginations we need
         pagination = len(unit_matches) / units_per_pagination + \
@@ -750,10 +812,10 @@ class Pack(object):
                 stop = (i + 1) * units_per_pagination
                 self.paginations.append(pagination_class(\
                         unit_matches[start:stop], i, \
-                        base_permalist, title='', config=config, \
-                        index_html_only=config.SITE.INDEX_HTML_ONLY))
+                        base_permalist, title='', \
+                        index_html_only=index_html_only))
             else:
                 self.paginations.append(pagination_class(\
                         unit_matches[start:], i, \
-                        base_permalist, title='', is_last=True, config=config, \
-                        index_html_only=config.SITE.INDEX_HTML_ONLY))
+                        base_permalist, title='', is_last=True, \
+                        index_html_only=index_html_only))

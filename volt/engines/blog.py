@@ -15,6 +15,7 @@ constituting a simple blog.
 """
 
 
+from volt.config import CONFIG
 from volt.engines import Engine
 
 
@@ -37,15 +38,15 @@ class BlogEngine(Engine):
 
     def activate(self):
         # parse individual post and store the results in self.units
-        self.units = self.process_text_units(self.CONFIG.BLOG)
+        self.units = self.process_text_units(CONFIG.BLOG, CONFIG.BLOG.CONTENT_DIR)
         # sort units
-        self.sort_units(self.units, self.CONFIG.BLOG.SORT)
+        self.sort_units(self.units, CONFIG.BLOG.SORT)
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units(self.units)
 
     def dispatch(self):
         # build packs
-        self.packs = self.build_packs(self.CONFIG.BLOG.PACKS, self.units)
+        self.packs = self.build_packs(CONFIG.BLOG.PACKS)
         # write output files
-        self.write_units(self.CONFIG.BLOG.UNIT_TEMPLATE_FILE)
-        self.write_packs(self.CONFIG.BLOG.PACK_TEMPLATE_FILE)
+        self.write_units(CONFIG.BLOG.UNIT_TEMPLATE_FILE)
+        self.write_packs(CONFIG.BLOG.PACK_TEMPLATE_FILE)
