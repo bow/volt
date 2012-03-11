@@ -18,7 +18,7 @@ from volt import __version__
 from volt import util
 from volt.config.base import ConfigNotFoundError
 from volt.config import CONFIG
-from volt.engines import ContentError
+from volt.engines.unit import ContentError
 
 
 class ArgParser(argparse.ArgumentParser):

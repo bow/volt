@@ -7,7 +7,7 @@ from mock import Mock
 
 from volt.config import SessionConfig
 from volt.config.base import Config
-from volt.engines import Unit
+from volt.engines.unit import Unit
 from volt.test import USER_DIR
 
 
