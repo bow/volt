@@ -23,9 +23,9 @@ except ImportError:
 from volt.plugins import Plugin
 
 
-class Markdown(Plugin):
+class MarkdownPlugin(Plugin):
 
-    """Processor plugin for transforming markdown syntax to html.
+    """Plugin for transforming markdown syntax to html.
 
     The plugin can detect whether a unit is formatted using markdown from
     the file extension ('.md' or '.markdown') or if a 'markup' field

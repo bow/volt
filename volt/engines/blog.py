@@ -14,8 +14,7 @@ constituting a simple blog.
 
 """
 
-
-from volt.config import CONFIG
+from volt.config import Config
 from volt.engines import Engine
 
 
@@ -36,17 +35,89 @@ class BlogEngine(Engine):
 
     """
 
+    # Default configurations for the blog engine
+    DEFAULTS = Config(
+
+        # URL for all blog content relative to root URL
+        URL = 'blog',
+
+        # Blog post permalink, relative to blog URL
+        PERMALINK = '{time:%Y/%m/%d}/{slug}',
+
+        # Date and time format used in blog content headers
+        # Used for parsing the headers
+        # Default is e.g. '2004-03-13 22:10'
+        CONTENT_DATETIME_FORMAT = '%Y/%m/%d %H:%M',
+
+        # Date and time format displayed on the generated site
+        # Default is e.g. 'Saturday, 13 March 2004'
+        DISPLAY_DATETIME_FORMAT = '%A, %d %B %Y',
+
+        # Dictionary containing values to be globally set for all posts
+        GLOBAL_FIELDS = dict(),
+
+        # Directory path for storing blog content 
+        # relative to the default Volt content directory
+        CONTENT_DIR = 'blog',
+
+        # File paths of blog template files
+        # relative to the default Volt template directory
+        UNIT_TEMPLATE = 'blog_post.html',
+        PACK_TEMPLATE = 'blog_pagination.html',
+
+        # Sort order for paginated posts display
+        # Valid options are any field present in all units
+        # Default order is A-Z (for alphabets) and past-present (for dates)
+        # To reverse order just add '-' in front, e.g. '-time'
+        SORT = '-time',
+
+        # The number of displayed posts per pagination page
+        POSTS_PER_PAGE = 10,
+
+        # Excerpt length (in characters) for paginated items
+        EXCERPT_LENGTH = 400,
+
+        # Packs to build for the static site
+        # Items in this tuple will be used to set the paginations relative to
+        # the blog URL. Items enclosed in '{}' are pulled from the unit values,
+        # e.g. 'tag/{tags}' will be expanded to 'tag/x' for x in each tags in the
+        # site. These field tokens must be the last token of the pattern.
+        # Use an empty string ('') to apply packing to all blog units
+        PACKS = ('',),
+
+        # Protected properties
+        # These properties must not be defined by any individual blog post header,
+        # since they are used internally
+        PROTECTED = ('id', 'content', ),
+
+        # Required properties
+        # These properties must be defined in each individual blog post header
+        REQUIRED = ('title', 'time', ),
+
+        # Fields that would be transformed from string into datetime objects using
+        # CONTENT_DATETIME_FORMAT as the pattern
+        FIELDS_AS_DATETIME = ('time', ),
+
+        # Fields that would be transformed from string into list objects using
+        # LIST_SEP as a separator
+        FIELDS_AS_LIST = ('tags', 'categories', ),
+        LIST_SEP = ', '
+    )
+
+    # Config instance name in voltconf.py
+    USER_CONF_ENTRY = 'ENGINE_BLOG'
+
     def activate(self):
         # parse individual post and store the results in self.units
-        self.units = self.process_text_units(CONFIG.BLOG, CONFIG.BLOG.CONTENT_DIR)
+        self.units = self.process_text_units(self.config, self.config.CONTENT_DIR)
         # sort units
-        self.sort_units(self.units, CONFIG.BLOG.SORT)
+        self.sort_units(self.units, self.config.SORT)
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units(self.units)
 
     def dispatch(self):
         # build packs
-        self.packs = self.build_packs(CONFIG.BLOG.PACKS)
+        self.packs = self.build_packs(self.config.PACKS)
         # write output files
-        self.write_units(CONFIG.BLOG.UNIT_TEMPLATE_FILE)
-        self.write_packs(CONFIG.BLOG.PACK_TEMPLATE_FILE)
+        self.write_units(self.config.UNIT_TEMPLATE)
+        self.write_packs(self.config.PACK_TEMPLATE)

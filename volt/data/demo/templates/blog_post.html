@@ -5,7 +5,7 @@
   <a name="{{ page.slug }}"></a>
   <h1><a href="{{ page.permalink }}" rel="bookmark" title="permalink to {{ page.title }}">{{ page.title }}</a></h1>
   <p id="meta">
-  <a href="/{{ page.time|displaytime("%Y/%m")  }}/" class="button green">{{ page.time|displaytime(CONFIG.BLOG.CONTENT_DATETIME_FORMAT) }}</a>
+  <a href="/{{ page.time|displaytime("%Y/%m")  }}/" class="button green">{{ page.time|displaytime("%A, %d %B %Y") }}</a>
   | {{ page.tags|catlist }}
   </header>
   {{ page.content }}

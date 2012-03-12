@@ -1,7 +1,7 @@
 # Volt configurations file
 
 import os
-from volt.config.base import Config
+from volt.config import Config
 
 
 # General project configurations
@@ -29,10 +29,20 @@ SITE = Config(
         # volt-atomic generates atom feed for the target engine
         ('atomic', ['blog']),
     ),
+    # Colored terminal output
+    COLORED_TERMINAL = True,
+)
+
+# Plain engine configurations
+ENGINE_PLAIN = Config(
+    # URL for all page content relative to root URL
+    URL = 'page',
+    # Page permalink, relative to page URL
+    PERMALINK = '{slug}',
 )
 
 # Blog engine configurations
-BLOG = Config(
+ENGINE_BLOG = Config(
     # URL for all blog content relative to root URL
     URL = '/',
     # Blog posts permalink, relative to blog URL
@@ -50,23 +60,9 @@ BLOG = Config(
     PACKS = ('','tag/{tags}', '{time:%Y/%m/%d}', '{time:%Y/%m}', '{time:%Y}'),
 )
 
-# Page engine configurations
-PLAIN = Config(
-    # URL for all page content relative to root URL
-    URL = 'page',
-    # Page permalink, relative to page URL
-    PERMALINK = '{slug}',
-)
-
 # Plugin configurations
-PLUGINS = Config(
-    ATOM_OUTPUT_FILE = os.path.join(os.path.dirname(__file__), 'site', 'atom.xml'),
-)
-
-# Volt configurations
-VOLT = Config(
-    # Colored terminal output
-    COLORED_TEXT = True,
+PLUGIN_ATOMIC = Config(
+    OUTPUT_FILE = os.path.join(os.path.dirname(__file__), 'site', 'atom.xml'),
 )
 
 # Jinja custom filters
@@ -77,8 +73,6 @@ def catlist(catlist):
         s.append('<a href="/tag/' + cat + '/" class="button red">' + cat + '</a>')
     return ', '.join(s)
 
-JINJA2 = Config(
-    FILTERS = {
-        'catlist': catlist,
-    }
+JINJA2_FILTERS = Config(
+    catlist =  catlist,
 )

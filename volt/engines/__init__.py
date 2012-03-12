@@ -21,7 +21,7 @@ import os
 import re
 import warnings
 
-from volt.config import CONFIG
+from volt.config import CONFIG, Config, ConfigError, path_import
 from volt.engines.unit import TextUnit, _RE_PERMALINK
 
 
@@ -53,10 +53,45 @@ class Engine(object):
 
     """
 
+    DEFAULTS = Config()
+
+    USER_CONF_ENTRY = None
+
     def __init__(self):
         """Initializes the engine."""
         self.units = list()
         self.packs = dict()
+        self.config = Config(self.DEFAULTS)
+
+    def prime(self):
+        """Consolidates default engine Config and user-defined Config.
+
+        In addition to consolidating Config values, this method also sets
+        the values of CONTENT_DIR, and *_TEMPLATE to absolute directory paths.
+
+        """
+        if self.USER_CONF_ENTRY is None:
+            raise NotImplementedError("Engine subclass must define a "
+                                      "'USER_CONF_ENTRY' class attribute.")
+
+        # get user config object
+        conf_name = os.path.splitext(os.path.basename(CONFIG.VOLT.USER_CONF))[0]
+        voltconf = path_import(conf_name, CONFIG.VOLT.ROOT_DIR)
+        user_config = getattr(voltconf, self.USER_CONF_ENTRY)
+
+        # to ensure proper Config consolidation
+        if not isinstance(user_config, Config):
+            raise TypeError("User Config object '%s' must be a Config instance." % \
+                    self.USER_CONF_ENTRY)
+
+        self.config.update(user_config)
+
+        # set absolute directory paths
+        self.config.CONTENT_DIR = os.path.join(CONFIG.VOLT.CONTENT_DIR, \
+                self.config.CONTENT_DIR)
+        for template in [x for x in self.config.keys() if x.endswith('_TEMPLATE')]:
+                self.config[template] = os.path.join(CONFIG.VOLT.TEMPLATE_DIR, \
+                        self.config[template])
 
     def globdir(self, directory, pattern='*', is_gen=False):
         """Returns glob or iglob results for a given directory.
@@ -153,9 +188,16 @@ class Engine(object):
         """
         # set shared options (which defaults to None for testing purposes)
         if base_url is None:
-            base_url = CONFIG.BLOG.URL
+            base_url = self.config.URL.strip('/')
+
         if units_per_pagination is None:
-            units_per_pagination = CONFIG.BLOG.POSTS_PER_PAGE
+            try:
+                units_per_pagination = self.config.POSTS_PER_PAGE
+            except AttributeError:
+                raise ConfigError("%s Config must define a "
+                                  "'POSTS_PER_PAGE' if build_packs() is "
+                                  "used." % self.__class__.__name__)
+
         if index_html_only is None:
             index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
 

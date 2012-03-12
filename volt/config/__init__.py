@@ -15,30 +15,31 @@ default options. The final configuration, a result of combining default.py and
 voltconf.py, are accessible through CONFIG, a SessionConfig instance.
 
 The configurations in default.py and voltconf.py themselves are contained in a
-Config instance, available from volt.config.base. There are six Config instances
-defined in default.py: VOLT, for containing all internal configurations; SITE,
-to contain site-wide options; PLUGINS, for containing configurations about the
-plugins used, and three more Config for each of the built-in Engines (BLOG,
-PLAIN, and COLLECTION). Users may override any value in these Configs by
-declaring the same Config instance in their voltconf.py. In addition to that,
-any Config objects declared in voltconf.py not present in default.py are also
-captured by SessionConfig. This allows the user to pass in arbitrary Configs
-into a Volt site generation, providing them with a flexible and centralized way
-of configuring the generated static site.
+Config instance. There are four Config instances defined in default.py: VOLT,
+for containing all internal configurations; SITE, to contain site-wide options;
+JINJA2_FILTERS, for Jinja2 built-in filters; and JINJA2_TESTS, for Jinja2
+built-in tests. Users may override any value in these Configs by declaring the
+same Config instance in their voltconf.py.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
 
 """
 
-
+import imp
 import os
 import sys
-from itertools import chain
 
 from jinja2 import Environment, FileSystemLoader
 
-from volt.config.base import ConfigNotFoundError, get_configs, path_import
+
+class ConfigError(Exception):
+    """Raised for errors related to configurations."""
+    pass
+
+class ConfigNotFoundError(ConfigError):
+    """Raised when Volt fails to find voltconf.py."""
+    pass
 
 
 class SessionConfig(object):
@@ -49,8 +50,8 @@ class SessionConfig(object):
     the user's voltconf.py. Resolution of which values are used from default.py
     and which one is overriden by voltconf.py is deferred until __getattr__
     is called on a SessionConfig instance. This is done to make SessionConfig
-    more testable, since SessionConfig will resolve all '_FILE' and '_DIR'
-    options inside its Configs to have absolute paths. 
+    more testable, since SessionConfig will resolve all '_DIR' options inside
+    its Configs to have absolute paths. 
     
     If options resolution is not deferred, the Volt project root-finding method
     will raise an error if SessionConfig is not instantiated in a Volt project
@@ -102,25 +103,20 @@ class SessionConfig(object):
                 self._default.VOLT.USER_CONF))[0]
         user = path_import(user_conf_name, root_dir)
 
-        # process default and user-defined Configs
-        default_configs = get_configs(self._default)
-        user_configs = (x for x in get_configs(user) if x not in default_configs)
+        # name of config objects to get
+        target_configs = ['VOLT', 'SITE', 'JINJA2_FILTERS', 'JINJA2_TESTS', ]
 
         # Configs to process is everything in default + anything in user
         # not present in default
-        for item in chain(default_configs, user_configs):
-            # try load from default first and override if present in user
-            # otherwise load from user
-            try:
-                obj = getattr(self._default, item)
-                if hasattr(user, item):
-                    obj.override(getattr(user, item))
-            except:
-                obj = getattr(user, item)
+        for item in target_configs:
+            # load from default first and override if present in user
+            obj = getattr(self._default, item)
+            if hasattr(user, item):
+                obj.update(getattr(user, item))
             for opt in obj:
-                # set directory + file items to absolute paths
+                # set directory items to absolute paths
                 # directory + file items has 'DIR' + 'FILE' in their items
-                if opt.endswith('_FILE') or opt.endswith('_DIR'):
+                if opt.endswith('_DIR'):
                     obj[opt] = os.path.join(root_dir, obj[opt])
                 # strip '/'s from URL options
                 if opt.endswith('URL'):
@@ -138,10 +134,10 @@ class SessionConfig(object):
         env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
 
         # pass jinja filters and tests
-        for filter in self.JINJA2.FILTERS:
-            env.filters[filter] = self.JINJA2.FILTERS[filter]
-        for test in self.JINJA2.TESTS:
-            env.tests[test] = self.JINJA2.TESTS[test]
+        for filter in self.JINJA2_FILTERS:
+            env.filters[filter] = self.JINJA2_FILTERS[filter]
+        for test in self.JINJA2_TESTS:
+            env.tests[test] = self.JINJA2_TESTS[test]
 
         # setattr self jinja2 env
         setattr(self.SITE, 'TEMPLATE_ENV', env)
@@ -171,20 +167,52 @@ class SessionConfig(object):
 
         return start_dir
 
-    def set_plugin_defaults(self, default_args):
-        """Set default values of plugin options in a SessionConfig object.
 
-        Args:
-            default_args - dictionary that maps arguments and their default
-                values.
+class Config(dict):
 
-        The value for the given name will only be set if the user has not
-        set any option with the same name in voltconfig.
+    """Container class for storing configuration options.
 
-        """
-        for arg in default_args:
-            if not hasattr(self.PLUGINS, arg):
-                setattr(self.PLUGINS, arg, default_args[arg])
+    Config is basically a dictionary subclass with predefined class
+    attributes and dot-notation access.
+
+    """
+
+    # class attributes
+    # so Unit.__init__ doesnt' fail if Config instance don't
+    # define these, since these are checked by the base Unit class.
+    PROTECTED = tuple()
+    REQUIRED = tuple()
+    FIELDS_AS_DATETIME = tuple()
+    CONTENT_DATETIME_FORMAT = str()
+    DISPLAY_DATETIME_FORMAT = str()
+    FIELDS_AS_LIST = tuple()
+    LIST_SEP = str()
+    GLOBAL_FIELDS = dict()
+    PERMALINK = str()
+    PACKS = tuple()
+
+    def __init__(self, *args, **kwargs):
+        """Initializes Config."""
+        super(Config, self).__init__(*args, **kwargs)
+        # set __dict__ to the dict contents itself
+        # enables value access by dot notation
+        self.__dict__ = self
+
+
+def path_import(name, paths):
+    """Imports a module from the specified path.
+
+    Args:
+        name - String denoting target module name.
+        paths - List of possible absolute directory paths or string of an
+            absolute directory path that may contain the target module.
+
+    """
+    # convert to list if paths is string
+    if isinstance(paths, basestring):
+        paths = [paths]
+    mod_tuple = imp.find_module(name, paths)
+    return imp.load_module(name, *mod_tuple)
 
 
 CONFIG = SessionConfig()

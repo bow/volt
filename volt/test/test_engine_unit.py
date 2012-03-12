@@ -19,10 +19,10 @@ from datetime import datetime
 
 from mock import MagicMock
 
+from volt.config import Config
 from volt.engines.unit import Unit, TextUnit, HeaderFieldError, \
                               PermalinkTemplateError, ContentError, ParseError
 from volt.test import TEST_DIR, FIXTURE_DIR
-from volt.test.mocks import SessionConfig_Mock
 
 
 class TestUnit(unittest.TestCase):
@@ -109,7 +109,23 @@ class TestTextUnit(unittest.TestCase):
     def setUp(self):
         # in theory, any engine that uses TextUnit can be used
         # blog is chosen just for convenience
-        self.CONFIG = SessionConfig_Mock.BLOG
+
+        config = MagicMock(spec=Config)
+        opts = {
+                'URL': 'blog',
+                'PERMALINK': '{time:%Y/%m/%d}/{slug}',
+                'CONTENT_DATETIME_FORMAT': '%Y/%m/%d %H:%M',
+                'DISPLAY_DATETIME_FORMAT': '%A, %d %B %Y',
+                'PROTECTED': ('id', 'content', ),
+                'REQUIRED': ('title', 'time', ),
+                'FIELDS_AS_DATETIME': ('time', ),
+                'FIELDS_AS_LIST': ('tags', 'categories', ),
+                'LIST_SEP': ', ',
+        }
+        for key in opts:
+            setattr(config, key, opts[key])
+
+        self.CONFIG = config
         self.content_dir = os.path.join(FIXTURE_DIR, 'units')
 
     def test_init(self):

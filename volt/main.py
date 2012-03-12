@@ -16,8 +16,7 @@ import sys
 
 from volt import __version__
 from volt import util
-from volt.config.base import ConfigNotFoundError
-from volt.config import CONFIG
+from volt.config import CONFIG, ConfigNotFoundError
 from volt.engines.unit import ContentError
 
 
@@ -102,7 +101,7 @@ def run_demo():
     """
     # copy demo files
     run_init(cmd_name='demo')
-    util.show_info("\nPreparing your lightning-quick Volt tour...\n\n")
+    util.show_info("\nPreparing your lightning-speed Volt tour...\n\n")
     # generate the site
     run_gen()
     # need to pass arglist to serve, so we'll call main

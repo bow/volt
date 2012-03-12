@@ -16,8 +16,7 @@ import sys
 from functools import partial
 from inspect import isclass
 
-from volt.config import CONFIG
-from volt.config.base import ConfigNotFoundError
+from volt.config import CONFIG, ConfigNotFoundError
 
 
 def grab_class(mod, cls):
@@ -50,7 +49,7 @@ def show_info(string, col='grey', is_bright=False):
 
     """
     try:
-        if CONFIG.VOLT.COLORED_TEXT:
+        if CONFIG.SITE.COLORED_TERMINAL:
             color_map = {'black': '30', 'red': '31',
                          'green': '32', 'yellow': '33',
                          'blue': '34', 'violet': '35',

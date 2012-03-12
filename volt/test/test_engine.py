@@ -14,12 +14,13 @@ Tests for volt.engine.
 
 import os
 import unittest
+from datetime import datetime
 
-from mock import patch, call
+from mock import MagicMock, patch, call
 
 from volt.engines import Engine, Pagination
+from volt.engines.unit import Unit
 from volt.test import USER_DIR, FIXTURE_DIR
-from volt.test.mocks import SessionConfig_Mock, Unit_Mock, Unitlist_Mock
 
 
 class TestEngine(unittest.TestCase):
@@ -46,16 +47,51 @@ class TestEngine(unittest.TestCase):
                   '05_528491.md']
         abs_fnames = [os.path.join(content_dir, x) for x in fnames]
 
-        call_args = zip(abs_fnames, [SessionConfig_Mock.BLOG] * len(fnames))
+        call_args = zip(abs_fnames, [self.engine.config] * len(fnames))
         calls = [call(*x) for x in call_args]
 
         with patch('volt.engines.TextUnit', mocksignature=True) as TextUnit_Mock:
-            self.engine.process_text_units(SessionConfig_Mock.BLOG, content_dir)
+            self.engine.process_text_units(self.engine.config, content_dir)
             TextUnit_Mock.assert_has_calls(calls, any_order=True)
 
     def test_build_packs(self):
-        config = SessionConfig_Mock
+        # define mock units
+        Unitlist_Mock = list()
+        for i in range(5):
+            Unitlist_Mock.append(MagicMock(spec=Unit))
+
+        # set unit attributes
+        unitlist_attrs = [
+                {'title': 'Dream is Collapsing',
+                 'time': datetime(2011, 9, 5, 8, 0),
+                 'author': 'Johnson',
+                 'tags': ['cobb', 'ariadne', 'fischer'],},
+                {'title': 'One Simple Idea',
+                 'time': datetime(2010, 9, 30, 4, 31),
+                 'author': 'Smith',
+                 'tags': ['cobb', 'eames', 'arthur', 'ariadne', 'yusuf'],},
+                {'title': 'Radical Notion',
+                 'time': datetime(2010, 9, 5, 8, 0),
+                 'author': 'Smith',
+                 'tags': ['cobb', 'eames', 'arthur'],},
+                {'title': '528491',
+                 'time': datetime(2002, 8, 17, 14, 35),
+                 'author': 'Smith',
+                 'tags': ['eames', 'saito', 'cobb'],},
+                {'title': 'Dream Within A Dream',
+                 'time': datetime(1998, 4, 5, 8, 0),
+                 'author': 'Johnson',
+                 'tags': ['fischer', 'saito', 'eames'],},
+                ]
+        for idx, attr in enumerate(unitlist_attrs):
+            for field in attr:
+                setattr(Unitlist_Mock[idx], field, attr[field])
+
         self.engine.units = Unitlist_Mock
+        base_url = 'blog'
+        units_per_pagination = 2
+        index_html_only = True
+
         pack_patterns = ('',
                          'tag/{tags}',
                          'author/{author}',
@@ -68,9 +104,9 @@ class TestEngine(unittest.TestCase):
                     '2011', '2010', '2002', '1998',
                     '2011/09', '2010/09', '2002/08', '1998/04',]
 
-        with patch('volt.engines.Pack', mocksignature=True) as Pack_Mock:
-            packs = self.engine.build_packs(pack_patterns, config.BLOG.URL, \
-                    config.BLOG.POSTS_PER_PAGE, config.SITE.INDEX_HTML_ONLY)
+        with patch('volt.engines.Pack', mocksignature=True):
+            packs = self.engine.build_packs(pack_patterns, base_url, \
+                    units_per_pagination, index_html_only)
 
         observed = packs.keys()
         expected.sort()
@@ -87,7 +123,7 @@ class TestEngine(unittest.TestCase):
 class TestPagination(unittest.TestCase):
 
     def test_init(self):
-        units = [Unit_Mock] * 10
+        units = [MagicMock(Spec=Unit)] * 10
         pagination_url = ''
         site_dir = os.path.join(USER_DIR, 'site')
 

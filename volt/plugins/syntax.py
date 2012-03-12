@@ -18,70 +18,72 @@ from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 
-from volt.config import CONFIG
+from volt.config import Config
 from volt.plugins import Plugin
 
 
 _RE_SYNTAX = re.compile(r'(<syntax:(.*?)>(.*?)</syntax>)', re.DOTALL)
 
 
-class SyntaxHighlighter(Plugin):
+class SyntaxPlugin(Plugin):
 
     """Highlights code syntax using pygments.
 
     This processor plugin adds the necessary HTML tags to any text enclosed
-    in a ``<syntax:[language]></syntax>`` tag so that its syntaxes are highlighted.
+    in a <syntax:[language]></syntax> tag so that its syntaxes are highlighted.
     It uses the pygments library to perform this feat, and can highlight any
     language recognized by pygments, so long as it is specified by the
-    ``<syntax:[language]></syntax>`` tag.
+    <syntax:[language]></syntax> tag.
 
     To avoid unintended results, this plugin should be run before any markup
     processing plugin.
 
-    Options for this plugin configurable via ``voltconf.py`` are:
+    Options for this plugin configurable via voltconf.py are:
 
-        `SYNTAX_CSS_CLASS`
+        `CSS_CLASS`
             String indicating the CSS class of the highlighted syntax, defaults
-            to ``'syntax'``.
+            to 'syntax'.
 
-        `SYNTAX_CSS_FILE`
+        `CSS_FILE`
             String indicating absolute path to the CSS file output, defaults to
-            ``syntax_highlight.css`` in the current directory.
+            syntax_highlight.css in the current directory.
 
-        `SYNTAX_LINENO`
+        `LINENO`
             Boolean indicating whether to output line numbers, defaults to
-            ``True``.
+            True.
 
-        `SYNTAX_UNIT_FIELD`
+        `UNIT_FIELD`
             String indicating which unit field to process, defaults to
-            ``'content'``.
+            'content'.
     """
 
-    DEFAULT_ARGS = {
+    DEFAULTS = Config(
             # class name for the highlighted syntax block
-            'SYNTAX_CSS_CLASS': 'syntax',
+            CSS_CLASS = 'syntax',
             # css output for syntax highlight
             # defaults to current directory
-            'SYNTAX_CSS_FILE': os.path.join(os.getcwd(), 'syntax_highlight.css'),
+            CSS_FILE = os.path.join(os.getcwd(), 'syntax_highlight.css'),
             # whether to output line numbers
-            'SYNTAX_LINENO': True,
+            LINENO = True,
             # unit field to process
-            'SYNTAX_UNIT_FIELD': 'content',
-    }
+            UNIT_FIELD =  'content',
+    )
+
+    USER_CONF_ENTRY = 'PLUGIN_SYNTAX'
 
     def run(self, units):
         """Process the given units."""
         for unit in units:
             # get content from unit
-            string = getattr(unit, CONFIG.PLUGINS.SYNTAX_UNIT_FIELD)
+            string = getattr(unit, self.config.UNIT_FIELD)
             # highlight syntax in content
             string = self.highlight_syntax(string)
             # override original content with syntax highlighted
-            setattr(unit, CONFIG.PLUGINS.SYNTAX_UNIT_FIELD, string)
+            setattr(unit, self.config.UNIT_FIELD, string)
 
         # write syntax highlight css file
-        css = HtmlFormatter().get_style_defs('.' + CONFIG.PLUGINS.SYNTAX_CSS_CLASS)
-        css_file = CONFIG.PLUGINS.SYNTAX_CSS_FILE
+        css = HtmlFormatter().get_style_defs('.' + self.config.CSS_CLASS)
+        css_file = self.config.CSS_FILE
         with open(css_file, 'w') as target:
             target.write(css)
 
@@ -100,8 +102,8 @@ class SyntaxHighlighter(Plugin):
         if codeblocks:
             for match, lang, code in codeblocks:
                 lexer = get_lexer_by_name(lang.lower(), stripall=True)
-                formatter = HtmlFormatter(linenos=CONFIG.PLUGINS.SYNTAX_LINENO, \
-                        cssclass=CONFIG.PLUGINS.SYNTAX_CSS_CLASS)
+                formatter = HtmlFormatter(linenos=self.config.LINENO, \
+                        cssclass=self.config.CSS_CLASS)
                 highlighted = highlight(code, lexer, formatter)
                 # add 1 arg because replacement should only be done
                 # once for each match
