@@ -70,7 +70,7 @@ class SessionConfig(object):
             start_dir - Starting directory for user configuration lookup.
 
         """
-        self.py3 = (sys.version_info.major > 2)
+        self.py3 = (sys.version_info[0] > 2)
         self.start_dir = start_dir
         self._default = path_import(default_conf_name, default_dir)
         # set flag for lazy-loading

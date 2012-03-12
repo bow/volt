@@ -14,7 +14,7 @@ Tests for volt.gen.
 
 import os
 import unittest
-from inspect import ismodule
+from inspect import ismodule, getabsfile
 
 from volt.gen import Generator
 from volt.test import INSTALL_DIR, USER_DIR
@@ -41,5 +41,5 @@ class TestGen(unittest.TestCase):
         # test for loading if present in both user and install
         mod = gen.get_processor_mod('in_both', 'engines', INSTALL_DIR,
                 USER_DIR)
-        self.assertEqual(mod.__file__, os.path.join(USER_DIR, 'engines', \
-                'in_both.pyc'))
+        self.assertEqual(getabsfile(mod), os.path.join(USER_DIR, 'engines', \
+                'in_both.py'))
