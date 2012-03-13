@@ -133,11 +133,13 @@ class SessionConfig(object):
         # set up jinja2 template environment in the SITE Config object
         env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
 
-        # pass jinja filters and tests
-        for filter in self.JINJA2_FILTERS:
-            env.filters[filter] = self.JINJA2_FILTERS[filter]
-        for test in self.JINJA2_TESTS:
-            env.tests[test] = self.JINJA2_TESTS[test]
+        # pass jinja2 functions
+        config_jinja2 = {'filters': self.JINJA2_FILTERS, 'tests': self.JINJA2_TESTS}
+        for type in config_jinja2:
+            for func_name in config_jinja2[type]:
+                # env.filters or env.tests
+                target = getattr(env, type)
+                target[func_name] = config_jinja2[type][func_name]
 
         # setattr self jinja2 env
         setattr(self.SITE, 'TEMPLATE_ENV', env)

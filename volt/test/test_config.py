@@ -11,53 +11,95 @@ Tests for the volt.config module.
 
 """
 
-
 import os
 import unittest
-from inspect import ismodule
+from datetime import datetime
+from inspect import getabsfile
 
 from volt.config import SessionConfig, ConfigNotFoundError, path_import
+from volt.config.default import displaytime
 from volt.test import INSTALL_DIR, USER_DIR
 
 
-class TestSessionConfig(unittest.TestCase):
+class TestSessionConfigLoad(unittest.TestCase):
 
     def setUp(self):
+        def get_root_dir_mock(x): return USER_DIR
         self.CONFIG = SessionConfig(default_dir=INSTALL_DIR, start_dir=USER_DIR)
+        self.CONFIG.get_root_dir = get_root_dir_mock
 
-    def tearDown(self):
-        # destroy default config so default values are reset
-        del self.CONFIG._default
-        del self.CONFIG
-
-    def test_load(self):
-        # test if title is overwritten
+    def test_load_consolidation(self):
+        # user config overriding
         self.assertEqual(self.CONFIG.SITE.TITLE, 'Title in user')
-        # test if default conf is preserved
+        # default config preservation
         self.assertEqual(self.CONFIG.SITE.DESC, 'Desc in default')
-        # test if user-defined path resolution works
-        self.assertEqual(self.CONFIG.VOLT.CUSTOM_DIR, \
-                os.path.join(USER_DIR, 'custom_dir_user'))
+        # arbitrary user config
+        self.assertEqual(self.CONFIG.SITE.CUSTOM_OPT, 'custom_opt_user')
+    
+    def test_load_dir_resolution(self):
+        # default.py dir resolution
+        self.assertEqual(self.CONFIG.VOLT.CONTENT_DIR, os.path.join(USER_DIR, \
+                'content'))
+        # voltconf.py dir resolution
+        self.assertEqual(self.CONFIG.VOLT.TEMPLATE_DIR, os.path.join(USER_DIR, \
+                'mytemplates'))
+
+    def test_load_url(self):
         # test for different URL possibilities
-        self.assertEqual(self.CONFIG.SITE.URL, 'http://foo.com')
+        self.assertEqual(self.CONFIG.SITE.A_URL, 'http://foo.com')
         self.assertEqual(self.CONFIG.SITE.B_URL, 'http://foo.com')
         self.assertEqual(self.CONFIG.SITE.C_URL, '')
-        # test for lazy loading flag
-        self.assertTrue(self.CONFIG._loaded)
+        self.assertEqual(self.CONFIG.SITE.D_URL, '')
 
-    def test_get_root_dir(self):
-        # test if exception is properly raised if dir is not a Volt dir
-        self.assertRaises(ConfigNotFoundError, SessionConfig().get_root_dir, INSTALL_DIR)
-        # test if root path resolution works properly for all dirs in project dir
+    def test_load_root_dir(self):
         self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, USER_DIR)
-        self.assertEqual(self.CONFIG.VOLT.ROOT_DIR, SessionConfig().get_root_dir(\
-                os.path.join(USER_DIR, "content")))
+
+    def test_load_jinja2_env_default(self):
+        self.assertTrue('bar' in self.CONFIG.SITE.TEMPLATE_ENV.filters)
+
+    def test_load_jinja2_env_user(self):
+        self.assertEqual(self.CONFIG.SITE.TEMPLATE_ENV.filters['foo'](), \
+                "foo in user")
 
 
-class TestConfigBase(unittest.TestCase):
+class TestSessionConfigRootDir(unittest.TestCase):
 
-    def test_path_import(self):
-        self.assertTrue(ismodule(path_import('in_install', \
-                os.path.join(INSTALL_DIR, 'engines'))))
-        self.assertTrue(ismodule(path_import('in_both', \
-                [os.path.join(x, 'engines') for x in [INSTALL_DIR, USER_DIR]])))
+    def setUp(self):
+        self.CONFIG = SessionConfig()
+        self.CONFIG._default.VOLT.USER_CONF = "voltconf.py"
+
+    def test_get_root_dir_current(self):
+        start_dir = USER_DIR
+        self.assertEqual(self.CONFIG.get_root_dir(start_dir), USER_DIR)
+
+    def test_get_root_dir_child(self):
+        start_dir = os.path.join(USER_DIR, "content", "foo", "bar", "baz")
+        self.assertEqual(self.CONFIG.get_root_dir(start_dir), USER_DIR)
+
+    def test_get_root_dir_error(self):
+        start_dir = INSTALL_DIR
+        self.assertRaises(ConfigNotFoundError, self.CONFIG.get_root_dir, \
+                start_dir)
+
+
+class TestPathImport(unittest.TestCase):
+
+    def test_path_import_string(self):
+        path = os.path.join(INSTALL_DIR, 'engines')
+        mod = path_import('in_install', path)
+        mod_path = os.path.join(INSTALL_DIR, 'engines', 'in_install.py')
+        self.assertEqual(getabsfile(mod), mod_path)
+
+    def test_path_import_list(self):
+        paths = [os.path.join(x, 'engines') for x in [USER_DIR, INSTALL_DIR]]
+        mod = path_import('in_both', paths)
+        mod_path = os.path.join(USER_DIR, 'engines', 'in_both.py')
+        self.assertEqual(getabsfile(mod), mod_path)
+
+
+class TestBuiltInJinja2Filters(unittest.TestCase):
+
+    def test_displaytime(self):
+        format = "%Y-%m-%d"
+        obj = datetime(2009, 10, 5, 3, 1)
+        self.assertEqual(displaytime(obj, format), "2009-10-05")

@@ -1,25 +1,25 @@
-# Volt default configurations file fixture
-
 from volt.config import Config
-
 
 VOLT = Config(
     USER_CONF = 'voltconf.py',
     CONTENT_DIR = 'content',
     TEMPLATE_DIR = 'templates',
-    LAYOUT_DIR = 'layout',
-    SITE_DIR = 'site',
-    IGNORE_PATTERN = str(),
 )
 
 SITE = Config(
     TITLE = 'Title in default',
     DESC = 'Desc in default', 
-    ENGINES = (),
-    PLUGINS = (('',[]),),
-    PAGINATION_URL = '',
-    INDEX_HTML_ONLY = True,
+    A_URL = 'http://foo.com',
+    B_URL = 'http://foo.com/',
+    C_URL = '/',
+    D_URL = '',
 )
 
-JINJA2_FILTERS = Config()
+def default_foo(): return "foo in default"
+def default_bar(): pass
+
+JINJA2_FILTERS = Config(
+    foo = default_foo,
+    bar = default_bar,
+)
 JINJA2_TESTS = Config()
