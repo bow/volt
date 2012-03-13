@@ -2,4 +2,6 @@
 distribute-*
 build/
 volt/data/sandbox/
+volt/.coverage
+volt/htmlcov
 ROADMAP
