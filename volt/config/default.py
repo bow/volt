@@ -56,7 +56,7 @@ SITE = Config(
     PAGINATION_URL = '',
 
     # Flag for colored terminal output
-    COLORED_TEXT = False,
+    COLORED_TERMINAL = False,
 
     # Boolean to set if output file names should all be 'index.html' or vary
     # according to the last token in its self.permalist attribute

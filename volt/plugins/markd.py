@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
---------------------
-volt.plugin.markdown
---------------------
+-----------------
+volt.plugin.markd
+-----------------
 
-Markdown processor plugin for Volt units.
+Markdown plugin for Volt units.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
@@ -23,7 +23,7 @@ except ImportError:
 from volt.plugins import Plugin
 
 
-class MarkdownPlugin(Plugin):
+class MarkDPlugin(Plugin):
 
     """Plugin for transforming markdown syntax to html.
 
