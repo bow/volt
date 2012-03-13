@@ -8,8 +8,20 @@ from setuptools import setup, find_packages
 from volt import __version__
 
 
+install_requires = [
+    "Jinja2>=2.6",
+    "PyYAML>=3.10",
+    "pygments>=1.4",
+    "Markdown>=2.1.1",
+]
 version = __version__
 long_description = open("README.rst").read()
+
+# handle dependencies for python2.x (x < 7)
+try:
+    __import__("argparse")
+except ImportError:
+    install_requires.append("argparse")
 
 setup(
     name = "Volt",
@@ -23,12 +35,7 @@ setup(
     license = "BSD",
     packages = find_packages(),
     include_package_data = True,
-    install_requires = [
-        "Jinja2>=2.6",
-        "PyYAML>=3.10",
-        "Markdown>=2.1.1",
-        "pygments>=1.4",
-    ],
+    install_requires = install_requires,
     extras_require = {
         "fast markdown": ["discount>=0.2.1"],
     },
@@ -36,7 +43,6 @@ setup(
     tests_require=[
         'nose>=1.1.2',
         'mock>=0.8.0',
-        'tox>=1.3',
     ],
     zip_safe = False,
     entry_points = """
@@ -51,8 +57,11 @@ setup(
         "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: BSD License",
         "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python :: 2.5",
+        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: Jython",
+        "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Utilities",
     ],

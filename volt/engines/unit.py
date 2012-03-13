@@ -12,6 +12,7 @@ a blog post or an image.
 
 """
 
+from __future__ import with_statement
 import codecs
 import os
 import re

@@ -11,6 +11,7 @@ Syntax highlighter processor plugin for Volt.
 
 """
 
+from __future__ import with_statement
 import os
 import re
 

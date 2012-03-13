@@ -11,7 +11,7 @@ Collection of general handy methods used throughout Volt.
 
 """
 
-
+import os
 import sys
 from functools import partial
 from inspect import isclass
@@ -49,7 +49,7 @@ def show_info(string, col='grey', is_bright=False):
 
     """
     try:
-        if CONFIG.SITE.COLORED_TERMINAL:
+        if CONFIG.SITE.COLORED_TERMINAL and os.name != 'nt':
             color_map = {'black': '30', 'red': '31',
                          'green': '32', 'yellow': '33',
                          'blue': '34', 'violet': '35',

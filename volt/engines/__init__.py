@@ -16,6 +16,7 @@ single HTML file, for example blog posts written in February 2009.
 
 """
 
+from __future__ import with_statement
 import glob
 import os
 import re

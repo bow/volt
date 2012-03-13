@@ -11,7 +11,7 @@ Atom feed generator plugin.
 
 """
 
-
+from __future__ import with_statement
 import os
 from datetime import datetime
 
