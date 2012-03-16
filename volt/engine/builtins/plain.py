@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
------------------
-volt.engine.plain
------------------
+--------------------------
+volt.engine.builtins.plain
+--------------------------
 
 Volt Plain Engine.
 
@@ -14,15 +14,15 @@ The plain engine takes text files as resources and writes single web pages.
 """
 
 from volt.config import Config
-from volt.engines import Engine
+from volt.engine.builtins import TextEngine
 
 
 __name__ = 'plain'
 
 
-class PlainEngine(Engine):
-    """Class for processing plain web pages.
-    """
+class PlainEngine(TextEngine):
+
+    """Class for processing plain web pages."""
 
     # Default configurations for the plain engine
     DEFAULTS = Config(
@@ -59,7 +59,7 @@ class PlainEngine(Engine):
         # Protected properties
         # These properties must not be defined by any individual plain page header,
         # since they are used internally
-        PROTECTED = ('id', 'content', 'parent', ),
+        PROTECTED = ('id', 'content', ),
 
         # Fields that would be transformed from string into datetime objects using
         # CONTENT_DATETIME_FORMAT as the pattern
@@ -76,7 +76,7 @@ class PlainEngine(Engine):
 
     def activate(self):
         # parse plain page units
-        self.units = self.process_text_units(self.config, self.config.CONTENT_DIR)
+        self.units = self.create_units()
 
     def dispatch(self):
         # write them according to template

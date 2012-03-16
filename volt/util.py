@@ -16,7 +16,8 @@ import sys
 from functools import partial
 from inspect import isclass
 
-from volt.config import CONFIG, ConfigNotFoundError
+from volt.config import CONFIG
+from volt.exceptions import ConfigNotFoundError
 
 
 def grab_class(mod, cls):

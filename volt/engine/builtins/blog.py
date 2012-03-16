@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-----------------
-volt.engine.blog
-----------------
+-------------------------
+volt.engine.builtins.blog
+-------------------------
 
 Volt Blog Engine.
 
@@ -15,13 +15,13 @@ constituting a simple blog.
 """
 
 from volt.config import Config
-from volt.engines import Engine
+from volt.engine.builtins import TextEngine
 
 
 __name__ = 'blog'
 
 
-class BlogEngine(Engine):
+class BlogEngine(TextEngine):
 
     """Engine for processing text files into a blog.
 
@@ -109,11 +109,12 @@ class BlogEngine(Engine):
 
     def activate(self):
         # parse individual post and store the results in self.units
-        self.units = self.process_text_units(self.config, self.config.CONTENT_DIR)
+        self.units = self.create_units()
         # sort units
-        self.sort_units(self.units, self.config.SORT)
+        #self.sort_units(self.units, self.config.SORT)
+        self.sort_units(self.config.SORT)
         # add prev and next permalinks so blog posts can link to each other
-        self.chain_units(self.units)
+        self.chain_units()
 
     def dispatch(self):
         # build packs

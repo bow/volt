@@ -16,8 +16,8 @@ import sys
 
 from volt import __version__
 from volt import util
-from volt.config import CONFIG, ConfigNotFoundError
-from volt.engines.unit import ContentError
+from volt.config import CONFIG
+from volt.exceptions import ConfigNotFoundError, ContentError
 
 
 class ArgParser(argparse.ArgumentParser):

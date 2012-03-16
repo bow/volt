@@ -171,11 +171,9 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 
 def run():
-    """Runs the HTTP server.
+    """Runs the HTTP server using options parsed by argparse, accessible
+    via CONFIG.CMD."""
 
-    Uses options parsed by argparse, accessible via CONFIG.CMD.
-
-    """
     address = ('127.0.0.1', CONFIG.CMD.server_port)
     try:
         server = VoltHTTPServer(address, VoltHTTPRequestHandler)

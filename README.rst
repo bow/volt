@@ -52,8 +52,8 @@ Here are some of my favorite features:
    responsible for different sections of your site. The blog engine, for
    example generates the blog section of your site, while the plain engine,
    generates simple web pages. `See how simple the blog engine code is
-   <http://github.com/bow/volt/blob/master/volt/engines/blog.py>`_ or take a
-   peek at the `main site generator function 
+   <http://github.com/bow/volt/blob/master/volt/engine/builtins/blog.py>`_ 
+   or take a peek at the `main site generator function 
    <http://github.com/bow/volt/blob/master/volt/gen.py>`_ to get a picture of
    how the engines work.
   

@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """
----------------------
-volt.test.test_engine
----------------------
+--------------------------
+volt.test.test_engine_core
+--------------------------
 
-Tests for volt.engine.
+Tests for volt.engine.core.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
 
 """
 
+from __future__ import with_statement
 import os
 import unittest
 import warnings
@@ -18,12 +19,11 @@ from datetime import datetime
 
 from mock import MagicMock, patch, call
 
-from volt.config import ConfigError, Config
-from volt.engines import Engine, EmptyUnitsWarning
-from volt.engines.unit import \
-        Unit, Pagination, HeaderFieldError, ContentError, \
-        PermalinkTemplateError
-from volt.test import FIXTURE_DIR, USER_DIR
+from volt.config import Config
+from volt.engine.core import Engine, Unit, Pagination
+from volt.exceptions import ConfigError, EmptyUnitsWarning, \
+        PermalinkTemplateError, HeaderFieldError, ContentError
+from volt.test import USER_DIR, TEST_DIR
 
 
 def make_units_mock():
@@ -75,25 +75,65 @@ def make_units_mock():
     return Unitlist_mock
 
 
+class TestEngineUnits(unittest.TestCase):
+
+    def setUp(self):
+        self.engine = Engine()
+        self.engine.units = make_units_mock()
+
+    def test_sort_units_ok(self):
+        key = '-time'
+        titles = ['Dream is Collapsing', 'Radical Notion', 'One Simple Idea', \
+                  '528491', 'Dream Within A Dream',]
+        self.assertNotEqual([x.title for x in self.engine.units], titles)
+        self.engine.sort_units(key)
+        self.assertEqual([x.title for x in self.engine.units], titles)
+
+    def test_sort_units_bad_key(self):
+        key = 'date'
+        self.assertRaises(HeaderFieldError, self.engine.sort_units, key)
+
+    def test_chain_units_missing_neighbor_permalink(self):
+        self.assertRaises(ContentError, self.engine.chain_units, )
+
+    def test_chain_units_ok(self):
+        self.engine.units = self.engine.units[1:-1]
+        assert [unit.id for unit in self.engine.units] == ['2', '3', '4']
+        self.engine.chain_units()
+
+        self.assertEqual(self.engine.units[0].permalink_next, \
+                self.engine.units[1].permalink)
+        self.assertFalse(hasattr(self.engine.units[0], 'permalink_prev'))
+
+        self.assertEqual(self.engine.units[1].permalink_next, \
+                self.engine.units[2].permalink)
+        self.assertEqual(self.engine.units[1].permalink_prev, \
+                self.engine.units[0].permalink)
+
+        self.assertFalse(hasattr(self.engine.units[-1], 'permalink_next'))
+        self.assertEqual(self.engine.units[-1].permalink_prev, \
+                self.engine.units[1].permalink)
+
+
 class TestEngine(unittest.TestCase):
 
     def setUp(self):
         self.engine = Engine()
 
     def test_prime_user_conf_entry_none(self):
-        self.assertRaises(NotImplementedError, self.engine.prime, )
+        self.assertRaises(ConfigError, self.engine.prime, )
 
     def test_prime_content_dir_undefined(self):
         self.engine.USER_CONF_ENTRY = 'ENGINE_TEST'
         self.assertRaises(ConfigError, self.engine.prime, )
 
-    @ patch('volt.engines.CONFIG')
+    @patch('volt.engine.core.CONFIG')
     def test_prime_user_conf_not_config(self, CONFIG_mock):
         self.engine.USER_CONF_ENTRY = 'ENGINE_TEST_BAD'
         self.engine.config.CONTENT_DIR = 'engine_test'
         self.assertRaises(TypeError, self.engine.prime, )
 
-    @ patch('volt.engines.CONFIG')
+    @patch('volt.engine.core.CONFIG')
     def test_prime_consolidation(self, CONFIG_mock):
         defaults = Config(
             BAR = 'engine bar in default',
@@ -118,53 +158,6 @@ class TestEngine(unittest.TestCase):
         self.assertEqual(self.engine.config.UNIT_TEMPLATE, os.path.join(\
                 USER_DIR, 'templates', 'template.html'))
 
-    @patch('volt.engines.TextUnit')
-    def test_process_text_units(self, TextUnit_mock):
-        content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
-        fnames = ['01_radical-notion.md', '02_one-simple-idea.md',
-                  '03_dream-is-collapsing.md', '04_dream-within-a-dream.md',
-                  '05_528491.md']
-        abs_fnames = [os.path.join(content_dir, x) for x in fnames]
-
-        call_args = zip(abs_fnames, [self.engine.config] * len(fnames))
-        calls = [call(*x) for x in call_args]
-
-        self.engine.process_text_units(self.engine.config, content_dir)
-        TextUnit_mock.assert_has_calls(calls, any_order=True)
-
-    def test_sort_units_ok(self):
-        self.engine.units = make_units_mock()
-        key = '-time'
-        titles = ['Dream is Collapsing', 'Radical Notion', 'One Simple Idea', \
-                  '528491', 'Dream Within A Dream',]
-        self.assertNotEqual([x.title for x in self.engine.units], titles)
-        self.engine.sort_units(self.engine.units, key)
-        self.assertEqual([x.title for x in self.engine.units], titles)
-
-    def test_sort_units_bad_key(self):
-        self.engine.units = make_units_mock()
-        key = 'date'
-        self.assertRaises(HeaderFieldError, self.engine.sort_units, \
-                self.engine.units, key)
-
-    def test_chain_units_missing_neighbor_permalink(self):
-        units = make_units_mock()
-        self.assertRaises(ContentError, self.engine.chain_units, units)
-
-    def test_chain_units_ok(self):
-        unchained_units = make_units_mock()[1:-1]
-        assert [unit.id for unit in unchained_units] == ['2', '3', '4']
-        units = self.engine.chain_units(unchained_units)
-
-        self.assertEqual(units[0].permalink_next, units[1].permalink)
-        self.assertFalse(hasattr(units[0], 'permalink_prev'))
-
-        self.assertEqual(units[1].permalink_next, units[2].permalink)
-        self.assertEqual(units[1].permalink_prev, units[0].permalink)
-
-        self.assertFalse(hasattr(units[-1], 'permalink_next'))
-        self.assertEqual(units[-1].permalink_prev, units[1].permalink)
-
     def test_activate(self):
         self.assertRaises(NotImplementedError, self.engine.activate, )
 
@@ -178,9 +171,6 @@ class TestEngineBuildPacks(unittest.TestCase):
         self.engine = Engine()
         self.engine.config.URL = 'test'
         self.engine.config.POSTS_PER_PAGE = 2
-
-    def packer_setup(self):
-        pass
 
     def test_url_undefined(self):
         del self.engine.config.URL
@@ -212,7 +202,7 @@ class TestEngineBuildPacks(unittest.TestCase):
         self.engine.units = make_units_mock()
         base_permalist = ['test']
         field = base_permalist[-1][1:-1]
-        with patch('volt.engines.Pack') as Pack_mock:
+        with patch('volt.engine.core.Pack') as Pack_mock:
             [x for x in self.engine._packer_all(field, base_permalist, 2)]
 
         self.assertEqual(Pack_mock.call_count, 1)
@@ -223,7 +213,7 @@ class TestEngineBuildPacks(unittest.TestCase):
         self.engine.units = make_units_mock()
         base_permalist = ['test', 'author', '{author}']
         field = base_permalist[-1][1:-1]
-        with patch('volt.engines.Pack') as Pack_mock:
+        with patch('volt.engine.core.Pack') as Pack_mock:
             [x for x in self.engine._packer_single(field, base_permalist, 2)]
 
         self.assertEqual(2, Pack_mock.call_count)
@@ -237,7 +227,7 @@ class TestEngineBuildPacks(unittest.TestCase):
         self.engine.units = make_units_mock()
         base_permalist = ['test', 'tag', '{tags}']
         field = base_permalist[-1][1:-1]
-        with patch('volt.engines.Pack') as Pack_mock:
+        with patch('volt.engine.core.Pack') as Pack_mock:
             [x for x in self.engine._packer_multiple(field, base_permalist, 2)]
 
         self.assertEqual(4, Pack_mock.call_count)
@@ -251,7 +241,7 @@ class TestEngineBuildPacks(unittest.TestCase):
         self.engine.units = make_units_mock()
         base_permalist = ['test', '{time:%Y}']
         field = base_permalist[-1][1:-1]
-        with patch('volt.engines.Pack') as Pack_mock:
+        with patch('volt.engine.core.Pack') as Pack_mock:
             [x for x in self.engine._packer_datetime(field, base_permalist, 2)]
 
         self.assertEqual(4, Pack_mock.call_count)
@@ -265,7 +255,7 @@ class TestEngineBuildPacks(unittest.TestCase):
         self.engine.units = make_units_mock()
         base_permalist = ['test', '{time:%Y/%m}']
         field = base_permalist[-1][1:-1]
-        with patch('volt.engines.Pack') as Pack_mock:
+        with patch('volt.engine.core.Pack') as Pack_mock:
             [x for x in self.engine._packer_datetime(field, base_permalist, 2)]
 
         self.assertEqual(Pack_mock.call_count, 5)
@@ -277,7 +267,7 @@ class TestEngineBuildPacks(unittest.TestCase):
         Pack_mock.assert_has_calls([call1, call2, call3, call4, call5], \
                 any_order=True)
 
-    @patch('volt.engines.Pack', MagicMock, mocksignature=True)
+    @patch('volt.engine.core.Pack', MagicMock, mocksignature=True)
     def build_packs_ok(self):
         self.engine.units = make_units_mock()
         pack_patterns = ('',
@@ -295,8 +285,87 @@ class TestEngineBuildPacks(unittest.TestCase):
         self.assertEqual(len(packs), len(expected))
 
 
-@patch('volt.engines.unit.CONFIG.SITE.INDEX_HTML_ONLY', True, create=True)
-@patch('volt.engines.unit.CONFIG', MagicMock())
+class TestUnit(unittest.TestCase):
+
+    def setUp(self):
+        self.unit = Unit('01.md')
+
+    def test_check_required(self):
+        # test required fields check
+        req = ('title', 'surprise', )
+        self.assertRaises(HeaderFieldError, self.unit.check_required, req)
+
+    def test_check_protected(self):
+        # test protected fields check
+        prot = ('cats', )
+        self.assertRaises(HeaderFieldError, self.unit.check_protected, 'cats', prot)
+
+    def test_as_into_list(self):
+        # test if specified fields are processed into lists
+        tags = 'ripley, ash, kane   '
+        taglist = ['ripley', 'ash', 'kane'].sort()
+        self.assertEqual(self.unit.as_list(tags, ', ').sort(), taglist)
+        cats = 'wickus;christopher;koobus;'
+        catlist = ['wickus', 'christopher', 'koobus'].sort()
+        self.assertEqual(self.unit.as_list(cats, ';').sort(), catlist)
+        grps = 'trinity, twin, twin, morpheus'
+        grplist = ['trinity', 'twin', 'morpheus'].sort()
+        self.assertEqual(self.unit.as_list(grps, ', ').sort(), grplist)
+
+    def test_slugify(self):
+        slugify = self.unit.slugify
+        self.assertEqual(slugify('Move along people, this is just a test'),
+                'move-along-people-this-is-just-test')
+        self.assertEqual(slugify('What does it mean to say !&^#*&@$))*((&?'),
+                'what-does-it-mean-to-say')
+        self.assertEqual(slugify('What about the A* search algorithm?'),
+                'what-about-the-a-search-algorithm')
+        self.assertEqual(slugify('--This- is a bad -- -*&( ---___- title---'),
+                'this-is-bad-title')
+        self.assertEqual(slugify("Hors d'oeuvre, a fully-loaded MP5, and an astronaut from Ann Arbor."),
+                'hors-doeuvre-fully-loaded-mp5-and-astronaut-from-ann-arbor')
+        self.assertEqual(slugify('Kings of Convenience - Know How (feat. Feist)'),
+                'kings-of-convenience-know-how-feat-feist')
+        self.assertEqual(slugify('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest'),
+                'journey-through-the-himalayan-mountains-part-1-unusual-guest')
+        self.assertRaises(ContentError, slugify, 'Röyksopp - Eple')
+        self.assertRaises(ContentError, slugify, '宇多田ヒカル')
+        self.assertRaises(ContentError, slugify, '&**%&^%&$-')
+
+    def test_get_permalist(self):
+        get_permalist = self.unit.get_permalist
+        self.unit.slug = 'yo-dawg'
+        self.unit.time = datetime(2009, 1, 28, 16, 47)
+        self.assertEqual(get_permalist('{time:%Y/%m/%d}/{slug}'),
+                ['', '2009', '01', '28', 'yo-dawg'])
+        self.assertEqual(get_permalist('{time:%Y}/mustard/{time:%m}/{slug}/'),
+                ['', '2009', 'mustard', '01', 'yo-dawg'])
+        self.assertEqual(get_permalist('i/love /mustard'),
+                ['', 'i', 'love', 'mustard'])
+        self.assertRaises(PermalinkTemplateError, get_permalist, 'bali/{beach}/party')
+
+    def test_set_paths(self):
+        base_dir = TEST_DIR
+        abs_url = 'http://alay.com'
+        self.unit.permalist = ['blog', 'not', 'string']
+
+        # test for default settings
+        self.unit.set_paths(base_dir, abs_url, index_html_only=True)
+        self.assertEqual(self.unit.path, os.path.join(base_dir, \
+                'blog', 'not', 'string', 'index.html'))
+        self.assertEqual(self.unit.permalink, '/blog/not/string/')
+        self.assertEqual(self.unit.permalink_abs, 'http://alay.com/blog/not/string')
+
+        # test for set_index_html = False
+        self.unit.set_paths(base_dir, abs_url, index_html_only=False)
+        self.assertEqual(self.unit.path, os.path.join(base_dir, \
+                'blog', 'not', 'string.html'))
+        self.assertEqual(self.unit.permalink, '/blog/not/string.html')
+        self.assertEqual(self.unit.permalink_abs, 'http://alay.com/blog/not/string.html')
+
+
+@patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True, create=True)
+@patch('volt.engine.core.CONFIG', MagicMock())
 class TestPagination(unittest.TestCase):
 
     def test_init(self):

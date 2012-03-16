@@ -32,14 +32,7 @@ import sys
 
 from jinja2 import Environment, FileSystemLoader
 
-
-class ConfigError(Exception):
-    """Raised for errors related to configurations."""
-    pass
-
-class ConfigNotFoundError(ConfigError):
-    """Raised when Volt fails to find voltconf.py."""
-    pass
+from volt.exceptions import ConfigNotFoundError
 
 
 class SessionConfig(object):

@@ -17,7 +17,7 @@ import shutil
 
 from volt import util
 from volt.config import CONFIG, SessionConfig, path_import
-from volt.engines import Engine
+from volt.engine.core import Engine
 from volt.plugins import Plugin
 from volt.util import grab_class
 
@@ -56,7 +56,11 @@ class Generator(object):
         # load engine or plugin
         # user_path has priority over volt_path
         user_path = os.path.join(user_dir, processor_type)
-        volt_path = os.path.join(volt_dir, processor_type)
+
+        if processor_type == 'engines':
+            volt_path = os.path.join(volt_dir, 'engine', 'builtins')
+        else:
+            volt_path = os.path.join(volt_dir, 'plugins')
 
         return path_import(processor_name, [user_path, volt_path])
 
@@ -74,7 +78,7 @@ class Generator(object):
                voltconf.py to yield the final configurations that will be used
                in subsequent engine methods.
 
-            2. Engine activation: All the engines' activate() method are then
+            2. Engine activation: all the engines' activate() method are then
                run. This usually means the engines' units are parsed and stored
                as its instance attributes in self.units.
 

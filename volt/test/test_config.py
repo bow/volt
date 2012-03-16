@@ -85,13 +85,15 @@ class TestSessionConfigRootDir(unittest.TestCase):
 class TestPathImport(unittest.TestCase):
 
     def test_path_import_string(self):
-        path = os.path.join(INSTALL_DIR, 'engines')
+        path = os.path.join(INSTALL_DIR, 'engine', 'builtins')
         mod = path_import('in_install', path)
-        mod_path = os.path.join(INSTALL_DIR, 'engines', 'in_install.py')
+        mod_path = os.path.join(INSTALL_DIR, 'engine', 'builtins', 'in_install.py')
         self.assertEqual(getabsfile(mod), mod_path)
 
     def test_path_import_list(self):
-        paths = [os.path.join(x, 'engines') for x in [USER_DIR, INSTALL_DIR]]
+        user_path = os.path.join(USER_DIR, 'engines')
+        install_path = os.path.join(INSTALL_DIR, 'engine', 'builtins')
+        paths = [user_path, install_path]
         mod = path_import('in_both', paths)
         mod_path = os.path.join(USER_DIR, 'engines', 'in_both.py')
         self.assertEqual(getabsfile(mod), mod_path)
