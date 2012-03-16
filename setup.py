@@ -3,6 +3,7 @@
 import distribute_setup
 distribute_setup.use_setuptools()
 
+import sys
 from setuptools import setup, find_packages
 
 from volt import __version__
@@ -16,6 +17,11 @@ install_requires = [
 ]
 version = __version__
 long_description = open("README.rst").read()
+
+# handle python 3
+extra = dict()
+if sys.version_info >= (3,):
+    extra['use_2to3'] = True
 
 # handle dependencies for python2.x (x < 7)
 try:
@@ -65,4 +71,5 @@ setup(
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Utilities",
     ],
+    **extra
 )

@@ -16,6 +16,7 @@ from __future__ import with_statement
 import codecs
 import os
 import re
+import sys
 from datetime import datetime
 from functools import partial
 
@@ -145,8 +146,11 @@ class Unit(object):
 
         # raise exception if there are non-ascii chars
         try:
-            string.decode('ascii')
-        except UnicodeDecodeError:
+            if not sys.version_info[0] > 2:
+                string.decode('ascii')
+            else:
+                assert all(ord(c) < 128 for c in string)
+        except (UnicodeDecodeError, AssertionError):
             raise ContentError("Slug in '%s' contains non-ascii characters." \
                                % self.id)
 
