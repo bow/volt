@@ -38,7 +38,7 @@ class ContentError(Exception):
     pass
 
 class HeaderFieldError(ContentError):
-    """Raised if a unit header field defines a protected field."""
+    """Raised for unit header-related error."""
     pass
 
 class PermalinkTemplateError(ContentError):
@@ -70,7 +70,7 @@ class Unit(object):
         self.id = id
 
     def __repr__(self):
-        return '%s(id=%s)' % (self.__class__.__name__, self.id)
+        return '%s(%s)' % (self.__class__.__name__, self.id)
 
     @property
     def fields(self):

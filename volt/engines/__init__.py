@@ -77,6 +77,10 @@ class Engine(object):
             raise NotImplementedError("Engine subclass must define a "
                                       "'USER_CONF_ENTRY' class attribute.")
 
+        if not hasattr(self.config, 'CONTENT_DIR'):
+            raise ConfigError("Engine subclass must define a 'CONTENT_DIR' "
+                              "value in DEFAULTS.")
+
         # get user config object
         conf_name = os.path.splitext(os.path.basename(CONFIG.VOLT.USER_CONF))[0]
         voltconf = path_import(conf_name, CONFIG.VOLT.ROOT_DIR)
@@ -96,24 +100,6 @@ class Engine(object):
                 self.config[template] = os.path.join(CONFIG.VOLT.TEMPLATE_DIR, \
                         self.config[template])
 
-    def globdir(self, directory, pattern='*', is_gen=False):
-        """Returns glob or iglob results for a given directory.
-
-        Args:
-            directory - Absolute path of the directory to glob.
-
-        Keyword Args:
-            pattern - File name pattern to search in the glob directory,
-                defaults to all files ('*').
-            is_gen - Boolean indicating whether to return a generator or a list.
-
-        """
-        pattern = os.path.join(directory, pattern)
-        if is_gen:
-            return glob.iglob(pattern)
-
-        return glob.glob(pattern)
-
     def process_text_units(self, config, content_dir):
         """Processes units into a TextUnit object and returns them in a list.
 
@@ -125,16 +111,10 @@ class Engine(object):
                 to process.
 
         """
-
         # get absolute paths of content files
-        units = []
-        targets = self.globdir(content_dir, is_gen=True)
+        targets = glob.iglob(os.path.join(content_dir, '*'))
         files = (x for x in targets if os.path.isfile(x))
-
-        # parse each file and fill self.contents with TextUnit-s
-        # also set its URL and absolute file path to be written
-        for fname in files:
-            units.append(TextUnit(fname, config))
+        units = [TextUnit(fname, config) for fname in files]
 
         return units
 
@@ -150,7 +130,11 @@ class Engine(object):
         """
         reversed = sort_key.startswith('-')
         sort_key = sort_key.strip('-')
-        units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+        try:
+            units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+        except AttributeError:
+            raise HeaderFieldError("Sorting key '%s' not present in all unit "
+                                   "header field." % sort_key)
 
     def chain_units(self, units):
         """Sets the previous and next permalink attributes of units in a list.
