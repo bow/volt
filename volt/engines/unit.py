@@ -334,3 +334,155 @@ class TextUnit(Unit):
 
     def __repr__(self):
         return 'TextUnit(id=%s)' % os.path.basename(self.id)
+
+
+class Pagination(object):
+
+    """Class representing a single paginated HTML file.
+
+    The pagination class computes the necessary attributes required to write
+    a single HTML file containing the desired units. It is the __dict__ object
+    of this Pagination class that will be passed on to the template writing
+    environment. However, the division of which units go to which pagination
+    page is done by another class instantiating Pagination, for example the
+    Pack class.
+
+    """
+
+    def __init__(self, units, pack_idx, base_permalist=[], title='',
+            is_last=False, pagination_url=None, site_dir=None):
+        """Initializes a Pagination instance.
+
+        Args:
+            units - List containing units to pack.
+            pack_idx - Current pack object index.
+
+        Keyword Args:
+            title - String denoting the title of the pagination page.
+            base_permalist - List of URL components common to all pack
+                permalinks.
+            is_last - Boolean indicating whether this pack is the last one.
+            pagination_url - String denoting the URL token appended to
+                paginations after the first one.
+            site_dir - String denoting absolute path to site output directory.
+
+        """
+        self.title = title
+        self.units = units
+        # because page are 1-indexed and lists are 0-indexed
+        self.pack_idx = pack_idx + 1
+        # this will be appended for pack_idx > 1, e.g. .../page/2
+        # precautions for empty string, so double '/'s are not introduced
+        base_permalist = filter(None, base_permalist)
+
+        index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
+
+        if pagination_url is None:
+            pagination_url = CONFIG.SITE.PAGINATION_URL
+        if site_dir is None:
+            site_dir = CONFIG.VOLT.SITE_DIR
+
+        if self.pack_idx == 1:
+            # if it's the first pack page, use base_permalist only
+            self.permalist = base_permalist
+        else:
+            # otherwise add pagination dir and pack index
+            self.permalist = base_permalist + filter(None, [pagination_url, \
+                    str(self.pack_idx)])
+
+        # set path and url
+        path = [site_dir]
+        path.extend(self.permalist)
+        url = [''] + self.permalist
+        if index_html_only:
+            path.append('index.html')
+            url[-1] = url[-1] + '/'
+        else:
+            path[-1] = path[-1] + '.html'
+            url[-1] = url[-1] + '.html'
+        setattr(self, 'path', os.path.join(*(path)))
+        setattr(self, 'permalink', '/'.join(url))
+
+        # since we can guess the permalink of next and previous pack objects
+        # we can set those attributes here (unlike in units)
+        base_pagination_url = [''] + base_permalist
+        # next permalinks
+        if not is_last:
+            self.permalink_next = '/'.join(base_pagination_url + filter(None, \
+                    [pagination_url, str(self.pack_idx + 1)]))
+        # prev permalinks
+        if self.pack_idx == 2:
+            # if pagination is at 2, previous permalink is to 1
+            self.permalink_prev = '/'.join(base_pagination_url)
+        elif self.pack_idx != 1:
+            self.permalink_prev = '/'.join(base_pagination_url + filter(None, \
+                    [pagination_url, str(self.pack_idx - 1)]))
+
+        # set final chain permalink url according to index_html_only
+        if hasattr(self, 'permalink_next'):
+            if index_html_only:
+                self.permalink_next += '/'
+            else:
+                self.permalink_next += '.html'
+
+        if hasattr(self, 'permalink_prev'):
+            if index_html_only:
+                self.permalink_prev += '/'
+            else:
+                self.permalink_prev += '.html'
+
+
+class Pack(object):
+
+    """Pack represent a collection of units sharing a similar field value.
+
+    The pack class is used mainly to create sub-sections of an Engine as
+    denoted by its URL. For example, if we are creating a blog using Volt,
+    we might want to have a page containing all posts with the 'foo' tag,
+    or perhaps a page containing all posts written in January 2011. In these
+    two cases, pack will be an object representing all posts whose tag contains
+    'foo' or all posts whose datetime.year is 2011 and datetime.month is 1,
+    respectively.
+
+    Of course, listing all possible units sharing a given field value might
+    not be practical if there are hundreds of units. That's why Pack can also
+    handle paginating these units into HTML files with the desired number of
+    units per page. Pack does this by using the Pagination class, which is
+    a class that represents single HTML pages in a Pack. See Pagination's
+    documentation for more information.
+
+    """
+
+    def __init__(self, unit_matches, base_permalist, units_per_pagination):
+        """Initializes a Pack object.
+
+        Args:
+            unit_matches - List of all units sharing a certain field value.
+            base_permalist - Permalink tokens that will be used by all
+                paginations of the given units.
+            units_per_pagination - Number of units to show per pagination.
+
+        Selection of the units to pass on to initialize Pack is done by an
+        Engine object. An example of method that does this in the base Engine
+        class is the build_packs method.
+
+        """
+        self.id = '/'.join(base_permalist[1:])
+        self.paginations = []
+
+        # count how many paginations we need
+        pagination = len(unit_matches) / units_per_pagination + \
+                (len(unit_matches) % units_per_pagination != 0)
+
+        # construct pagination objects for each pagination page
+        for i in range(pagination):
+            start = i * units_per_pagination
+            if i != pagination - 1:
+                stop = (i + 1) * units_per_pagination
+                self.paginations.append(Pagination(\
+                        unit_matches[start:stop], i, \
+                        base_permalist, title=''))
+            else:
+                self.paginations.append(Pagination(\
+                        unit_matches[start:], i, \
+                        base_permalist, title='', is_last=True))

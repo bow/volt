@@ -11,36 +11,115 @@ Tests for volt.engine.
 
 """
 
-from __future__ import with_statement
 import os
 import unittest
+import warnings
 from datetime import datetime
 
 from mock import MagicMock, patch, call
 
-from volt.engines import Engine, Pagination
-from volt.engines.unit import Unit
-from volt.test import USER_DIR, FIXTURE_DIR
+from volt.config import ConfigError, Config
+from volt.engines import Engine, EmptyUnitsWarning
+from volt.engines.unit import \
+        Unit, Pagination, HeaderFieldError, ContentError, \
+        PermalinkTemplateError
+from volt.test import FIXTURE_DIR, USER_DIR
+
+
+def make_units_mock():
+    # define mock units
+    Unitlist_mock = list()
+    for i in range(5):
+        Unitlist_mock.append(MagicMock(spec=Unit))
+
+    # set unit attributes
+    unitlist_attrs = [
+            {'id': '1',
+             'title': 'Radical Notion',
+             'time': datetime(2010, 9, 5, 8, 0),
+             'tags': ['arthur', 'eames'],
+             'author': 'Smith',
+             },
+            {'id': '2',
+             'title': 'One Simple Idea',
+             'time': datetime(2010, 7, 30, 4, 31),
+             'author': 'Smith',
+             'tags': ['eames', 'arthur'],
+             'permalink': '/one',
+             },
+            {'id': '3',
+             'title': 'Dream Within A Dream',
+             'time': datetime(1998, 4, 5, 8, 0),
+             'author': 'Johnson',
+             'tags': ['eames', 'arthur', 'cobb'],
+             'permalink': '/dream',
+             },
+            {'id': '4',
+             'title': '528491',
+             'time': datetime(2002, 8, 17, 14, 35),
+             'author': 'Smith',
+             'tags': ['cobb', 'arthur'],
+             'permalink': '/528491',
+             },
+            {'id': '5',
+             'title': 'Dream is Collapsing',
+             'time': datetime(2011, 9, 5, 8, 0),
+             'tags': ['ariadne', 'arthur'],
+             'author': 'Johnson',
+             },
+            ]
+    for idx, attr in enumerate(unitlist_attrs):
+        for field in attr:
+            setattr(Unitlist_mock[idx], field, attr[field])
+
+    return Unitlist_mock
 
 
 class TestEngine(unittest.TestCase):
 
     def setUp(self):
-        self.content_dir = os.path.join(FIXTURE_DIR, 'units', '01')
         self.engine = Engine()
 
-    def test_init(self):
-        # test if exception is raised if engine is not initialized
-        # with a session object
-        self.assertRaises(TypeError, Engine.__init__, ) 
-    
-    def test_globdir(self):
-        # test if whole directory globbing for files work
-        dir_content = ['01_pass.md', 'mockdir']
-        dir_content = [os.path.join(self.content_dir, x) for x in dir_content].sort()
-        self.assertEqual(self.engine.globdir(self.content_dir).sort(), dir_content)
+    def test_prime_user_conf_entry_none(self):
+        self.assertRaises(NotImplementedError, self.engine.prime, )
 
-    def test_process_text_units(self):
+    def test_prime_content_dir_undefined(self):
+        self.engine.USER_CONF_ENTRY = 'ENGINE_TEST'
+        self.assertRaises(ConfigError, self.engine.prime, )
+
+    @ patch('volt.engines.CONFIG')
+    def test_prime_user_conf_not_config(self, CONFIG_mock):
+        self.engine.USER_CONF_ENTRY = 'ENGINE_TEST_BAD'
+        self.engine.config.CONTENT_DIR = 'engine_test'
+        self.assertRaises(TypeError, self.engine.prime, )
+
+    @ patch('volt.engines.CONFIG')
+    def test_prime_consolidation(self, CONFIG_mock):
+        defaults = Config(
+            BAR = 'engine bar in default',
+            QUX = 'engine qux in default',
+            CONTENT_DIR = 'engine_test',
+            UNIT_TEMPLATE = 'template.html',
+        )
+        self.engine.config = defaults
+        self.engine.USER_CONF_ENTRY = 'ENGINE_TEST'
+        CONFIG_mock.VOLT.USER_CONF = os.path.join(USER_DIR, 'voltconf.py')
+        CONFIG_mock.VOLT.ROOT_DIR = USER_DIR
+        CONFIG_mock.VOLT.CONTENT_DIR = os.path.join(USER_DIR, 'content')
+        CONFIG_mock.VOLT.TEMPLATE_DIR = os.path.join(USER_DIR, 'templates')
+
+        self.engine.prime()
+
+        self.assertEqual(self.engine.config.FOO, 'engine foo in user')
+        self.assertEqual(self.engine.config.BAR, 'engine bar in user')
+        self.assertEqual(self.engine.config.QUX, 'engine qux in default')
+        self.assertEqual(self.engine.config.CONTENT_DIR, os.path.join(\
+                USER_DIR, 'content', 'engine_test'))
+        self.assertEqual(self.engine.config.UNIT_TEMPLATE, os.path.join(\
+                USER_DIR, 'templates', 'template.html'))
+
+    @patch('volt.engines.TextUnit')
+    def test_process_text_units(self, TextUnit_mock):
         content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
         fnames = ['01_radical-notion.md', '02_one-simple-idea.md',
                   '03_dream-is-collapsing.md', '04_dream-within-a-dream.md',
@@ -50,68 +129,41 @@ class TestEngine(unittest.TestCase):
         call_args = zip(abs_fnames, [self.engine.config] * len(fnames))
         calls = [call(*x) for x in call_args]
 
-        with patch('volt.engines.TextUnit', mocksignature=True) as TextUnit_Mock:
-            self.engine.process_text_units(self.engine.config, content_dir)
-            TextUnit_Mock.assert_has_calls(calls, any_order=True)
+        self.engine.process_text_units(self.engine.config, content_dir)
+        TextUnit_mock.assert_has_calls(calls, any_order=True)
 
-    def test_build_packs(self):
-        # define mock units
-        Unitlist_Mock = list()
-        for i in range(5):
-            Unitlist_Mock.append(MagicMock(spec=Unit))
+    def test_sort_units_ok(self):
+        self.engine.units = make_units_mock()
+        key = '-time'
+        titles = ['Dream is Collapsing', 'Radical Notion', 'One Simple Idea', \
+                  '528491', 'Dream Within A Dream',]
+        self.assertNotEqual([x.title for x in self.engine.units], titles)
+        self.engine.sort_units(self.engine.units, key)
+        self.assertEqual([x.title for x in self.engine.units], titles)
 
-        # set unit attributes
-        unitlist_attrs = [
-                {'title': 'Dream is Collapsing',
-                 'time': datetime(2011, 9, 5, 8, 0),
-                 'author': 'Johnson',
-                 'tags': ['cobb', 'ariadne', 'fischer'],},
-                {'title': 'One Simple Idea',
-                 'time': datetime(2010, 9, 30, 4, 31),
-                 'author': 'Smith',
-                 'tags': ['cobb', 'eames', 'arthur', 'ariadne', 'yusuf'],},
-                {'title': 'Radical Notion',
-                 'time': datetime(2010, 9, 5, 8, 0),
-                 'author': 'Smith',
-                 'tags': ['cobb', 'eames', 'arthur'],},
-                {'title': '528491',
-                 'time': datetime(2002, 8, 17, 14, 35),
-                 'author': 'Smith',
-                 'tags': ['eames', 'saito', 'cobb'],},
-                {'title': 'Dream Within A Dream',
-                 'time': datetime(1998, 4, 5, 8, 0),
-                 'author': 'Johnson',
-                 'tags': ['fischer', 'saito', 'eames'],},
-                ]
-        for idx, attr in enumerate(unitlist_attrs):
-            for field in attr:
-                setattr(Unitlist_Mock[idx], field, attr[field])
+    def test_sort_units_bad_key(self):
+        self.engine.units = make_units_mock()
+        key = 'date'
+        self.assertRaises(HeaderFieldError, self.engine.sort_units, \
+                self.engine.units, key)
 
-        self.engine.units = Unitlist_Mock
-        base_url = 'blog'
-        units_per_pagination = 2
-        index_html_only = True
+    def test_chain_units_missing_neighbor_permalink(self):
+        units = make_units_mock()
+        self.assertRaises(ContentError, self.engine.chain_units, units)
 
-        pack_patterns = ('',
-                         'tag/{tags}',
-                         'author/{author}',
-                         '{time:%Y}',
-                         '{time:%Y/%m}',)
-        expected = ['',
-                    'tag/arthur', 'tag/eames', 'tag/fischer', 'tag/yusuf',
-                    'tag/ariadne', 'tag/cobb', 'tag/saito',
-                    'author/Smith', 'author/Johnson',
-                    '2011', '2010', '2002', '1998',
-                    '2011/09', '2010/09', '2002/08', '1998/04',]
+    def test_chain_units_ok(self):
+        unchained_units = make_units_mock()[1:-1]
+        assert [unit.id for unit in unchained_units] == ['2', '3', '4']
+        units = self.engine.chain_units(unchained_units)
 
-        with patch('volt.engines.Pack', mocksignature=True):
-            packs = self.engine.build_packs(pack_patterns, base_url, \
-                    units_per_pagination, index_html_only)
+        self.assertEqual(units[0].permalink_next, units[1].permalink)
+        self.assertFalse(hasattr(units[0], 'permalink_prev'))
 
-        observed = packs.keys()
-        expected.sort()
-        observed.sort()
-        self.assertEqual(observed, expected)
+        self.assertEqual(units[1].permalink_next, units[2].permalink)
+        self.assertEqual(units[1].permalink_prev, units[0].permalink)
+
+        self.assertFalse(hasattr(units[-1], 'permalink_next'))
+        self.assertEqual(units[-1].permalink_prev, units[1].permalink)
 
     def test_activate(self):
         self.assertRaises(NotImplementedError, self.engine.activate, )
@@ -120,6 +172,131 @@ class TestEngine(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.engine.dispatch, )
 
 
+class TestEngineBuildPacks(unittest.TestCase):
+
+    def setUp(self):
+        self.engine = Engine()
+        self.engine.config.URL = 'test'
+        self.engine.config.POSTS_PER_PAGE = 2
+
+    def packer_setup(self):
+        pass
+
+    def test_url_undefined(self):
+        del self.engine.config.URL
+        self.assertRaises(ConfigError, self.engine.build_packs, ('',))
+
+    def test_units_per_pagination_undefined(self):
+        del self.engine.config.POSTS_PER_PAGE
+        self.assertRaises(ConfigError, self.engine.build_packs, ('',))
+
+    @patch.object(warnings, 'warn')
+    def test_empty_units_warning(self, warn_mock):
+        self.engine.build_packs(('',))
+        args = [call('Engine has no units to pack.', EmptyUnitsWarning)]
+        self.assertEqual(warn_mock.call_args_list, args)
+
+    def test_bad_pack_pattern(self):
+        self.engine.units = make_units_mock()
+        self.assertRaises(PermalinkTemplateError, self.engine.build_packs, \
+                ('{bad}/pattern',))
+
+    def test_packer_not_implemented(self):
+        self.engine.units = make_units_mock()
+        for unit in self.engine.units:
+            setattr(unit, 'newtype', dict(foo='bar'))
+        self.assertRaises(NotImplementedError, self.engine.build_packs, \
+                ('unimplemented/{newtype}',))
+
+    def test_packer_all(self):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test']
+        field = base_permalist[-1][1:-1]
+        with patch('volt.engines.Pack') as Pack_mock:
+            [x for x in self.engine._packer_all(field, base_permalist, 2)]
+
+        self.assertEqual(Pack_mock.call_count, 1)
+        expected = call(self.engine.units, ['test'], 2)
+        self.assertEqual(Pack_mock.call_args, expected)
+
+    def test_packer_single(self):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', 'author', '{author}']
+        field = base_permalist[-1][1:-1]
+        with patch('volt.engines.Pack') as Pack_mock:
+            [x for x in self.engine._packer_single(field, base_permalist, 2)]
+
+        self.assertEqual(2, Pack_mock.call_count)
+        call1 = call(self.engine.units[:2] + [self.engine.units[3]], \
+                ['test', 'author', 'Smith'], 2)
+        call2 = call([self.engine.units[2], self.engine.units[4]], \
+                ['test', 'author', 'Johnson'], 2)
+        Pack_mock.assert_has_calls([call1, call2], any_order=True)
+
+    def test_packer_multiple(self):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', 'tag', '{tags}']
+        field = base_permalist[-1][1:-1]
+        with patch('volt.engines.Pack') as Pack_mock:
+            [x for x in self.engine._packer_multiple(field, base_permalist, 2)]
+
+        self.assertEqual(4, Pack_mock.call_count)
+        call1 = call([self.engine.units[4]], ['test', 'tag', 'ariadne'], 2)
+        call2 = call(self.engine.units[2:4], ['test', 'tag', 'cobb'], 2)
+        call3 = call(self.engine.units[:3], ['test', 'tag', 'eames'], 2)
+        call4 = call(self.engine.units, ['test', 'tag', 'arthur'], 2)
+        Pack_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
+
+    def test_packer_datetime_single_time_token(self):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', '{time:%Y}']
+        field = base_permalist[-1][1:-1]
+        with patch('volt.engines.Pack') as Pack_mock:
+            [x for x in self.engine._packer_datetime(field, base_permalist, 2)]
+
+        self.assertEqual(4, Pack_mock.call_count)
+        call1 = call(self.engine.units[:2], ['test', '2010'], 2)
+        call2 = call([self.engine.units[2]], ['test', '1998'], 2)
+        call3 = call([self.engine.units[3]], ['test', '2002'], 2)
+        call4 = call([self.engine.units[4]], ['test', '2011'], 2)
+        Pack_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
+
+    def test_packer_datetime_multiple_time_tokens(self):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', '{time:%Y/%m}']
+        field = base_permalist[-1][1:-1]
+        with patch('volt.engines.Pack') as Pack_mock:
+            [x for x in self.engine._packer_datetime(field, base_permalist, 2)]
+
+        self.assertEqual(Pack_mock.call_count, 5)
+        call1 = call([self.engine.units[0]], ['test', '2010', '09'], 2)
+        call2 = call([self.engine.units[1]], ['test', '2010', '07'], 2)
+        call3 = call([self.engine.units[2]], ['test', '1998', '04'], 2)
+        call4 = call([self.engine.units[3]], ['test', '2002', '08'], 2)
+        call5 = call([self.engine.units[4]], ['test', '2011', '09'], 2)
+        Pack_mock.assert_has_calls([call1, call2, call3, call4, call5], \
+                any_order=True)
+
+    @patch('volt.engines.Pack', MagicMock, mocksignature=True)
+    def build_packs_ok(self):
+        self.engine.units = make_units_mock()
+        pack_patterns = ('',
+                         'tag/{tags}',
+                         'author/{author}',
+                         '{time:%Y}',
+                         '{time:%Y/%m}',)
+        expected = ['',
+                    'tag/arthur', 'tag/eames', 'tag/ariadne', 'tag/cobb',
+                    'author/Smith', 'author/Johnson',
+                    '2011', '2010', '2002', '1998',
+                    '2011/09', '2010/09', '2010/07', '2002/08', '1998/04',]
+
+        packs = self.engine.build_packs(pack_patterns)
+        self.assertEqual(len(packs), len(expected))
+
+
+@patch('volt.engines.unit.CONFIG.SITE.INDEX_HTML_ONLY', True, create=True)
+@patch('volt.engines.unit.CONFIG', MagicMock())
 class TestPagination(unittest.TestCase):
 
     def test_init(self):
