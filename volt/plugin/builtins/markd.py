@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
------------------
-volt.plugin.markd
------------------
+--------------------------
+volt.plugin.builtins.markd
+--------------------------
 
 Markdown plugin for Volt units.
 
@@ -20,7 +20,7 @@ except ImportError:
     import markdown
     has_discount = False
 
-from volt.plugins import Plugin
+from volt.plugin.core import Plugin
 
 
 class MarkDPlugin(Plugin):

@@ -18,7 +18,7 @@ import sys
 
 from volt.config import CONFIG, SessionConfig
 from volt.engine.core import Engine
-from volt.plugins import Plugin
+from volt.plugin.core import Plugin
 from volt.utils import grab_class, notify, path_import, style
 
 
@@ -56,11 +56,7 @@ class Generator(object):
         # load engine or plugin
         # user_path has priority over volt_path
         user_path = os.path.join(user_dir, processor_type)
-
-        if processor_type == 'engines':
-            volt_path = os.path.join(volt_dir, 'engine', 'builtins')
-        else:
-            volt_path = os.path.join(volt_dir, 'plugins')
+        volt_path = os.path.join(volt_dir, processor_type[:-1], 'builtins')
 
         return path_import(processor_name, [user_path, volt_path])
 

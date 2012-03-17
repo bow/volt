@@ -4,7 +4,7 @@
 volt.test.test_plugin
 ---------------------
 
-Tests for the volt.plugin module.
+Tests for the volt.plugin package.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
@@ -14,7 +14,7 @@ Tests for the volt.plugin module.
 
 import unittest
 
-from volt.plugins import Plugin
+from volt.plugin.core import Plugin
 
 
 class TestPlugin(unittest.TestCase):

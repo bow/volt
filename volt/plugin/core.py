@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
------------
-volt.plugin
------------
+----------------
+volt.plugin.core
+----------------
 
-Base Volt plugin classes and functions.
+Core Volt plugin.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
@@ -13,7 +13,8 @@ Base Volt plugin classes and functions.
 
 import os
 
-from volt.config import CONFIG, Config, path_import
+from volt.config import CONFIG, Config
+from volt.utils import path_import
 
 
 class Plugin(object):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-------------------
-volt.plugin.atomic
-------------------
+---------------------------
+volt.plugin.builtins.atomic
+---------------------------
 
 Atom feed generator plugin.
 
@@ -18,7 +18,7 @@ from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 
 from volt.config import CONFIG, Config
-from volt.plugins import Plugin
+from volt.plugin.core import Plugin
 
 
 class AtomicPlugin(Plugin):

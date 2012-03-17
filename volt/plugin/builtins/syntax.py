@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-------------------
-volt.plugin.syntax
-------------------
+---------------------------
+volt.plugin.builtins.syntax
+---------------------------
 
 Syntax highlighter processor plugin for Volt.
 
@@ -20,7 +20,7 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 
 from volt.config import Config
-from volt.plugins import Plugin
+from volt.plugin.core import Plugin
 
 
 _RE_SYNTAX = re.compile(r'(<syntax:(.*?)>(.*?)</syntax>)', re.DOTALL)
