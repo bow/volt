@@ -97,6 +97,11 @@ class Generator(object):
         """
         self.engines = dict()
 
+        # reverse engine-plugin map
+        ep_map = dict()
+        for engine in CONFIG.SITE.ENGINES:
+            ep_map[engine] = [x[0] for x in CONFIG.SITE.PLUGINS if engine in x[1]]
+
         # prime and activate engines
         for engine in CONFIG.SITE.ENGINES:
             engine_mod = self.get_processor_mod(engine, 'engines')
@@ -105,21 +110,20 @@ class Generator(object):
             self.engines[engine].prime()
             self.engines[engine].activate()
 
-            util.show_notif("  => ", is_bright=True)
-            util.show_info("%s engine primed and activated\n" % engine.capitalize())
+            sys.stderr.write('\n')
+            notify("Activating %s engine...\n" % \
+                    engine.capitalize(), color='cyan')
 
-        # run plugins
-        for plugin, target_engine in CONFIG.SITE.PLUGINS:
-            plugin_mod = self.get_processor_mod(plugin, 'plugins')
-            plugin_class = grab_class(plugin_mod, Plugin)
+            plugins = ep_map[engine]
+            for plugin in plugins:
+                plugin_mod = self.get_processor_mod(plugin, 'plugins')
+                plugin_class = grab_class(plugin_mod, Plugin)
 
-            if plugin_class:
-                plugin_obj = plugin_class()
-
-                for engine in target_engine:
-                    util.show_warning("  => ", is_bright=True)
-                    util.show_info("%s plugin loaded -- running on %s units\n" % \
-                            (plugin.capitalize(), engine.capitalize()))
+                if plugin_class:
+                    plugin_obj = plugin_class()
+                    notify("Running %s plugin on %s units\n" % \
+                            (plugin.capitalize(), engine.capitalize()), \
+                            chars='::', color='yellow', level=2)
                     plugin_obj.prime()
                     plugin_obj.run(self.engines[engine].units)
 
@@ -135,6 +139,8 @@ class Generator(object):
         if not os.path.exists(outfile):
             with open(outfile, 'w') as target:
                 target.write(template.render(page={}, CONFIG=CONFIG))
+
+        sys.stderr.write('\n')
 
 
 def run():
