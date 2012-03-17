@@ -15,15 +15,16 @@ import argparse
 import sys
 
 from volt import __version__
-from volt import util
 from volt.config import CONFIG
 from volt.exceptions import ConfigNotFoundError, ContentError
+from volt.utils import style
 
 
 class ArgParser(argparse.ArgumentParser):
     """Custom parser that prints help message when an error occurs."""
     def error(self, message):
-        util.show_error("Error: %s\n" % message.capitalize())
+        style("Error: %s\n" % message.capitalize(), color='red', \
+              is_bright=True)
         self.print_usage()
         sys.exit(1)
 
@@ -75,7 +76,8 @@ def run_init(cmd_name='init'):
     import shutil
 
     if not os.listdir(os.curdir) == []:
-        util.show_error("'volt %s' must be run inside an empty directory.\n" % cmd_name)
+        style("'volt %s' must be run inside an empty directory.\n" % \
+              cmd_name, color='red', is_bright=True)
         sys.exit(1)
 
     # get volt installation directory and demo dir
@@ -92,7 +94,7 @@ def run_init(cmd_name='init'):
         shutil.copytree(os.path.join(parent_dir, child), child)
 
     if cmd_name == 'init':
-        util.show_info("Volt project started. Have fun!\n", is_bright=True)
+        style("Volt project started. Have fun!\n", is_bright=True)
 
 def run_demo():
     """Starts a new project with pre-made demo files, generates the static
@@ -101,7 +103,8 @@ def run_demo():
     """
     # copy demo files
     run_init(cmd_name='demo')
-    util.show_info("\nPreparing your lightning-speed Volt tour...\n\n")
+    style("\nPreparing your lightning-speed Volt tour...\n", \
+            is_bright=True)
     # generate the site
     run_gen()
     # need to pass arglist to serve, so we'll call main
@@ -133,8 +136,9 @@ def main(cli_arglist=None):
         CONFIG.CMD = build_parsers().parse_args(cli_arglist)
         CONFIG.CMD.run()
     except ConfigNotFoundError:
-        util.show_error("You can only run 'volt %s' inside a Volt project "
-                        "directory.\n" % CONFIG.CMD.name)
-        util.show_error("Start a Volt project by running 'volt init'.\n")
+        style("You can only run 'volt %s' inside a Volt project "
+              "directory.\n" % CONFIG.CMD.name, color='red', is_bright=True)
+        style("Start a Volt project by running 'volt init'.\n", color='red',
+                is_bright=True)
     except ContentError, e:
-        util.show_error("Error: %s\n" % e)
+        style("Error: %s\n" % e, color='red', is_bright=True)

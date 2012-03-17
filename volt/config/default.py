@@ -55,9 +55,6 @@ SITE = Config(
     # pagination page will have '.../page/2/', the third '.../page/3/', etc.
     PAGINATION_URL = '',
 
-    # Flag for colored terminal output
-    COLORED_TERMINAL = False,
-
     # Boolean to set if output file names should all be 'index.html' or vary
     # according to the last token in its self.permalist attribute
     # index.html-only outputs allows for nice URLS without fiddling too much

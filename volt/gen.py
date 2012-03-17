@@ -14,12 +14,12 @@ Volt site generator.
 from __future__ import with_statement
 import os
 import shutil
+import sys
 
-from volt import util
-from volt.config import CONFIG, SessionConfig, path_import
+from volt.config import CONFIG, SessionConfig
 from volt.engine.core import Engine
 from volt.plugins import Plugin
-from volt.util import grab_class
+from volt.utils import grab_class, notify, path_import, style
 
 
 class Generator(object):
@@ -153,9 +153,9 @@ def run():
     shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
             ignore=shutil.ignore_patterns(CONFIG.SITE.IGNORE_PATTERN))
 
-    util.show_info("Volt site generation start!\n", is_bright=True)
+    style("\nVolt site generation start!\n", is_bright=True)
 
     # generate the site!
     Generator().start()
 
-    util.show_info("Site generation finished.\n", is_bright=True)
+    style("Site generation finished.\n", is_bright=True)

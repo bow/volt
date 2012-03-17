@@ -152,15 +152,3 @@ JINJA2 = Config(
     # Dictionary of function names mapped to the functions themselves
     TESTS = dict(),
 )
-
-VOLT = Config(
-    # Flag for colored terminal output
-    COLORED_TEXT = False,
-
-    # Ignore patterns
-    # Filenames that match this pattern will not be copied from template directory
-    # to site directory
-    IGNORE_PATTERN = str(),
-)
-
-

@@ -35,8 +35,8 @@ from SocketServer import ThreadingTCPServer
 
 from volt import __version__
 from volt import gen
-from volt import util
 from volt.config import CONFIG
+from volt.utils import notify, style
 
 
 class VoltHTTPServer(ThreadingTCPServer):
@@ -130,11 +130,11 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
         message = "[%s] %s\n" % (self.log_date_time_string(), format % args)
 
         if int(args[1]) >= 400:
-            util.show_warning(message)
+            style(message, color='yellow')
         elif int(args[1]) >= 300:
-            util.show_notif(message)
+            style(message, color='cyan')
         else:
-            util.show_info(message)
+            style(message)
 
 
     def log_request(self, code='-', size='-'):
@@ -186,22 +186,20 @@ def run():
             error_message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):
             error_message = str(e)
-        util.show_error("Error: %s\n" % error_message)
+        style("Error: %s\n" % error_message, color='red', is_bright=True)
         sys.exit(1)
 
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-    util.show_info("\nVolt %s Development Server\n" % __version__, is_bright=True)
-    util.show_notif("  => ", is_bright=True)
-    util.show_info("Serving %s/\n" % CONFIG.VOLT.SITE_DIR)
-    util.show_notif("  => ", is_bright=True)
-    util.show_info("Running at http://%s:%s/\n"
-                   "(CTRL-C to stop)\n\n" % (run_address, run_port))
+    style("\nVolt %s Development Server\n" % __version__, is_bright=True)
+    notify("Serving %s/\n" % CONFIG.VOLT.SITE_DIR, color='cyan')
+    notify("Running at http://%s:%s/\n"
+           "(CTRL-C to stop)\n\n" % (run_address, run_port), color='cyan')
 
     try:
         server.serve_forever()
     except:
         server.shutdown()
-        util.show_info("\nServer stopped.\n\n", is_bright=True)
+        style("\nServer stopped.\n\n", is_bright=True)
         sys.exit(0)

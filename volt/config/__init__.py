@@ -26,13 +26,13 @@ same Config instance in their voltconf.py.
 
 """
 
-import imp
 import os
 import sys
 
 from jinja2 import Environment, FileSystemLoader
 
 from volt.exceptions import ConfigNotFoundError
+from volt.utils import path_import
 
 
 class SessionConfig(object):
@@ -192,22 +192,6 @@ class Config(dict):
         # set __dict__ to the dict contents itself
         # enables value access by dot notation
         self.__dict__ = self
-
-
-def path_import(name, paths):
-    """Imports a module from the specified path.
-
-    Args:
-        name - String denoting target module name.
-        paths - List of possible absolute directory paths or string of an
-            absolute directory path that may contain the target module.
-
-    """
-    # convert to list if paths is string
-    if isinstance(paths, basestring):
-        paths = [paths]
-    mod_tuple = imp.find_module(name, paths)
-    return imp.load_module(name, *mod_tuple)
 
 
 CONFIG = SessionConfig()

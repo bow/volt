@@ -16,9 +16,10 @@ import unittest
 from datetime import datetime
 from inspect import getabsfile
 
-from volt.config import SessionConfig, ConfigNotFoundError, path_import
+from volt.config import SessionConfig, ConfigNotFoundError
 from volt.config.default import displaytime
 from volt.test import INSTALL_DIR, USER_DIR
+from volt.utils import path_import
 
 
 class TestSessionConfigLoad(unittest.TestCase):

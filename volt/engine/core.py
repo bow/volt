@@ -24,10 +24,11 @@ from functools import partial
 
 import yaml
 
-from volt.config import CONFIG, Config, path_import
+from volt.config import CONFIG, Config
 from volt.exceptions import HeaderFieldError, ContentError, ConfigError, \
                             PermalinkTemplateError, DuplicateOutputError, \
                             EmptyUnitsWarning
+from volt.utils import path_import
 
 
 # regex objects for unit header and permalink processing
