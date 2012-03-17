@@ -60,7 +60,8 @@ Here are some of my favorite features:
    Finally, Volt comes with a plugin architecture that lets you hook into the
    engines' actions. Three plugins comes packed in with volt: plugins for
    atom feed generation, for syntax highlighting, and for markdown processing. 
-   `Browse their code <http://github.com/bow/volt/tree/master/volt/plugins>`_ 
+   `Browse their code 
+   <http://github.com/bow/volt/tree/master/volt/plugin/builtins>`_ 
    to see how you can easily write your own plugin.
 
 
