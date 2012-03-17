@@ -328,36 +328,44 @@ class TestUnit(unittest.TestCase):
                 'kings-of-convenience-know-how-feat-feist')
         self.assertEqual(slugify('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest'),
                 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
-        self.assertRaises(ContentError, slugify, 'Röyksopp - Eple')
-        self.assertRaises(ContentError, slugify, '宇多田ヒカル')
-        self.assertRaises(ContentError, slugify, '&**%&^%&$-')
 
-    def test_get_permalist(self):
+    def test_get_permalist_error(self):
+        self.assertRaises(PermalinkTemplateError, self.unit.get_permalist, \
+                'bali/{beach}/party')
+
+    def test_get_permalist_ok(self):
         get_permalist = self.unit.get_permalist
         self.unit.slug = 'yo-dawg'
         self.unit.time = datetime(2009, 1, 28, 16, 47)
+
         self.assertEqual(get_permalist('{time:%Y/%m/%d}/{slug}'),
                 ['', '2009', '01', '28', 'yo-dawg'])
         self.assertEqual(get_permalist('{time:%Y}/mustard/{time:%m}/{slug}/'),
                 ['', '2009', 'mustard', '01', 'yo-dawg'])
         self.assertEqual(get_permalist('i/love /mustard'),
                 ['', 'i', 'love', 'mustard'])
-        self.assertRaises(PermalinkTemplateError, get_permalist, 'bali/{beach}/party')
 
-    def test_set_paths(self):
-        base_dir = TEST_DIR
-        abs_url = 'http://alay.com'
+    @patch('volt.engine.core.CONFIG')
+    def test_set_paths_index_html_true(self, CONFIG_mock):
+        CONFIG_mock.SITE.URL = 'http://alay.com'
+        CONFIG_mock.VOLT.SITE_DIR = base_dir = TEST_DIR
+        CONFIG_mock.SITE.INDEX_HTML_ONLY = True
         self.unit.permalist = ['blog', 'not', 'string']
 
-        # test for default settings
-        self.unit.set_paths(base_dir, abs_url, index_html_only=True)
+        self.unit.set_paths()
         self.assertEqual(self.unit.path, os.path.join(base_dir, \
                 'blog', 'not', 'string', 'index.html'))
         self.assertEqual(self.unit.permalink, '/blog/not/string/')
         self.assertEqual(self.unit.permalink_abs, 'http://alay.com/blog/not/string')
 
-        # test for set_index_html = False
-        self.unit.set_paths(base_dir, abs_url, index_html_only=False)
+    @patch('volt.engine.core.CONFIG')
+    def test_set_paths_index_html_false(self, CONFIG_mock):
+        CONFIG_mock.SITE.URL = 'http://alay.com'
+        CONFIG_mock.VOLT.SITE_DIR = base_dir = TEST_DIR
+        CONFIG_mock.SITE.INDEX_HTML_ONLY = False
+        self.unit.permalist = ['blog', 'not', 'string']
+
+        self.unit.set_paths()
         self.assertEqual(self.unit.path, os.path.join(base_dir, \
                 'blog', 'not', 'string.html'))
         self.assertEqual(self.unit.permalink, '/blog/not/string.html')

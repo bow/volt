@@ -508,18 +508,8 @@ class Unit(Page):
 
         return [unit_base_url.strip('/')] + filter(None, permalist)
 
-    def set_paths(self, base_dir=None, abs_url=None, index_html_only=None):
+    def set_paths(self):
         """Sets the permalink and absolute file path for the unit.
-
-        Args:
-            unit - Unit instance whose path and URL are to be set
-
-        Keyword Args:
-            base_dir - Absolute file system path to the output site directory
-            abs_url - String of base absolute URL (e.g. http://foo.com)
-            index_html_only -  Boolean indicating output file name;  if False
-                then the output file name is '%s.html' where %s is the last
-                string of the unit's permalist
 
         Output file defaults to 'index' so each unit will be written to
         'index.html' in its path. This allows for nice URLs without fiddling
@@ -530,28 +520,28 @@ class Unit(Page):
                 "%s requires the 'permalist' attribute to be set first." % \
                 self.__class__.__name__
 
-        if abs_url is None:
-            abs_url = CONFIG.SITE.URL
-        if base_dir is None:
-            base_dir = CONFIG.VOLT.SITE_DIR
-        if index_html_only is None:
-            index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
-
+        abs_url = CONFIG.SITE.URL
+        index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
+        base_path = [CONFIG.VOLT.SITE_DIR]
         rel_url = ['']
-        path = [base_dir]
 
-        # set path and urls
-        path.extend(self.permalist)
+        base_path.extend(self.permalist)
         rel_url.extend(filter(None, self.permalist))
+
         if index_html_only:
             rel_url[-1] = rel_url[-1] + '/'
-            path.append('index.html')
+            base_path.append('index.html')
         else:
             rel_url[-1] = rel_url[-1] + '.html'
-            path[-1] = path[-1] + '.html'
-        setattr(self, 'permalink', '/'.join(rel_url))
-        setattr(self, 'permalink_abs', '/'.join([abs_url] + rel_url[1:]).strip('/'))
-        setattr(self, 'path', os.path.join(*(path)))
+            base_path[-1] = base_path[-1] + '.html'
+
+        permalink = '/'.join(rel_url)
+        permalink_abs = '/'.join([abs_url] + rel_url[1:]).strip('/')
+        path = os.path.join(*base_path)
+
+        setattr(self, 'permalink', permalink)
+        setattr(self, 'permalink_abs', permalink_abs)
+        setattr(self, 'path', path)
 
 
 class Pagination(Page):
