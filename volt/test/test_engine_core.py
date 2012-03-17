@@ -300,19 +300,28 @@ class TestUnit(unittest.TestCase):
         prot = ('cats', )
         self.assertRaises(HeaderFieldError, self.unit.check_protected, 'cats', prot)
 
-    def test_as_into_list(self):
-        # test if specified fields are processed into lists
+    def test_as_into_list_trailing(self):
         tags = 'ripley, ash, kane   '
         taglist = ['ripley', 'ash', 'kane'].sort()
         self.assertEqual(self.unit.as_list(tags, ', ').sort(), taglist)
-        cats = 'wickus;christopher;koobus;'
-        catlist = ['wickus', 'christopher', 'koobus'].sort()
-        self.assertEqual(self.unit.as_list(cats, ';').sort(), catlist)
-        grps = 'trinity, twin, twin, morpheus'
-        grplist = ['trinity', 'twin', 'morpheus'].sort()
-        self.assertEqual(self.unit.as_list(grps, ', ').sort(), grplist)
 
-    def test_slugify(self):
+    def test_as_into_list_extra_separator(self):
+        tags = 'wickus;christopher;koobus;'
+        taglist = ['wickus', 'christopher', 'koobus'].sort()
+        self.assertEqual(self.unit.as_list(tags, ';').sort(), taglist)
+
+    def test_as_into_list_duplicate_item(self):
+        tags = 'trinity, twin, twin, morpheus'
+        taglist = ['trinity', 'twin', 'morpheus'].sort()
+        self.assertEqual(self.unit.as_list(tags, ', ').sort(), taglist)
+
+    def test_slugify_error(self):
+        slugify = self.unit.slugify
+        self.assertRaises(ContentError, slugify, 'Röyksopp - Eple')
+        self.assertRaises(ContentError, slugify, '宇多田ヒカル')
+        self.assertRaises(ContentError, slugify, '&**%&^%&$-')
+
+    def test_slugify_ok(self):
         slugify = self.unit.slugify
         self.assertEqual(slugify('Move along people, this is just a test'),
                 'move-along-people-this-is-just-test')
