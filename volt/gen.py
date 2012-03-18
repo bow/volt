@@ -121,8 +121,7 @@ class Generator(object):
 
                 if plugin_class:
                     plugin_obj = plugin_class()
-                    notify("Running %s plugin on %s units\n" % \
-                            (plugin.capitalize(), engine.capitalize()), \
+                    notify("Running %s plugin\n" % plugin.capitalize(), \
                             chars='::', color='yellow', level=2)
                     plugin_obj.prime()
                     plugin_obj.run(self.engines[engine].units)
