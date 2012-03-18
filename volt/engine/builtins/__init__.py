@@ -87,10 +87,11 @@ class TextUnit(Unit):
             self.display_time = self.time.strftime(config.DISPLAY_DATETIME_FORMAT)
 
         # set paths
-        self.set_paths()
+        paths = self.get_path_and_permalink()
+        self.path, self.permalink, self.permalink_abs = paths
 
     def __repr__(self):
-        return 'TextUnit(id=%s)' % os.path.basename(self.id)
+        return '%s(%s)' % (self.__class__.__name__, os.path.basename(self.id))
 
 
 class TextEngine(Engine):

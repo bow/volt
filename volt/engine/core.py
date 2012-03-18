@@ -20,7 +20,7 @@ import re
 import sys
 import warnings
 from datetime import datetime
-from functools import partial
+from functools import partial, reduce
 
 import yaml
 
@@ -39,6 +39,26 @@ _RE_MULTIPLE = re.compile(r'-+')
 _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 
+# chain item permalinks, for Engine.units and Pack.paginations
+def chain_item_permalinks(items):
+    """Sets the previous and next permalink attributes of items.
+
+    This method allows each item in a list to link to its previous and/or
+    next unit according to the ordering.
+
+    """
+    try:
+        for idx, item in enumerate(items):
+            if idx != 0:
+                setattr(item, 'permalink_prev', items[idx-1].permalink)
+            if idx != len(items) - 1:
+                setattr(item, 'permalink_next', items[idx+1].permalink)
+    except AttributeError:
+        raise ContentError("%s '%s' neighbor(s) does not have a "
+                           "permalink attribute." % \
+                                   (item.__class__.__name__.capitalize(), item.id))
+
+
 class Engine(object):
 
     """Base Volt Engine class.
@@ -55,13 +75,16 @@ class Engine(object):
 
     DEFAULTS = Config()
 
-    USER_CONF_ENTRY = None
-
     def __init__(self):
         """Initializes the engine."""
         self.units = list()
         self.packs = list()
         self.config = Config(self.DEFAULTS)
+
+    def create_units(self):
+        """Creates the units that will be processed by the engine."""
+        raise NotImplementedError("%s must implement a create_units method." % \
+                self.__class__.__name__)
 
     def activate(self):
         """Performs initial processing of resources into unit objects."""
@@ -80,18 +103,14 @@ class Engine(object):
         the values of CONTENT_DIR, and *_TEMPLATE to absolute directory paths.
 
         """
-        if self.USER_CONF_ENTRY is None:
-            raise ConfigError("%s must define a 'USER_CONF_ENTRY' value as a "
-                              "class attribute." % self.__class__.__name__)
-
-        if not hasattr(self.config, 'CONTENT_DIR'):
-            raise ConfigError("%s must define a 'CONTENT_DIR' value in "
-                              "DEFAULTS." % self.__class__.__name__)
-
         # get user config object
         conf_name = os.path.splitext(os.path.basename(CONFIG.VOLT.USER_CONF))[0]
         voltconf = path_import(conf_name, CONFIG.VOLT.ROOT_DIR)
-        user_config = getattr(voltconf, self.USER_CONF_ENTRY)
+        try:
+            user_config = getattr(voltconf, self.USER_CONF_ENTRY)
+        except AttributeError:
+            raise ConfigError("%s must define a 'USER_CONF_ENTRY' value as a "
+                              "class attribute." % self.__class__.__name__)
 
         # to ensure proper Config consolidation
         if not isinstance(user_config, Config):
@@ -101,12 +120,20 @@ class Engine(object):
         self.config.update(user_config)
 
         # set absolute directory paths
-        self.config.CONTENT_DIR = os.path.join(CONFIG.VOLT.CONTENT_DIR, \
-                self.config.CONTENT_DIR)
+        try:
+            self.config.CONTENT_DIR = os.path.join(CONFIG.VOLT.CONTENT_DIR, \
+                    self.config.CONTENT_DIR)
+        except AttributeError:
+            raise ConfigError("%s must define a 'CONTENT_DIR' value in "
+                              "DEFAULTS." % self.__class__.__name__)
 
         for template in [x for x in self.config.keys() if x.endswith('_TEMPLATE')]:
                 self.config[template] = os.path.join(CONFIG.VOLT.TEMPLATE_DIR, \
                         self.config[template])
+
+    def chain_units(self):
+        """Sets the previous and nex permalink attributes of each unit."""
+        chain_item_permalinks(self.units)
 
     def sort_units(self, sort_key):
         """Sorts a list of units according to the given header field name.
@@ -125,29 +152,14 @@ class Engine(object):
             raise HeaderFieldError("Sorting key '%s' not present in all unit "
                                    "header field." % sort_key)
 
-    def chain_units(self):
-        """Sets the previous and next permalink attributes of units.
-
-        This method allows each unit in a list to link to its previous and/or
-        next unit according to the ordering.
-
-        """
-        try:
-            for idx, unit in enumerate(self.units):
-                if idx != 0:
-                    setattr(unit, 'permalink_prev', self.units[idx-1].permalink)
-                if idx != len(self.units) - 1:
-                    setattr(unit, 'permalink_next', self.units[idx+1].permalink)
-        except AttributeError:
-            raise ContentError("Unit '%s' neighbor(s) does not have a "
-                               "permalink attribute." % unit.id)
-
     def _packer_all(self, field, base_permalist, units_per_pagination):
         """Build packs for all field values (PRIVATE)."""
+
         yield Pack(self.units, base_permalist, units_per_pagination)
 
     def _packer_single(self, field, base_permalist, units_per_pagination):
         """Build packs for string/int/float header field values (PRIVATE)."""
+
         units = self.units
         str_set = set([getattr(x, field) for x in units])
 
@@ -158,6 +170,7 @@ class Engine(object):
 
     def _packer_multiple(self, field, base_permalist, units_per_pagination):
         """Build packs for list or tuple header field values (PRIVATE)."""
+
         units = self.units
         item_list_per_unit = (getattr(x, field) for x in units)
         item_set = reduce(set.union, [set(x) for x in item_list_per_unit])
@@ -169,6 +182,7 @@ class Engine(object):
 
     def _packer_datetime(self, field, base_permalist, units_per_pagination):
         """Build packs for datetime header field values (PRIVATE)."""
+
         units = self.units
         # separate the field name from the datetime formatting
         field, time_fmt = field.split(':')
@@ -390,6 +404,36 @@ class Page(object):
 
         return string
 
+    def get_path_and_permalink(self):
+        """Returns the permalink and absolute file path for the unit."""
+
+        assert hasattr(self, 'permalist'), \
+                "%s requires the 'permalist' attribute to be set first." % \
+                self.__class__.__name__
+
+        abs_url = CONFIG.SITE.URL
+        index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
+        base_path = [CONFIG.VOLT.SITE_DIR]
+        rel_url = ['']
+
+        permalist = self.permalist
+        base_path.extend(permalist)
+        rel_url.extend(filter(None, permalist))
+
+        if index_html_only:
+            rel_url[-1] = rel_url[-1] + '/'
+            base_path.append('index.html')
+        else:
+            rel_url[-1] = rel_url[-1] + '.html'
+            base_path[-1] = base_path[-1] + '.html'
+
+        path = os.path.join(*base_path)
+        permalink = '/'.join(rel_url)
+        permalink_abs = '/'.join([abs_url] + rel_url[1:]).strip('/')
+
+        return path, permalink, permalink_abs
+
+
 
 class Unit(Page):
 
@@ -486,62 +530,27 @@ class Unit(Page):
         pattern = pattern.strip('/') + '/'
 
         # get all permalink components and store into list
-        perms = re.findall(_RE_PERMALINK, pattern)
+        perm_tokens = re.findall(_RE_PERMALINK, pattern)
 
         # process components that are enclosed in {}
         permalist = []
-        for item in perms:
-            if '{%s}' % item[1:-1] == item:
-                cmp = item[1:-1]
-                if ':' in cmp:
-                    cmp, fmt = cmp.split(':')
-                if not hasattr(self, cmp):
+        for token in perm_tokens:
+            if '{%s}' % token[1:-1] == token:
+                field = token[1:-1]
+                if ':' in field:
+                    field, fmt = field.split(':')
+                if not hasattr(self, field):
                     raise PermalinkTemplateError("'%s' has no '%s' attribute." % \
-                            (self.id, cmp))
-                if isinstance(getattr(self, cmp), datetime):
-                    strftime = datetime.strftime(getattr(self, cmp), fmt)
+                            (self.id, field))
+                if isinstance(getattr(self, field), datetime):
+                    strftime = datetime.strftime(getattr(self, field), fmt)
                     permalist.extend(filter(None, strftime.split('/')))
                 else:
-                    permalist.append(self.slugify(getattr(self, cmp)))
+                    permalist.append(self.slugify(getattr(self, field)))
             else:
-                permalist.append(self.slugify(item))
+                permalist.append(self.slugify(token))
 
         return [unit_base_url.strip('/')] + filter(None, permalist)
-
-    def set_paths(self):
-        """Sets the permalink and absolute file path for the unit.
-
-        Output file defaults to 'index' so each unit will be written to
-        'index.html' in its path. This allows for nice URLs without fiddling
-        with .htaccess too much.
-
-        """
-        assert hasattr(self, 'permalist'), \
-                "%s requires the 'permalist' attribute to be set first." % \
-                self.__class__.__name__
-
-        abs_url = CONFIG.SITE.URL
-        index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
-        base_path = [CONFIG.VOLT.SITE_DIR]
-        rel_url = ['']
-
-        base_path.extend(self.permalist)
-        rel_url.extend(filter(None, self.permalist))
-
-        if index_html_only:
-            rel_url[-1] = rel_url[-1] + '/'
-            base_path.append('index.html')
-        else:
-            rel_url[-1] = rel_url[-1] + '.html'
-            base_path[-1] = base_path[-1] + '.html'
-
-        permalink = '/'.join(rel_url)
-        permalink_abs = '/'.join([abs_url] + rel_url[1:]).strip('/')
-        path = os.path.join(*base_path)
-
-        setattr(self, 'permalink', permalink)
-        setattr(self, 'permalink_abs', permalink_abs)
-        setattr(self, 'path', path)
 
 
 class Pagination(Page):
@@ -557,8 +566,7 @@ class Pagination(Page):
 
     """
 
-    def __init__(self, units, pack_idx, base_permalist=[], title='',
-            is_last=False, pagination_url=None, site_dir=None):
+    def __init__(self, units, pack_idx, base_permalist=[], title=''):
         """Initializes a Pagination instance.
 
         Args:
@@ -566,80 +574,37 @@ class Pagination(Page):
             pack_idx - Current pack object index.
 
         Keyword Args:
-            title - String denoting the title of the pagination page.
             base_permalist - List of URL components common to all pack
                 permalinks.
-            is_last - Boolean indicating whether this pack is the last one.
-            pagination_url - String denoting the URL token appended to
-                paginations after the first one.
-            site_dir - String denoting absolute path to site output directory.
+            title - String denoting the title of the pagination page.
 
         """
-        self.title = title
         self.units = units
-        # because page are 1-indexed and lists are 0-indexed
+        self.title = title
+
+        # since paginations are 1-indexed
         self.pack_idx = pack_idx + 1
-        # this will be appended for pack_idx > 1, e.g. .../page/2
         # precautions for empty string, so double '/'s are not introduced
-        base_permalist = filter(None, base_permalist)
+        self.base_permalist = filter(None, base_permalist)
 
-        index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
+        # set paths and permalist
+        self.permalist = self.get_permalist()
+        self.path, self.permalink, self.permalink_abs = self.get_path_and_permalink()
+        self.id = self.permalink
 
-        if pagination_url is None:
-            pagination_url = CONFIG.SITE.PAGINATION_URL
-        if site_dir is None:
-            site_dir = CONFIG.VOLT.SITE_DIR
+    def get_permalist(self):
+        """Returns a list of strings which will be used to construct permalinks."""
+        pagination_url = CONFIG.SITE.PAGINATION_URL
 
         if self.pack_idx == 1:
             # if it's the first pack page, use base_permalist only
-            self.permalist = base_permalist
+            permalist = self.base_permalist
         else:
             # otherwise add pagination dir and pack index
-            self.permalist = base_permalist + filter(None, [pagination_url, \
-                    str(self.pack_idx)])
+            permalist = self.base_permalist + \
+                    filter(None, [pagination_url, str(self.pack_idx)])
 
-        # set path and url
-        path = [site_dir]
-        path.extend(self.permalist)
-        url = [''] + self.permalist
-        if index_html_only:
-            path.append('index.html')
-            url[-1] = url[-1] + '/'
-        else:
-            path[-1] = path[-1] + '.html'
-            url[-1] = url[-1] + '.html'
-        setattr(self, 'path', os.path.join(*(path)))
-        setattr(self, 'permalink', '/'.join(url))
-
-        self.id = self.permalink
-
-        # since we can guess the permalink of next and previous pack objects
-        # we can set those attributes here (unlike in units)
-        base_pagination_url = [''] + base_permalist
-        # next permalinks
-        if not is_last:
-            self.permalink_next = '/'.join(base_pagination_url + filter(None, \
-                    [pagination_url, str(self.pack_idx + 1)]))
-        # prev permalinks
-        if self.pack_idx == 2:
-            # if pagination is at 2, previous permalink is to 1
-            self.permalink_prev = '/'.join(base_pagination_url)
-        elif self.pack_idx != 1:
-            self.permalink_prev = '/'.join(base_pagination_url + filter(None, \
-                    [pagination_url, str(self.pack_idx - 1)]))
-
-        # set final chain permalink url according to index_html_only
-        if hasattr(self, 'permalink_next'):
-            if index_html_only:
-                self.permalink_next += '/'
-            else:
-                self.permalink_next += '.html'
-
-        if hasattr(self, 'permalink_prev'):
-            if index_html_only:
-                self.permalink_prev += '/'
-            else:
-                self.permalink_prev += '.html'
+        return permalist
 
 
 class Pack(object):
@@ -663,11 +628,11 @@ class Pack(object):
 
     """
 
-    def __init__(self, unit_matches, base_permalist, units_per_pagination):
+    def __init__(self, units, base_permalist, units_per_pagination):
         """Initializes a Pack object.
 
         Args:
-            unit_matches - List of all units sharing a certain field value.
+            units - List of all units which will be packed.
             base_permalist - Permalink tokens that will be used by all
                 paginations of the given units.
             units_per_pagination - Number of units to show per pagination.
@@ -678,21 +643,26 @@ class Pack(object):
 
         """
         self.id = '/'.join(base_permalist)
-        self.paginations = []
+        self.paginations = list()
 
         # count how many paginations we need
-        pagination = len(unit_matches) // units_per_pagination + \
-                (len(unit_matches) % units_per_pagination != 0)
+        is_last = len(units) % units_per_pagination != 0
+        pagination_len = len(units) // units_per_pagination + int(is_last)
 
         # construct pagination objects for each pagination page
-        for i in range(pagination):
-            start = i * units_per_pagination
-            if i != pagination - 1:
-                stop = (i + 1) * units_per_pagination
-                self.paginations.append(Pagination(\
-                        unit_matches[start:stop], i, \
-                        base_permalist, title=''))
+        for idx in range(pagination_len):
+            start = idx * units_per_pagination
+            if idx != pagination_len - 1:
+                stop = (idx + 1) * units_per_pagination
+                units_in_pagination = units[start:stop]
             else:
-                self.paginations.append(Pagination(\
-                        unit_matches[start:], i, \
-                        base_permalist, title='', is_last=True))
+                units_in_pagination = units[start:]
+
+            pagination = Pagination(units_in_pagination, idx, base_permalist)
+            self.paginations.append(pagination)
+
+        self.chain_paginations()
+
+    def chain_paginations(self):
+        """Sets the previous and nex permalink attributes of each unit."""
+        chain_item_permalinks(self.paginations)
