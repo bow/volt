@@ -17,7 +17,7 @@ class ConfigError(Exception):
     """Raised for errors related to configurations."""
     pass
 
-class ConfigNotFoundError(ConfigError):
+class ConfigNotFoundError(Exception):
     """Raised when Volt fails to find voltconf.py."""
     pass
 
