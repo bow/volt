@@ -11,6 +11,10 @@ reStructuredText plugin for Volt units.
 
 """
 
+import os
+
+from docutils.core import publish_parts
+
 from volt.plugin.core import Plugin
 
 
@@ -20,4 +24,18 @@ class RstPlugin(Plugin):
 
     def run(self, units):
         """Process the given units."""
-        pass
+        for unit in units:
+            if hasattr(unit, 'markup'):
+                is_rst = ('rst' == getattr(unit, 'markup').lower())
+            else:
+                ext = os.path.splitext(unit.id)[1]
+                is_rst = (ext.lower() == '.rst')
+
+            if is_rst:
+                string = getattr(unit, 'content')
+                string = self.get_html(string)
+                setattr(unit, 'content', string)
+
+    def get_html(self, string):
+        rst_contents = publish_parts(string, writer_name='html')
+        return rst_contents['html_body']
