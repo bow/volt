@@ -12,6 +12,7 @@ Markdown plugin for Volt units.
 """
 
 import os
+import sys
 
 try:
     import discount
@@ -62,8 +63,13 @@ class MarkdownParserPlugin(Plugin):
             string - string to process
         """
         if has_discount:
-            marked = discount.Markdown(string.encode('utf-8'))
-            html = marked.get_html_content()
-            return html.decode('utf-8')
+            if sys.version_inf[0] < 3:
+                marked = discount.Markdown(string.encode('utf-8'))
+                html = marked.get_html_content()
+                return html.decode('utf-8')
+            else:
+                marked = discount.Markdown(string)
+                html = marked.get_html_content()
+                return html
         else:
             return markdown.markdown(string)
