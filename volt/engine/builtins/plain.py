@@ -80,4 +80,4 @@ class PlainEngine(TextEngine):
 
     def dispatch(self):
         # write them according to template
-        self.write_units(self.config.UNIT_TEMPLATE)
+        self.write_units()

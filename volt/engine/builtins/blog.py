@@ -111,14 +111,13 @@ class BlogEngine(TextEngine):
         # parse individual post and store the results in self.units
         self.units = self.create_units()
         # sort units
-        #self.sort_units(self.units, self.config.SORT)
         self.sort_units(self.config.SORT)
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units()
 
     def dispatch(self):
         # build packs
-        self.packs = self.build_packs(self.config.PACKS)
+        self.paginations = self.create_paginations(self.config.PACKS)
         # write output files
-        self.write_units(self.config.UNIT_TEMPLATE)
-        self.write_packs(self.config.PACK_TEMPLATE)
+        self.write_units()
+        self.write_paginations()

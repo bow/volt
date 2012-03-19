@@ -78,7 +78,7 @@ class Engine(object):
     def __init__(self):
         """Initializes the engine."""
         self.units = list()
-        self.packs = list()
+        self.paginations = dict()
         self.config = Config(self.DEFAULTS)
 
     def create_units(self):
@@ -152,13 +152,46 @@ class Engine(object):
             raise HeaderFieldError("Sorting key '%s' not present in all unit "
                                    "header field." % sort_key)
 
-    def _packer_all(self, field, base_permalist, units_per_pagination):
-        """Build packs for all field values (PRIVATE)."""
+    def paginator(self, units, base_permalist, units_per_pagination):
+        """Create paginations from units.
 
-        yield Pack(self.units, base_permalist, units_per_pagination)
+        Args:
+            units - List of all units which will be packed.
+            base_permalist - Permalink tokens that will be used by all
+                paginations of the given units.
+            units_per_pagination - Number of units to show per pagination.
 
-    def _packer_single(self, field, base_permalist, units_per_pagination):
-        """Build packs for string/int/float header field values (PRIVATE)."""
+        """
+        paginations = list()
+
+        # count how many paginations we need
+        is_last = len(units) % units_per_pagination != 0
+        pagination_len = len(units) // units_per_pagination + int(is_last)
+
+        # construct pagination objects for each pagination page
+        for idx in range(pagination_len):
+            start = idx * units_per_pagination
+            if idx != pagination_len - 1:
+                stop = (idx + 1) * units_per_pagination
+                units_in_pagination = units[start:stop]
+            else:
+                units_in_pagination = units[start:]
+
+            pagination = Pagination(units_in_pagination, idx, base_permalist)
+            paginations.append(pagination)
+
+        chain_item_permalinks(paginations)
+
+        for pagin in paginations:
+            yield pagin
+
+    def _paginate_all(self, field, base_permalist, units_per_pagination):
+        """Create paginations for all field values (PRIVATE)."""
+
+        yield self.paginator(self.units, base_permalist, units_per_pagination)
+
+    def _paginate_single(self, field, base_permalist, units_per_pagination):
+        """Create paginations for string/int/float header field values (PRIVATE)."""
 
         units = self.units
         str_set = set([getattr(x, field) for x in units])
@@ -166,10 +199,10 @@ class Engine(object):
         for item in str_set:
             matches = [x for x in units if item == getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            yield Pack(matches, base_permalist, units_per_pagination)
+            yield self.paginator(matches, base_permalist, units_per_pagination)
 
-    def _packer_multiple(self, field, base_permalist, units_per_pagination):
-        """Build packs for list or tuple header field values (PRIVATE)."""
+    def _paginate_multiple(self, field, base_permalist, units_per_pagination):
+        """Create paginations for list or tuple header field values (PRIVATE)."""
 
         units = self.units
         item_list_per_unit = (getattr(x, field) for x in units)
@@ -178,10 +211,10 @@ class Engine(object):
         for item in item_set:
             matches = [x for x in units if item in getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            yield Pack(matches, base_permalist, units_per_pagination)
+            yield self.paginator(matches, base_permalist, units_per_pagination)
 
-    def _packer_datetime(self, field, base_permalist, units_per_pagination):
-        """Build packs for datetime header field values (PRIVATE)."""
+    def _paginate_datetime(self, field, base_permalist, units_per_pagination):
+        """Create paginations for datetime header field values (PRIVATE)."""
 
         units = self.units
         # separate the field name from the datetime formatting
@@ -209,9 +242,9 @@ class Engine(object):
                     matches.append(unit)
 
             base_permalist = base_permalist[:-(len(time_tokens))] + list(item)
-            yield Pack(matches, base_permalist, units_per_pagination)
+            yield self.paginator(matches, base_permalist, units_per_pagination)
 
-    def build_packs(self, pack_patterns):
+    def create_paginations(self, pagin_patterns):
         """Build packs of units and return them in a list.
 
         Args:
@@ -244,17 +277,17 @@ class Engine(object):
                     EmptyUnitsWarning)
 
         # list to contain all built packs
-        packs = list()
-        packer_map = {'all': self._packer_all,
-                      'str': self._packer_single,
-                      'int': self._packer_single,
-                      'float': self._packer_single,
-                      'list': self._packer_multiple,
-                      'tuple': self._packer_multiple,
-                      'datetime': self._packer_datetime,
+        paginations = dict()
+        paginator_map = {'all': self._paginate_all,
+                         'str': self._paginate_single,
+                         'int': self._paginate_single,
+                         'float': self._paginate_single,
+                         'list': self._paginate_multiple,
+                         'tuple': self._paginate_multiple,
+                         'datetime': self._paginate_datetime,
                      }
 
-        for pattern in pack_patterns:
+        for pattern in pagin_patterns:
 
             perm_tokens = re.findall(_RE_PERMALINK, pattern.strip('/') + '/')
             base_permalist = [base_url] + perm_tokens
@@ -275,15 +308,16 @@ class Engine(object):
                 field_type = sample.__class__.__name__
 
             try:
-                packer = packer_map[field_type]
+                paginate = paginator_map[field_type]
                 args = [field, base_permalist, units_per_pagination]
-                pack_list = [pack for pack in packer(*args)]
-                packs.extend(pack_list)
+                paginate_list = [pagination.next() for pagination in paginate(*args)]
+                key = '/'.join(base_permalist)
+                paginations[key] = paginate_list
             except KeyError:
                 raise NotImplementedError("Packer method for '%s' has not "
                                           "been implemented." % field_type)
 
-        return packs
+        return paginations
 
     def write_output(self, file_obj, string):
         """Writes string to the open file object.
@@ -297,14 +331,13 @@ class Engine(object):
         """
         file_obj.write(string.encode('utf-8'))
 
-    def write_units(self, template_path):
-        """Writes single units into the given output file.
+    def write_items(self, items, template_path):
+        """Writes item in items using the given template file.
 
         Args:
             template_path - Template file name, must exist in the defined template
                 directory.
             template_env - Jinja2 template environment.
-            config_context - SessionConfig instance.
 
         """
         template_env = CONFIG.SITE.TEMPLATE_ENV
@@ -313,56 +346,28 @@ class Engine(object):
 
         config_context = CONFIG
 
-        for unit in self.units:
+        for item in items:
             # warn if files are overwritten
             # this indicates a duplicate post, which could result in
             # unexpected results
-            if os.path.exists(unit.path):
-                raise DuplicateOutputError("'%s' already exists." % unit.path)
+            if os.path.exists(item.path):
+                raise DuplicateOutputError("'%s' already exists." % item.path)
             try:
-                os.makedirs(os.path.dirname(unit.path))
+                os.makedirs(os.path.dirname(item.path))
             except OSError:
                 pass
-            with open(unit.path, 'w') as target:
-                rendered = template.render(page=unit.__dict__, \
+            with open(item.path, 'w') as target:
+                rendered = template.render(page=item.__dict__, \
                         CONFIG=config_context)
                 self.write_output(target, rendered)
 
-    def write_packs(self, template_path):
-        """Writes packs into the given output file.
+    def write_units(self):
+        self.write_items(self.units, self.config.UNIT_TEMPLATE)
 
-        Args:
-            template_path - Template file name, must exist in the defined template
-                directory.
-            template_env - Jinja2 template environment.
-            config_context - SessionConfig instance.
+    def write_paginations(self):
+        for pagination in self.paginations.values():
+            self.write_items(pagination, self.config.PACK_TEMPLATE)
 
-        """
-        template_env = CONFIG.SITE.TEMPLATE_ENV
-        template_file = os.path.basename(template_path)
-        template = template_env.get_template(template_file)
-
-        config_context = CONFIG
-
-        for pack in self.packs:
-            for pagination in pack.paginations:
-                # warn if files are overwritten
-                # this indicates a duplicate post, which could result in
-                # unexpected results
-                if os.path.exists(pagination.path):
-                    raise DuplicateOutputError("'%s' already exists." % pagination.path)
-                # !!!
-                # this could be dangerous, check later
-                try:
-                    os.makedirs(os.path.dirname(pagination.path))
-                except OSError:
-                    pass
-                with open(pagination.path, 'w') as target:
-                    # since pack object only stores indexes of unit in self.unit
-                    # we need to get the actual unit items before writing
-                    rendered = template.render(page=pagination.__dict__, \
-                            CONFIG=config_context)
-                    self.write_output(target, rendered)
 
 class Page(object):
 
@@ -605,64 +610,3 @@ class Pagination(Page):
                     filter(None, [pagination_url, str(self.pack_idx)])
 
         return permalist
-
-
-class Pack(object):
-
-    """Pack represent a collection of units sharing a similar field value.
-
-    The pack class is used mainly to create sub-sections of an Engine as
-    denoted by its URL. For example, if we are creating a blog using Volt,
-    we might want to have a page containing all posts with the 'foo' tag,
-    or perhaps a page containing all posts written in January 2011. In these
-    two cases, pack will be an object representing all posts whose tag contains
-    'foo' or all posts whose datetime.year is 2011 and datetime.month is 1,
-    respectively.
-
-    Of course, listing all possible units sharing a given field value might
-    not be practical if there are hundreds of units. That's why Pack can also
-    handle paginating these units into HTML files with the desired number of
-    units per page. Pack does this by using the Pagination class, which is
-    a class that represents single HTML pages in a Pack. See Pagination's
-    documentation for more information.
-
-    """
-
-    def __init__(self, units, base_permalist, units_per_pagination):
-        """Initializes a Pack object.
-
-        Args:
-            units - List of all units which will be packed.
-            base_permalist - Permalink tokens that will be used by all
-                paginations of the given units.
-            units_per_pagination - Number of units to show per pagination.
-
-        Selection of the units to pass on to initialize Pack is done by an
-        Engine object. An example of method that does this in the base Engine
-        class is the build_packs method.
-
-        """
-        self.id = '/'.join(base_permalist)
-        self.paginations = list()
-
-        # count how many paginations we need
-        is_last = len(units) % units_per_pagination != 0
-        pagination_len = len(units) // units_per_pagination + int(is_last)
-
-        # construct pagination objects for each pagination page
-        for idx in range(pagination_len):
-            start = idx * units_per_pagination
-            if idx != pagination_len - 1:
-                stop = (idx + 1) * units_per_pagination
-                units_in_pagination = units[start:stop]
-            else:
-                units_in_pagination = units[start:]
-
-            pagination = Pagination(units_in_pagination, idx, base_permalist)
-            self.paginations.append(pagination)
-
-        self.chain_paginations()
-
-    def chain_paginations(self):
-        """Sets the previous and nex permalink attributes of each unit."""
-        chain_item_permalinks(self.paginations)
