@@ -63,7 +63,7 @@ class MarkdownParserPlugin(Plugin):
             string - string to process
         """
         if has_discount:
-            if sys.version_inf[0] < 3:
+            if sys.version_info[0] < 3:
                 marked = discount.Markdown(string.encode('utf-8'))
                 html = marked.get_html_content()
                 return html.decode('utf-8')
