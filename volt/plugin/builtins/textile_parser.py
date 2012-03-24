@@ -37,4 +37,9 @@ class TextileParserPlugin(Plugin):
                 setattr(unit, 'content', string)
 
     def get_html(self, string):
+        """Returns html string of a textile content.
+
+        string -- string to process
+        
+        """
         return textile.textile(string)

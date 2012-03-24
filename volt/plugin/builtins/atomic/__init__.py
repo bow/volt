@@ -28,6 +28,21 @@ class AtomicPlugin(Plugin):
     This plugin generates atom feed from the units of its target engine.
     The processed units must have a datetime header field.
 
+    Options for this plugin configurable via voltconf.py are:
+
+        `TEMPLATE_FILE`
+            Name of the template atom file.
+
+        `OUTPUT_FILE`
+            Name of the generated atom file.
+
+        `TIME_FIELD`
+            Name of the unit field containing the datetime object used for
+            timestamping the feed items.
+
+        `EXCERPT_LENGTH`
+            Character length of the excerpt to show in each feed item.
+
     """
 
     DEFAULTS = Config(
@@ -36,8 +51,6 @@ class AtomicPlugin(Plugin):
         # output file name
         # by default, the feed is written to the current directory
         OUTPUT_FILE = 'atom.xml',
-        # name to put in feed
-        NAME = '',
         # unit field containing datetime object
         TIME_FIELD = 'time',
         # excerpt length in feed items

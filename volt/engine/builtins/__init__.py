@@ -32,9 +32,8 @@ class TextUnit(Unit):
     def __init__(self, fname, config):
         """Initializes TextUnit.
 
-        Args:
-            fname - Absolute path to the source file.
-            config - Config object containing unit options.
+        fname -- Absolute path to the source file.
+        config -- Config object containing unit options.
 
         """
         Unit.__init__(self, fname)

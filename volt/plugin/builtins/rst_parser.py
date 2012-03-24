@@ -37,5 +37,10 @@ class RstParserPlugin(Plugin):
                 setattr(unit, 'content', string)
 
     def get_html(self, string):
+        """Returns html string of a restructured text content.
+
+        string -- string to process
+        
+        """
         rst_contents = publish_parts(string, writer_name='html')
         return rst_contents['html_body']

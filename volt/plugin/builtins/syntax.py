@@ -91,8 +91,8 @@ class SyntaxPlugin(Plugin):
     def highlight_syntax(self, string):
         """Highlights syntaxes in the given string.
 
-        Args:
-            string - string containing the code to highlight.
+        string -- string containing the code to highlight.
+        
         """
         codeblocks = re.findall(_RE_SYNTAX, string)
         # results: list of tuples of 3 items

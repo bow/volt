@@ -58,9 +58,8 @@ class SessionConfig(object):
             start_dir=os.getcwd(), default_conf_name='default'):
         """Initializes SessionConfig.
 
-        Keyword Args:
-            default_dir - Absolute directory path of the default configuration.
-            start_dir - Starting directory for user configuration lookup.
+        default_dir -- Absolute directory path of the default configuration.
+        start_dir -- Starting directory for user configuration lookup.
 
         """
         self.py3 = (sys.version_info[0] > 2)
@@ -140,8 +139,7 @@ class SessionConfig(object):
     def get_root_dir(self, start_dir):
         """Returns the root directory of a Volt project.
 
-        Args:
-            start_dir - Starting directory for voltconf.py lookup.
+        start_dir -- Starting directory for voltconf.py lookup.
 
         Checks the current directory for a Volt settings file. If it is not
         present, parent directories of the current directory is checked until

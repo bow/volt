@@ -30,14 +30,13 @@ class Generator(object):
             volt_dir=os.path.dirname(__file__), user_dir=None):
         """Returns the engine or plugin class used in site generation.
 
-        Args:
-            processor_name - String denoting engine or plugin name.
-            processor_type - String denoting processor type. Must be 'engines'
-                or 'plugins'.
-            volt_dir - String denoting absolute path to Volt's installation
-                directory.
-            user_dir - String denoting absolute path to user's Volt project
-                directory.
+        processor_name -- String denoting engine or plugin name.
+        processor_type -- String denoting processor type. Must be 'engines'
+                          or 'plugins'.
+        volt_dir -- String denoting absolute path to Volt's installation
+                    directory.
+        user_dir -- String denoting absolute path to user's Volt project
+                    directory.
         
         This method tries to load engines or plugins from the user's Volt
         project directory first. Failing that, it will try to import engines

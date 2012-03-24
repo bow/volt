@@ -28,10 +28,9 @@ BRIGHTNESS_MAP = {'normal': '00', 'bold': '01'}
 def path_import(name, paths):
     """Imports a module from the specified path.
 
-    Args:
-        name - String denoting target module name.
-        paths - List of possible absolute directory paths or string of an
-            absolute directory path that may contain the target module.
+    name -- String denoting target module name.
+    paths -- List of possible absolute directory paths or string of an
+        absolute directory path that may contain the target module.
 
     """
     # convert to list if paths is string
@@ -45,9 +44,8 @@ def grab_class(mod, cls):
     """Returns a class from the given module that is a subclass of the given
     class.
 
-    Args:
-        mod - Module to be searched.
-        cls - Parent class of the class to return.
+    mod -- Module to be searched.
+    cls -- Parent class of the class to return.
 
     """
     objs = (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x)))
@@ -60,13 +58,10 @@ def grab_class(mod, cls):
 def style(string, color='grey', is_bright=False):
     """Formats the color and brightness of the given string for terminal display.
     
-    Args:
-        string - String to color.
-
-    Keyword Args:
-        color - String indicating color.
-        is_bright - Boolean indicating whether to return a bright version
-            of the colored string or not.
+    string -- String to color.
+    color -- String indicating color.
+    is_bright -- Boolean indicating whether to return a bright version of the
+                 colored string or not.
 
     """
     if os.name != 'nt':
@@ -80,15 +75,12 @@ def style(string, color='grey', is_bright=False):
 def notify(string, chars='=>', color='grey', level=1, is_bright=True):
     """Formats the given string for color terminal display.
 
-    Args:
-        string - String to color.
-
-    Keyword Args:
-        chars - Characters to append in front of the string
-        color - String indicating color.
-        level - Integer indicating indentation level.
-        is_bright - Boolean indicating whether to return a bright version
-            of the colored string or not.
+    string -- String to color.
+    chars -- Characters to append in front of the string
+    color -- String indicating color.
+    level -- Integer indicating indentation level.
+    is_bright -- Boolean indicating whether to return a bright version of the
+                 colored string or not.
 
     """
     if os.name != 'nt':

@@ -59,8 +59,8 @@ class MarkdownParserPlugin(Plugin):
     def get_html(self, string):
         """Returns html string of a markdown content.
 
-        Args:
-            string - string to process
+        string -- string to process
+        
         """
         if has_discount:
             if sys.version_info[0] < 3:

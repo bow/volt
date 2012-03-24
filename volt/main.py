@@ -64,8 +64,7 @@ def build_parsers():
 def run_init(cmd_name='init'):
     """Starts a new Volt project.
 
-    Args:
-        init - String, must be 'init' or 'demo', denotes which starting files
+    init -- String, must be 'init' or 'demo', denotes which starting files
             will be copied into the current directory.
 
     """
@@ -127,8 +126,7 @@ def run_version():
 def main(cli_arglist=None):
     """Main execution routine.
 
-    Args:
-        cli_arglist - List of arguments passed to the command line.
+    cli_arglist -- List of arguments passed to the command line.
 
     """
     # set command-line args accessible package-wide
