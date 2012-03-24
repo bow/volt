@@ -11,8 +11,6 @@ from volt import __version__
 
 install_requires = [
     "Jinja2>=2.6",
-    "PyYAML>=3.10",
-    "pygments>=1.4",
     "Markdown>=2.1.1",
 ]
 version = __version__

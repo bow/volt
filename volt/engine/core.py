@@ -22,8 +22,6 @@ import warnings
 from datetime import datetime
 from functools import partial, reduce
 
-import yaml
-
 from volt.config import CONFIG, Config
 from volt.exceptions import *
 from volt.utils import path_import
@@ -145,8 +143,8 @@ class Engine(object):
         try:
             self.units.sort(key=lambda x: getattr(x, sort_key), reverse=reversed)
         except AttributeError:
-            raise HeaderFieldError("Sorting key '%s' not present in all unit "
-                                   "header field." % sort_key)
+            raise ContentError("Sorting key '%s' not present in all unit "
+                               "header field." % sort_key)
 
     def create_paginations(self):
         """Returns paginations of engine units in a dictionary.
@@ -450,11 +448,6 @@ class Unit(Page):
     as_datetime = datetime.strptime
     get_display_time = datetime.strftime
 
-    def parse_header(self, header_string):
-        """Thin wrapper for yaml.load for parsing header string."""
-        # why can't this be assigned directly like the other wrappers?
-        return yaml.load(header_string)
-
     def check_protected(self, field, prot):
         """Checks if the given field can be set by the user or not.
         
@@ -463,8 +456,8 @@ class Unit(Page):
 
         """
         if field in prot:
-            raise HeaderFieldError("'%s' should not define the protected "
-                               " header field '%s'" % (self.id, field))
+            raise ContentError("'%s' should not define the protected header "
+                               "field '%s'" % (self.id, field))
 
     def check_required(self, req):
         """Checks if all the required header fields are present.
@@ -474,8 +467,8 @@ class Unit(Page):
         """
         for field in req:
             if not hasattr(self, field):
-                raise HeaderFieldError("Required header field '%s' is "
-                                   "missing in '%s'." % (field, self.id))
+                raise ContentError("Required header field '%s' is missing in "
+                                   "'%s'." % (field, self.id))
 
     def as_list(self, field, sep):
         """Transforms a character-separated string field into a list.

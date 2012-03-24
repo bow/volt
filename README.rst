@@ -88,13 +88,25 @@ Volt is still in alpha ~ it's usable enough to be used for making
 `a real website <http://bow.web.id>`_, but many things could still break here
 and there.
 
-By default Volt will install the `python markdown module 
-<http://freewisdom.org/projects/python-markdown/Installation>`_. You can
-install `python-discount <http://github.com/trapeze/python-discount>`_ to
-improve markdown processing speed. `python-discount 
-<http://github.com/trapeze/python-discount>`_ is a wrapper for `Discount
-<http://www.pell.portland.or.us/~orc/Code/discount/>`_, a fast markdown
-parser written in C.
+Dependencies:
+
+* `Jinja2 <http://jinja.pocoo.org/docs/>`_
+
+Optional dependencies:
+
+* `python-markdown <http://freewisdom.org/projects/python-markdown/Installation>`_
+  (installed by default for ``volt demo``, can be safely removed if not used)
+
+* `python-discount <http://github.com/trapeze/python-discount>`_, for faster
+  markdown processing
+
+* `docutils <http://docutils.sourceforge.net/>`_, for parsing restructured text
+  contents
+
+* `python-textile <https://github.com/chrisdrackett/python-textile>`_, for
+  parsing textile contents
+
+* `pygments <http://pygments.org/>`_, for syntax highlighting in pages
 
 
 -----
@@ -127,6 +139,7 @@ Volt project directory.
 The docs are, unfortunately, minimum at the moment. For now, the source is the
 primary documentation.
 
+
 -----
 PLANS
 -----
@@ -134,9 +147,9 @@ PLANS
 See the `TODO <https://github.com/bow/volt/blob/master/TODO>`_ list.
 
 
-----------------------
-CREDITS & ATTRIBUTIONS
-----------------------
+-----------
+ATTRIBUTION
+-----------
 
 Volt was inspired by `Blogofile <http://github.com/EnigmaCurry/blogofile>`_,
 which unfortunately has `ceased development 

@@ -16,14 +16,14 @@ import glob
 import os
 
 from volt.engine.core import _RE_DELIM, Engine, Unit
-from volt.exceptions import ParseError
+from volt.exceptions import ContentError
 
 
 class TextUnit(Unit):
 
     """Class representation of text resources.
 
-    This unit represents resources whose metadata (YAML header) is contained
+    This unit represents resources whose metadata (header) is contained
     in the same file as the content. Some examples of resources like this 
     is a single blog post or a single plain page. 
 
@@ -41,13 +41,13 @@ class TextUnit(Unit):
         with self.open_text(self.id) as source:
             # open file and remove whitespaces
             read = filter(None, _RE_DELIM.split(source.read()))
-            # header should be parsed by yaml into dict
+            # header should be parsed into dict
             try:
                 header = self.parse_header(read.pop(0))
-            except IndexError:
-                raise ParseError("Header not detected in '%s'." % fname)
+            except (AssertionError, IndexError):
+                raise ContentError("Header not detected in '%s'." % fname)
             if not isinstance(header, dict):
-                raise ParseError("Header format unrecognizable in '%s'." \
+                raise ContentError("Header format unrecognizable in '%s'." \
                         % fname)
 
             # set blog unit file contents as attributes
@@ -88,6 +88,25 @@ class TextUnit(Unit):
         # set paths
         paths = self.get_path_and_permalink()
         self.path, self.permalink, self.permalink_abs = paths
+
+    def parse_header(self, header_string):
+        """Returns a dictionary of header field values.
+
+        header_string -- String of header lines.
+
+        """
+        assert isinstance(header_string, basestring), \
+                "Parsed header in '%s' is not a proper string." % self.id
+
+        header = dict()
+        header_lines = [x.strip() for x in header_string.strip().split('\n')]
+        for line in header_lines:
+            assert ':' in line, \
+                    "Line '%s' in '%s' is not a proper header entry." % (line, self.id)
+            field, value = [x.strip() for x in line.split(':', 1)]
+            header[field] = value
+
+        return header
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, os.path.basename(self.id))
