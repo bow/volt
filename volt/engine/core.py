@@ -165,9 +165,9 @@ class Engine(object):
                               "create_paginations is used." % \
                               self.__class__.__name__)
         try:
-            units_per_pagination = self.config.POSTS_PER_PAGE
+            units_per_pagination = self.config.UNITS_PER_PAGINATION
         except AttributeError:
-            raise ConfigError("%s Config must define a 'POSTS_PER_PAGE' value "
+            raise ConfigError("%s Config must define a 'UNITS_PER_PAGINATION' value "
                               "if create_paginations is used." % \
                               self.__class__.__name__)
         try:

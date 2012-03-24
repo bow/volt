@@ -64,10 +64,10 @@ BLOG = Config(
     # Valid options are any field present in all units
     # Default order is A-Z (for alphabets) and past-present (for dates)
     # To reverse order just add '-' in front, e.g. '-time'
-    SORT = '-time',
+    SORT_KEY = '-time',
 
     # The number of displayed posts per pagination page
-    POSTS_PER_PAGE = 10,
+    UNITS_PER_PAGINATION = 10,
 
     # Excerpt length (in characters) for paginated items
     EXCERPT_LENGTH = 400,

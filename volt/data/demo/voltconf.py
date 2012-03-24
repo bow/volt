@@ -25,7 +25,7 @@ SITE = Config(
     # These are run according to the order they are listed here
     PLUGINS = (
         # volt-markdown enables posting with markdown
-        ('markd', ['blog', 'plain']),
+        ('markdown_parser', ['blog', 'plain']),
         # volt-atomic generates atom feed for the target engine
         ('atomic', ['blog']),
     ),
@@ -46,7 +46,7 @@ ENGINE_BLOG = Config(
     # Blog posts permalink, relative to blog URL
     PERMALINK = '{time:%Y/%m/%d}/{slug}',
     # The number of displayed posts per pagination page
-    POSTS_PER_PAGE = 10,
+    UNITS_PER_PAGINATION = 10,
     # Excerpt length (in characters) for paginated items
     EXCERPT_LENGTH = 400,
     # Paginations to build for the static site

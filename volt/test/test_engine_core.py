@@ -189,7 +189,7 @@ class TestEnginePaginations(unittest.TestCase):
     def setUp(self):
         self.engine = Engine()
         self.engine.config.URL = 'test'
-        self.engine.config.POSTS_PER_PAGE = 2
+        self.engine.config.UNITS_PER_PAGINATION = 2
 
     def test_url_undefined(self):
         del self.engine.config.URL
@@ -197,7 +197,7 @@ class TestEnginePaginations(unittest.TestCase):
         self.assertRaises(ConfigError, self.engine.create_paginations, )
 
     def test_units_per_pagination_undefined(self):
-        del self.engine.config.POSTS_PER_PAGE
+        del self.engine.config.UNITS_PER_PAGINATION
         self.engine.config.PAGINATIONS = ('',)
         self.assertRaises(ConfigError, self.engine.create_paginations, )
 

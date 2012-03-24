@@ -62,7 +62,7 @@ class BlogEngine(TextEngine):
 
         # File paths of blog template files
         # relative to the default Volt template directory
-        UNIT_TEMPLATE = 'blog_post.html',
+        UNIT_TEMPLATE = 'blog_unit.html',
         PAGINATION_TEMPLATE = 'blog_pagination.html',
 
         # Sort order for paginated posts display
@@ -72,7 +72,7 @@ class BlogEngine(TextEngine):
         SORT_KEY = '-time',
 
         # The number of displayed posts per pagination page
-        POSTS_PER_PAGE = 10,
+        UNITS_PER_PAGINATION = 10,
 
         # Excerpt length (in characters) for paginated items
         EXCERPT_LENGTH = 400,

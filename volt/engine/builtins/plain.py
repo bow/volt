@@ -47,7 +47,7 @@ class PlainEngine(TextEngine):
 
         # File paths of plain page template files
         # relative to the default Volt template directory
-        UNIT_TEMPLATE = 'page.html',
+        UNIT_TEMPLATE = 'plain_unit.html',
 
         # Required properties
         # These properties must be defined in each individual plain page unit header
