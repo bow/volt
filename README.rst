@@ -16,7 +16,7 @@ needs. So I decided to write my own.
 
 Here are some of my favorite features:
 
-1. **Automatic generation of paginations according to content attributes**
+1. **Automatic pagination**
 
    Say you have a blog with 10 posts, each with its own set of tags that might
    might not be present in all posts. By only by supplying the URL pattern,
@@ -24,8 +24,8 @@ Here are some of my favorite features:
    paginated to your liking.
 
    For example, you only need to supply ``tag/{tags}`` and Volt will generate
-   links to ``tag/foo``, ``tag/bar``, ``tag/baz``, where each of these page
-   (or ``Pack``, in Volt's internals) will contain all the posts sharing that tag.
+   links to the pages ``tag/foo``, ``tag/bar``, ``tag/baz``, where each of these
+   page will contain all the posts sharing that tag.
 
    And this doesn't apply only to tags. You can use it to create pages based on
    authors, time (year, day, date, whatever you want), and any other data you
@@ -33,11 +33,10 @@ Here are some of my favorite features:
 
    All with a simple URL pattern in the configuration file, like so ::
 
-       PACKS = ('', 'tag/{tags}', '{time:%Y}', '{time:%Y/%m}', '{time:%Y/%m/%d}')
+       PAGINATIONS = ('', 'tag/{tags}', '{time:%Y}', '{time:%Y/%m}', '{time:%Y/%m/%d}')
 
 
-2. **Built-in server capable of rebuilding your entire site whenever it detects a
-   change in any of the source files**
+2. **Auto-regenerating built-in server**
 
    Static sites need to be generated repeatedly to reflect changes in their source.
    After a while, doing this becomes cumbersome and annoying. Volt's server
@@ -58,12 +57,12 @@ Here are some of my favorite features:
    how the engines work.
   
    Finally, Volt comes with a plugin architecture that lets you hook into the
-   engines' actions. Three plugins comes packed in with volt: plugins for
-   atom feed generation, for syntax highlighting, and for markdown processing. 
+   engines' actions. Five plugins comes packed in with volt: plugins for
+   atom feed generation, for syntax highlighting, and for parsing three
+   different markup languages (markdown, restructured text, and textile). 
    `Browse their code 
    <http://github.com/bow/volt/tree/master/volt/plugin/builtins>`_ 
    to see how you can easily write your own plugin.
-
 
 
 4. **Centrally-managed configuration with flexible options**
@@ -75,8 +74,8 @@ Here are some of my favorite features:
    ``voltconf.py``, conveniently accessible in your project folder.
 
 
-All these with the perks of static websites, of course (easy deployment,
-easy back-up and tracking, security, speed, etc.)
+All these with the perks of static websites: easy deployment,
+easy back-up and tracking, security, and speed.
 
 
 ------------
@@ -86,8 +85,8 @@ INSTALLATION
 ``pip install volt``
 
 Volt is still in alpha ~ it's usable enough to be used for making 
-`a real website <http://bow.web.id>`_, but many things might still break
-here and there.
+`a real website <http://bow.web.id>`_, but many things could still break here
+and there.
 
 By default Volt will install the `python markdown module 
 <http://freewisdom.org/projects/python-markdown/Installation>`_. You can
@@ -96,7 +95,6 @@ improve markdown processing speed. `python-discount
 <http://github.com/trapeze/python-discount>`_ is a wrapper for `Discount
 <http://www.pell.portland.or.us/~orc/Code/discount/>`_, a fast markdown
 parser written in C.
-
 
 
 -----
@@ -140,9 +138,6 @@ See the `TODO <https://github.com/bow/volt/blob/master/TODO>`_ list.
 CREDITS & ATTRIBUTIONS
 ----------------------
 
-Although Volt was written completely from the ground up, it is in many ways
-inspired by `Blogofile <http://github.com/EnigmaCurry/blogofile>`_, another
-Python static website generator written by 
-`Ryan McGuire <http://github.com/EnigmaCurry/blogofile>`_. It hasn't been
-updated for some time now, unfortunately, which is one of my reasons I wrote
-Volt. Go check it out still if you're interested.
+Volt was inspired by `Blogofile <http://github.com/EnigmaCurry/blogofile>`_,
+which unfortunately has `ceased development 
+<https://groups.google.com/d/msg/blogofile-discuss/MG02xNwS8Lc/_MK-gmOU2iEJ>`_.
