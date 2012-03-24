@@ -23,7 +23,7 @@ from volt.config import Config
 from volt.engine.core import Engine, Page, Unit, Pagination, \
         chain_item_permalinks
 from volt.exceptions import ConfigError, EmptyUnitsWarning, \
-        PermalinkTemplateError, HeaderFieldError, ContentError
+        PermalinkTemplateError, ContentError
 from volt.test import USER_DIR
 
 
@@ -172,7 +172,7 @@ class TestEngine(unittest.TestCase):
     def test_sort_units_bad_key(self):
         self.engine.units = make_units_mock()
         self.engine.config.SORT_KEY = 'date'
-        self.assertRaises(HeaderFieldError, self.engine.sort_units, )
+        self.assertRaises(ContentError, self.engine.sort_units, )
 
     def test_sort_units_ok(self):
         self.engine.units = make_units_mock()
@@ -397,11 +397,11 @@ class TestUnit(unittest.TestCase):
 
     def test_check_required(self):
         req = ('title', 'surprise', )
-        self.assertRaises(HeaderFieldError, self.unit.check_required, req)
+        self.assertRaises(ContentError, self.unit.check_required, req)
 
     def test_check_protected(self):
         prot = ('cats', )
-        self.assertRaises(HeaderFieldError, self.unit.check_protected, 'cats', prot)
+        self.assertRaises(ContentError, self.unit.check_protected, 'cats', prot)
 
     def test_as_list_trailing(self):
         tags = 'ripley, ash, kane   '

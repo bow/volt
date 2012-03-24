@@ -20,7 +20,7 @@ from mock import MagicMock, patch, call
 
 from volt.config import Config
 from volt.engine.builtins import TextEngine, TextUnit
-from volt.exceptions import ParseError, HeaderFieldError
+from volt.exceptions import ContentError
 from volt.test import FIXTURE_DIR
 
 
@@ -84,13 +84,12 @@ class TestTextUnit(unittest.TestCase):
 
     def test_init_header_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '02*'))[0]
-        self.assertRaises(ParseError, TextUnit, fname, self.CONFIG)
+        self.assertRaises(ContentError, TextUnit, fname, self.CONFIG)
 
     def test_init_header_typo(self):
-        from yaml import scanner
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '03*'))[0]
-        self.assertRaises(scanner.ScannerError, TextUnit, fname, self.CONFIG)
+        self.assertRaises(ContentError, TextUnit, fname, self.CONFIG)
 
     def test_init_protected_set(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '05*'))[0]
-        self.assertRaises(HeaderFieldError, TextUnit, fname, self.CONFIG)
+        self.assertRaises(ContentError, TextUnit, fname, self.CONFIG)

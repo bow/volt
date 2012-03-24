@@ -36,11 +36,5 @@ class DuplicateOutputError(Exception):
 class ContentError(Exception):
     """Base exception for content-related error."""
 
-class HeaderFieldError(ContentError):
-    """Raised for unit header-related error."""
-
 class PermalinkTemplateError(ContentError):
     """Raised if a header field value defined in the permalink template is not found."""
-
-class ParseError(ContentError):
-    """Raised if a content-parsing related error occurs."""
