@@ -72,13 +72,13 @@ BLOG = Config(
     # Excerpt length (in characters) for paginated items
     EXCERPT_LENGTH = 400,
 
-    # Packs to build for the static site
+    # Pagination to build for the static site
     # Items in this tuple will be used to set the paginations relative to
     # the blog URL. Items enclosed in '{}' are pulled from the unit values,
     # e.g. 'tag/{tags}' will be expanded to 'tag/x' for x in each tags in the
     # site. These field tokens must be the last token of the pattern.
-    # Use an empty string ('') to apply packing to all blog units
-    PACKS = ('',),
+    # Use an empty string ('') to apply pagination to all blog units
+    PAGINATIONS = ('',),
 
     # Protected properties
     # These properties must not be defined by any individual blog post header,
