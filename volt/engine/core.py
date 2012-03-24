@@ -151,8 +151,6 @@ class Engine(object):
     def create_paginations(self):
         """Returns paginations of engine units in a dictionary.
 
-        patterns -- List containing string of pagination patterns.
-
         This method will expand the supplied patterns according to the values
         present in all units. For example, if the pattern is '{time:%Y}' and
         there are five units with a datetime.year attribute 2010 and another
