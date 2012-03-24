@@ -20,11 +20,11 @@ from datetime import datetime
 from mock import MagicMock, patch, call
 
 from volt.config import Config
-from volt.engine.core import Engine, Page, Unit, Pagination, Pack, \
+from volt.engine.core import Engine, Page, Unit, Pagination, \
         chain_item_permalinks
 from volt.exceptions import ConfigError, EmptyUnitsWarning, \
         PermalinkTemplateError, HeaderFieldError, ContentError
-from volt.test import USER_DIR, TEST_DIR
+from volt.test import USER_DIR
 
 
 def make_units_mock():
@@ -79,10 +79,22 @@ def make_units_mock():
 def make_sessionconfig_mock():
 
     configs = ['VOLT', 'SITE', ]
+
+    VOLT = {'USER_CONF': os.path.join(USER_DIR, 'voltconf.py'),
+            'ROOT_DIR': USER_DIR,
+            'CONTENT_DIR': os.path.join(USER_DIR, 'content'),
+            'TEMPLATE_DIR': os.path.join(USER_DIR, 'templates'),
+            'SITE_DIR': os.path.join(USER_DIR, 'site'),
+           }
+    SITE = {'URL': 'http://foo.com',
+           }
+
     sessionconfig_mock = MagicMock()
 
     for config in configs:
         setattr(sessionconfig_mock, config, MagicMock())
+        for key in eval(config):
+            setattr(getattr(sessionconfig_mock, config), key, eval(config)[key])
 
     return sessionconfig_mock
 
@@ -110,10 +122,6 @@ class TestEngineCoreMethods(unittest.TestCase):
         self.assertEqual(units[-1].permalink_prev, units[1].permalink)
 
 
-@patch('volt.engine.core.CONFIG.VOLT.USER_CONF', os.path.join(USER_DIR, 'voltconf.py'))
-@patch('volt.engine.core.CONFIG.VOLT.ROOT_DIR', USER_DIR)
-@patch('volt.engine.core.CONFIG.VOLT.CONTENT_DIR', os.path.join(USER_DIR, 'content'))
-@patch('volt.engine.core.CONFIG.VOLT.TEMPLATE_DIR', os.path.join(USER_DIR, 'templates'))
 @patch('volt.engine.core.CONFIG', SessionConfig_mock)
 class TestEngine(unittest.TestCase):
 
@@ -163,20 +171,20 @@ class TestEngine(unittest.TestCase):
 
     def test_sort_units_bad_key(self):
         self.engine.units = make_units_mock()
-        key = 'date'
-        self.assertRaises(HeaderFieldError, self.engine.sort_units, key)
+        self.engine.config.SORT_KEY = 'date'
+        self.assertRaises(HeaderFieldError, self.engine.sort_units, )
 
     def test_sort_units_ok(self):
         self.engine.units = make_units_mock()
-        key = '-time'
+        self.engine.config.SORT_KEY = '-time'
         titles = ['Dream is Collapsing', 'Radical Notion', 'One Simple Idea', \
                   '528491', 'Dream Within A Dream',]
         self.assertNotEqual([x.title for x in self.engine.units], titles)
-        self.engine.sort_units(key)
+        self.engine.sort_units()
         self.assertEqual([x.title for x in self.engine.units], titles)
 
 
-class TestEngineBuildPacks(unittest.TestCase):
+class TestEnginePaginations(unittest.TestCase):
 
     def setUp(self):
         self.engine = Engine()
@@ -185,115 +193,135 @@ class TestEngineBuildPacks(unittest.TestCase):
 
     def test_url_undefined(self):
         del self.engine.config.URL
-        self.assertRaises(ConfigError, self.engine.build_packs, ('',))
+        self.engine.config.PAGINATIONS = ('',)
+        self.assertRaises(ConfigError, self.engine.create_paginations, )
 
     def test_units_per_pagination_undefined(self):
         del self.engine.config.POSTS_PER_PAGE
-        self.assertRaises(ConfigError, self.engine.build_packs, ('',))
+        self.engine.config.PAGINATIONS = ('',)
+        self.assertRaises(ConfigError, self.engine.create_paginations, )
+
+    def test_pagination_patterns_undefined(self):
+        self.assertRaises(ConfigError, self.engine.create_paginations, )
 
     @patch.object(warnings, 'warn')
     def test_empty_units_warning(self, warn_mock):
-        self.engine.build_packs(('',))
-        args = [call('Engine has no units to pack.', EmptyUnitsWarning)]
+        self.engine.config.PAGINATIONS = ('',)
+        self.engine.create_paginations()
+        args = [call('Engine has no units to paginate.', EmptyUnitsWarning)]
         self.assertEqual(warn_mock.call_args_list, args)
 
-    def test_bad_pack_pattern(self):
+    def test_bad_pagination_pattern(self):
         self.engine.units = make_units_mock()
-        self.assertRaises(PermalinkTemplateError, self.engine.build_packs, \
-                ('{bad}/pattern',))
+        self.engine.config.PAGINATIONS = ('{bad}/pattern',)
+        self.assertRaises(PermalinkTemplateError, \
+                self.engine.create_paginations, )
 
-    def test_packer_not_implemented(self):
+    def test_paginate_not_implemented(self):
         self.engine.units = make_units_mock()
+        self.engine.config.PAGINATIONS = ('unimplemented/{newtype}',)
         for unit in self.engine.units:
             setattr(unit, 'newtype', dict(foo='bar'))
-        self.assertRaises(NotImplementedError, self.engine.build_packs, \
-                ('unimplemented/{newtype}',))
+        self.assertRaises(NotImplementedError, self.engine.create_paginations, )
 
-    @patch('volt.engine.core.Pack')
-    def test_packer_all(self, Pack_mock):
+    @patch('volt.engine.core.Pagination')
+    def test_create_paginations_ok(self, Pagination_mock):
         self.engine.units = make_units_mock()
-        base_permalist = ['test']
-        field = base_permalist[-1][1:-1]
-        [x for x in self.engine._packer_all(field, base_permalist, 2)]
-
-        self.assertEqual(Pack_mock.call_count, 1)
-        expected = call(self.engine.units, ['test'], 2)
-        self.assertEqual(Pack_mock.call_args, expected)
-
-    @patch('volt.engine.core.Pack')
-    def test_packer_single(self, Pack_mock):
-        self.engine.units = make_units_mock()
-        base_permalist = ['test', 'author', '{author}']
-        field = base_permalist[-1][1:-1]
-        [x for x in self.engine._packer_single(field, base_permalist, 2)]
-
-        self.assertEqual(2, Pack_mock.call_count)
-        call1 = call(self.engine.units[:2] + [self.engine.units[3]], \
-                ['test', 'author', 'Smith'], 2)
-        call2 = call([self.engine.units[2], self.engine.units[4]], \
-                ['test', 'author', 'Johnson'], 2)
-        Pack_mock.assert_has_calls([call1, call2], any_order=True)
-
-    @patch('volt.engine.core.Pack')
-    def test_packer_multiple(self, Pack_mock):
-        self.engine.units = make_units_mock()
-        base_permalist = ['test', 'tag', '{tags}']
-        field = base_permalist[-1][1:-1]
-        [x for x in self.engine._packer_multiple(field, base_permalist, 2)]
-
-        self.assertEqual(4, Pack_mock.call_count)
-        call1 = call([self.engine.units[4]], ['test', 'tag', 'ariadne'], 2)
-        call2 = call(self.engine.units[2:4], ['test', 'tag', 'cobb'], 2)
-        call3 = call(self.engine.units[:3], ['test', 'tag', 'eames'], 2)
-        call4 = call(self.engine.units, ['test', 'tag', 'arthur'], 2)
-        Pack_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
-
-    @patch('volt.engine.core.Pack')
-    def test_packer_datetime_single_time_token(self, Pack_mock):
-        self.engine.units = make_units_mock()
-        base_permalist = ['test', '{time:%Y}']
-        field = base_permalist[-1][1:-1]
-        [x for x in self.engine._packer_datetime(field, base_permalist, 2)]
-
-        self.assertEqual(4, Pack_mock.call_count)
-        call1 = call(self.engine.units[:2], ['test', '2010'], 2)
-        call2 = call([self.engine.units[2]], ['test', '1998'], 2)
-        call3 = call([self.engine.units[3]], ['test', '2002'], 2)
-        call4 = call([self.engine.units[4]], ['test', '2011'], 2)
-        Pack_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
-
-    @patch('volt.engine.core.Pack')
-    def test_packer_datetime_multiple_time_tokens(self, Pack_mock):
-        self.engine.units = make_units_mock()
-        base_permalist = ['test', '{time:%Y/%m}']
-        field = base_permalist[-1][1:-1]
-        [x for x in self.engine._packer_datetime(field, base_permalist, 2)]
-
-        self.assertEqual(Pack_mock.call_count, 5)
-        call1 = call([self.engine.units[0]], ['test', '2010', '09'], 2)
-        call2 = call([self.engine.units[1]], ['test', '2010', '07'], 2)
-        call3 = call([self.engine.units[2]], ['test', '1998', '04'], 2)
-        call4 = call([self.engine.units[3]], ['test', '2002', '08'], 2)
-        call5 = call([self.engine.units[4]], ['test', '2011', '09'], 2)
-        Pack_mock.assert_has_calls([call1, call2, call3, call4, call5], \
-                any_order=True)
-
-    @patch('volt.engine.core.Pack', MagicMock, mocksignature=True)
-    def build_packs_ok(self):
-        self.engine.units = make_units_mock()
-        pack_patterns = ('',
-                         'tag/{tags}',
-                         'author/{author}',
-                         '{time:%Y}',
-                         '{time:%Y/%m}',)
+        pagination_patterns = ('',
+                               'tag/{tags}',
+                               'author/{author}',
+                               '{time:%Y}',
+                               '{time:%Y/%m}',)
         expected = ['',
                     'tag/arthur', 'tag/eames', 'tag/ariadne', 'tag/cobb',
                     'author/Smith', 'author/Johnson',
                     '2011', '2010', '2002', '1998',
                     '2011/09', '2010/09', '2010/07', '2002/08', '1998/04',]
 
-        packs = self.engine.build_packs(pack_patterns)
-        self.assertEqual(len(packs), len(expected))
+        self.engine.config.PAGINATIONS = pagination_patterns
+        pagins = self.engine.create_paginations()
+        observed = sum([len(x) for x in pagins.values()])
+        self.assertEqual(observed, len(expected))
+
+    @patch('volt.engine.core.Engine._paginator')
+    def test_paginate_all(self, paginator_mock):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test']
+        field = base_permalist[-1][1:-1]
+        [x for x in self.engine._paginate_all(field, base_permalist, 2)]
+
+        self.assertEqual(paginator_mock.call_count, 1)
+        expected = call(self.engine.units, ['test'], 2)
+        self.assertEqual(paginator_mock.call_args, expected)
+
+    @patch('volt.engine.core.Engine._paginator')
+    def test_paginate_single(self, paginator_mock):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', 'author', '{author}']
+        field = base_permalist[-1][1:-1]
+        [x for x in self.engine._paginate_single(field, base_permalist, 2)]
+
+        self.assertEqual(2, paginator_mock.call_count)
+        call1 = call(self.engine.units[:2] + [self.engine.units[3]], \
+                ['test', 'author', 'Smith'], 2)
+        call2 = call([self.engine.units[2], self.engine.units[4]], \
+                ['test', 'author', 'Johnson'], 2)
+        paginator_mock.assert_has_calls([call1, call2], any_order=True)
+
+    @patch('volt.engine.core.Engine._paginator')
+    def test_paginate_multiple(self, paginator_mock):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', 'tag', '{tags}']
+        field = base_permalist[-1][1:-1]
+        [x for x in self.engine._paginate_multiple(field, base_permalist, 2)]
+
+        self.assertEqual(4, paginator_mock.call_count)
+        call1 = call([self.engine.units[4]], ['test', 'tag', 'ariadne'], 2)
+        call2 = call(self.engine.units[2:4], ['test', 'tag', 'cobb'], 2)
+        call3 = call(self.engine.units[:3], ['test', 'tag', 'eames'], 2)
+        call4 = call(self.engine.units, ['test', 'tag', 'arthur'], 2)
+        paginator_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
+
+    @patch('volt.engine.core.Engine._paginator')
+    def test_paginate_datetime_single_time_token(self, paginator_mock):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', '{time:%Y}']
+        field = base_permalist[-1][1:-1]
+        [x for x in self.engine._paginate_datetime(field, base_permalist, 2)]
+
+        self.assertEqual(4, paginator_mock.call_count)
+        call1 = call(self.engine.units[:2], ['test', '2010'], 2)
+        call2 = call([self.engine.units[2]], ['test', '1998'], 2)
+        call3 = call([self.engine.units[3]], ['test', '2002'], 2)
+        call4 = call([self.engine.units[4]], ['test', '2011'], 2)
+        paginator_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
+
+    @patch('volt.engine.core.Engine._paginator')
+    def test_paginate_datetime_multiple_time_tokens(self, paginator_mock):
+        self.engine.units = make_units_mock()
+        base_permalist = ['test', '{time:%Y/%m}']
+        field = base_permalist[-1][1:-1]
+        [x for x in self.engine._paginate_datetime(field, base_permalist, 2)]
+
+        self.assertEqual(paginator_mock.call_count, 5)
+        call1 = call([self.engine.units[0]], ['test', '2010', '09'], 2)
+        call2 = call([self.engine.units[1]], ['test', '2010', '07'], 2)
+        call3 = call([self.engine.units[2]], ['test', '1998', '04'], 2)
+        call4 = call([self.engine.units[3]], ['test', '2002', '08'], 2)
+        call5 = call([self.engine.units[4]], ['test', '2011', '09'], 2)
+        paginator_mock.assert_has_calls([call1, call2, call3, call4, call5], \
+                any_order=True)
+
+    @patch('volt.engine.core.Pagination')
+    def test_paginator(self, Pagination_mock):
+        self.engine.units = make_units_mock()
+        pagins = [p for p in self.engine._paginator(self.engine.units, ['base'], 2)]
+
+        self.assertEqual(3, len(pagins))
+        call1 = call(self.engine.units[:2], 0, ['base'])
+        call2 = call(self.engine.units[2:4], 1, ['base'])
+        call3 = call(self.engine.units[4:], 2, ['base'])
+        Pagination_mock.assert_has_calls([call1, call2, call3], any_order=True)
 
 
 class TestPage(unittest.TestCase):
@@ -335,32 +363,28 @@ class TestPage(unittest.TestCase):
                 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True)
-    @patch('volt.engine.core.CONFIG.VOLT.SITE_DIR', TEST_DIR)
-    @patch('volt.engine.core.CONFIG.SITE.URL', 'http://alay.com')
     @patch('volt.engine.core.CONFIG', SessionConfig_mock)
     def test_get_path_and_permalink_index_html_true(self):
         self.page.permalist = ['blog', 'not', 'string']
 
         path, permalink, permalink_abs = self.page.get_path_and_permalink()
 
-        self.assertEqual(path, os.path.join(TEST_DIR, \
+        self.assertEqual(path, os.path.join(USER_DIR, 'site', \
                 'blog', 'not', 'string', 'index.html'))
         self.assertEqual(permalink, '/blog/not/string/')
-        self.assertEqual(permalink_abs, 'http://alay.com/blog/not/string')
+        self.assertEqual(permalink_abs, 'http://foo.com/blog/not/string')
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', False)
-    @patch('volt.engine.core.CONFIG.VOLT.SITE_DIR', TEST_DIR)
-    @patch('volt.engine.core.CONFIG.SITE.URL', 'http://alay.com')
     @patch('volt.engine.core.CONFIG', SessionConfig_mock)
     def test_get_path_and_permalink_index_html_false(self):
         self.page.permalist = ['blog', 'not', 'string']
 
         path, permalink, permalink_abs = self.page.get_path_and_permalink()
 
-        self.assertEqual(path, os.path.join(TEST_DIR, \
+        self.assertEqual(path, os.path.join(USER_DIR, 'site', \
                 'blog', 'not', 'string.html'))
         self.assertEqual(permalink, '/blog/not/string.html')
-        self.assertEqual(permalink_abs, 'http://alay.com/blog/not/string.html')
+        self.assertEqual(permalink_abs, 'http://foo.com/blog/not/string.html')
 
 
 class TestUnit(unittest.TestCase):
@@ -411,8 +435,6 @@ class TestUnit(unittest.TestCase):
                 ['', 'i', 'love', 'mustard'])
 
 
-@patch('volt.engine.core.CONFIG.VOLT.SITE_DIR', os.path.join(USER_DIR, 'site'))
-@patch('volt.engine.core.CONFIG.SITE.URL', 'http://foo.com')
 @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True)
 class TestPagination(unittest.TestCase):
 
@@ -447,20 +469,3 @@ class TestPagination(unittest.TestCase):
         pagin = Pagination(self.units, 1, )
         self.assertEqual(pagin.path, os.path.join(self.site_dir, '2', 'index.html'))
         self.assertEqual(pagin.permalink, '/2/')
-
-
-@patch('volt.engine.core.Pagination')
-class TestPack(unittest.TestCase):
-
-    def setUp(self):
-        self.units = make_units_mock()
-
-    @patch('volt.engine.core.Pack.chain_paginations', MagicMock())
-    def test_init_ok(self, Pagination_mock):
-        pack = Pack(self.units, ['base'], 2)
-
-        self.assertEqual(3, len(pack.paginations))
-        call1 = call(self.units[:2], 0, ['base'])
-        call2 = call(self.units[2:4], 1, ['base'])
-        call3 = call(self.units[4:], 2, ['base'])
-        Pagination_mock.assert_has_calls([call1, call2, call3], any_order=True)

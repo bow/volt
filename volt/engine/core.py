@@ -6,7 +6,7 @@ volt.engine.core
 
 Volt core engine classes.
 
-Contains the Engine, Unit, Pagination, Pack, and Page classes.
+Contains the Engine, Page, Unit, and Pagination classes.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
@@ -25,9 +25,7 @@ from functools import partial, reduce
 import yaml
 
 from volt.config import CONFIG, Config
-from volt.exceptions import HeaderFieldError, ContentError, ConfigError, \
-                            PermalinkTemplateError, DuplicateOutputError, \
-                            EmptyUnitsWarning
+from volt.exceptions import *
 from volt.utils import path_import
 
 
@@ -39,12 +37,15 @@ _RE_MULTIPLE = re.compile(r'-+')
 _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 
-# chain item permalinks, for Engine.units and Pack.paginations
+# chain item permalinks, for Engine.units and Engine.paginations
 def chain_item_permalinks(items):
     """Sets the previous and next permalink attributes of items.
 
-    This method allows each item in a list to link to its previous and/or
-    next unit according to the ordering.
+    items -- List containing item to chain.
+
+    This method sets a 'permalink_prev' and 'permalink_next' attribute
+    for each item in the given list, which are permalinks to the previous
+    and next items.
 
     """
     try:
@@ -56,7 +57,7 @@ def chain_item_permalinks(items):
     except AttributeError:
         raise ContentError("%s '%s' neighbor(s) does not have a "
                            "permalink attribute." % \
-                                   (item.__class__.__name__.capitalize(), item.id))
+                           (item.__class__.__name__.capitalize(), item.id))
 
 
 class Engine(object):
@@ -68,23 +69,19 @@ class Engine(object):
     itself, but provides convenient unit processing methods for the
     subclassing engine.
 
-    Subclassing classes must override the activate and dispatch methods of the
-    base Engine class.
+    Any subclass of Engine must override these methods:
+    - activate
+    - dispatch
+    - create_units
 
     """
 
     DEFAULTS = Config()
 
     def __init__(self):
-        """Initializes the engine."""
         self.units = list()
         self.paginations = dict()
         self.config = Config(self.DEFAULTS)
-
-    def create_units(self):
-        """Creates the units that will be processed by the engine."""
-        raise NotImplementedError("%s must implement a create_units method." % \
-                self.__class__.__name__)
 
     def activate(self):
         """Performs initial processing of resources into unit objects."""
@@ -131,79 +128,126 @@ class Engine(object):
                 self.config[template] = os.path.join(CONFIG.VOLT.TEMPLATE_DIR, \
                         self.config[template])
 
+    def create_units(self):
+        """Creates the units that will be processed by the engine."""
+        raise NotImplementedError("%s must implement a create_units method." % \
+                self.__class__.__name__)
+
     def chain_units(self):
-        """Sets the previous and nex permalink attributes of each unit."""
+        """Sets the previous and next permalink attributes of each unit."""
         chain_item_permalinks(self.units)
 
-    def sort_units(self, sort_key):
-        """Sorts a list of units according to the given header field name.
-
-        Args:
-            sort_key - String of field name indicating the key used for
-                sorting, if preceeded with  a dash ('-') then sorting is
-                reversed.
-
-        """
+    def sort_units(self):
+        """Sorts a list of units according to the given header field name."""
+        sort_key = self.config.SORT_KEY
         reversed = sort_key.startswith('-')
         sort_key = sort_key.strip('-')
         try:
-            self.units.sort(key=lambda x: eval('x.' + sort_key), reverse=reversed)
+            self.units.sort(key=lambda x: getattr(x, sort_key), reverse=reversed)
         except AttributeError:
             raise HeaderFieldError("Sorting key '%s' not present in all unit "
                                    "header field." % sort_key)
 
-    def paginator(self, units, base_permalist, units_per_pagination):
-        """Create paginations from units.
+    def create_paginations(self):
+        """Returns paginations of engine units in a dictionary.
 
-        Args:
-            units - List of all units which will be packed.
-            base_permalist - Permalink tokens that will be used by all
-                paginations of the given units.
-            units_per_pagination - Number of units to show per pagination.
+        patterns -- List containing string of pagination patterns.
+
+        This method will expand the supplied patterns according to the values
+        present in all units. For example, if the pattern is '{time:%Y}' and
+        there are five units with a datetime.year attribute 2010 and another
+        five with 2011, create_paginations will return a dictionary with one key
+        pointing to a list containing paginations for 'time/2010' and
+        'time/2011'. The number of actual paginations vary, depending on how
+        many units are in one pagination.
 
         """
-        paginations = list()
+        try:
+            base_url = self.config.URL.strip('/')
+        except AttributeError:
+            raise ConfigError("%s Config must define a 'URL' value if "
+                              "create_paginations is used." % \
+                              self.__class__.__name__)
+        try:
+            units_per_pagination = self.config.POSTS_PER_PAGE
+        except AttributeError:
+            raise ConfigError("%s Config must define a 'POSTS_PER_PAGE' value "
+                              "if create_paginations is used." % \
+                              self.__class__.__name__)
+        try:
+            pagination_patterns = self.config.PAGINATIONS
+        except AttributeError:
+            raise ConfigError("%s Config must define a 'PAGINATIONS' value "
+                              "if create_paginations is used." % \
+                              self.__class__.__name__)
 
-        # count how many paginations we need
-        is_last = len(units) % units_per_pagination != 0
-        pagination_len = len(units) // units_per_pagination + int(is_last)
+        # create_paginations operates on self.units
+        units = self.units
+        if not units:
+            warnings.warn("%s has no units to paginate." % self.__class__.__name__, \
+                    EmptyUnitsWarning)
+            # exit function if there's no units to process
+            return
 
-        # construct pagination objects for each pagination page
-        for idx in range(pagination_len):
-            start = idx * units_per_pagination
-            if idx != pagination_len - 1:
-                stop = (idx + 1) * units_per_pagination
-                units_in_pagination = units[start:stop]
+        paginator_map = {
+                'all': self._paginate_all,
+                'str': self._paginate_single,
+                'int': self._paginate_single,
+                'float': self._paginate_single,
+                'list': self._paginate_multiple,
+                'tuple': self._paginate_multiple,
+                'datetime': self._paginate_datetime,
+        }
+
+        paginations = dict()
+        for pattern in pagination_patterns:
+
+            perm_tokens = re.findall(_RE_PERMALINK, pattern.strip('/') + '/')
+            base_permalist = [base_url] + perm_tokens
+
+            # only the last token is allowed to be enclosed in '{}'
+            for token in base_permalist[:-1]:
+                if '{%s}' % token[1:-1] == token:
+                    raise PermalinkTemplateError("Pagination pattern %s has "
+                            "non-last curly braces-enclosed field " % pattern)
+
+            # determine which paginate method to use based on field type
+            last_token = base_permalist[-1]
+            field = last_token[1:-1]
+            if '{%s}' % field != last_token:
+                field_type = 'all'
             else:
-                units_in_pagination = units[start:]
+                sample = getattr(units[0], field.split(':')[0])
+                field_type = sample.__class__.__name__
 
-            pagination = Pagination(units_in_pagination, idx, base_permalist)
-            paginations.append(pagination)
+            try:
+                paginate = paginator_map[field_type]
+                args = [field, base_permalist, units_per_pagination]
+                paginate_list = [pagination.next() for pagination in paginate(*args)]
+                key = '/'.join(base_permalist)
+                paginations[key] = paginate_list
+            except KeyError:
+                raise NotImplementedError("Pagination method for '%s' has not "
+                                          "been implemented." % field_type)
 
-        chain_item_permalinks(paginations)
-
-        for pagin in paginations:
-            yield pagin
+        return paginations
 
     def _paginate_all(self, field, base_permalist, units_per_pagination):
         """Create paginations for all field values (PRIVATE)."""
-
-        yield self.paginator(self.units, base_permalist, units_per_pagination)
+        yield self._paginator(self.units, base_permalist, units_per_pagination)
 
     def _paginate_single(self, field, base_permalist, units_per_pagination):
         """Create paginations for string/int/float header field values (PRIVATE)."""
-
         units = self.units
         str_set = set([getattr(x, field) for x in units])
 
         for item in str_set:
             matches = [x for x in units if item == getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            yield self.paginator(matches, base_permalist, units_per_pagination)
+            yield self._paginator(matches, base_permalist, units_per_pagination)
 
     def _paginate_multiple(self, field, base_permalist, units_per_pagination):
         """Create paginations for list or tuple header field values (PRIVATE)."""
-
         units = self.units
         item_list_per_unit = (getattr(x, field) for x in units)
         item_set = reduce(set.union, [set(x) for x in item_list_per_unit])
@@ -211,11 +255,10 @@ class Engine(object):
         for item in item_set:
             matches = [x for x in units if item in getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            yield self.paginator(matches, base_permalist, units_per_pagination)
+            yield self._paginator(matches, base_permalist, units_per_pagination)
 
     def _paginate_datetime(self, field, base_permalist, units_per_pagination):
         """Create paginations for datetime header field values (PRIVATE)."""
-
         units = self.units
         # separate the field name from the datetime formatting
         field, time_fmt = field.split(':')
@@ -242,108 +285,60 @@ class Engine(object):
                     matches.append(unit)
 
             base_permalist = base_permalist[:-(len(time_tokens))] + list(item)
-            yield self.paginator(matches, base_permalist, units_per_pagination)
+            yield self._paginator(matches, base_permalist, units_per_pagination)
 
-    def create_paginations(self, pagin_patterns):
-        """Build packs of units and return them in a list.
+    def _paginator(self, units, base_permalist, units_per_pagination):
+        """Create paginations from units (PRIVATE).
 
-        Args:
-            pack_patterns - List containing packs patterns to build.
-
-        This method will expand the supplied pack_pattern according to
-        the values present in all units. For example, if the pack_pattern
-        is '{time:%Y}' and there are five units with a datetime.year attribute
-        2010 and another five with 2011, build_pack will return a list
-        containing two Pack objects, representing 2010 and 2011 respectively.
+        units -- List of all units which will be paginated.
+        base_permalist -- List of permalink tokens that will be used by all
+                          paginations of the given units.
+        units_per_pagination -- Number of units to show per pagination.
 
         """
-        try:
-            base_url = self.config.URL.strip('/')
-        except AttributeError:
-            raise ConfigError("%s Config must define a 'URL' value if "
-                              "build_packs() is used." % \
-                              self.__class__.__name__)
-        try:
-            units_per_pagination = self.config.POSTS_PER_PAGE
-        except AttributeError:
-            raise ConfigError("%s Config must define a 'POSTS_PER_PAGE' value "
-                              "if build_packs() is used." % \
-                              self.__class__.__name__)
+        paginations = list()
 
-        # build_packs operates on self.units
-        units = self.units
-        if not units:
-            warnings.warn("%s has no units to pack." % self.__class__.__name__, \
-                    EmptyUnitsWarning)
+        # count how many paginations we need
+        is_last = len(units) % units_per_pagination != 0
+        pagination_len = len(units) // units_per_pagination + int(is_last)
 
-        # list to contain all built packs
-        paginations = dict()
-        paginator_map = {'all': self._paginate_all,
-                         'str': self._paginate_single,
-                         'int': self._paginate_single,
-                         'float': self._paginate_single,
-                         'list': self._paginate_multiple,
-                         'tuple': self._paginate_multiple,
-                         'datetime': self._paginate_datetime,
-                     }
-
-        for pattern in pagin_patterns:
-
-            perm_tokens = re.findall(_RE_PERMALINK, pattern.strip('/') + '/')
-            base_permalist = [base_url] + perm_tokens
-
-            # only the last token is allowed to be enclosed in '{}'
-            for token in base_permalist[:-1]:
-                if '{%s}' % token[1:-1] == token:
-                    raise PermalinkTemplateError("Pack pattern %s has non-last "
-                            "curly braces-enclosed field " % pattern)
-
-            # determine which packer to use based on field type
-            last_token = base_permalist[-1]
-            field = last_token[1:-1]
-            if '{%s}' % field != last_token:
-                field_type = 'all'
+        # construct pagination objects for each pagination page
+        for idx in range(pagination_len):
+            start = idx * units_per_pagination
+            if idx != pagination_len - 1:
+                stop = (idx + 1) * units_per_pagination
+                units_in_pagination = units[start:stop]
             else:
-                sample = getattr(units[0], field.split(':')[0])
-                field_type = sample.__class__.__name__
+                units_in_pagination = units[start:]
 
-            try:
-                paginate = paginator_map[field_type]
-                args = [field, base_permalist, units_per_pagination]
-                paginate_list = [pagination.next() for pagination in paginate(*args)]
-                key = '/'.join(base_permalist)
-                paginations[key] = paginate_list
-            except KeyError:
-                raise NotImplementedError("Packer method for '%s' has not "
-                                          "been implemented." % field_type)
+            pagination = Pagination(units_in_pagination, idx, base_permalist)
+            paginations.append(pagination)
 
-        return paginations
+        chain_item_permalinks(paginations)
 
-    def write_output(self, file_obj, string):
-        """Writes string to the open file object.
+        for pagination in paginations:
+            yield pagination
 
-        Args:
-            file_obj - Opened fie object
-            string - String to write
+    def write_units(self):
+        """Writes units using the unit template file."""
+        self._write_items(self.units, self.config.UNIT_TEMPLATE)
 
-        This is written to facillitate testing of the calling method.
+    def write_paginations(self):
+        """Writes paginations using the pagination template file."""
+        for pagination in self.paginations.values():
+            self._write_items(pagination, self.config.PAGINATION_TEMPLATE)
 
-        """
-        file_obj.write(string.encode('utf-8'))
+    def _write_items(self, items, template_path):
+        """Writes Page objects using the given template file (PRIVATE).
 
-    def write_items(self, items, template_path):
-        """Writes item in items using the given template file.
-
-        Args:
-            template_path - Template file name, must exist in the defined template
-                directory.
-            template_env - Jinja2 template environment.
+        items -- List of Page objects to be written.
+        template_path -- Template file name, must exist in the defined
+                         template directory.
 
         """
         template_env = CONFIG.SITE.TEMPLATE_ENV
         template_file = os.path.basename(template_path)
         template = template_env.get_template(template_file)
-
         config_context = CONFIG
 
         for item in items:
@@ -359,20 +354,17 @@ class Engine(object):
             with open(item.path, 'w') as target:
                 rendered = template.render(page=item.__dict__, \
                         CONFIG=config_context)
-                self.write_output(target, rendered)
+                self._write_output(target, rendered)
 
-    def write_units(self):
-        self.write_items(self.units, self.config.UNIT_TEMPLATE)
-
-    def write_paginations(self):
-        for pagination in self.paginations.values():
-            self.write_items(pagination, self.config.PACK_TEMPLATE)
+    def _write_output(self, file_obj, string):
+        """Writes string to the open file object."""
+        file_obj.write(string.encode('utf-8'))
 
 
 class Page(object):
 
     """Class representing resources that may have its own web page, such as
-    a Unit or a Pagination instance."""
+    a Unit or a Pagination."""
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, self.id)
@@ -410,8 +402,7 @@ class Page(object):
         return string
 
     def get_path_and_permalink(self):
-        """Returns the permalink and absolute file path for the unit."""
-
+        """Returns the permalink and absolute file path."""
         assert hasattr(self, 'permalist'), \
                 "%s requires the 'permalist' attribute to be set first." % \
                 self.__class__.__name__
@@ -439,7 +430,6 @@ class Page(object):
         return path, permalink, permalink_abs
 
 
-
 class Unit(Page):
 
     """Base Volt Unit class.
@@ -455,7 +445,6 @@ class Unit(Page):
 
     @property
     def fields(self):
-        """Returns the unit namespace."""
         return self.__dict__.keys()
 
     # convenience methods
@@ -464,21 +453,15 @@ class Unit(Page):
     get_display_time = datetime.strftime
 
     def parse_header(self, header_string):
-        """Parses the YAML header string into a dictionary object.
-
-        This is a thin wrapper for yaml.load, so it's more convenient
-        for subclassing unit classes to parse YAML contents.
-
-        """
+        """Thin wrapper for yaml.load for parsing header string."""
         # why can't this be assigned directly like the other wrappers?
         return yaml.load(header_string)
 
     def check_protected(self, field, prot):
         """Checks if the given field can be set by the user or not.
         
-        Args:
-            field - String to check against the list containing protected fields.
-            prot - Iterable containing protected fields.
+        field -- String to check against the list containing protected fields.
+        prot -- Iterable returning string of protected fields.
 
         """
         if field in prot:
@@ -488,8 +471,7 @@ class Unit(Page):
     def check_required(self, req):
         """Checks if all the required header fields are present.
 
-        Args:
-            req -  Iterable that returns required header fields.
+        req -- Iterable returning string of required header fields.
 
         """
         for field in req:
@@ -498,11 +480,10 @@ class Unit(Page):
                                    "missing in '%s'." % (field, self.id))
 
     def as_list(self, field, sep):
-        """Transforms a comma-separated tags or categories string into a list.
+        """Transforms a character-separated string field into a list.
 
-        Args:
-            fields - String to transform into list.
-            sep - String used to split fields into list.
+        fields -- String to transform into list.
+        sep -- String used to split fields into list.
 
         """
         return list(set(filter(None, field.strip().split(sep))))
@@ -510,12 +491,9 @@ class Unit(Page):
     def get_permalist(self, pattern, unit_base_url='/'):
         """Returns a list of strings which will be used to construct permalinks.
 
-        Args:
-            pattern - String replacement pattern.
-
-        Keyword Args:
-            unit_base_url - Base URL of the engine, to be appended in front of each
-                unit URL.
+        pattern -- String replacement pattern.
+        unit_base_url -- String of base URL of the engine, to be appended in
+                         front of each unit URL.
 
         The pattern argument may refer to the current object's attributes by
         enclosing them in square brackets. If the referred instance attribute 
@@ -565,30 +543,26 @@ class Pagination(Page):
     The pagination class computes the necessary attributes required to write
     a single HTML file containing the desired units. It is the __dict__ object
     of this Pagination class that will be passed on to the template writing
-    environment. However, the division of which units go to which pagination
-    page is done by another class instantiating Pagination, for example the
-    Pack class.
+    environment. The division of which units go to which pagination
+    page is done by another method.
 
     """
 
-    def __init__(self, units, pack_idx, base_permalist=[], title=''):
+    def __init__(self, units, pagin_idx, base_permalist=[], title=''):
         """Initializes a Pagination instance.
 
-        Args:
-            units - List containing units to pack.
-            pack_idx - Current pack object index.
-
-        Keyword Args:
-            base_permalist - List of URL components common to all pack
-                permalinks.
-            title - String denoting the title of the pagination page.
+        units -- List containing units to paginate.
+        pagin_idx -- Number of current pagination object index.
+        base_permalist -- List of URL components common to all pagination
+                          permalinks.
+        title -- String denoting the title of the pagination page.
 
         """
         self.units = units
         self.title = title
 
         # since paginations are 1-indexed
-        self.pack_idx = pack_idx + 1
+        self.pagin_idx = pagin_idx + 1
         # precautions for empty string, so double '/'s are not introduced
         self.base_permalist = filter(None, base_permalist)
 
@@ -601,12 +575,12 @@ class Pagination(Page):
         """Returns a list of strings which will be used to construct permalinks."""
         pagination_url = CONFIG.SITE.PAGINATION_URL
 
-        if self.pack_idx == 1:
-            # if it's the first pack page, use base_permalist only
+        if self.pagin_idx == 1:
+            # if it's the first pagination page, use base_permalist only
             permalist = self.base_permalist
         else:
-            # otherwise add pagination dir and pack index
+            # otherwise add pagination dir and pagination index
             permalist = self.base_permalist + \
-                    filter(None, [pagination_url, str(self.pack_idx)])
+                    filter(None, [pagination_url, str(self.pagin_idx)])
 
         return permalist
