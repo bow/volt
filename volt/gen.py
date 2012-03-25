@@ -155,7 +155,12 @@ def run():
 
     style("\nVolt site generation start!\n", is_bright=True)
 
-    # generate the site!
-    Generator().start()
+    if CONFIG.SITE.ENGINES:
+        # generate the site!
+        Generator().start()
+    else:
+        notify("All engines are off. Nothing to generate.\n", chars='=>', \
+                color='red', level=1)
+
 
     style("Site generation finished.\n", is_bright=True)
