@@ -41,7 +41,10 @@ setup(
     include_package_data = True,
     install_requires = install_requires,
     extras_require = {
+        "rst": ["docutils>=0.8.1"],
+        "textile": ["textile>=2.1.5"],
         "fast markdown": ["discount>=0.2.1"],
+        "syntax highlight": ["pygments>=1.4"],
     },
     test_suite='nose.collector',
     tests_require=[
@@ -61,10 +64,9 @@ setup(
         "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: BSD License",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 2.5",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: Implementation :: Jython",
+        "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Utilities",
