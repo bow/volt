@@ -1,6 +1,6 @@
 # Volt configurations
 
-from volt.config.base import Config
+from volt.config import Config
 
 
 # Default site configurations
