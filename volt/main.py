@@ -14,7 +14,7 @@ Entry point for Volt run.
 import argparse
 import sys
 
-from volt import __version__
+from volt import __version__, gen, server
 from volt.config import CONFIG
 from volt.exceptions import ConfigNotFoundError, ContentError
 from volt.utils import style
@@ -111,12 +111,11 @@ def run_demo():
 
 def run_gen():
     """Generates the static site."""
-    from volt import gen
     gen.run()
 
 def run_serve():
     """Runs the volt server."""
-    from volt import server
+    gen.run()
     server.run()
 
 def run_version():
