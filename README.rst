@@ -84,9 +84,9 @@ INSTALLATION
 
 ``pip install volt``
 
-Volt is still in alpha ~ it's usable enough to be used for making 
-`a real website <http://bow.web.id>`_, but many things could still break here
-and there.
+Volt is still in alpha and under heavy development. It's usable enough to be
+used for making `a real website <http://bow.web.id>`_, but things will break
+here and there.
 
 Dependencies:
 
