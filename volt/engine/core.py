@@ -354,7 +354,9 @@ class Engine(object):
 
     def _write_output(self, file_obj, string):
         """Writes string to the open file object."""
-        file_obj.write(string.encode('utf-8'))
+        if sys.version_info[0] < 3:
+            string = string.encode('utf-8')
+        file_obj.write(string)
 
 
 class Page(object):
@@ -377,10 +379,10 @@ class Page(object):
 
         # raise exception if there are non-ascii chars
         try:
-            if not sys.version_info[0] > 2:
-                string.decode('ascii')
-            else:
+            if sys.version_info[0] > 2:
                 assert all(ord(c) < 128 for c in string)
+            else:
+                string.decode('ascii')
         except (UnicodeDecodeError, AssertionError):
             raise ContentError("Slug in '%s' contains non-ascii characters." \
                                % self.id)
