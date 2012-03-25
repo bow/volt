@@ -1,0 +1,32 @@
+=========
+CHANGELOG
+=========
+
+
+v0.0.2
+------
+Release date: 2012-25-03
+
+Highlights:
+  * Preliminary support for more python versions: 3.2 and 2.6
+  * Preliminary support for rSt and textile plugins
+  * ``volt serve`` now generates the site first before serving any contents.
+  * PyYAML dependency removed.
+  * Pygments is now an optional dependency.
+  * Engines and Plugins now store their default settings as a class attribute.
+    Users can override this by creating a Config object with the designated
+    name (the value of the Engine/Plugin class attribute 'USER_CONF_ENTRY')
+    in the project's voltconf.py.
+  * Default configuration name changes:
+      - PACKS          -> PAGINATIONS
+      - POSTS_PER_PAGE -> UNITS_PER_PAGINATION
+      - SORT           -> SORT_KEY
+
+Fixes:
+  * Windows terminal output does not display ANSI color codes anymore.
+  * Volt server regeneration now works if voltconf.py is changed.
+
+
+v0.0.1
+------
+* Release date: 2012-06-03
