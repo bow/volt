@@ -104,8 +104,6 @@ def run_demo():
     run_init(cmd_name='demo')
     style("\nPreparing your lightning-speed Volt tour...\n", \
             is_bright=True)
-    # generate the site
-    run_gen()
     # need to pass arglist to serve, so we'll call main
     main(['serve'])
 
