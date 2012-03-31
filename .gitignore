@@ -1,7 +1,7 @@
 .tox/
+fabfile.py
 distribute-*
+distribute_setup25.py
 build/
 volt/data/sandbox/
-volt/.coverage
-volt/htmlcov
 ROADMAP
