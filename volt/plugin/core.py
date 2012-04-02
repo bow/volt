@@ -11,6 +11,7 @@ Core Volt plugin.
 
 """
 
+import abc
 import os
 
 from volt.config import CONFIG, Config
@@ -41,6 +42,8 @@ class Plugin(object):
 
     """
 
+    __metaclass__ = abc.ABCMeta
+
     DEFAULTS = Config()
 
     USER_CONF_ENTRY = None
@@ -68,7 +71,6 @@ class Plugin(object):
 
             self.config.update(user_config)
 
+    @abc.abstractmethod
     def run(self):
         """Runs the plugin."""
-
-        raise NotImplementedError("Plugins must implement a run method.")
