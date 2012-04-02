@@ -20,7 +20,7 @@ from volt.gen import Generator
 from volt.test import INSTALL_DIR, USER_DIR
 
 
-class TestGen(unittest.TestCase):
+class GenCases(unittest.TestCase):
 
     def test_get_processor_mod(self):
         gen = Generator()

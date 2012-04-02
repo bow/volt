@@ -22,7 +22,7 @@ from volt.test import INSTALL_DIR, USER_DIR
 from volt.utils import path_import
 
 
-class TestSessionConfigLoad(unittest.TestCase):
+class SessionConfigLoadCases(unittest.TestCase):
 
     def setUp(self):
         def get_root_dir_mock(x): return USER_DIR
@@ -63,7 +63,7 @@ class TestSessionConfigLoad(unittest.TestCase):
                 "foo in user")
 
 
-class TestSessionConfigRootDir(unittest.TestCase):
+class SessionConfigRootDirCases(unittest.TestCase):
 
     def setUp(self):
         self.CONFIG = SessionConfig()
@@ -83,7 +83,7 @@ class TestSessionConfigRootDir(unittest.TestCase):
                 start_dir)
 
 
-class TestPathImport(unittest.TestCase):
+class PathImportCases(unittest.TestCase):
 
     def test_path_import_string(self):
         path = os.path.join(INSTALL_DIR, 'engine', 'builtins')
@@ -100,7 +100,7 @@ class TestPathImport(unittest.TestCase):
         self.assertEqual(getabsfile(mod), mod_path)
 
 
-class TestBuiltInJinja2Filters(unittest.TestCase):
+class BuiltInJinja2FiltersCases(unittest.TestCase):
 
     def test_displaytime(self):
         format = "%Y-%m-%d"

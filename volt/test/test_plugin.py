@@ -20,4 +20,4 @@ from volt.plugin.core import Plugin
 class TestPlugin(unittest.TestCase):
 
     def test_run(self):
-        self.assertRaises(NotImplementedError, Plugin().run, )
+        self.assertRaises(TypeError, Plugin.__init__, )
