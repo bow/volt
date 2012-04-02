@@ -17,13 +17,14 @@ import unittest
 import warnings
 from datetime import datetime
 
+from jinja2 import Environment, FileSystemLoader
 from mock import MagicMock, patch, call
 
 from volt.config import Config
 from volt.engine.core import Engine, Page, Unit, Pagination, \
         chain_item_permalinks
 from volt.exceptions import ConfigError, EmptyUnitsWarning, \
-        PermalinkTemplateError, ContentError
+        PermalinkTemplateError, ContentError, DuplicateOutputError
 from volt.test import USER_DIR
 
 
@@ -73,6 +74,9 @@ def make_units_mock():
         for field in attr:
             setattr(Unitlist_mock[idx], field, attr[field])
 
+    for unit in Unitlist_mock:
+        setattr(unit, 'path', os.path.join(USER_DIR, unit.id))
+
     return Unitlist_mock
 
 
@@ -87,6 +91,8 @@ def make_sessionconfig_mock():
             'SITE_DIR': os.path.join(USER_DIR, 'site'),
            }
     SITE = {'URL': 'http://foo.com',
+            'TEMPLATE_ENV': Environment(\
+                loader=FileSystemLoader(VOLT['TEMPLATE_DIR']))
            }
 
     sessionconfig_mock = MagicMock()
@@ -182,6 +188,33 @@ class TestEngine(unittest.TestCase):
         self.assertNotEqual([x.title for x in self.engine.units], titles)
         self.engine.sort_units()
         self.assertEqual([x.title for x in self.engine.units], titles)
+
+    @patch('volt.engine.core.Engine._write_file')
+    def test_write_items_duplicate(self, write_mock):
+        template_path = 'item.html'
+        units = make_units_mock()[:2]
+        units[1].path = units[0].path
+
+        assert units[0].path == units[1].path
+        with open(units[1].path, 'w'):
+            self.assertRaises(DuplicateOutputError, self.engine._write_items, \
+                    units, template_path)
+        os.remove(units[1].path)
+
+    @patch('volt.engine.core.Engine._write_file')
+    def test_write_items_ok(self, write_mock):
+        template_path = 'item.html'
+        units = make_units_mock()[:2]
+        self.engine._write_items(units, template_path)
+
+        if sys.version_info[0] < 3:
+            rendered = '\xd1\x8e\xd0\xbd\xd0\xb8\xd0\xba\xd0\xbe\xd0\xb4\xd0\xb0'
+        else:
+            rendered = 'юникода'
+
+        call1 = call(os.path.join(USER_DIR, '1'), rendered + '|1')
+        call2 = call(os.path.join(USER_DIR, '2'), rendered + '|2')
+        self.assertEqual([call1, call2], write_mock.call_args_list)
 
 
 class TestEnginePaginations(unittest.TestCase):

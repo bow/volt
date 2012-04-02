@@ -335,7 +335,6 @@ class Engine(object):
         template_env = CONFIG.SITE.TEMPLATE_ENV
         template_file = os.path.basename(template_path)
         template = template_env.get_template(template_file)
-        config_context = CONFIG
 
         for item in items:
             # warn if files are overwritten
@@ -343,20 +342,17 @@ class Engine(object):
             # unexpected results
             if os.path.exists(item.path):
                 raise DuplicateOutputError("'%s' already exists." % item.path)
-            try:
-                os.makedirs(os.path.dirname(item.path))
-            except OSError:
-                pass
-            with open(item.path, 'w') as target:
-                rendered = template.render(page=item.__dict__, \
-                        CONFIG=config_context)
-                self._write_output(target, rendered)
+            rendered = template.render(page=item.__dict__, CONFIG=CONFIG)
+            if sys.version_info[0] < 3:
+                rendered = rendered.encode('utf-8')
+            self._write_file(item.path, rendered)
 
-    def _write_output(self, file_obj, string):
-        """Writes string to the open file object."""
-        if sys.version_info[0] < 3:
-            string = string.encode('utf-8')
-        file_obj.write(string)
+    def _write_file(self, file_path, string):
+        """Writes string to the open file object (PRIVATE)."""
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(os.path.dirname(file_path))
+        with open(file_path, 'w') as target:
+            target.write(string)
 
 
 class Page(object):
