@@ -177,12 +177,9 @@ class Config(dict):
     REQUIRED = tuple()
     FIELDS_AS_DATETIME = tuple()
     CONTENT_DATETIME_FORMAT = str()
-    DISPLAY_DATETIME_FORMAT = str()
     FIELDS_AS_LIST = tuple()
     LIST_SEP = str()
     GLOBAL_FIELDS = dict()
-    PERMALINK = str()
-    PACKS = tuple()
 
     def __init__(self, *args, **kwargs):
         """Initializes Config."""
