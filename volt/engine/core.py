@@ -219,7 +219,7 @@ class Engine(object):
             try:
                 paginate = paginator_map[field_type]
                 args = [field, base_permalist, units_per_pagination]
-                paginate_list = [pagination.next() for pagination in paginate(*args)]
+                paginate_list = list(paginate(*args))
                 key = '/'.join(base_permalist)
                 paginations[key] = paginate_list
             except KeyError:
@@ -230,17 +230,21 @@ class Engine(object):
 
     def _paginate_all(self, field, base_permalist, units_per_pagination):
         """Create paginations for all field values (PRIVATE)."""
-        yield self._paginator(self.units, base_permalist, units_per_pagination)
+        return self._paginator(self.units, base_permalist, units_per_pagination)
 
     def _paginate_single(self, field, base_permalist, units_per_pagination):
         """Create paginations for string/int/float header field values (PRIVATE)."""
         units = self.units
         str_set = set([getattr(x, field) for x in units])
 
+        paginated = list()
         for item in str_set:
             matches = [x for x in units if item == getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            yield self._paginator(matches, base_permalist, units_per_pagination)
+            pagin = self._paginator(matches, base_permalist, units_per_pagination)
+            paginated.extend(pagin)
+
+        return paginated
 
     def _paginate_multiple(self, field, base_permalist, units_per_pagination):
         """Create paginations for list or tuple header field values (PRIVATE)."""
@@ -248,10 +252,14 @@ class Engine(object):
         item_list_per_unit = (getattr(x, field) for x in units)
         item_set = reduce(set.union, [set(x) for x in item_list_per_unit])
 
+        paginated = list()
         for item in item_set:
             matches = [x for x in units if item in getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            yield self._paginator(matches, base_permalist, units_per_pagination)
+            pagin = self._paginator(matches, base_permalist, units_per_pagination)
+            paginated.extend(pagin)
+
+        return paginated
 
     def _paginate_datetime(self, field, base_permalist, units_per_pagination):
         """Create paginations for datetime header field values (PRIVATE)."""
@@ -267,6 +275,7 @@ class Engine(object):
         time_strs = [[x.strftime(y) for x in unit_times] for y in time_tokens]
         time_set = set(zip(*time_strs))
 
+        paginated = list()
         # create placeholders for new tokens
         base_permalist = base_permalist[:-1] + [None] * len(time_tokens)
         for item in time_set:
@@ -281,7 +290,10 @@ class Engine(object):
                     matches.append(unit)
 
             base_permalist = base_permalist[:-(len(time_tokens))] + list(item)
-            yield self._paginator(matches, base_permalist, units_per_pagination)
+            pagin = self._paginator(matches, base_permalist, units_per_pagination)
+            paginated.extend(pagin)
+
+        return paginated
 
     def _paginator(self, units, base_permalist, units_per_pagination):
         """Create paginations from units (PRIVATE).
@@ -312,8 +324,7 @@ class Engine(object):
 
         chain_item_permalinks(paginations)
 
-        for pagination in paginations:
-            yield pagination
+        return paginations
 
     def write_units(self):
         """Writes units using the unit template file."""
