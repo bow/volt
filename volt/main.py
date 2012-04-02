@@ -12,6 +12,7 @@ Entry point for Volt run.
 
 
 import argparse
+import os
 import sys
 
 from volt import __version__, gen, server
@@ -109,11 +110,12 @@ def run_demo():
 
 def run_gen():
     """Generates the static site."""
+    os.chdir(CONFIG.VOLT.ROOT_DIR)
     gen.run()
 
 def run_serve():
-    """Runs the volt server."""
-    gen.run()
+    """Generates the static site and runs the Volt server."""
+    run_gen()
     server.run()
 
 def run_version():
