@@ -91,6 +91,7 @@ def make_sessionconfig_mock():
             'SITE_DIR': os.path.join(USER_DIR, 'site'),
            }
     SITE = {'URL': 'http://foo.com',
+            'PAGINATION_URL': '',
             'TEMPLATE_ENV': Environment(\
                 loader=FileSystemLoader(VOLT['TEMPLATE_DIR']))
            }
@@ -107,11 +108,23 @@ def make_sessionconfig_mock():
 SessionConfig_mock = make_sessionconfig_mock()
 
 
-class TestEngineCoreMethods(unittest.TestCase):
+class TestEngine(Engine):
+    def activate(self): pass
+    def dispatch(self): pass
+    def create_units(self): pass
 
-    def test_chain_item_permalinks_missing_neighbor_permalink(self):
-        units = make_units_mock()
-        self.assertRaises(ContentError, chain_item_permalinks, units)
+class TestPage(Page):
+    @property
+    def id(self): return 'test'
+    @property
+    def permalist(self): return self._permalist
+    @permalist.setter
+    def permalist(self, permalist): self._permalist = permalist
+
+class TestUnit(Unit, TestPage): pass
+
+
+class EngineCoreMethodsCases(unittest.TestCase):
 
     def test_chain_item_permalinks_ok(self):
         units = make_units_mock()[1:-1]
@@ -129,19 +142,28 @@ class TestEngineCoreMethods(unittest.TestCase):
 
 
 @patch('volt.engine.core.CONFIG', SessionConfig_mock)
-class TestEngine(unittest.TestCase):
+class EngineCases(unittest.TestCase):
 
     def setUp(self):
-        self.engine = Engine()
-
-    def test_create_units(self):
-        self.assertRaises(NotImplementedError, self.engine.create_units, )
+        self.engine = TestEngine()
 
     def test_activate(self):
-        self.assertRaises(NotImplementedError, self.engine.activate, )
+        class TestEngine(Engine):
+            def dispatch(self): pass
+            def create_units(self): pass
+        self.assertRaises(TypeError, TestEngine.__init__, )
 
     def test_dispatch(self):
-        self.assertRaises(NotImplementedError, self.engine.dispatch, )
+        class TestEngine(Engine):
+            def activate(self): pass
+            def create_units(self): pass
+        self.assertRaises(TypeError, TestEngine.__init__, )
+
+    def test_create_units(self):
+        class TestEngine(Engine):
+            def activate(self): pass
+            def dispatch(self): pass
+        self.assertRaises(TypeError, TestEngine.__init__, )
 
     def test_prime_user_conf_entry_none(self):
         self.assertRaises(ConfigError, self.engine.prime, )
@@ -217,10 +239,10 @@ class TestEngine(unittest.TestCase):
         self.assertEqual([call1, call2], write_mock.call_args_list)
 
 
-class TestEnginePaginations(unittest.TestCase):
+class EnginePaginationCases(unittest.TestCase):
 
     def setUp(self):
-        self.engine = Engine()
+        self.engine = TestEngine()
         self.engine.config.URL = 'test'
         self.engine.config.UNITS_PER_PAGINATION = 2
 
@@ -241,7 +263,7 @@ class TestEnginePaginations(unittest.TestCase):
     def test_empty_units_warning(self, warn_mock):
         self.engine.config.PAGINATIONS = ('',)
         self.engine.create_paginations()
-        args = [call('Engine has no units to paginate.', EmptyUnitsWarning)]
+        args = [call('TestEngine has no units to paginate.', EmptyUnitsWarning)]
         self.assertEqual(warn_mock.call_args_list, args)
 
     def test_bad_pagination_pattern(self):
@@ -265,9 +287,10 @@ class TestEnginePaginations(unittest.TestCase):
                                'author/{author}',
                                '{time:%Y}',
                                '{time:%Y/%m}',)
-        expected = ['',
-                    'tag/arthur', 'tag/eames', 'tag/ariadne', 'tag/cobb',
-                    'author/Smith', 'author/Johnson',
+        expected = ['', '2', '3',
+                    'tag/arthur', 'tag/arthur/2', 'tag/arthur/3',
+                    'tag/eames', 'tag/eames/2', 'tag/ariadne', 'tag/cobb',
+                    'author/Smith', 'author/Smith/2', 'author/Johnson',
                     '2011', '2010', '2002', '1998',
                     '2011/09', '2010/09', '2010/07', '2002/08', '1998/04',]
 
@@ -357,15 +380,14 @@ class TestEnginePaginations(unittest.TestCase):
         Pagination_mock.assert_has_calls([call1, call2, call3], any_order=True)
 
 
-class TestPage(unittest.TestCase):
+class PageCases(unittest.TestCase):
 
     def setUp(self):
-        self.page = Page()
-        self.page.id = 'id'
+        self.page = TestPage()
 
     def test_repr(self):
         repr = self.page.__repr__()
-        self.assertEqual(repr, 'Page(id)')
+        self.assertEqual(repr, 'TestPage(test)')
 
     def test_slugify_error(self):
         slugify = self.page.slugify
@@ -378,7 +400,6 @@ class TestPage(unittest.TestCase):
         self.test_slugify_error()
 
     def test_slugify_ok(self):
-        self.page.id = 'id'
         slugify = self.page.slugify
         self.assertEqual(slugify('Move along people, this is just a test'),
                 'move-along-people-this-is-just-test')
@@ -400,33 +421,30 @@ class TestPage(unittest.TestCase):
     def test_get_path_and_permalink_index_html_true(self):
         self.page.permalist = ['blog', 'not', 'string']
 
-        path, permalink, permalink_abs = self.page.get_path_and_permalink()
-
-        self.assertEqual(path, os.path.join(USER_DIR, 'site', \
+        self.assertEqual(self.page.path, os.path.join(USER_DIR, 'site', \
                 'blog', 'not', 'string', 'index.html'))
-        self.assertEqual(permalink, '/blog/not/string/')
-        self.assertEqual(permalink_abs, 'http://foo.com/blog/not/string')
+        self.assertEqual(self.page.permalink, '/blog/not/string/')
+        self.assertEqual(self.page.permalink_abs, 'http://foo.com/blog/not/string')
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', False)
     @patch('volt.engine.core.CONFIG', SessionConfig_mock)
     def test_get_path_and_permalink_index_html_false(self):
         self.page.permalist = ['blog', 'not', 'string']
 
-        path, permalink, permalink_abs = self.page.get_path_and_permalink()
-
-        self.assertEqual(path, os.path.join(USER_DIR, 'site', \
+        self.assertEqual(self.page.path, os.path.join(USER_DIR, 'site', \
                 'blog', 'not', 'string.html'))
-        self.assertEqual(permalink, '/blog/not/string.html')
-        self.assertEqual(permalink_abs, 'http://foo.com/blog/not/string.html')
+        self.assertEqual(self.page.permalink, '/blog/not/string.html')
+        self.assertEqual(self.page.permalink_abs, 'http://foo.com/blog/not/string.html')
 
 
-class TestUnit(unittest.TestCase):
+class UnitCases(unittest.TestCase):
 
     def setUp(self):
-        self.unit = Unit('01.md')
+        self.unit = TestUnit(Engine.DEFAULTS)
+        self.unit.config.URL = '/'
 
-    def test_fields(self):
-        self.assertEqual(self.unit.fields, ['id'])
+    def test_init(self):
+        self.assertRaises(TypeError, TestUnit.__init__, 'foo')
 
     def test_check_required(self):
         req = ('title', 'surprise', )
@@ -451,29 +469,52 @@ class TestUnit(unittest.TestCase):
         taglist = ['trinity', 'twin', 'morpheus'].sort()
         self.assertEqual(self.unit.as_list(tags, ', ').sort(), taglist)
 
-    def test_get_permalist_error(self):
-        self.assertRaises(PermalinkTemplateError, self.unit.get_permalist, \
-                'bali/{beach}/party')
+    def test_permalist_missing_permalink(self):
+        self.unit.config.URL = '/'
+        del self.unit.config.PERMALINK
+        self.assertRaises(ConfigError, getattr, self.unit, 'permalist')
 
-    def test_get_permalist_ok(self):
-        get_permalist = self.unit.get_permalist
+    def test_permalist_missing_url(self):
+        self.unit.config.PERMALINK = 'foo'
+        del self.unit.config.URL
+        self.assertRaises(ConfigError, getattr, self.unit, 'permalist')
+
+    def test_permalist_error(self):
+        self.unit.config.PERMALINK = 'bali/{beach}/party'
+        self.assertRaises(PermalinkTemplateError, getattr, self.unit, 'permalist')
+
+    def test_permalist_ok_all_token_is_attrib(self):
         self.unit.slug = 'yo-dawg'
         self.unit.time = datetime(2009, 1, 28, 16, 47)
-
-        self.assertEqual(get_permalist('{time:%Y/%m/%d}/{slug}'),
+        self.unit.config.PERMALINK = '{time:%Y/%m/%d}/{slug}'
+        self.assertEqual(self.unit.permalist, \
                 ['', '2009', '01', '28', 'yo-dawg'])
-        self.assertEqual(get_permalist('{time:%Y}/mustard/{time:%m}/{slug}/'),
+
+    def test_permalist_ok_nonattrib_token(self):
+        self.unit.slug = 'yo-dawg'
+        self.unit.time = datetime(2009, 1, 28, 16, 47)
+        self.unit.config.PERMALINK = '{time:%Y}/mustard/{time:%m}/{slug}/'
+        self.assertEqual(self.unit.permalist, \
                 ['', '2009', 'mustard', '01', 'yo-dawg'])
-        self.assertEqual(get_permalist('i/love /mustard'),
+
+    def test_permalist_ok_space_in_token(self):
+        self.unit.config.PERMALINK = 'i/love /mustard'
+        self.assertEqual(self.unit.permalist, \
                 ['', 'i', 'love', 'mustard'])
 
 
 @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True)
-class TestPagination(unittest.TestCase):
+class PaginationCases(unittest.TestCase):
 
     def setUp(self):
         self.units = [MagicMock(Spec=Unit)] * 5
         self.site_dir = os.path.join(USER_DIR, 'site')
+
+    @patch('volt.engine.core.CONFIG.SITE.PAGINATION_URL', 'page')
+    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    def test_id(self):
+        pagin = Pagination(self.units, 0, )
+        self.assertEqual(pagin.id, '/')
 
     @patch('volt.engine.core.CONFIG.SITE.PAGINATION_URL', 'page')
     @patch('volt.engine.core.CONFIG', SessionConfig_mock)
