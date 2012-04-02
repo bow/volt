@@ -14,6 +14,7 @@ Contains the Engine, Page, Unit, and Pagination classes.
 """
 
 from __future__ import with_statement
+import abc
 import codecs
 import os
 import re
@@ -46,16 +47,11 @@ def chain_item_permalinks(items):
     and next items.
 
     """
-    try:
-        for idx, item in enumerate(items):
-            if idx != 0:
-                setattr(item, 'permalink_prev', items[idx-1].permalink)
-            if idx != len(items) - 1:
-                setattr(item, 'permalink_next', items[idx+1].permalink)
-    except AttributeError:
-        raise ContentError("%s '%s' neighbor(s) does not have a "
-                           "permalink attribute." % \
-                           (item.__class__.__name__.capitalize(), item.id))
+    for idx, item in enumerate(items):
+        if idx != 0:
+            setattr(item, 'permalink_prev', items[idx-1].permalink)
+        if idx != len(items) - 1:
+            setattr(item, 'permalink_next', items[idx+1].permalink)
 
 
 class Engine(object):
@@ -74,6 +70,8 @@ class Engine(object):
 
     """
 
+    __metaclass__ = abc.ABCMeta
+
     DEFAULTS = Config()
 
     def __init__(self):
@@ -81,15 +79,17 @@ class Engine(object):
         self.paginations = dict()
         self.config = Config(self.DEFAULTS)
 
+    @abc.abstractmethod
     def activate(self):
         """Performs initial processing of resources into unit objects."""
-        raise NotImplementedError("%s must implement an activate method." % \
-                self.__class__.__name__)
 
+    @abc.abstractmethod
     def dispatch(self):
         """Performs final processing after all plugins are run."""
-        raise NotImplementedError("%s must implement a dispatch method." % \
-                self.__class__.__name__)
+
+    @abc.abstractmethod
+    def create_units(self):
+        """Creates the units that will be processed by the engine."""
 
     def prime(self):
         """Consolidates default engine Config and user-defined Config.
@@ -125,11 +125,6 @@ class Engine(object):
         for template in [x for x in self.config.keys() if x.endswith('_TEMPLATE')]:
                 self.config[template] = os.path.join(CONFIG.VOLT.TEMPLATE_DIR, \
                         self.config[template])
-
-    def create_units(self):
-        """Creates the units that will be processed by the engine."""
-        raise NotImplementedError("%s must implement a create_units method." % \
-                self.__class__.__name__)
 
     def chain_units(self):
         """Sets the previous and next permalink attributes of each unit."""
@@ -371,8 +366,59 @@ class Page(object):
     """Class representing resources that may have its own web page, such as
     a Unit or a Pagination."""
 
+    __metaclass__ = abc.ABCMeta
+
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, self.id)
+
+    @abc.abstractproperty
+    def permalist(self):
+        """List of tokens used to construct permalink and path."""
+
+    @abc.abstractproperty
+    def id(self):
+        """Unique string that identifies the Page object."""
+
+    @property
+    def path(self):
+        """Filesystem path to Page object file."""
+        if not hasattr(self, '_path'):
+            base_path = [CONFIG.VOLT.SITE_DIR]
+            base_path.extend(self.permalist)
+
+            if CONFIG.SITE.INDEX_HTML_ONLY:
+                base_path.append('index.html')
+            else:
+                base_path[-1] += '.html'
+
+            self._path = os.path.join(*base_path)
+
+        return self._path
+
+    @property
+    def permalink(self):
+        """Relative URL to the Page object."""
+        if not hasattr(self, '_permalink'):
+            rel_url = ['']
+            rel_url.extend(filter(None, self.permalist))
+
+            if CONFIG.SITE.INDEX_HTML_ONLY:
+                rel_url[-1] += '/'
+            else:
+                rel_url[-1] += '.html'
+
+            self._permalink = '/'.join(rel_url)
+
+        return self._permalink
+
+    @property
+    def permalink_abs(self):
+        """Absolute URL to the Page object."""
+        if not hasattr(self, '_permalink_abs'):
+            self._permalink_abs = '/'.join([CONFIG.SITE.URL, \
+                    self.permalink[1:]]).strip('/')
+
+        return self._permalink_abs
 
     def slugify(self, string):
         """Returns a slugified version of the given string."""
@@ -406,34 +452,6 @@ class Page(object):
 
         return string
 
-    def get_path_and_permalink(self):
-        """Returns the permalink and absolute file path."""
-        assert hasattr(self, 'permalist'), \
-                "%s requires the 'permalist' attribute to be set first." % \
-                self.__class__.__name__
-
-        abs_url = CONFIG.SITE.URL
-        index_html_only = CONFIG.SITE.INDEX_HTML_ONLY
-        base_path = [CONFIG.VOLT.SITE_DIR]
-        rel_url = ['']
-
-        permalist = self.permalist
-        base_path.extend(permalist)
-        rel_url.extend(filter(None, permalist))
-
-        if index_html_only:
-            rel_url[-1] = rel_url[-1] + '/'
-            base_path.append('index.html')
-        else:
-            rel_url[-1] = rel_url[-1] + '.html'
-            base_path[-1] = base_path[-1] + '.html'
-
-        path = os.path.join(*base_path)
-        permalink = '/'.join(rel_url)
-        permalink_abs = '/'.join([abs_url] + rel_url[1:]).strip('/')
-
-        return path, permalink, permalink_abs
-
 
 class Unit(Page):
 
@@ -444,13 +462,84 @@ class Unit(Page):
 
     """
 
-    def __init__(self, id):
-        """Initializes a unit instance with the given ID string."""
-        self.id = id
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, config):
+        """Initializes a unit instance.
+
+        id -- Unique string to identify the unit.
+        config -- Config object of the calling Engine.
+
+        Config objects are required to instantiate the Unit since some unit
+        configuration values depends on the calling Engine configuration
+        values.
+
+        """
+        if not isinstance(config, Config):
+            raise TypeError("Units must be instantiated with their engine's "
+                            "Config object.")
+        self.config = config
 
     @property
-    def fields(self):
-        return self.__dict__.keys()
+    def permalist(self):
+        """Returns a list of strings which will be used to construct permalinks.
+
+        For the permalist to be constructed, the calling Engine must define a
+        'PERMALINK' string in its Config object.
+
+        The permalink string pattern may refer to the current unit's attributes
+        by enclosing them in square brackets. If the referred instance attribute
+        is a datetime object, it must be formatted by specifying a string format
+        argument.
+
+        Several examples of a valid permalink pattern:
+
+        '{time:%Y/%m/%d}/{slug}'
+            Returns, for example, ['2009', '10', '04', 'the-slug']
+
+        'post/{time:%d}/{id}'
+            Returns, for example,  ['post', '04', 'item-103']
+
+        """
+        if not hasattr(self, '_permalist'):
+            try:
+                # strip preceeding '/' but make sure ends with '/'
+                pattern = self.config.PERMALINK.strip('/') + '/'
+            except AttributeError:
+                raise ConfigError("%s Config must define a 'PERMALINK' value."
+                                  % self.__class__.__name__)
+            try:
+                unit_base_url = self.config.URL
+            except AttributeError:
+                raise ConfigError("%s Config must define a 'URL' value."
+                                  % self.__class__.__name__)
+
+
+            # get all permalink components and store into list
+            perm_tokens = re.findall(_RE_PERMALINK, pattern)
+
+            # process components that are enclosed in {}
+            permalist = []
+            for token in perm_tokens:
+                if '{%s}' % token[1:-1] == token:
+                    field = token[1:-1]
+                    if ':' in field:
+                        field, fmt = field.split(':')
+                    if not hasattr(self, field):
+                        raise PermalinkTemplateError("'%s' has no '%s' "
+                            "attribute." % (self.id, field))
+                    if isinstance(getattr(self, field), datetime):
+                        strftime = datetime.strftime(getattr(self, field), fmt)
+                        permalist.extend(filter(None, strftime.split('/')))
+                    else:
+                        permalist.append(self.slugify(getattr(self, field)))
+                else:
+                    permalist.append(self.slugify(token))
+
+            self._permalist = [unit_base_url.strip('/')] + \
+                    filter(None, permalist)
+
+        return self._permalist
 
     # convenience methods
     open_text = partial(codecs.open, encoding='utf-8')
@@ -488,53 +577,6 @@ class Unit(Page):
         """
         return list(set(filter(None, field.strip().split(sep))))
 
-    def get_permalist(self, pattern, unit_base_url='/'):
-        """Returns a list of strings which will be used to construct permalinks.
-
-        pattern -- String replacement pattern.
-        unit_base_url -- String of base URL of the engine, to be appended in
-                         front of each unit URL.
-
-        The pattern argument may refer to the current object's attributes by
-        enclosing them in square brackets. If the referred instance attribute 
-        is a datetime object, it must be formatted by specifying a string format
-        argument.
-
-        Several examples of a valid permalink pattern:
-        
-        '{time:%Y/%m/%d}/{slug}'
-            Returns, for example, ['2009', '10', '04', 'the-slug']
-
-        'post/{time:%d}/{id}'
-            Returns, for example,  ['post', '04', 'item-103']
-
-        """
-        # strip preceeding '/' but make sure ends with '/'
-        pattern = pattern.strip('/') + '/'
-
-        # get all permalink components and store into list
-        perm_tokens = re.findall(_RE_PERMALINK, pattern)
-
-        # process components that are enclosed in {}
-        permalist = []
-        for token in perm_tokens:
-            if '{%s}' % token[1:-1] == token:
-                field = token[1:-1]
-                if ':' in field:
-                    field, fmt = field.split(':')
-                if not hasattr(self, field):
-                    raise PermalinkTemplateError("'%s' has no '%s' attribute." % \
-                            (self.id, field))
-                if isinstance(getattr(self, field), datetime):
-                    strftime = datetime.strftime(getattr(self, field), fmt)
-                    permalist.extend(filter(None, strftime.split('/')))
-                else:
-                    permalist.append(self.slugify(getattr(self, field)))
-            else:
-                permalist.append(self.slugify(token))
-
-        return [unit_base_url.strip('/')] + filter(None, permalist)
-
 
 class Pagination(Page):
 
@@ -566,21 +608,18 @@ class Pagination(Page):
         # precautions for empty string, so double '/'s are not introduced
         self.base_permalist = filter(None, base_permalist)
 
-        # set paths and permalist
-        self.permalist = self.get_permalist()
-        self.path, self.permalink, self.permalink_abs = self.get_path_and_permalink()
-        self.id = self.permalink
+    @property
+    def id(self):
+        return self.permalink
 
-    def get_permalist(self):
+    @property
+    def permalist(self):
         """Returns a list of strings which will be used to construct permalinks."""
-        pagination_url = CONFIG.SITE.PAGINATION_URL
+        if not hasattr(self, '_permalist'):
+            self._permalist = self.base_permalist
+            # add pagination url and index if it's not the first pagination page
+            if self.pagin_idx > 1:
+                self._permalist += filter(None, [CONFIG.SITE.PAGINATION_URL, \
+                        str(self.pagin_idx)])
 
-        if self.pagin_idx == 1:
-            # if it's the first pagination page, use base_permalist only
-            permalist = self.base_permalist
-        else:
-            # otherwise add pagination dir and pagination index
-            permalist = self.base_permalist + \
-                    filter(None, [pagination_url, str(self.pagin_idx)])
-
-        return permalist
+        return self._permalist
