@@ -28,7 +28,6 @@ class TextUnit(Unit):
     is a single blog post or a single plain page. 
 
     """
-
     def __init__(self, fname, config):
         """Initializes TextUnit.
 
@@ -36,58 +35,39 @@ class TextUnit(Unit):
         config -- Config object containing unit options.
 
         """
-        Unit.__init__(self, fname)
+        super(TextUnit, self).__init__(config)
+        self._id = fname
 
-        with self.open_text(self.id) as source:
+        # parse header and content and check fields
+        self.parse_source(self.id)
+        self.check_required(self.config.REQUIRED)
+
+    @property
+    def id(self):
+        return self._id
+
+    def parse_source(self, file_path):
+        """Parses the header and content from the source file.
+
+        file_path -- Absolute path to source text file.
+
+        """
+        with self.open_text(file_path) as source:
             # open file and remove whitespaces
             read = filter(None, _RE_DELIM.split(source.read()))
             # header should be parsed into dict
-            try:
-                header = self.parse_header(read.pop(0))
-            except (AssertionError, IndexError):
-                raise ContentError("Header not detected in '%s'." % fname)
-            if not isinstance(header, dict):
-                raise ContentError("Header format unrecognizable in '%s'." \
-                        % fname)
-
-            # set blog unit file contents as attributes
-            for field in header:
-                self.check_protected(field, config.PROTECTED)
-                if field in config.FIELDS_AS_DATETIME:
-                    header[field] = self.as_datetime(\
-                            header[field], config.CONTENT_DATETIME_FORMAT)
-                if field in config.FIELDS_AS_LIST:
-                    header[field] = self.as_list(header[field], config.LIST_SEP)
-                if field == 'slug':
-                    header[field] = self.slugify(header[field])
-                if isinstance(header[field], (int, float)):
-                    header[field] = str(header[field])
-                setattr(self, field.lower(), header[field])
-
+            self.parse_header(read.pop(0))
             # content is everything else after header
             self.content = read.pop(0).strip()
 
-        # check if all required fields are present
-        self.check_required(config.REQUIRED)
-
-        # set other attributes
         # if slug is not set in header, set it now
         if not hasattr(self, 'slug'):
             self.slug = self.slugify(self.title)
+
         # and set global values
-        for field in config.GLOBAL_FIELDS:
+        for field in self.config.GLOBAL_FIELDS:
             if not hasattr(self, field):
-                setattr(self, field, config.GLOBAL_FIELDS[field])
-
-        # set permalink components
-        self.permalist = self.get_permalist(config.PERMALINK, config.URL)
-        # set displayed time string
-        if hasattr(self, 'time'):
-            self.display_time = self.time.strftime(config.DISPLAY_DATETIME_FORMAT)
-
-        # set paths
-        paths = self.get_path_and_permalink()
-        self.path, self.permalink, self.permalink_abs = paths
+                setattr(self, field, self.config.GLOBAL_FIELDS[field])
 
     def parse_header(self, header_string):
         """Returns a dictionary of header field values.
@@ -95,18 +75,26 @@ class TextUnit(Unit):
         header_string -- String of header lines.
 
         """
-        assert isinstance(header_string, basestring), \
-                "Parsed header in '%s' is not a proper string." % self.id
-
-        header = dict()
         header_lines = [x.strip() for x in header_string.strip().split('\n')]
         for line in header_lines:
-            assert ':' in line, \
-                    "Line '%s' in '%s' is not a proper header entry." % (line, self.id)
+            if not ':' in line:
+                    raise ContentError("Line '%s' in '%s' is not a proper "
+                                       "header entry." % (line, self.id))
             field, value = [x.strip() for x in line.split(':', 1)]
-            header[field] = value
 
-        return header
+            self.check_protected(field, self.config.PROTECTED)
+
+            if field == 'slug':
+                value = self.slugify(value)
+
+            elif field in self.config.FIELDS_AS_LIST:
+                value = self.as_list(value, self.config.LIST_SEP)
+
+            elif field in self.config.FIELDS_AS_DATETIME:
+                value = self.as_datetime(value, \
+                        self.config.CONTENT_DATETIME_FORMAT)
+
+            setattr(self, field.lower(), value)
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, os.path.basename(self.id))

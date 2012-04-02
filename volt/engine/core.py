@@ -544,7 +544,6 @@ class Unit(Page):
     # convenience methods
     open_text = partial(codecs.open, encoding='utf-8')
     as_datetime = datetime.strptime
-    get_display_time = datetime.strftime
 
     def check_protected(self, field, prot):
         """Checks if the given field can be set by the user or not.
