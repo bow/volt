@@ -116,16 +116,7 @@ class Generator(object):
                     engine.capitalize(), color='cyan')
 
             plugins = ep_map[engine]
-            for plugin in plugins:
-                plugin_mod = self.get_processor_mod(plugin, 'plugins')
-                plugin_class = grab_class(plugin_mod, Plugin)
-
-                if plugin_class:
-                    plugin_obj = plugin_class()
-                    notify("Running %s plugin\n" % plugin.capitalize(), \
-                            chars='::', color='yellow', level=2)
-                    plugin_obj.prime()
-                    plugin_obj.run(self.engines[engine].units)
+            self.run_plugin(plugins, self.engines[engine].units)
 
         # dispatch engines
         for engine in self.engines.values():
@@ -140,7 +131,22 @@ class Generator(object):
             with open(outfile, 'w') as target:
                 target.write(template.render(page={}, CONFIG=CONFIG))
 
-        sys.stderr.write('\n')
+    def run_plugin(self, plugin_list, units):
+        """Runs plugin on the given engine units.
+
+        plugin_list -- List of plugin name.
+        units -- List of units from an engine targeted by the plugin.
+
+        """
+        for plugin in plugin_list:
+            plugin_class = self.get_processor_class(plugin, 'plugins')
+
+            if plugin_class:
+                plugin_obj = plugin_class()
+                notify("Running %s plugin\n" % plugin.capitalize(), \
+                        chars='::', color='yellow', level=2)
+                plugin_obj.prime()
+                plugin_obj.run(units)
 
 
 def run():
