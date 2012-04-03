@@ -39,6 +39,14 @@ def path_import(name, paths):
     return imp.load_module(name, *mod_tuple)
 
 
+def write_file(file_path, string):
+    """Writes string to the open file object."""
+    if not os.path.exists(os.path.dirname(file_path)):
+        os.makedirs(os.path.dirname(file_path))
+    with open(file_path, 'w') as target:
+        target.write(string)
+
+
 def style(string, color='grey', is_bright=False):
     """Formats the color and brightness of the given string for terminal display.
     

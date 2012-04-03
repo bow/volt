@@ -133,7 +133,7 @@ class EngineCases(unittest.TestCase):
         self.engine.sort_units()
         self.assertEqual([x.title for x in self.engine.units], titles)
 
-    @patch('volt.engine.core.Engine._write_file')
+    @patch('volt.engine.core.write_file')
     def test_write_items_duplicate(self, write_mock):
         template_path = 'item.html'
         units = make_units_mock()[:2]
@@ -145,7 +145,7 @@ class EngineCases(unittest.TestCase):
                     units, template_path)
         os.remove(units[1].path)
 
-    @patch('volt.engine.core.Engine._write_file')
+    @patch('volt.engine.core.write_file')
     def test_write_items_ok(self, write_mock):
         template_path = 'item.html'
         units = make_units_mock()[:2]

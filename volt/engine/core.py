@@ -25,7 +25,7 @@ from functools import partial, reduce
 
 from volt.config import CONFIG, Config
 from volt.exceptions import *
-from volt.utils import path_import
+from volt.utils import path_import, write_file
 
 
 # regex objects for unit header and permalink processing
@@ -351,14 +351,7 @@ class Engine(object):
             rendered = template.render(page=item.__dict__, CONFIG=CONFIG)
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
-            self._write_file(item.path, rendered)
-
-    def _write_file(self, file_path, string):
-        """Writes string to the open file object (PRIVATE)."""
-        if not os.path.exists(os.path.dirname(file_path)):
-            os.makedirs(os.path.dirname(file_path))
-        with open(file_path, 'w') as target:
-            target.write(string)
+            write_file(item.path, rendered)
 
 
 class Page(object):
