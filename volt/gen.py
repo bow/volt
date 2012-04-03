@@ -15,27 +15,26 @@ from __future__ import with_statement
 import os
 import shutil
 import sys
+from inspect import isclass
 
 from volt.config import CONFIG, SessionConfig
 from volt.engine.core import Engine
 from volt.plugin.core import Plugin
-from volt.utils import grab_class, notify, path_import, style
+from volt.utils import notify, path_import, style
 
 
 class Generator(object):
 
     """Class representing a Volt run."""
 
-    def get_processor_mod(self, processor_name, processor_type, \
-            volt_dir=os.path.dirname(__file__), user_dir=None):
+    def get_processor_class(self, processor_name, processor_type, \
+            volt_dir=os.path.dirname(__file__)):
         """Returns the engine or plugin class used in site generation.
 
         processor_name -- String denoting engine or plugin name.
         processor_type -- String denoting processor type. Must be 'engines'
                           or 'plugins'.
         volt_dir -- String denoting absolute path to Volt's installation
-                    directory.
-        user_dir -- String denoting absolute path to user's Volt project
                     directory.
         
         This method tries to load engines or plugins from the user's Volt
@@ -47,18 +46,22 @@ class Generator(object):
         assert processor_type in ['engines', 'plugins'], \
             "Processor type must be 'engines' or 'plugins'"
 
-        # because if we set user_dir default value in arglist
-        # it's harder to test
-        if not user_dir:
-            user_dir = CONFIG.VOLT.ROOT_DIR
-
         # load engine or plugin
         # user_path has priority over volt_path
+        user_dir = CONFIG.VOLT.ROOT_DIR
         user_path = os.path.join(user_dir, processor_type)
         volt_path = os.path.join(volt_dir, processor_type[:-1], 'builtins')
 
-        return path_import(processor_name, [user_path, volt_path])
+        mod = path_import(processor_name, [user_path, volt_path])
 
+        if processor_type == 'engines':
+            cls = Engine
+        else:
+            cls = Plugin
+
+        for obj in (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x))):
+            if obj.__name__ != cls.__name__ and issubclass(obj, cls):
+                return obj
 
     def start(self):
         """Runs all the engines and plugins according to the configurations.
@@ -103,8 +106,7 @@ class Generator(object):
 
         # prime and activate engines
         for engine in CONFIG.SITE.ENGINES:
-            engine_mod = self.get_processor_mod(engine, 'engines')
-            engine_class = grab_class(engine_mod, Engine)
+            engine_class = self.get_processor_class(engine, 'engines')
             self.engines[engine] = engine_class()
             self.engines[engine].prime()
             self.engines[engine].activate()

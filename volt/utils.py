@@ -14,7 +14,6 @@ Collection of general handy methods used throughout Volt.
 import imp
 import os
 import sys
-from inspect import isclass
 
 
 COLOR_MAP = {'black': '30', 'red': '31',
@@ -38,21 +37,6 @@ def path_import(name, paths):
         paths = [paths]
     mod_tuple = imp.find_module(name, paths)
     return imp.load_module(name, *mod_tuple)
-
-
-def grab_class(mod, cls):
-    """Returns a class from the given module that is a subclass of the given
-    class.
-
-    mod -- Module to be searched.
-    cls -- Parent class of the class to return.
-
-    """
-    objs = (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x)))
-    # return if class is not itself
-    for item in objs:
-        if item.__name__ != cls.__name__ and issubclass(item, cls):
-            return item
 
 
 def style(string, color='grey', is_bright=False):

@@ -12,34 +12,69 @@ Tests for volt.gen.
 """
 
 
-import os
 import unittest
-from inspect import ismodule, getabsfile
 
+from mock import patch
+
+from volt.engine.core import Engine
 from volt.gen import Generator
-from volt.test import INSTALL_DIR, USER_DIR
+from volt.plugin.core import Plugin
+from volt.test import INSTALL_DIR, USER_DIR, make_sessionconfig_mock
 
 
+SessionConfig_mock = make_sessionconfig_mock()
+
+
+@patch('volt.gen.CONFIG.VOLT.ROOT_DIR', USER_DIR)
+@patch('volt.gen.CONFIG', SessionConfig_mock)
 class GenCases(unittest.TestCase):
 
-    def test_get_processor_mod(self):
-        gen = Generator()
-        # test for exception raising if processor_type unknown
-        self.assertRaises(AssertionError, gen.get_processor_mod, \
-                'builtin_eng', 'builtin_eng', INSTALL_DIR, USER_DIR)
+    def setUp(self):
+        self.gen = Generator()
 
-        # test for engine loading from install dir
-        mod = gen.get_processor_mod('in_install', 'engines', INSTALL_DIR,
-                USER_DIR)
-        self.assertTrue(ismodule(mod))
+    @patch('volt.gen.path_import')
+    def test_get_processor_class_unknown_type(self, path_import_mock):
+        builtin_engine_name = 'volt.test.fixtures.install_dir.engine.builtins.in_install'
+        path_import_mock.return_value = __import__(builtin_engine_name)
+        self.assertRaises(AssertionError, self.gen.get_processor_class, \
+                'in_install', 'foo', INSTALL_DIR)
 
-        # test for loading from user dir
-        mod = gen.get_processor_mod('in_user', 'engines', INSTALL_DIR,
-                USER_DIR)
-        self.assertTrue(ismodule(mod))
+    def test_get_processor_class_unknown_name(self):
+        self.assertRaises(ImportError, self.gen.get_processor_class, \
+                'foo', 'engines', INSTALL_DIR)
 
-        # test for loading if present in both user and install
-        mod = gen.get_processor_mod('in_both', 'engines', INSTALL_DIR,
-                USER_DIR)
-        self.assertEqual(getabsfile(mod), os.path.join(USER_DIR, 'engines', \
-                'in_both.py'))
+    def test_get_processor_class_builtin_engine(self):
+        returned = self.gen.get_processor_class('in_install', 'engines', \
+                INSTALL_DIR)
+        self.assertEqual(returned.__name__, 'TestBuiltinEngine')
+        self.assertTrue(issubclass(returned, Engine))
+
+    def test_get_processor_class_user_engine(self):
+        returned = self.gen.get_processor_class('in_user', 'engines', \
+                INSTALL_DIR)
+        self.assertEqual(returned.__name__, 'TestUserEngine')
+        self.assertTrue(issubclass(returned, Engine))
+
+    def test_get_processor_class_both_engine(self):
+        returned = self.gen.get_processor_class('in_both', 'engines', \
+                INSTALL_DIR)
+        self.assertEqual(returned.__name__, 'TestUserEngine')
+        self.assertTrue(issubclass(returned, Engine))
+
+    def test_get_processor_class_builtin_plugin(self):
+        returned = self.gen.get_processor_class('in_install', 'plugins', \
+                INSTALL_DIR)
+        self.assertEqual(returned.__name__, 'TestBuiltinPlugin')
+        self.assertTrue(issubclass(returned, Plugin))
+
+    def test_get_processor_class_user_plugin(self):
+        returned = self.gen.get_processor_class('in_user', 'plugins', \
+                INSTALL_DIR)
+        self.assertEqual(returned.__name__, 'TestUserPlugin')
+        self.assertTrue(issubclass(returned, Plugin))
+
+    def test_get_processor_class_both_plugin(self):
+        returned = self.gen.get_processor_class('in_both', 'plugins', \
+                INSTALL_DIR)
+        self.assertEqual(returned.__name__, 'TestUserPlugin')
+        self.assertTrue(issubclass(returned, Plugin))
