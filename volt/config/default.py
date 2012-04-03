@@ -49,6 +49,12 @@ SITE = Config(
     # Defaults to none
     PLUGINS = (('',[]),),
 
+    # Extra pages to write that are not controlled by an engine
+    # Examples: 404.html, index.html (if not already written by an engine)
+    # The tuple should list template names of these pages, which should
+    # be present in the default template directory
+    EXTRA_PAGES = tuple(),
+
     # URL to use for pagination
     # This will be used for paginated items after the first one
     # For example, if the pagination URL is 'page', then the second

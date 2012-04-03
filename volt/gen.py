@@ -19,8 +19,9 @@ from inspect import isclass
 
 from volt.config import CONFIG, SessionConfig
 from volt.engine.core import Engine
+from volt.exceptions import DuplicateOutputError
 from volt.plugin.core import Plugin
-from volt.utils import notify, path_import, style
+from volt.utils import path_import, write_file, notify, style
 
 
 class Generator(object):
@@ -122,14 +123,21 @@ class Generator(object):
         for engine in self.engines.values():
             engine.dispatch()
 
-        # generate other pages
-        tpl_file = 'index.html'
-        template = CONFIG.SITE.TEMPLATE_ENV.get_template(tpl_file)
+        self.write_extra_pages()
+        sys.stderr.write('\n')
 
-        outfile = os.path.join(CONFIG.VOLT.SITE_DIR, 'index.html')
-        if not os.path.exists(outfile):
-            with open(outfile, 'w') as target:
-                target.write(template.render(page={}, CONFIG=CONFIG))
+    def write_extra_pages(self):
+        """Write nonengine pages, such as a separate index.html or 404.html."""
+        for filename in CONFIG.SITE.EXTRA_PAGES:
+            template = CONFIG.SITE.TEMPLATE_ENV.get_template(filename)
+            path = os.path.join(CONFIG.VOLT.SITE_DIR, filename)
+
+            if os.path.exists(path):
+                raise DuplicateOutputError("'%s' already exists." % path)
+            rendered = template.render(page=dict(), CONFIG=CONFIG)
+            if sys.version_info[0] < 3:
+                rendered = rendered.encode('utf-8')
+            write_file(path, rendered)
 
     def run_plugin(self, plugin_list, units):
         """Runs plugin on the given engine units.
