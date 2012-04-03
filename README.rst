@@ -82,7 +82,9 @@ easy back-up and tracking, security, and speed.
 INSTALLATION
 ------------
 
-``pip install volt``
+Latest version from PyPI (0.0.2): ``pip install volt``
+
+Bleeding edge from main development repo: ``pip install git+https://github.com/bow/volt.git``
 
 Volt is still in alpha and under heavy development. It's usable enough to be
 used for making `a real website <http://bow.web.id>`_, but things will break
@@ -123,10 +125,10 @@ Here's a quick summary of the currently available commands:
   the default settings. You can safely edit or remove them.
 
 * ``volt gen``: Generates the website into a ``site`` folder in your current
-  project directory.
+  project directory. Can be run from anywhere inside a Volt project directory.
 
-* ``volt serve``: Starts the server pointing to the ``site`` directory. Can be
-  run from anywhere inside a Volt project directory.
+* ``volt serve``: Generates the website and Starts the server pointing to the
+  ``site`` directory. Can be run from anywhere inside a Volt project directory.
 
 * ``volt demo``: Starts the demo, must be run inside an empty directory.
 
