@@ -98,29 +98,21 @@ class Generator(object):
                another index.html.
 
         """
-        self.engines = dict()
-
-        # reverse engine-plugin map
-        ep_map = dict()
-        for engine in CONFIG.SITE.ENGINES:
-            ep_map[engine] = [x[0] for x in CONFIG.SITE.PLUGINS if engine in x[1]]
-
-        # prime and activate engines
-        for engine in CONFIG.SITE.ENGINES:
-            engine_class = self.get_processor_class(engine, 'engines')
-            self.engines[engine] = engine_class()
-            self.engines[engine].prime()
-            self.engines[engine].activate()
+        # run engines
+        for engine_name in CONFIG.SITE.ENGINES:
+            engine_class = self.get_processor_class(engine_name, 'engines')
+            engine = engine_class()
+            engine.prime()
+            engine.activate()
 
             sys.stderr.write('\n')
             notify("Activating %s engine...\n" % \
-                    engine.capitalize(), color='cyan')
+                    engine_name.capitalize(), color='cyan')
 
-            plugins = ep_map[engine]
-            self.run_plugin(plugins, self.engines[engine].units)
+            # run plugins that target the current engine
+            plugins = [x[0] for x in CONFIG.SITE.PLUGINS if engine_name in x[1]]
+            self.run_plugin(plugins, engine.units)
 
-        # dispatch engines
-        for engine in self.engines.values():
             engine.dispatch()
 
         self.write_extra_pages()
