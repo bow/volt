@@ -18,7 +18,7 @@ import sys
 from volt import __version__, gen, server
 from volt.config import CONFIG
 from volt.exceptions import ConfigNotFoundError, ContentError
-from volt.utils import style
+from volt.utils import style, notify
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -114,9 +114,13 @@ def run_gen():
     gen.run()
 
 def run_serve():
-    """Generates the static site and runs the Volt server."""
+    """Generates the static site, and if successful, runs the Volt server."""
     run_gen()
-    server.run()
+    if os.path.exists(CONFIG.VOLT.SITE_DIR):
+        server.run()
+    else:
+        notify("Site directory not found. Nothing to serve.\n", chars='=>', \
+                color='red', level=0)
 
 def run_version():
     """Shows version number."""

@@ -155,20 +155,17 @@ def run():
     # reload config to reflect any new changes that may have been made
     CONFIG = SessionConfig()
 
-    # prepare output directory
-    if os.path.exists(CONFIG.VOLT.SITE_DIR):
-        shutil.rmtree(CONFIG.VOLT.SITE_DIR)
-    shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
-            ignore=shutil.ignore_patterns(CONFIG.SITE.IGNORE_PATTERN))
-
-    style("\nVolt site generation start!\n", is_bright=True)
-
     if CONFIG.SITE.ENGINES:
+        # prepare output directory
+        if os.path.exists(CONFIG.VOLT.SITE_DIR):
+            shutil.rmtree(CONFIG.VOLT.SITE_DIR)
+        shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
+                ignore=shutil.ignore_patterns(CONFIG.SITE.IGNORE_PATTERN))
+
         # generate the site!
+        style("\nVolt site generation start!\n", is_bright=True)
         Generator().start()
+        style("Site generation finished.\n", is_bright=True)
     else:
         notify("All engines are off. Nothing to generate.\n", chars='=>', \
-                color='red', level=1)
-
-
-    style("Site generation finished.\n", is_bright=True)
+                color='red', level=0)
