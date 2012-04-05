@@ -340,8 +340,9 @@ class PageCases(unittest.TestCase):
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True)
     @patch('volt.engine.core.CONFIG', SessionConfig_mock)
-    def test_get_path_and_permalink_index_html_true(self):
+    def test_path_permalinks_index_html_true(self):
         self.page.permalist = ['blog', 'not', 'string']
+        self.page.slugify = lambda x: x
 
         self.assertEqual(self.page.path, os.path.join(USER_DIR, 'site', \
                 'blog', 'not', 'string', 'index.html'))
@@ -350,8 +351,9 @@ class PageCases(unittest.TestCase):
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', False)
     @patch('volt.engine.core.CONFIG', SessionConfig_mock)
-    def test_get_path_and_permalink_index_html_false(self):
+    def test_path_permalinks_index_html_false(self):
         self.page.permalist = ['blog', 'not', 'string']
+        self.page.slugify = lambda x: x
 
         self.assertEqual(self.page.path, os.path.join(USER_DIR, 'site', \
                 'blog', 'not', 'string.html'))
