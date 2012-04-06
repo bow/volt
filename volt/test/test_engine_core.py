@@ -39,9 +39,9 @@ class TestPage(Page):
     @property
     def id(self): return 'test'
     @property
-    def permalist(self): return self._permalist
+    def permalist(self): return self._lazy_permalist
     @permalist.setter
-    def permalist(self, permalist): self._permalist = permalist
+    def permalist(self, permalist): self._lazy_permalist = permalist
 
 class TestUnit(Unit, TestPage): pass
 

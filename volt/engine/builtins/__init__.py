@@ -17,6 +17,7 @@ import os
 
 from volt.engine.core import _RE_DELIM, Engine, Unit
 from volt.exceptions import ContentError
+from volt.utils import lazyproperty
 
 
 class TextUnit(Unit):

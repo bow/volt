@@ -24,6 +24,17 @@ COLOR_MAP = {'black': '30', 'red': '31',
 BRIGHTNESS_MAP = {'normal': '00', 'bold': '01'}
 
 
+def lazyproperty(func):
+    """Decorator for lazy property loading."""
+    attr_name = '_lazy_' + func.__name__
+    @property
+    def _lazyproperty(self):
+        if not hasattr(self, attr_name):
+            setattr(self, attr_name, func(self))
+        return getattr(self, attr_name)
+    return _lazyproperty
+
+
 def path_import(name, paths):
     """Imports a module from the specified path.
 

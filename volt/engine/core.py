@@ -25,7 +25,7 @@ from functools import partial, reduce
 
 from volt.config import CONFIG, Config
 from volt.exceptions import *
-from volt.utils import path_import, write_file
+from volt.utils import lazyproperty, path_import, write_file
 
 
 # regex objects for unit header and permalink processing
@@ -372,46 +372,36 @@ class Page(object):
     def id(self):
         """Unique string that identifies the Page object."""
 
-    @property
+    @lazyproperty
     def path(self):
         """Filesystem path to Page object file."""
-        if not hasattr(self, '_path'):
-            base_path = [CONFIG.VOLT.SITE_DIR]
-            base_path.extend(self.permalist)
+        base_path = [CONFIG.VOLT.SITE_DIR]
+        base_path.extend(self.permalist)
 
-            if CONFIG.SITE.INDEX_HTML_ONLY:
-                base_path.append('index.html')
-            else:
-                base_path[-1] += '.html'
+        if CONFIG.SITE.INDEX_HTML_ONLY:
+            base_path.append('index.html')
+        else:
+            base_path[-1] += '.html'
 
-            self._path = os.path.join(*base_path)
+        return os.path.join(*base_path)
 
-        return self._path
-
-    @property
+    @lazyproperty
     def permalink(self):
         """Relative URL to the Page object."""
-        if not hasattr(self, '_permalink'):
-            rel_url = ['']
-            rel_url.extend(filter(None, self.permalist))
+        rel_url = ['']
+        rel_url.extend(filter(None, self.permalist))
 
-            if CONFIG.SITE.INDEX_HTML_ONLY:
-                rel_url[-1] += '/'
-            else:
-                rel_url[-1] += '.html'
+        if CONFIG.SITE.INDEX_HTML_ONLY:
+            rel_url[-1] += '/'
+        else:
+            rel_url[-1] += '.html'
 
-            self._permalink = '/'.join(rel_url)
+        return '/'.join(rel_url)
 
-        return self._permalink
-
-    @property
+    @lazyproperty
     def permalink_abs(self):
         """Absolute URL to the Page object."""
-        if not hasattr(self, '_permalink_abs'):
-            self._permalink_abs = '/'.join([CONFIG.SITE.URL, \
-                    self.permalink[1:]]).strip('/')
-
-        return self._permalink_abs
+        return '/'.join([CONFIG.SITE.URL, self.permalink[1:]]).strip('/')
 
     def slugify(self, string):
         """Returns a slugified version of the given string."""
@@ -473,7 +463,7 @@ class Unit(Page):
                             "Config object.")
         self.config = config
 
-    @property
+    @lazyproperty
     def permalist(self):
         """Returns a list of strings which will be used to construct permalinks.
 
@@ -494,45 +484,41 @@ class Unit(Page):
             Returns, for example,  ['post', '04', 'item-103']
 
         """
-        if not hasattr(self, '_permalist'):
-            try:
-                # strip preceeding '/' but make sure ends with '/'
-                pattern = self.config.PERMALINK.strip('/') + '/'
-            except AttributeError:
-                raise ConfigError("%s Config must define a 'PERMALINK' value."
-                                  % self.__class__.__name__)
-            try:
-                unit_base_url = self.config.URL
-            except AttributeError:
-                raise ConfigError("%s Config must define a 'URL' value."
-                                  % self.__class__.__name__)
+        try:
+            # strip preceeding '/' but make sure ends with '/'
+            pattern = self.config.PERMALINK.strip('/') + '/'
+        except AttributeError:
+            raise ConfigError("%s Config must define a 'PERMALINK' value."
+                              % self.__class__.__name__)
+        try:
+            unit_base_url = self.config.URL
+        except AttributeError:
+            raise ConfigError("%s Config must define a 'URL' value."
+                              % self.__class__.__name__)
 
 
-            # get all permalink components and store into list
-            perm_tokens = re.findall(_RE_PERMALINK, pattern)
+        # get all permalink components and store into list
+        perm_tokens = re.findall(_RE_PERMALINK, pattern)
 
-            # process components that are enclosed in {}
-            permalist = []
-            for token in perm_tokens:
-                if '{%s}' % token[1:-1] == token:
-                    field = token[1:-1]
-                    if ':' in field:
-                        field, fmt = field.split(':')
-                    if not hasattr(self, field):
-                        raise PermalinkTemplateError("'%s' has no '%s' "
-                            "attribute." % (self.id, field))
-                    if isinstance(getattr(self, field), datetime):
-                        strftime = datetime.strftime(getattr(self, field), fmt)
-                        permalist.extend(filter(None, strftime.split('/')))
-                    else:
-                        permalist.append(self.slugify(getattr(self, field)))
+        # process components that are enclosed in {}
+        permalist = []
+        for token in perm_tokens:
+            if '{%s}' % token[1:-1] == token:
+                field = token[1:-1]
+                if ':' in field:
+                    field, fmt = field.split(':')
+                if not hasattr(self, field):
+                    raise PermalinkTemplateError("'%s' has no '%s' "
+                        "attribute." % (self.id, field))
+                if isinstance(getattr(self, field), datetime):
+                    strftime = datetime.strftime(getattr(self, field), fmt)
+                    permalist.extend(filter(None, strftime.split('/')))
                 else:
-                    permalist.append(self.slugify(token))
+                    permalist.append(self.slugify(getattr(self, field)))
+            else:
+                permalist.append(self.slugify(token))
 
-            self._permalist = [unit_base_url.strip('/')] + \
-                    filter(None, permalist)
-
-        return self._permalist
+        return [unit_base_url.strip('/')] + filter(None, permalist)
 
     # convenience methods
     open_text = partial(codecs.open, encoding='utf-8')
@@ -600,18 +586,17 @@ class Pagination(Page):
         # precautions for empty string, so double '/'s are not introduced
         self.base_permalist = filter(None, base_permalist)
 
-    @property
+    @lazyproperty
     def id(self):
         return self.permalink
 
-    @property
+    @lazyproperty
     def permalist(self):
         """Returns a list of strings which will be used to construct permalinks."""
-        if not hasattr(self, '_permalist'):
-            self._permalist = self.base_permalist
-            # add pagination url and index if it's not the first pagination page
-            if self.pagin_idx > 1:
-                self._permalist += filter(None, [CONFIG.SITE.PAGINATION_URL, \
-                        str(self.pagin_idx)])
+        permalist = self.base_permalist
+        # add pagination url and index if it's not the first pagination page
+        if self.pagin_idx > 1:
+            permalist += filter(None, [CONFIG.SITE.PAGINATION_URL, \
+                    str(self.pagin_idx)])
 
-        return self._permalist
+        return permalist
