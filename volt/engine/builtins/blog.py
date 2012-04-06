@@ -50,7 +50,7 @@ class BlogEngine(TextEngine):
         CONTENT_DATETIME_FORMAT = '%Y/%m/%d %H:%M',
 
         # Dictionary containing values to be globally set for all posts
-        GLOBAL_FIELDS = dict(),
+        GLOBAL_FIELDS = {},
 
         # Directory path for storing blog content 
         # relative to the default Volt content directory

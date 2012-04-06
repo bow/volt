@@ -126,7 +126,7 @@ class Generator(object):
 
             if os.path.exists(path):
                 raise DuplicateOutputError("'%s' already exists." % path)
-            rendered = template.render(page=dict(), CONFIG=CONFIG)
+            rendered = template.render(page={}, CONFIG=CONFIG)
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
             write_file(path, rendered)

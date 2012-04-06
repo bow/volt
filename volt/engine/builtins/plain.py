@@ -50,7 +50,7 @@ class PlainEngine(TextEngine):
         REQUIRED = ('title', ),
 
         # Dictionary containing values to be globally set for all posts
-        GLOBAL_FIELDS = dict(),
+        GLOBAL_FIELDS = {},
 
         # Protected properties
         # These properties must not be defined by any individual plain page header,

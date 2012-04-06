@@ -190,7 +190,7 @@ class Engine(object):
                 'datetime': self._paginate_datetime,
         }
 
-        paginations = dict()
+        paginations = {}
         for pattern in pagination_patterns:
 
             perm_tokens = re.findall(_RE_PERMALINK, pattern.strip('/') + '/')
@@ -232,7 +232,7 @@ class Engine(object):
         units = self.units
         str_set = set([getattr(x, field) for x in units])
 
-        paginated = list()
+        paginated = []
         for item in str_set:
             matches = [x for x in units if item == getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
@@ -247,7 +247,7 @@ class Engine(object):
         item_list_per_unit = (getattr(x, field) for x in units)
         item_set = reduce(set.union, [set(x) for x in item_list_per_unit])
 
-        paginated = list()
+        paginated = []
         for item in item_set:
             matches = [x for x in units if item in getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
@@ -270,7 +270,7 @@ class Engine(object):
         time_strs = [[x.strftime(y) for x in unit_times] for y in time_tokens]
         time_set = set(zip(*time_strs))
 
-        paginated = list()
+        paginated = []
         # create placeholders for new tokens
         base_permalist = base_permalist[:-1] + [None] * len(time_tokens)
         for item in time_set:
@@ -299,7 +299,7 @@ class Engine(object):
         units_per_pagination -- Number of units to show per pagination.
 
         """
-        paginations = list()
+        paginations = []
 
         # count how many paginations we need
         is_last = len(units) % units_per_pagination != 0

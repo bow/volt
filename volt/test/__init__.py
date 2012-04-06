@@ -42,7 +42,7 @@ def make_sessionconfig_mock():
 
 def make_units_mock():
     # define mock units
-    Unitlist_mock = list()
+    Unitlist_mock = []
     for i in range(5):
         Unitlist_mock.append(MagicMock(spec=Unit))
 

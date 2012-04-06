@@ -90,7 +90,7 @@ class TextUnitHeaderCases(unittest.TestCase):
     @patch.object(TestTextUnit, 'parse_source', MagicMock())
     def setUp(self):
         config = MagicMock(spec=Config)
-        config.GLOBAL_FIELDS = dict()
+        config.GLOBAL_FIELDS = {}
         TestTextUnit.title = 'a'
         self.unit = TestTextUnit('test', config)
 
