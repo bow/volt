@@ -104,16 +104,12 @@ class BlogEngine(TextEngine):
     USER_CONF_ENTRY = 'ENGINE_BLOG'
 
     def activate(self):
-        # parse individual post and store the results in self.units
-        self.units = self.create_units()
         # sort units
         self.sort_units()
         # add prev and next permalinks so blog posts can link to each other
         self.chain_units()
 
     def dispatch(self):
-        # build packs
-        self.paginations = self.create_paginations()
         # write output files
         self.write_units()
         self.write_paginations()

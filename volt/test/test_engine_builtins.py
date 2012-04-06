@@ -35,7 +35,7 @@ class TestTextUnit(TestUnit, TextUnit): pass
 class TextEngineCases(unittest.TestCase):
 
     @patch('volt.engine.builtins.TextUnit')
-    def test_create_units(self, TextUnit_mock):
+    def test_units(self, TextUnit_mock):
         engine = TestTextEngine()
         content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
         engine.config.CONTENT_DIR = content_dir
@@ -47,7 +47,7 @@ class TextEngineCases(unittest.TestCase):
         call_args = zip(abs_fnames, [engine.config] * len(fnames))
         calls = [call(*x) for x in call_args]
 
-        engine.create_units()
+        engine.units
         TextUnit_mock.assert_has_calls(calls, any_order=True)
 
 

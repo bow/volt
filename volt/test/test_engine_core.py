@@ -33,7 +33,13 @@ SessionConfig_mock = make_sessionconfig_mock()
 class TestEngine(Engine):
     def activate(self): pass
     def dispatch(self): pass
-    def create_units(self): pass
+    @property
+    def units(self):
+        if not hasattr(self, '_lazy_units'):
+            setattr(self, '_lazy_units', make_units_mock())
+        return self._lazy_units
+    @units.setter
+    def units(self, units): self._lazy_units = units
 
 class TestPage(Page):
     @property
@@ -72,16 +78,16 @@ class EngineCases(unittest.TestCase):
     def test_activate(self):
         class TestEngine(Engine):
             def dispatch(self): pass
-            def create_units(self): pass
+            def units(self): return
         self.assertRaises(TypeError, TestEngine.__init__, )
 
     def test_dispatch(self):
         class TestEngine(Engine):
             def activate(self): pass
-            def create_units(self): pass
+            def units(self): return
         self.assertRaises(TypeError, TestEngine.__init__, )
 
-    def test_create_units(self):
+    def test_units(self):
         class TestEngine(Engine):
             def activate(self): pass
             def dispatch(self): pass
@@ -120,12 +126,10 @@ class EngineCases(unittest.TestCase):
                 USER_DIR, 'templates', 'template.html'))
 
     def test_sort_units_bad_key(self):
-        self.engine.units = make_units_mock()
         self.engine.config.SORT_KEY = 'date'
         self.assertRaises(ContentError, self.engine.sort_units, )
 
     def test_sort_units_ok(self):
-        self.engine.units = make_units_mock()
         self.engine.config.SORT_KEY = '-time'
         titles = ['Dream is Collapsing', 'Radical Notion', 'One Simple Idea', \
                   '528491', 'Dream Within A Dream',]
@@ -171,39 +175,36 @@ class EnginePaginationCases(unittest.TestCase):
     def test_url_undefined(self):
         del self.engine.config.URL
         self.engine.config.PAGINATIONS = ('',)
-        self.assertRaises(ConfigError, self.engine.create_paginations, )
+        self.assertRaises(ConfigError, getattr, self.engine, 'paginations')
 
     def test_units_per_pagination_undefined(self):
         del self.engine.config.UNITS_PER_PAGINATION
         self.engine.config.PAGINATIONS = ('',)
-        self.assertRaises(ConfigError, self.engine.create_paginations, )
+        self.assertRaises(ConfigError, getattr, self.engine, 'paginations')
 
     def test_pagination_patterns_undefined(self):
-        self.assertRaises(ConfigError, self.engine.create_paginations, )
+        self.assertRaises(ConfigError, getattr, self.engine, 'paginations')
 
     @patch.object(warnings, 'warn')
     def test_empty_units_warning(self, warn_mock):
+        self.engine.units = []
         self.engine.config.PAGINATIONS = ('',)
-        self.engine.create_paginations()
+        getattr(self.engine, 'paginations')
         args = [call('TestEngine has no units to paginate.', EmptyUnitsWarning)]
         self.assertEqual(warn_mock.call_args_list, args)
 
     def test_bad_pagination_pattern(self):
-        self.engine.units = make_units_mock()
         self.engine.config.PAGINATIONS = ('{bad}/pattern',)
-        self.assertRaises(PermalinkTemplateError, \
-                self.engine.create_paginations, )
+        self.assertRaises(PermalinkTemplateError, getattr, self.engine, 'paginations')
 
     def test_paginate_not_implemented(self):
-        self.engine.units = make_units_mock()
         self.engine.config.PAGINATIONS = ('unimplemented/{newtype}',)
         for unit in self.engine.units:
             setattr(unit, 'newtype', dict(foo='bar'))
-        self.assertRaises(NotImplementedError, self.engine.create_paginations, )
+        self.assertRaises(NotImplementedError, getattr, self.engine, 'paginations')
 
     @patch('volt.engine.core.Pagination')
-    def test_create_paginations_ok(self, Pagination_mock):
-        self.engine.units = make_units_mock()
+    def test_paginations_ok(self, Pagination_mock):
         pagination_patterns = ('',
                                'tag/{tags}',
                                'author/{author}',
@@ -217,13 +218,11 @@ class EnginePaginationCases(unittest.TestCase):
                     '2011/09', '2010/09', '2010/07', '2002/08', '1998/04',]
 
         self.engine.config.PAGINATIONS = pagination_patterns
-        pagins = self.engine.create_paginations()
-        observed = sum([len(x) for x in pagins.values()])
+        observed = sum([len(x) for x in self.engine.paginations.values()])
         self.assertEqual(observed, len(expected))
 
     @patch('volt.engine.core.Engine._paginator')
     def test_paginate_all(self, paginator_mock):
-        self.engine.units = make_units_mock()
         base_permalist = ['test']
         field = base_permalist[-1][1:-1]
         [x for x in self.engine._paginate_all(field, base_permalist, 2)]
@@ -234,7 +233,6 @@ class EnginePaginationCases(unittest.TestCase):
 
     @patch('volt.engine.core.Engine._paginator')
     def test_paginate_single(self, paginator_mock):
-        self.engine.units = make_units_mock()
         base_permalist = ['test', 'author', '{author}']
         field = base_permalist[-1][1:-1]
         [x for x in self.engine._paginate_single(field, base_permalist, 2)]
@@ -248,7 +246,6 @@ class EnginePaginationCases(unittest.TestCase):
 
     @patch('volt.engine.core.Engine._paginator')
     def test_paginate_multiple(self, paginator_mock):
-        self.engine.units = make_units_mock()
         base_permalist = ['test', 'tag', '{tags}']
         field = base_permalist[-1][1:-1]
         [x for x in self.engine._paginate_multiple(field, base_permalist, 2)]
@@ -262,7 +259,6 @@ class EnginePaginationCases(unittest.TestCase):
 
     @patch('volt.engine.core.Engine._paginator')
     def test_paginate_datetime_single_time_token(self, paginator_mock):
-        self.engine.units = make_units_mock()
         base_permalist = ['test', '{time:%Y}']
         field = base_permalist[-1][1:-1]
         [x for x in self.engine._paginate_datetime(field, base_permalist, 2)]
@@ -276,7 +272,6 @@ class EnginePaginationCases(unittest.TestCase):
 
     @patch('volt.engine.core.Engine._paginator')
     def test_paginate_datetime_multiple_time_tokens(self, paginator_mock):
-        self.engine.units = make_units_mock()
         base_permalist = ['test', '{time:%Y/%m}']
         field = base_permalist[-1][1:-1]
         [x for x in self.engine._paginate_datetime(field, base_permalist, 2)]
@@ -292,7 +287,6 @@ class EnginePaginationCases(unittest.TestCase):
 
     @patch('volt.engine.core.Pagination')
     def test_paginator(self, Pagination_mock):
-        self.engine.units = make_units_mock()
         pagins = [p for p in self.engine._paginator(self.engine.units, ['base'], 2)]
 
         self.assertEqual(3, len(pagins))

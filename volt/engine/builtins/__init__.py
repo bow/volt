@@ -105,8 +105,9 @@ class TextEngine(Engine):
 
     """Engine class for processing text units."""
 
-    def create_units(self):
-        """Processes units into TextUnit objects and returns them in a list."""
+    @lazyproperty
+    def units(self):
+        """Units whose source are text files in the filesystem."""
         # get absolute paths of content files
         targets = glob.iglob(os.path.join(self.config.CONTENT_DIR, '*'))
         files = (x for x in targets if os.path.isfile(x))

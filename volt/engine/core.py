@@ -63,10 +63,8 @@ class Engine(object):
     itself, but provides convenient unit processing methods for the
     subclassing engine.
 
-    Any subclass of Engine must override these methods:
-    - activate
-    - dispatch
-    - create_units
+    Any subclass of Engine must create a 'units' property and override the
+    activate and dispatch methods.
 
     """
 
@@ -75,8 +73,6 @@ class Engine(object):
     DEFAULTS = Config()
 
     def __init__(self):
-        self.units = list()
-        self.paginations = dict()
         self.config = Config(self.DEFAULTS)
 
     @abc.abstractmethod
@@ -88,8 +84,8 @@ class Engine(object):
         """Performs final processing after all plugins are run."""
 
     @abc.abstractmethod
-    def create_units(self):
-        """Creates the units that will be processed by the engine."""
+    def units(self):
+        """Units of the engine."""
 
     def prime(self):
         """Consolidates default engine Config and user-defined Config.
@@ -141,10 +137,11 @@ class Engine(object):
             raise ContentError("Sorting key '%s' not present in all unit "
                                "header field." % sort_key)
 
-    def create_paginations(self):
-        """Returns paginations of engine units in a dictionary.
+    @lazyproperty
+    def paginations(self):
+        """Paginations of engine units in a dictionary.
 
-        This method will expand the supplied patterns according to the values
+        The computation will expand the supplied patterns according to the values
         present in all units. For example, if the pattern is '{time:%Y}' and
         there are five units with a datetime.year attribute 2010 and another
         five with 2011, create_paginations will return a dictionary with one key

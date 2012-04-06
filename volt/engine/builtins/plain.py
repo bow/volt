@@ -71,8 +71,8 @@ class PlainEngine(TextEngine):
     USER_CONF_ENTRY = 'ENGINE_PLAIN'
 
     def activate(self):
-        # parse plain page units
-        self.units = self.create_units()
+        # nothing to do prior to plugin run
+        pass
 
     def dispatch(self):
         # write them according to template
