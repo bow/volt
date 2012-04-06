@@ -13,11 +13,9 @@ Tests for the volt.config module.
 
 import os
 import unittest
-from datetime import datetime
 from inspect import getabsfile
 
 from volt.config import SessionConfig, ConfigNotFoundError
-from volt.config.default import displaytime
 from volt.test import INSTALL_DIR, USER_DIR
 from volt.utils import path_import
 
@@ -98,11 +96,3 @@ class PathImportCases(unittest.TestCase):
         mod = path_import('in_both', paths)
         mod_path = os.path.join(USER_DIR, 'engines', 'in_both.py')
         self.assertEqual(getabsfile(mod), mod_path)
-
-
-class BuiltInJinja2FiltersCases(unittest.TestCase):
-
-    def test_displaytime(self):
-        format = "%Y-%m-%d"
-        obj = datetime(2009, 10, 5, 3, 1)
-        self.assertEqual(displaytime(obj, format), "2009-10-05")
