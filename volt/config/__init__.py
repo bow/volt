@@ -173,13 +173,13 @@ class Config(dict):
     # class attributes
     # so Unit.__init__ doesnt' fail if Config instance don't
     # define these, since these are checked by the base Unit class.
-    PROTECTED = tuple()
-    REQUIRED = tuple()
-    FIELDS_AS_DATETIME = tuple()
-    CONTENT_DATETIME_FORMAT = str()
-    FIELDS_AS_LIST = tuple()
-    LIST_SEP = str()
-    GLOBAL_FIELDS = dict()
+    PROTECTED = ()
+    REQUIRED = ()
+    FIELDS_AS_DATETIME = ()
+    CONTENT_DATETIME_FORMAT = ''
+    FIELDS_AS_LIST = ()
+    LIST_SEP = ()
+    GLOBAL_FIELDS = {}
 
     def __init__(self, *args, **kwargs):
         """Initializes Config."""

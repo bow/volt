@@ -33,14 +33,15 @@ VOLT = Config(
 # Default site configurations
 SITE = Config(
 
-    # Site name, URL, and description
+    # Site name
     TITLE = 'My Volt Site',
-    URL = str(),
-    DESC = str(),
+
+    # Site URL, used for generating absolute URLs
+    URL = 'http://mysite.com',
 
     # Engines used in generating the site
     # Defaults to none
-    ENGINES = tuple(),
+    ENGINES = (),
 
     # Plugins used in site generation
     # Tuple of tuples, each containing a string for the plugin file name
@@ -53,7 +54,7 @@ SITE = Config(
     # Examples: 404.html, index.html (if not already written by an engine)
     # The tuple should list template names of these pages, which should
     # be present in the default template directory
-    EXTRA_PAGES = tuple(),
+    EXTRA_PAGES = (),
 
     # URL to use for pagination
     # This will be used for paginated items after the first one
@@ -68,19 +69,16 @@ SITE = Config(
     INDEX_HTML_ONLY = True,
 
     # Ignore patterns
-    # Filenames that match this pattern will not be copied from template directory
+    # Filenames that match this pattern will not be copied from layout directory
     # to site directory
-    IGNORE_PATTERN = str(),
+    IGNORE_PATTERN = '',
 )
 
 
 # Built-in Jinja2 filters
-def displaytime(time, format):
-    """Show time according to format."""
-    return time.strftime(format)
-
 JINJA2_FILTERS = Config(
-    displaytime = displaytime,
+    # displays time according to the given format
+    displaytime = lambda time, format: time.strftime(format),
 )
 
 
