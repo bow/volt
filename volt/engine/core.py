@@ -348,7 +348,7 @@ class Engine(object):
             # unexpected results
             if os.path.exists(item.path):
                 raise DuplicateOutputError("'%s' already exists." % item.path)
-            rendered = template.render(page=item.__dict__, CONFIG=CONFIG)
+            rendered = template.render(page=item, CONFIG=CONFIG)
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
             write_file(item.path, rendered)
