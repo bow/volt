@@ -11,14 +11,12 @@ Volt exception classes.
 
 """
 
-
 # Volt config exceptions
 class ConfigError(Exception):
     """Raised for errors related to configurations."""
 
 class ConfigNotFoundError(Exception):
     """Raised when Volt fails to find voltconf.py."""
-
 
 # Volt engine warning and exceptions
 class EmptyUnitsWarning(RuntimeWarning):

@@ -23,7 +23,6 @@ to the parent class.
 
 """
 
-
 import os
 import posixpath
 import sys
@@ -135,7 +134,6 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
             style(message, color='cyan')
         else:
             style(message)
-
 
     def log_request(self, code='-', size='-'):
         # overrides parent log_request so 'size' can be set dynamically.

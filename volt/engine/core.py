@@ -101,7 +101,7 @@ class Engine(object):
             user_config = getattr(voltconf, self.USER_CONF_ENTRY)
         except AttributeError:
             raise ConfigError("%s must define a 'USER_CONF_ENTRY' value as a "
-                              "class attribute." % self.__class__.__name__)
+                              "class attribute." % type(self).__name__)
 
         # to ensure proper Config consolidation
         if not isinstance(user_config, Config):
@@ -116,7 +116,7 @@ class Engine(object):
                     self.config.CONTENT_DIR)
         except AttributeError:
             raise ConfigError("%s must define a 'CONTENT_DIR' value in "
-                              "DEFAULTS." % self.__class__.__name__)
+                              "DEFAULTS." % type(self).__name__)
 
         for template in [x for x in self.config.keys() if x.endswith('_TEMPLATE')]:
                 self.config[template] = os.path.join(CONFIG.VOLT.TEMPLATE_DIR, \
@@ -155,24 +155,24 @@ class Engine(object):
         except AttributeError:
             raise ConfigError("%s Config must define a 'URL' value if "
                               "create_paginations is used." % \
-                              self.__class__.__name__)
+                              type(self).__name__)
         try:
             units_per_pagination = self.config.UNITS_PER_PAGINATION
         except AttributeError:
             raise ConfigError("%s Config must define a 'UNITS_PER_PAGINATION' value "
                               "if create_paginations is used." % \
-                              self.__class__.__name__)
+                              type(self).__name__)
         try:
             pagination_patterns = self.config.PAGINATIONS
         except AttributeError:
             raise ConfigError("%s Config must define a 'PAGINATIONS' value "
                               "if create_paginations is used." % \
-                              self.__class__.__name__)
+                              type(self).__name__)
 
         # create_paginations operates on self.units
         units = self.units
         if not units:
-            warnings.warn("%s has no units to paginate." % self.__class__.__name__, \
+            warnings.warn("%s has no units to paginate." % type(self).__name__, \
                     EmptyUnitsWarning)
             # exit function if there's no units to process
             return
@@ -359,7 +359,7 @@ class Page(object):
     __metaclass__ = abc.ABCMeta
 
     def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, self.id)
+        return '%s(%s)' % (type(self).__name__, self.id)
 
     @abc.abstractproperty
     def permalist(self):
@@ -486,12 +486,12 @@ class Unit(Page):
             pattern = self.config.PERMALINK.strip('/') + '/'
         except AttributeError:
             raise ConfigError("%s Config must define a 'PERMALINK' value."
-                              % self.__class__.__name__)
+                              % type(self).__name__)
         try:
             unit_base_url = self.config.URL
         except AttributeError:
             raise ConfigError("%s Config must define a 'URL' value."
-                              % self.__class__.__name__)
+                              % type(self).__name__)
 
 
         # get all permalink components and store into list

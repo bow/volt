@@ -62,6 +62,7 @@ def build_parsers():
 
     return parser
 
+
 def run_init(cmd_name='init'):
     """Starts a new Volt project.
 
@@ -72,9 +73,7 @@ def run_init(cmd_name='init'):
     # cmd_name must not be other than 'init' or 'demo'
     assert cmd_name in ['init', 'demo',]
 
-    import os
     import shutil
-
     if not os.listdir(os.curdir) == []:
         style("'volt %s' must be run inside an empty directory.\n" % \
               cmd_name, color='red', is_bright=True)
@@ -96,6 +95,7 @@ def run_init(cmd_name='init'):
     if cmd_name == 'init':
         style("Volt project started. Have fun!\n", is_bright=True)
 
+
 def run_demo():
     """Starts a new project with pre-made demo files, generates the static
     site, and starts the server.
@@ -108,10 +108,12 @@ def run_demo():
     # need to pass arglist to serve, so we'll call main
     main(['serve'])
 
+
 def run_gen():
     """Generates the static site."""
     os.chdir(CONFIG.VOLT.ROOT_DIR)
     gen.run()
+
 
 def run_serve():
     """Generates the static site, and if successful, runs the Volt server."""
@@ -122,9 +124,11 @@ def run_serve():
         notify("Site directory not found. Nothing to serve.\n", chars='=>', \
                 color='red', level=0)
 
+
 def run_version():
     """Shows version number."""
     print "Volt %s" % __version__
+
 
 def main(cli_arglist=None):
     """Main execution routine.
