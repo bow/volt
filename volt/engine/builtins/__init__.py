@@ -17,7 +17,7 @@ import os
 
 from volt.engine.core import _RE_DELIM, Engine, Unit
 from volt.exceptions import ContentError
-from volt.utils import lazyproperty
+from volt.utils import cachedproperty
 
 
 class TextUnit(Unit):
@@ -105,7 +105,7 @@ class TextEngine(Engine):
 
     """Engine class for processing text units."""
 
-    @lazyproperty
+    @cachedproperty
     def units(self):
         """Units whose source are text files in the filesystem."""
         # get absolute paths of content files

@@ -25,7 +25,7 @@ from functools import partial, reduce
 
 from volt.config import CONFIG, Config
 from volt.exceptions import *
-from volt.utils import lazyproperty, path_import, write_file
+from volt.utils import cachedproperty, path_import, write_file
 
 
 # regex objects for unit header and permalink processing
@@ -137,7 +137,7 @@ class Engine(object):
             raise ContentError("Sorting key '%s' not present in all unit "
                                "header field." % sort_key)
 
-    @lazyproperty
+    @cachedproperty
     def paginations(self):
         """Paginations of engine units in a dictionary.
 
@@ -369,7 +369,7 @@ class Page(object):
     def id(self):
         """Unique string that identifies the Page object."""
 
-    @lazyproperty
+    @cachedproperty
     def path(self):
         """Filesystem path to Page object file."""
         base_path = [CONFIG.VOLT.SITE_DIR]
@@ -382,7 +382,7 @@ class Page(object):
 
         return os.path.join(*base_path)
 
-    @lazyproperty
+    @cachedproperty
     def permalink(self):
         """Relative URL to the Page object."""
         rel_url = ['']
@@ -395,7 +395,7 @@ class Page(object):
 
         return '/'.join(rel_url)
 
-    @lazyproperty
+    @cachedproperty
     def permalink_abs(self):
         """Absolute URL to the Page object."""
         return '/'.join([CONFIG.SITE.URL, self.permalink[1:]]).strip('/')
@@ -460,7 +460,7 @@ class Unit(Page):
                             "Config object.")
         self.config = config
 
-    @lazyproperty
+    @cachedproperty
     def permalist(self):
         """Returns a list of strings which will be used to construct permalinks.
 
@@ -583,11 +583,11 @@ class Pagination(Page):
         # precautions for empty string, so double '/'s are not introduced
         self.base_permalist = filter(None, base_permalist)
 
-    @lazyproperty
+    @cachedproperty
     def id(self):
         return self.permalink
 
-    @lazyproperty
+    @cachedproperty
     def permalist(self):
         """Returns a list of strings which will be used to construct permalinks."""
         permalist = self.base_permalist
