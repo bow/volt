@@ -23,10 +23,12 @@ to the parent class.
 
 """
 
+import logging
 import os
 import posixpath
 import sys
 import urllib
+from functools import partial
 from itertools import chain
 from socket import getfqdn
 from SimpleHTTPServer import SimpleHTTPRequestHandler
@@ -35,10 +37,13 @@ from SocketServer import ThreadingTCPServer
 from volt import __version__
 from volt import gen
 from volt.config import CONFIG
-from volt.utils import notify, style
+from volt.utils import console, LoggableMixin
 
 
-class VoltHTTPServer(ThreadingTCPServer):
+console = partial(console, format="[srv] %s  %s\n")
+
+
+class VoltHTTPServer(ThreadingTCPServer, LoggableMixin):
 
     """A simple multithreading HTTP server for Volt development."""
 
@@ -56,8 +61,15 @@ class VoltHTTPServer(ThreadingTCPServer):
         a file inside these directories are modified.
 
         """
+        if not os.path.exists(CONFIG.VOLT.SITE_DIR):
+            message = "Site directory not found. Nothing to serve."
+            console(message, color='red', is_bright=True)
+            self.logger.debug(message)
+            sys.exit(0)
+
         self.last_mtime = self.check_dirs_mtime()
         ThreadingTCPServer.__init__(self, *args, **kwargs)
+        self.logger.debug('created: %s' % type(self).__name__)
 
     def process_request(self, request, client_address):
         """Finishes one request by instantiating the handler class.
@@ -70,12 +82,17 @@ class VoltHTTPServer(ThreadingTCPServer):
         """
         latest_mtime = self.check_dirs_mtime()
         if self.last_mtime < latest_mtime:
+            message = "Source file modification detected -- regenerating site"
+            console(message, color='yellow')
+            self.logger.debug(message)
+
             self.last_mtime = latest_mtime
             # generate the site
             # not sure I understand why it needs to load first
             # but hey it works (possible bug later on?)
             CONFIG._load()
             gen.run()
+            self.logger.debug('done: regenerating site')
         ThreadingTCPServer.process_request(self, request, client_address)
 
     def check_dirs_mtime(self):
@@ -103,7 +120,7 @@ class VoltHTTPServer(ThreadingTCPServer):
         self.server_port = port
                                                     
 
-class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
+class VoltHTTPRequestHandler(SimpleHTTPRequestHandler, LoggableMixin):
 
     """HTTP request handler of the Volt HTTP server.
 
@@ -126,14 +143,16 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args):
         # overrides parent log_message to provide a more compact output.
-        message = "[%s] %s\n" % (self.log_date_time_string(), format % args)
+        message = format % args
 
         if int(args[1]) >= 400:
-            style(message, color='yellow')
+            console(message, color='red')
         elif int(args[1]) >= 300:
-            style(message, color='cyan')
+            console(message, color='cyan')
         else:
-            style(message)
+            console(message)
+        
+        self.logger.debug(message)
 
     def log_request(self, code='-', size='-'):
         # overrides parent log_request so 'size' can be set dynamically.
@@ -146,8 +165,10 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler):
                     size = os.path.getsize(actual_file)
             else:
                 size = os.path.getsize(self.file_path)
-        self.log_message('"%s" %s %s',
-                         self.requestline, str(code), str(size))
+
+        format = '"%s" %s %s'
+        args = (self.requestline[:-9], str(code), str(size))
+        self.log_message(format, *args)
 
     def translate_path(self, path):
         # overrides parent translate_path to enable custom directory setting.
@@ -172,6 +193,8 @@ def run():
     """Runs the HTTP server using options parsed by argparse, accessible
     via CONFIG.CMD."""
 
+    logger = logging.getLogger('server')
+
     address = ('127.0.0.1', CONFIG.CMD.server_port)
     try:
         server = VoltHTTPServer(address, VoltHTTPRequestHandler)
@@ -181,23 +204,36 @@ def run():
                       (CONFIG.CMD.server_port),
                   98: "Port %s already in use" % (CONFIG.CMD.server_port)}
         try:
-            error_message = ERRORS[e.args[0]]
+            message = ERRORS[e.args[0]]
         except (AttributeError, KeyError):
-            error_message = str(e)
-        style("Error: %s\n" % error_message, color='red', is_bright=True)
+            message = str(e)
+        logger.error(message)
         sys.exit(1)
 
     run_address, run_port = server.socket.getsockname()
     if run_address == '127.0.0.1':
         run_address = 'localhost'
-    style("\nVolt %s Development Server\n" % __version__, is_bright=True)
-    notify("Serving %s/\n" % CONFIG.VOLT.SITE_DIR, color='cyan')
-    notify("Running at http://%s:%s/\n"
-           "(CTRL-C to stop)\n\n" % (run_address, run_port), color='cyan')
+
+    message = "Volt %s Development Server" % __version__
+    console(message, is_bright=True)
+    logger.debug(message)
+
+    message = "Serving %s" % CONFIG.VOLT.SITE_DIR
+    console(message)
+    logger.debug(message)
+
+    message = "Running at http://%s:%s" % (run_address, run_port)
+    console(message)
+    logger.debug(message)
 
     try:
         server.serve_forever()
-    except:
+    except KeyboardInterrupt:
         server.shutdown()
-        style("\nServer stopped.\n\n", is_bright=True)
+    finally:
+        sys.stdout.write("\n")
+        message = "Server stopped"
+        console(message)
+        logger.debug(message)
+        sys.stdout.write("\n")
         sys.exit(0)

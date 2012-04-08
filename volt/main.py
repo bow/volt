@@ -10,124 +10,156 @@ Entry point for Volt run.
 
 """
 
-
 import argparse
+import logging
 import os
+import shutil
 import sys
+from functools import partial
+from datetime import datetime
 
 from volt import __version__, gen, server
 from volt.config import CONFIG
-from volt.exceptions import ConfigNotFoundError, ContentError
-from volt.utils import style, notify
+from volt.exceptions import ConfigNotFoundError
+from volt.utils import console, LoggableMixin
+
+
+console = partial(console, format="%s\n", log_time=False)
 
 
 class ArgParser(argparse.ArgumentParser):
     """Custom parser that prints help message when an error occurs."""
     def error(self, message):
-        style("Error: %s\n" % message.capitalize(), color='red', \
-              is_bright=True)
+        console("\nError: %s" % message, color='red', is_bright=True)
         self.print_usage()
+        sys.stdout.write("\n")
         sys.exit(1)
 
-def build_parsers():
-    """Build parser for arguments."""
-    parser = ArgParser()
-    subparsers = parser.add_subparsers(title='subcommands')
 
-    # parser for init
-    init_parser = subparsers.add_parser('init',
-                                        help="starts a bare Volt project")
-    # parser for demo
-    demo_parser = subparsers.add_parser('demo',
-                                        help="quick Volt demo")
-    # parser for gen
-    gen_parser = subparsers.add_parser('gen',
-                                       help="generates Volt site using the specified engines")
-    # parser for serve
-    serve_parser = subparsers.add_parser('serve',
-                                          help="serve generated volt site")
-    serve_parser.add_argument('-p', '--port', dest='server_port',
-                               default='8000', type=int,
-                               metavar='PORT',
-                               help='server port')
-    # parser for version
-    # bit of a hack, so version can be shown without the "--"
-    version_parser = subparsers.add_parser('version',
-                                           help="show version number and exit")
+class Runner(LoggableMixin):
 
-    # sets the function to run for each subparser option
-    # e.g. subcmd = 'server', it will set the function to run_server
-    for subcmd in subparsers.choices.keys():
-        eval('%s_parser' % subcmd).set_defaults(run=eval('run_%s' % subcmd), name=subcmd)
+    """ Class representing Volt run."""
 
-    return parser
+    def build_logger(self):
+        """Initializes package-wide logger."""
+        file_format = '[%(asctime)s.%(msecs)03d] %(levelname)-8s %(name)s.%(funcName)s  %(message)s'
+        date_format = '%H:%M:%S'
+        stderr_format = 'Error: %(message)s'
+        if os.name != 'nt':
+            stderr_format = '\033[01;31m%s\033[m' % stderr_format
 
+        logger = logging.getLogger('')
+        logger.setLevel(CONFIG.SITE.LOG_LEVEL)
 
-def run_init(cmd_name='init'):
-    """Starts a new Volt project.
+        stderr = logging.StreamHandler(sys.stderr)
+        stderr.setLevel(logging.ERROR)
+        formatter = logging.Formatter(stderr_format, datefmt=date_format)
+        stderr.setFormatter(formatter)
+        logger.addHandler(stderr)
 
-    init -- String, must be 'init' or 'demo', denotes which starting files
-            will be copied into the current directory.
+        if CONFIG.SITE.LOG_LEVEL <= logging.DEBUG:
+            # setup file logging
+            logfile = logging.FileHandler('volt.log')
+            logfile.setLevel(logging.DEBUG)
+            formatter = logging.Formatter(file_format, datefmt=date_format)
+            logfile.setFormatter(formatter)
+            logger.addHandler(logfile)
 
-    """
-    # cmd_name must not be other than 'init' or 'demo'
-    assert cmd_name in ['init', 'demo',]
+            with open('volt.log', 'w') as log:
+                log.write("#Volt %s Log\n" % __version__)
+                log.write("#Date: %s\n" % datetime.now().strftime("%Y-%m-%d"))
+                log.write("#Fields: time, log-level, caller, log-message\n")
 
-    import shutil
-    if not os.listdir(os.curdir) == []:
-        style("'volt %s' must be run inside an empty directory.\n" % \
-              cmd_name, color='red', is_bright=True)
-        sys.exit(1)
+    def build_parsers(self):
+        """Build parser for arguments."""
+        parser = ArgParser()
+        subparsers = parser.add_subparsers(title='subcommands')
 
-    # get volt installation directory and demo dir
-    target_path = os.path.join(os.path.dirname(__file__), "data", cmd_name)
+        # parser for init
+        init_parser = subparsers.add_parser('init',
+                help="starts a bare Volt project")
 
-    # we only need the first layer to do the copying
-    parent_dir, child_dirs, top_files = os.walk(target_path).next()
+        # parser for demo
+        demo_parser = subparsers.add_parser('demo',
+                help="quick Volt demo")
 
-    # copy all files in parent
-    for top in top_files:
-        shutil.copy2(os.path.join(parent_dir, top), os.curdir)
-    # copy all child directories
-    for child in child_dirs:
-        shutil.copytree(os.path.join(parent_dir, child), child)
+        # parser for gen
+        gen_parser = subparsers.add_parser('gen',
+                help="generates Volt site using the specified engines")
 
-    if cmd_name == 'init':
-        style("Volt project started. Have fun!\n", is_bright=True)
+        # parser for serve
+        serve_parser = subparsers.add_parser('serve',
+                help="serve generated volt site")
+        serve_parser.add_argument('-p', '--port', dest='server_port',
+                                   default='8000', type=int,
+                                   metavar='PORT',
+                                   help='server port')
 
+        # parser for version
+        # bit of a hack, so version can be shown without the "--"
+        version_parser = subparsers.add_parser('version',
+                                               help="show version number and exit")
 
-def run_demo():
-    """Starts a new project with pre-made demo files, generates the static
-    site, and starts the server.
+        # sets the function to run for each subparser option
+        # e.g. subcmd = 'server', it will set the function to run_server
+        for subcmd in subparsers.choices.keys():
+            eval('%s_parser' % subcmd).set_defaults(run=eval('self.run_%s' % subcmd), name=subcmd)
 
-    """
-    # copy demo files
-    run_init(cmd_name='demo')
-    style("\nPreparing your lightning-speed Volt tour...\n", \
-            is_bright=True)
-    # need to pass arglist to serve, so we'll call main
-    main(['serve'])
+        return parser
 
+    def run_init(self, cmd_name='init'):
+        """Starts a new Volt project.
 
-def run_gen():
-    """Generates the static site."""
-    os.chdir(CONFIG.VOLT.ROOT_DIR)
-    gen.run()
+        init -- String, must be 'init' or 'demo', denotes which starting files
+                will be copied into the current directory.
 
+        """
+        # cmd_name must not be other than 'init' or 'demo'
+        assert cmd_name in ['init', 'demo',]
 
-def run_serve():
-    """Generates the static site, and if successful, runs the Volt server."""
-    run_gen()
-    if os.path.exists(CONFIG.VOLT.SITE_DIR):
+        dir_content = os.listdir(os.curdir)
+        if dir_content != [] and dir_content != ['volt.log']:
+            message = "'volt %s' must be run inside an empty directory." % cmd_name
+            console("Error: %s" % message, color='red', is_bright=True)
+            sys.exit(1)
+
+        # get volt installation directory and demo dir
+        target_path = os.path.join(os.path.dirname(__file__), "data", cmd_name)
+
+        # we only need the first layer to do the copying
+        parent_dir, child_dirs, top_files = os.walk(target_path).next()
+
+        # copy all files in parent
+        for top in top_files:
+            shutil.copy2(os.path.join(parent_dir, top), os.curdir)
+        # copy all child directories
+        for child in child_dirs:
+            shutil.copytree(os.path.join(parent_dir, child), child)
+
+        if cmd_name == 'init':
+            console("\nVolt project started. Have fun!\n", is_bright=True)
+
+    def run_demo(self):
+        """Runs a quick demo of Volt."""
+        # copy demo files
+        self.run_init(cmd_name='demo')
+        console("\nPreparing your lightning-speed Volt tour...",  is_bright=True)
+        # need to pass arglist to serve, so we'll call main
+        main(['serve'])
+
+    def run_gen(self):
+        """Generates the static site."""
+        os.chdir(CONFIG.VOLT.ROOT_DIR)
+        gen.run()
+
+    def run_serve(self):
+        """Generates the static site, and if successful, runs the Volt server."""
+        self.run_gen()
         server.run()
-    else:
-        notify("Site directory not found. Nothing to serve.\n", chars='=>', \
-                color='red', level=0)
 
-
-def run_version():
-    """Shows version number."""
-    print "Volt %s" % __version__
+    def run_version(self):
+        """Shows version number."""
+        console("Volt %s\n" % __version__)
 
 
 def main(cli_arglist=None):
@@ -136,14 +168,22 @@ def main(cli_arglist=None):
     cli_arglist -- List of arguments passed to the command line.
 
     """
-    # set command-line args accessible package-wide
+    session = Runner()
     try:
-        CONFIG.CMD = build_parsers().parse_args(cli_arglist)
+        CONFIG.CMD = session.build_parsers().parse_args(cli_arglist)
+
+        # only build logger if we're not starting a new project
+        if CONFIG.CMD.name not in ['demo', 'init']:
+            session.build_logger()
+
+        logger = logging.getLogger('main')
+        logger.debug("running: %s" % CONFIG.CMD.name)
         CONFIG.CMD.run()
     except ConfigNotFoundError:
-        style("You can only run 'volt %s' inside a Volt project "
-              "directory.\n" % CONFIG.CMD.name, color='red', is_bright=True)
-        style("Start a Volt project by running 'volt init'.\n", color='red',
-                is_bright=True)
-    except ContentError, e:
-        style("Error: %s\n" % e, color='red', is_bright=True)
+        message = "You can only run 'volt %s' inside a Volt project directory" % \
+                CONFIG.CMD.name
+        console("Error: %s" % message, color='red', is_bright=True)
+        console("Start a Volt project by running 'volt init'")
+
+        if os.path.exists('volt.log'):
+            os.remove('volt.log')

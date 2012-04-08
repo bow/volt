@@ -22,11 +22,18 @@ import sys
 import warnings
 from datetime import datetime
 from functools import partial, reduce
+from traceback import format_exc
 
 from volt.config import CONFIG, Config
-from volt.exceptions import *
-from volt.utils import cachedproperty, path_import, write_file
+from volt.exceptions import EmptyUnitsWarning
+from volt.utils import LoggableMixin, cachedproperty, path_import, write_file
 
+
+# required engine config values
+_REQUIRED_ENGINE_CONFIG = ('URL', 'CONTENT_DIR', 'PERMALINK',)
+
+# required engine config for paginations
+_REQUIRED_ENGINE_PAGINATIONS = ('PAGINATIONS', 'UNITS_PER_PAGINATION',)
 
 # regex objects for unit header and permalink processing
 _RE_DELIM = re.compile(r'^---$', re.MULTILINE)
@@ -54,7 +61,7 @@ def chain_item_permalinks(items):
             setattr(item, 'permalink_next', items[idx+1].permalink)
 
 
-class Engine(object):
+class Engine(LoggableMixin):
 
     """Base Volt Engine class.
 
@@ -74,6 +81,7 @@ class Engine(object):
 
     def __init__(self):
         self.config = Config(self.DEFAULTS)
+        self.logger.debug('created: %s' % type(self).__name__)
 
     @abc.abstractmethod
     def activate(self):
@@ -100,24 +108,35 @@ class Engine(object):
         try:
             user_config = getattr(voltconf, self.USER_CONF_ENTRY)
         except AttributeError:
-            raise ConfigError("%s must define a 'USER_CONF_ENTRY' value as a "
-                              "class attribute." % type(self).__name__)
+            message = "%s must define a %s value as a class attribute." % \
+                    (type(self).__name__, 'USER_CONF_ENTRY')
+            self.logger.error(message)
+            self.logger.debug(format_exc())
+            raise
 
         # to ensure proper Config consolidation
         if not isinstance(user_config, Config):
-            raise TypeError("User Config object '%s' must be a Config instance." % \
-                    self.USER_CONF_ENTRY)
+            message = "User Config object '%s' must be a Config instance." % \
+                    self.USER_CONF_ENTRY
+            self.logger.error(message)
+            raise TypeError(message)
+        else:
+            self.config.update(user_config)
 
-        self.config.update(user_config)
+        # check attributes that must exist
+        for attr in _REQUIRED_ENGINE_CONFIG:
+            try:
+                getattr(self.config, attr)
+            except AttributeError:
+                message = "%s Config '%s' value is undefined." % \
+                        (type(self).__name__, attr)
+                self.logger.error(message)
+                self.logger.debug(format_exc())
+                raise
 
-        # set absolute directory paths
-        try:
-            self.config.CONTENT_DIR = os.path.join(CONFIG.VOLT.CONTENT_DIR, \
-                    self.config.CONTENT_DIR)
-        except AttributeError:
-            raise ConfigError("%s must define a 'CONTENT_DIR' value in "
-                              "DEFAULTS." % type(self).__name__)
-
+        # set engine config paths to absolute paths
+        self.config.CONTENT_DIR = os.path.join(CONFIG.VOLT.CONTENT_DIR, \
+                self.config.CONTENT_DIR)
         for template in [x for x in self.config.keys() if x.endswith('_TEMPLATE')]:
                 self.config[template] = os.path.join(CONFIG.VOLT.TEMPLATE_DIR, \
                         self.config[template])
@@ -125,6 +144,7 @@ class Engine(object):
     def chain_units(self):
         """Sets the previous and next permalink attributes of each unit."""
         chain_item_permalinks(self.units)
+        self.logger.debug('done: chaining units')
 
     def sort_units(self):
         """Sorts a list of units according to the given header field name."""
@@ -134,8 +154,12 @@ class Engine(object):
         try:
             self.units.sort(key=lambda x: getattr(x, sort_key), reverse=reversed)
         except AttributeError:
-            raise ContentError("Sorting key '%s' not present in all unit "
-                               "header field." % sort_key)
+            message = "Sort key '%s' not present in all units." % sort_key
+            self.logger.error(message)
+            self.logger.debug(format_exc())
+            raise
+
+        self.logger.debug("done: sorting units based on '%s'" % self.config.SORT_KEY)
 
     @cachedproperty
     def paginations(self):
@@ -150,24 +174,20 @@ class Engine(object):
         many units are in one pagination.
 
         """
-        try:
-            base_url = self.config.URL.strip('/')
-        except AttributeError:
-            raise ConfigError("%s Config must define a 'URL' value if "
-                              "create_paginations is used." % \
-                              type(self).__name__)
-        try:
-            units_per_pagination = self.config.UNITS_PER_PAGINATION
-        except AttributeError:
-            raise ConfigError("%s Config must define a 'UNITS_PER_PAGINATION' value "
-                              "if create_paginations is used." % \
-                              type(self).__name__)
-        try:
-            pagination_patterns = self.config.PAGINATIONS
-        except AttributeError:
-            raise ConfigError("%s Config must define a 'PAGINATIONS' value "
-                              "if create_paginations is used." % \
-                              type(self).__name__)
+        # check attributes that must exist
+        for attr in _REQUIRED_ENGINE_PAGINATIONS:
+            try:
+                getattr(self.config, attr)
+            except AttributeError:
+                message = "%s Config '%s' value is undefined." % \
+                        (type(self).__name__, attr)
+                self.logger.error(message)
+                self.logger.debug(format_exc())
+                raise
+
+        base_url = self.config.URL.strip('/')
+        units_per_pagination = self.config.UNITS_PER_PAGINATION
+        pagination_patterns = self.config.PAGINATIONS
 
         # create_paginations operates on self.units
         units = self.units
@@ -196,8 +216,9 @@ class Engine(object):
             # only the last token is allowed to be enclosed in '{}'
             for token in base_permalist[:-1]:
                 if '{%s}' % token[1:-1] == token:
-                    raise PermalinkTemplateError("Pagination pattern %s has "
-                            "non-last curly braces-enclosed field " % pattern)
+                    message = "Pagination pattern %s is invalid." % pattern
+                    self.logger.error(message)
+                    raise ValueError(message)
 
             # determine which paginate method to use based on field type
             last_token = base_permalist[-1]
@@ -210,19 +231,26 @@ class Engine(object):
 
             try:
                 paginate = paginator_map[field_type]
+            except KeyError:
+                message = "Pagination method for '%s' has not been " \
+                          "implemented." % field_type
+                self.logger.error(message)
+                self.logger.debug(format_exc())
+                raise
+            else:
                 args = [field, base_permalist, units_per_pagination]
                 paginate_list = list(paginate(*args))
                 key = '/'.join(base_permalist)
                 paginations[key] = paginate_list
-            except KeyError:
-                raise NotImplementedError("Pagination method for '%s' has not "
-                                          "been implemented." % field_type)
 
         return paginations
 
     def _paginate_all(self, field, base_permalist, units_per_pagination):
         """Create paginations for all field values (PRIVATE)."""
-        return self._paginator(self.units, base_permalist, units_per_pagination)
+        paginated = self._paginator(self.units, base_permalist, units_per_pagination)
+
+        self.logger.debug('created: %d %s paginations' % (len(paginated), 'all'))
+        return paginated
 
     def _paginate_single(self, field, base_permalist, units_per_pagination):
         """Create paginations for string/int/float header field values (PRIVATE)."""
@@ -236,6 +264,7 @@ class Engine(object):
             pagin = self._paginator(matches, base_permalist, units_per_pagination)
             paginated.extend(pagin)
 
+        self.logger.debug('created: %d %s paginations' % (len(paginated), field))
         return paginated
 
     def _paginate_multiple(self, field, base_permalist, units_per_pagination):
@@ -251,6 +280,7 @@ class Engine(object):
             pagin = self._paginator(matches, base_permalist, units_per_pagination)
             paginated.extend(pagin)
 
+        self.logger.debug('created: %d %s paginations' % (len(paginated), field))
         return paginated
 
     def _paginate_datetime(self, field, base_permalist, units_per_pagination):
@@ -285,6 +315,7 @@ class Engine(object):
             pagin = self._paginator(matches, base_permalist, units_per_pagination)
             paginated.extend(pagin)
 
+        self.logger.debug('created: %d %s paginations' % (len(paginated), field))
         return paginated
 
     def _paginator(self, units, base_permalist, units_per_pagination):
@@ -314,18 +345,23 @@ class Engine(object):
             pagination = Pagination(units_in_pagination, idx, base_permalist)
             paginations.append(pagination)
 
-        chain_item_permalinks(paginations)
+        if len(paginations) > 1:
+            chain_item_permalinks(paginations)
+            self.logger.debug('done: chaining paginations')
 
         return paginations
 
     def write_units(self):
         """Writes units using the unit template file."""
         self._write_items(self.units, self.config.UNIT_TEMPLATE)
+        self.logger.debug('written: %d %s unit(s)' % (len(self.units), \
+                type(self).__name__[:-len('Engine')]))
 
     def write_paginations(self):
         """Writes paginations using the pagination template file."""
-        for pagination in self.paginations.values():
-            self._write_items(pagination, self.config.PAGINATION_TEMPLATE)
+        for pattern in self.paginations:
+            self._write_items(self.paginations[pattern], self.config.PAGINATION_TEMPLATE)
+            self.logger.debug("written: '%s' pagination(s)" % pattern)
 
     def _write_items(self, items, template_path):
         """Writes Page objects using the given template file (PRIVATE).
@@ -344,14 +380,17 @@ class Engine(object):
             # this indicates a duplicate post, which could result in
             # unexpected results
             if os.path.exists(item.path):
-                raise DuplicateOutputError("'%s' already exists." % item.path)
-            rendered = template.render(page=item, CONFIG=CONFIG)
-            if sys.version_info[0] < 3:
-                rendered = rendered.encode('utf-8')
-            write_file(item.path, rendered)
+                message = "File %s already exists." % item.path
+                self.logger.error(message)
+                raise IOError(message)
+            else:
+                rendered = template.render(page=item, CONFIG=CONFIG)
+                if sys.version_info[0] < 3:
+                    rendered = rendered.encode('utf-8')
+                write_file(item.path, rendered)
 
 
-class Page(object):
+class Page(LoggableMixin):
 
     """Class representing resources that may have its own web page, such as
     a Unit or a Pagination."""
@@ -410,15 +449,17 @@ class Page(object):
         # remove english articles, bad chars, and dashes in front and end
         string = re.sub(_RE_PRUNE, '', string)
 
-        # raise exception if there are non-ascii chars
+        # error if there are non-ascii chars
         try:
             if sys.version_info[0] > 2:
                 assert all(ord(c) < 128 for c in string)
             else:
                 string.decode('ascii')
-        except (UnicodeDecodeError, AssertionError):
-            raise ContentError("Slug in '%s' contains non-ascii characters." \
-                               % self.id)
+        except (UnicodeDecodeError, UnicodeEncodeError, AssertionError):
+            message = "Slug in '%s' contains non-ascii characters." % self.id
+            self.logger.error(message)
+            self.logger.debug(format_exc())
+            raise
 
         # slug should not begin or end with dash or contain multiple dashes
         string = re.sub(_RE_MULTIPLE, '-', string)
@@ -426,9 +467,11 @@ class Page(object):
         # and finally, we string preceeding and succeeding dashes
         string = string.lower().strip('-')
 
-        # raise exception if slug results in an empty string
+        # error if slug is empty
         if not string:
-            raise ContentError("Slug for '%s' is an empty string." % self.id)
+            message = "Slug for '%s' is an empty string." % self.id
+            self.logger.error(message)
+            raise ValueError(message)
 
         return string
 
@@ -456,8 +499,10 @@ class Unit(Page):
 
         """
         if not isinstance(config, Config):
-            raise TypeError("Units must be instantiated with their engine's "
-                            "Config object.")
+            message = "Units must be instantiated with their engine's " \
+                    "Config object."
+            self.logger.error(message)
+            raise TypeError(message)
         self.config = config
 
     @cachedproperty
@@ -481,18 +526,9 @@ class Unit(Page):
             Returns, for example,  ['post', '04', 'item-103']
 
         """
-        try:
-            # strip preceeding '/' but make sure ends with '/'
-            pattern = self.config.PERMALINK.strip('/') + '/'
-        except AttributeError:
-            raise ConfigError("%s Config must define a 'PERMALINK' value."
-                              % type(self).__name__)
-        try:
-            unit_base_url = self.config.URL
-        except AttributeError:
-            raise ConfigError("%s Config must define a 'URL' value."
-                              % type(self).__name__)
-
+        # strip preceeding '/' but make sure ends with '/'
+        pattern = self.config.PERMALINK.strip('/') + '/'
+        unit_base_url = self.config.URL
 
         # get all permalink components and store into list
         perm_tokens = re.findall(_RE_PERMALINK, pattern)
@@ -504,14 +540,20 @@ class Unit(Page):
                 field = token[1:-1]
                 if ':' in field:
                     field, fmt = field.split(':')
-                if not hasattr(self, field):
-                    raise PermalinkTemplateError("'%s' has no '%s' "
-                        "attribute." % (self.id, field))
-                if isinstance(getattr(self, field), datetime):
-                    strftime = datetime.strftime(getattr(self, field), fmt)
+
+                try:
+                    attr = getattr(self, field)
+                except AttributeError:
+                    message = "'%s' has no '%s' attribute." % (self.id, field)
+                    self.logger.error(message)
+                    self.logger.debug(format_exc())
+                    raise
+
+                if isinstance(attr, datetime):
+                    strftime = datetime.strftime(attr, fmt)
                     permalist.extend(filter(None, strftime.split('/')))
                 else:
-                    permalist.append(self.slugify(getattr(self, field)))
+                    permalist.append(self.slugify(attr))
             else:
                 permalist.append(self.slugify(token))
 
@@ -529,8 +571,10 @@ class Unit(Page):
 
         """
         if field in prot:
-            raise ContentError("'%s' should not define the protected header "
-                               "field '%s'" % (self.id, field))
+            message = "'%s' should not define the protected header field " \
+                    "'%s'" % (self.id, field)
+            self.logger.error(message)
+            raise ValueError(message)
 
     def check_required(self, req):
         """Checks if all the required header fields are present.
@@ -540,8 +584,10 @@ class Unit(Page):
         """
         for field in req:
             if not hasattr(self, field):
-                raise ContentError("Required header field '%s' is missing in "
-                                   "'%s'." % (field, self.id))
+                message = "Required header field '%s' is missing in '%s'." % \
+                        (field, self.id)
+                self.logger.error(message)
+                raise NameError(message)
 
     def as_list(self, field, sep):
         """Transforms a character-separated string field into a list.
@@ -582,6 +628,7 @@ class Pagination(Page):
         self.pagin_idx = pagin_idx + 1
         # precautions for empty string, so double '/'s are not introduced
         self.base_permalist = filter(None, base_permalist)
+        self.logger.debug('created: %s' % self.id)
 
     @cachedproperty
     def id(self):

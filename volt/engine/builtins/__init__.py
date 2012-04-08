@@ -16,7 +16,6 @@ import glob
 import os
 
 from volt.engine.core import _RE_DELIM, Engine, Unit
-from volt.exceptions import ContentError
 from volt.utils import cachedproperty
 
 
@@ -42,6 +41,8 @@ class TextUnit(Unit):
         # parse header and content and check fields
         self.parse_source(self.id)
         self.check_required(self.config.REQUIRED)
+
+        self.logger.debug('created: %s' % self.id)
 
     @property
     def id(self):
@@ -79,8 +80,8 @@ class TextUnit(Unit):
         header_lines = [x.strip() for x in header_string.strip().split('\n')]
         for line in header_lines:
             if not ':' in line:
-                    raise ContentError("Line '%s' in '%s' is not a proper "
-                                       "header entry." % (line, self.id))
+                    raise ValueError("Line '%s' in '%s' is not a proper "
+                            "header entry." % (line, self.id))
             field, value = [x.strip() for x in line.split(':', 1)]
 
             self.check_protected(field, self.config.PROTECTED)
@@ -113,4 +114,5 @@ class TextEngine(Engine):
         files = (x for x in targets if os.path.isfile(x))
         units = [TextUnit(fname, self.config) for fname in files]
 
+        self.logger.debug('created: %s %s' % (len(units), type(units[0]).__name__))
         return units

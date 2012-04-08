@@ -20,7 +20,6 @@ from mock import MagicMock, patch, call
 
 from volt.config import Config
 from volt.engine.builtins import TextEngine, TextUnit
-from volt.exceptions import ContentError
 from volt.test import FIXTURE_DIR
 from volt.test.test_engine_core import TestUnit
 
@@ -62,11 +61,11 @@ class TextUnitCases(unittest.TestCase):
 
     def test_parse_source_header_missing(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '02*'))[0]
-        self.assertRaises(ContentError, TestTextUnit, fname, self.config)
+        self.assertRaises(ValueError, TestTextUnit, fname, self.config)
 
     def test_parse_source_header_typo(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_fail', '03*'))[0]
-        self.assertRaises(ContentError, TestTextUnit, fname, self.config)
+        self.assertRaises(ValueError, TestTextUnit, fname, self.config)
 
     def test_parse_source_global_fields_ok(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_pass', '01*'))[0]
@@ -97,7 +96,7 @@ class TextUnitHeaderCases(unittest.TestCase):
     def test_parse_header_protected(self):
         header_string = "content: this is a protected field"
         self.unit.config.PROTECTED = ('content', )
-        self.assertRaises(ContentError, self.unit.parse_header, header_string)
+        self.assertRaises(ValueError, self.unit.parse_header, header_string)
 
     @patch.object(TestTextUnit, 'slugify')
     def test_parse_header_slug(self, slugify_mock):

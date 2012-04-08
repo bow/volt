@@ -12,21 +12,50 @@ Volt site generator.
 """
 
 from __future__ import with_statement
+import logging
 import os
 import shutil
 import sys
+from functools import partial
 from inspect import isclass
+from time import time
 
+from volt import __version__
 from volt.config import CONFIG, SessionConfig
 from volt.engine.core import Engine
-from volt.exceptions import DuplicateOutputError
 from volt.plugin.core import Plugin
-from volt.utils import path_import, write_file, notify, style
+from volt.utils import console, path_import, write_file, LoggableMixin
 
 
-class Generator(object):
+console = partial(console, format="[gen] %s  %s\n")
+
+
+class Generator(LoggableMixin):
 
     """Class representing a Volt run."""
+
+    def main(self):
+        """Generates the static site.
+
+        This method consists of three distinct steps that results in the final
+        site generation:
+
+            1. Output directory preparation: contents from the 'layout'
+               directory are copied into a new 'site' directory. If a 'site'
+               directory exists prior to the copying, it will be removed.
+
+            2. Engine run: see the run_engines method.
+
+            3. Non-engine template processing: site pages that do not belong to
+               any engines are then processed. Examples of pages in this
+               category are the main index.html and the 404 page. If any engine
+               has defined a main index.html, this method will not write
+               another index.html.
+
+        """
+        self.prepare_output()
+        self.run_engines()
+        self.write_extra_pages()
 
     def get_processor_class(self, processor_name, processor_type, \
             volt_dir=os.path.dirname(__file__)):
@@ -64,11 +93,20 @@ class Generator(object):
             if obj.__name__ != cls.__name__ and issubclass(obj, cls):
                 return obj
 
-    def start(self):
-        """Runs all the engines and plugins according to the configurations.
+    def prepare_output(self):
+        """Copies the layout directory contents to site directory."""
+        message = "Preparing 'site' directory"
+        console(message)
+        self.logger.debug(message)
+        if os.path.exists(CONFIG.VOLT.SITE_DIR):
+            shutil.rmtree(CONFIG.VOLT.SITE_DIR)
+        shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
+                ignore=shutil.ignore_patterns(CONFIG.SITE.IGNORE_PATTERN))
 
-        This method consists of five distinct steps that results in the final
-        site generation:
+    def run_engines(self):
+        """Runs all engines and plugins according to the configurations.
+
+        This method consists of four steps:
 
             1. Engine priming: all engines listed in CONFIG.SITE.ENGINES are
                loaded. Any engines found in the user directory takes
@@ -90,82 +128,93 @@ class Generator(object):
                writing the actual HTML files for each engine. Pack-building, if
                defined for an engine, should be run in this step prior to
                writing.
-
-            5. Non-engine template processing: site pages that do not belong to
-               any engines are then processed. Examples of pages in this
-               category are the main index.html and the 404 page. If any engine
-               has defined a main index.html, this method will not write
-               another index.html.
-
         """
-        # run engines
+
         for engine_name in CONFIG.SITE.ENGINES:
             engine_class = self.get_processor_class(engine_name, 'engines')
+            self.logger.debug('loaded: %s' % engine_class.__name__)
+
             engine = engine_class()
             engine.prime()
+            self.logger.debug('done: priming %s' % engine_class.__name__)
+
+            message = "Activating engine: %s" % engine_name.capitalize()
+            console(message, color='cyan')
+            self.logger.debug(message)
             engine.activate()
 
-            sys.stderr.write('\n')
-            notify("Activating %s engine...\n" % \
-                    engine_name.capitalize(), color='cyan')
+            self.run_plugins(engine_name, engine.units)
 
-            # run plugins that target the current engine
-            plugins = [x[0] for x in CONFIG.SITE.PLUGINS if engine_name in x[1]]
-            self.run_plugin(plugins, engine.units)
-
+            message = "Dispatching %s engine to URL '%s'" % \
+                    (engine_class.__name__[:-6].lower(), engine.config.URL)
+            console(message)
+            self.logger.debug(message)
             engine.dispatch()
 
-        self.write_extra_pages()
-        sys.stderr.write('\n')
+    def run_plugins(self, engine_name, units):
+        """Runs plugins on the given engine units.
+
+        engine_name -- String of engine name.
+        units -- List of units from an engine targeted by the plugin.
+
+        """
+        # run plugins that target the current engine
+        plugins = [x[0] for x in CONFIG.SITE.PLUGINS if engine_name in x[1]]
+        for plugin in plugins:
+            message = "Running plugin: %s" % plugin
+            console(message)
+            self.logger.debug(message)
+
+            plugin_class = self.get_processor_class(plugin, 'plugins')
+            if plugin_class:
+                plugin_obj = plugin_class()
+                plugin_obj.prime()
+                plugin_obj.run(units)
 
     def write_extra_pages(self):
         """Write nonengine pages, such as a separate index.html or 404.html."""
         for filename in CONFIG.SITE.EXTRA_PAGES:
+            message = "Writing extra page: '%s'" % filename
+            console(message)
+            self.logger.debug(message)
+
             template = CONFIG.SITE.TEMPLATE_ENV.get_template(filename)
             path = os.path.join(CONFIG.VOLT.SITE_DIR, filename)
-
             if os.path.exists(path):
-                raise DuplicateOutputError("'%s' already exists." % path)
+                message = "'%s' already exists." % path
+                console("Error: %s" % message, is_bright=True, color='red')
+                self.logger.error(message)
+                sys.exit(1)
+
             rendered = template.render(page={}, CONFIG=CONFIG)
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
             write_file(path, rendered)
 
-    def run_plugin(self, plugin_list, units):
-        """Runs plugin on the given engine units.
-
-        plugin_list -- List of plugin name.
-        units -- List of units from an engine targeted by the plugin.
-
-        """
-        for plugin in plugin_list:
-            plugin_class = self.get_processor_class(plugin, 'plugins')
-
-            if plugin_class:
-                plugin_obj = plugin_class()
-                notify("Running %s plugin\n" % plugin.capitalize(), \
-                        chars='::', color='yellow', level=2)
-                plugin_obj.prime()
-                plugin_obj.run(units)
-
 
 def run():
     """Generates the site."""
+
+    logger = logging.getLogger('gen')
 
     # reload config to reflect any new changes that may have been made
     CONFIG = SessionConfig()
 
     if CONFIG.SITE.ENGINES:
-        # prepare output directory
-        if os.path.exists(CONFIG.VOLT.SITE_DIR):
-            shutil.rmtree(CONFIG.VOLT.SITE_DIR)
-        shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
-                ignore=shutil.ignore_patterns(CONFIG.SITE.IGNORE_PATTERN))
+        sys.stdout.write("\n")
+        message = "Volt %s Static Site Generator" % __version__
+        console(message, is_bright=True)
+        logger.debug(message)
 
         # generate the site!
-        style("\nVolt site generation start!\n", is_bright=True)
-        Generator().start()
-        style("Site generation finished.\n", is_bright=True)
+        start_time = time()
+        Generator().main()
+
+        message = "Site generated in %.3fs" % (time() - start_time)
+        console(message, color='yellow')
+        logger.debug(message)
+        sys.stdout.write('\n')
     else:
-        notify("All engines are off. Nothing to generate.\n", chars='=>', \
-                color='red', level=0)
+        message = "All engines are off. Nothing to generate."
+        console(message, is_bright=True, color='red')
+        logger.debug(message)

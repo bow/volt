@@ -22,8 +22,7 @@ from mock import MagicMock, patch, call
 from volt.config import Config
 from volt.engine.core import Engine, Page, Unit, Pagination, \
         chain_item_permalinks
-from volt.exceptions import ConfigError, EmptyUnitsWarning, \
-        PermalinkTemplateError, ContentError, DuplicateOutputError
+from volt.exceptions import EmptyUnitsWarning
 from volt.test import USER_DIR, make_units_mock, make_sessionconfig_mock
 
 
@@ -94,11 +93,11 @@ class EngineCases(unittest.TestCase):
         self.assertRaises(TypeError, TestEngine.__init__, )
 
     def test_prime_user_conf_entry_none(self):
-        self.assertRaises(ConfigError, self.engine.prime, )
+        self.assertRaises(AttributeError, self.engine.prime, )
 
     def test_prime_content_dir_undefined(self):
         self.engine.USER_CONF_ENTRY = 'ENGINE_TEST'
-        self.assertRaises(ConfigError, self.engine.prime, )
+        self.assertRaises(AttributeError, self.engine.prime, )
 
     def test_prime_user_conf_not_config(self):
         self.engine.USER_CONF_ENTRY = 'ENGINE_TEST_BAD'
@@ -109,8 +108,10 @@ class EngineCases(unittest.TestCase):
         defaults = Config(
             BAR = 'engine bar in default',
             QUX = 'engine qux in default',
-            CONTENT_DIR = 'engine_test',
             UNIT_TEMPLATE = 'template.html',
+            URL = 'test',
+            CONTENT_DIR = 'engine_test',
+            PERMALINK = '',
         )
         self.engine.config = defaults
         self.engine.USER_CONF_ENTRY = 'ENGINE_TEST'
@@ -127,7 +128,7 @@ class EngineCases(unittest.TestCase):
 
     def test_sort_units_bad_key(self):
         self.engine.config.SORT_KEY = 'date'
-        self.assertRaises(ContentError, self.engine.sort_units, )
+        self.assertRaises(AttributeError, self.engine.sort_units, )
 
     def test_sort_units_ok(self):
         self.engine.config.SORT_KEY = '-time'
@@ -145,7 +146,7 @@ class EngineCases(unittest.TestCase):
 
         assert units[0].path == units[1].path
         with open(units[1].path, 'w'):
-            self.assertRaises(DuplicateOutputError, self.engine._write_items, \
+            self.assertRaises(IOError, self.engine._write_items, \
                     units, template_path)
         os.remove(units[1].path)
 
@@ -175,15 +176,15 @@ class EnginePaginationCases(unittest.TestCase):
     def test_url_undefined(self):
         del self.engine.config.URL
         self.engine.config.PAGINATIONS = ('',)
-        self.assertRaises(ConfigError, getattr, self.engine, 'paginations')
+        self.assertRaises(AttributeError, getattr, self.engine, 'paginations')
 
     def test_units_per_pagination_undefined(self):
         del self.engine.config.UNITS_PER_PAGINATION
         self.engine.config.PAGINATIONS = ('',)
-        self.assertRaises(ConfigError, getattr, self.engine, 'paginations')
+        self.assertRaises(AttributeError, getattr, self.engine, 'paginations')
 
     def test_pagination_patterns_undefined(self):
-        self.assertRaises(ConfigError, getattr, self.engine, 'paginations')
+        self.assertRaises(AttributeError, getattr, self.engine, 'paginations')
 
     @patch.object(warnings, 'warn')
     def test_empty_units_warning(self, warn_mock):
@@ -195,13 +196,13 @@ class EnginePaginationCases(unittest.TestCase):
 
     def test_bad_pagination_pattern(self):
         self.engine.config.PAGINATIONS = ('{bad}/pattern',)
-        self.assertRaises(PermalinkTemplateError, getattr, self.engine, 'paginations')
+        self.assertRaises(ValueError, getattr, self.engine, 'paginations')
 
     def test_paginate_not_implemented(self):
         self.engine.config.PAGINATIONS = ('unimplemented/{newtype}',)
         for unit in self.engine.units:
             setattr(unit, 'newtype', dict(foo='bar'))
-        self.assertRaises(NotImplementedError, getattr, self.engine, 'paginations')
+        self.assertRaises(KeyError, getattr, self.engine, 'paginations')
 
     @patch('volt.engine.core.Pagination')
     def test_paginations_ok(self, Pagination_mock):
@@ -307,13 +308,16 @@ class PageCases(unittest.TestCase):
 
     def test_slugify_error(self):
         slugify = self.page.slugify
-        self.assertRaises(ContentError, slugify, 'Röyksopp - Eple')
-        self.assertRaises(ContentError, slugify, '宇多田ヒカル')
-        self.assertRaises(ContentError, slugify, '&**%&^%&$-')
+        cases = ['Röyksopp - Eple', '宇多田ヒカル', '&**%&^%&$-']
 
-    @patch.object(sys, 'version_info', [3])
-    def test_slugify_error_py3(self):
-        self.test_slugify_error()
+        if sys.version_info[0] < 3:
+            self.assertRaises(UnicodeDecodeError, slugify, cases[0])
+            self.assertRaises(UnicodeDecodeError, slugify, cases[1])
+        else:
+            for case in cases[:-1]:
+                self.assertRaises(AssertionError, slugify, case)
+        
+        self.assertRaises(ValueError, slugify, cases[2])
 
     def test_slugify_ok(self):
         slugify = self.page.slugify
@@ -366,11 +370,11 @@ class UnitCases(unittest.TestCase):
 
     def test_check_required(self):
         req = ('title', 'surprise', )
-        self.assertRaises(ContentError, self.unit.check_required, req)
+        self.assertRaises(NameError, self.unit.check_required, req)
 
     def test_check_protected(self):
         prot = ('cats', )
-        self.assertRaises(ContentError, self.unit.check_protected, 'cats', prot)
+        self.assertRaises(ValueError, self.unit.check_protected, 'cats', prot)
 
     def test_as_list_trailing(self):
         tags = 'ripley, ash, kane   '
@@ -390,16 +394,16 @@ class UnitCases(unittest.TestCase):
     def test_permalist_missing_permalink(self):
         self.unit.config.URL = '/'
         del self.unit.config.PERMALINK
-        self.assertRaises(ConfigError, getattr, self.unit, 'permalist')
+        self.assertRaises(AttributeError, getattr, self.unit, 'permalist')
 
     def test_permalist_missing_url(self):
         self.unit.config.PERMALINK = 'foo'
         del self.unit.config.URL
-        self.assertRaises(ConfigError, getattr, self.unit, 'permalist')
+        self.assertRaises(AttributeError, getattr, self.unit, 'permalist')
 
     def test_permalist_error(self):
         self.unit.config.PERMALINK = 'bali/{beach}/party'
-        self.assertRaises(PermalinkTemplateError, getattr, self.unit, 'permalist')
+        self.assertRaises(AttributeError, getattr, self.unit, 'permalist')
 
     def test_permalist_ok_all_token_is_attrib(self):
         self.unit.slug = 'yo-dawg'

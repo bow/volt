@@ -68,6 +68,11 @@ SITE = Config(
     # with .htaccess
     INDEX_HTML_ONLY = True,
 
+    # Logging level
+    # If set to logging.DEBUG, Volt will write logs to a file
+    # 30 is logging.WARNING
+    LOG_LEVEL = 30,
+
     # Ignore patterns
     # Filenames that match this pattern will not be copied from layout directory
     # to site directory
