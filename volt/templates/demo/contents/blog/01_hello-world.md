@@ -13,9 +13,9 @@ resulting website anywhere you want.
 
 This website is a small example of what you can do with Volt. Everything
 needed to generate this site was taken from three source directories:
-**content**, containing the actual contents of the site;
+**contents**, containing the actual contents of the site;
 **templates**, containing the HTML template files, and
-**layout**, for all other files such as css or image files. All
+**assets**, for all other files such as css or image files. All
 settings that determines the behaviors and looks of the generated site are
 configurable via **voltconf.py**, Volt's central configuration file.
 

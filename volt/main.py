@@ -18,7 +18,7 @@ import sys
 from functools import partial
 from datetime import datetime
 
-from volt import __version__, gen, server
+from volt import VERSION, generator, server
 from volt.config import CONFIG
 from volt.exceptions import ConfigNotFoundError
 from volt.utils import console, LoggableMixin
@@ -66,7 +66,7 @@ class Runner(LoggableMixin):
             logger.addHandler(logfile)
 
             with open('volt.log', 'w') as log:
-                log.write("#Volt %s Log\n" % __version__)
+                log.write("#Volt %s Log\n" % VERSION)
                 log.write("#Date: %s\n" % datetime.now().strftime("%Y-%m-%d"))
                 log.write("#Fields: time, log-level, caller, log-message\n")
 
@@ -124,7 +124,7 @@ class Runner(LoggableMixin):
             sys.exit(1)
 
         # get volt installation directory and demo dir
-        target_path = os.path.join(os.path.dirname(__file__), "data", cmd_name)
+        target_path = os.path.join(os.path.dirname(__file__), 'templates', cmd_name)
 
         # we only need the first layer to do the copying
         parent_dir, child_dirs, top_files = os.walk(target_path).next()
@@ -150,7 +150,7 @@ class Runner(LoggableMixin):
     def run_gen(self):
         """Generates the static site."""
         os.chdir(CONFIG.VOLT.ROOT_DIR)
-        gen.run()
+        generator.run()
 
     def run_serve(self):
         """Generates the static site, and if successful, runs the Volt server."""
@@ -159,7 +159,7 @@ class Runner(LoggableMixin):
 
     def run_version(self):
         """Shows version number."""
-        console("Volt %s\n" % __version__)
+        console("Volt %s\n" % VERSION)
 
 
 def main(cli_arglist=None):

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
---------
-volt.gen
---------
+--------------
+volt.generator
+--------------
 
-Volt site generator.
+Volt main site generator.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
@@ -20,7 +20,7 @@ from functools import partial
 from inspect import isclass
 from time import time
 
-from volt import __version__
+from volt import VERSION
 from volt.config import CONFIG, SessionConfig
 from volt.engine.core import Engine
 from volt.plugin.core import Plugin
@@ -40,7 +40,7 @@ class Generator(LoggableMixin):
         This method consists of three distinct steps that results in the final
         site generation:
 
-            1. Output directory preparation: contents from the 'layout'
+            1. Output directory preparation: contents from the 'asset'
                directory are copied into a new 'site' directory. If a 'site'
                directory exists prior to the copying, it will be removed.
 
@@ -94,13 +94,13 @@ class Generator(LoggableMixin):
                 return obj
 
     def prepare_output(self):
-        """Copies the layout directory contents to site directory."""
+        """Copies the asset directory contents to site directory."""
         message = "Preparing 'site' directory"
         console(message)
         self.logger.debug(message)
         if os.path.exists(CONFIG.VOLT.SITE_DIR):
             shutil.rmtree(CONFIG.VOLT.SITE_DIR)
-        shutil.copytree(CONFIG.VOLT.LAYOUT_DIR, CONFIG.VOLT.SITE_DIR, \
+        shutil.copytree(CONFIG.VOLT.ASSET_DIR, CONFIG.VOLT.SITE_DIR, \
                 ignore=shutil.ignore_patterns(CONFIG.SITE.IGNORE_PATTERN))
 
     def run_engines(self):
@@ -202,7 +202,7 @@ def run():
 
     if CONFIG.SITE.ENGINES:
         sys.stdout.write("\n")
-        message = "Volt %s Static Site Generator" % __version__
+        message = "Volt %s Static Site Generator" % VERSION
         console(message, is_bright=True)
         logger.debug(message)
 

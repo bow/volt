@@ -6,14 +6,14 @@ distribute_setup.use_setuptools()
 import sys
 from setuptools import setup, find_packages
 
-from volt import __version__
+from volt import VERSION
 
 
 install_requires = [
     "Jinja2>=2.6",
     "Markdown>=2.1.1",
 ]
-version = __version__
+version = VERSION
 long_description = open("README.rst").read()
 
 # handle python 3

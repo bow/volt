@@ -122,7 +122,7 @@ class EngineCases(unittest.TestCase):
         self.assertEqual(self.engine.config.BAR, 'engine bar in user')
         self.assertEqual(self.engine.config.QUX, 'engine qux in default')
         self.assertEqual(self.engine.config.CONTENT_DIR, os.path.join(\
-                USER_DIR, 'content', 'engine_test'))
+                USER_DIR, 'contents', 'engine_test'))
         self.assertEqual(self.engine.config.UNIT_TEMPLATE, os.path.join(\
                 USER_DIR, 'templates', 'template.html'))
 

@@ -42,7 +42,7 @@ SITE = Config(
     INDEX_HTML_ONLY = True,
 
     # Ignore patterns
-    # Filenames that match this pattern will not be copied from layout directory
+    # Filenames that match this pattern will not be copied from asset directory
     # to site directory
     IGNORE_PATTERN = '',
 )

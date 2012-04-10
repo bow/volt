@@ -2,7 +2,7 @@ from volt.config import Config
 
 VOLT = Config(
     USER_CONF = 'voltconf.py',
-    CONTENT_DIR = 'content',
+    CONTENT_DIR = 'contents',
     TEMPLATE_DIR = 'templates',
 )
 

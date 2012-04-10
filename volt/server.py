@@ -34,8 +34,8 @@ from socket import getfqdn
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingTCPServer
 
-from volt import __version__
-from volt import gen
+from volt import VERSION
+from volt import generator
 from volt.config import CONFIG
 from volt.utils import console, LoggableMixin
 
@@ -91,7 +91,7 @@ class VoltHTTPServer(ThreadingTCPServer, LoggableMixin):
             # not sure I understand why it needs to load first
             # but hey it works (possible bug later on?)
             CONFIG._load()
-            gen.run()
+            generator.run()
             self.logger.debug('done: regenerating site')
         ThreadingTCPServer.process_request(self, request, client_address)
 
@@ -135,7 +135,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler, LoggableMixin):
 
     """
 
-    server_version = 'VoltHTTPServer/' + __version__
+    server_version = 'VoltHTTPServer/' + VERSION
 
     def log_error(self, format, *args):
         # overwritten to unclutter log message.
@@ -214,7 +214,7 @@ def run():
     if run_address == '127.0.0.1':
         run_address = 'localhost'
 
-    message = "Volt %s Development Server" % __version__
+    message = "Volt %s Development Server" % VERSION
     console(message, is_bright=True)
     logger.debug(message)
 

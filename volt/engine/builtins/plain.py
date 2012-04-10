@@ -35,7 +35,7 @@ class PlainEngine(TextEngine):
         # Date and time format used in plain page content headers
         # Used for parsing the headers
         # Default is e.g. '2004-03-13 22:10'
-        CONTENT_DATETIME_FORMAT = '%Y/%m/%d %H:%M',
+        DATETIME_FORMAT = '%Y/%m/%d %H:%M',
 
         # Directory path for storing plain page content
         # relative to the default Volt content directory
@@ -58,7 +58,7 @@ class PlainEngine(TextEngine):
         PROTECTED = ('id', 'content', ),
 
         # Fields that would be transformed from string into datetime objects using
-        # CONTENT_DATETIME_FORMAT as the pattern
+        # DATETIME_FORMAT as the pattern
         FIELDS_AS_DATETIME = ('time', ),
 
         # Fields that would be transformed from string into list objects using

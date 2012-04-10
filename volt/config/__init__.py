@@ -176,7 +176,7 @@ class Config(dict):
     PROTECTED = ()
     REQUIRED = ()
     FIELDS_AS_DATETIME = ()
-    CONTENT_DATETIME_FORMAT = ''
+    DATETIME_FORMAT = ''
     FIELDS_AS_LIST = ()
     LIST_SEP = ()
     GLOBAL_FIELDS = {}

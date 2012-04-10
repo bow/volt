@@ -94,7 +94,7 @@ class TextUnit(Unit):
 
             elif field in self.config.FIELDS_AS_DATETIME:
                 value = self.as_datetime(value, \
-                        self.config.CONTENT_DATETIME_FORMAT)
+                        self.config.DATETIME_FORMAT)
 
             setattr(self, field.lower(), value)
 

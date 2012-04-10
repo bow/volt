@@ -115,7 +115,7 @@ class TextUnitHeaderCases(unittest.TestCase):
         self.assertEqual(self.unit.tags, expected)
 
     def test_parse_header_as_datetime(self):
-        self.unit.config.CONTENT_DATETIME_FORMAT = '%Y/%m/%d %H:%M'
+        self.unit.config.DATETIME_FORMAT = '%Y/%m/%d %H:%M'
         self.unit.config.FIELDS_AS_DATETIME = ('time', )
         header_string = "time: 2004/03/13 22:10"
         self.unit.parse_header(header_string)

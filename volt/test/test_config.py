@@ -38,7 +38,7 @@ class SessionConfigLoadCases(unittest.TestCase):
     def test_load_dir_resolution(self):
         # default.py dir resolution
         self.assertEqual(self.CONFIG.VOLT.CONTENT_DIR, os.path.join(USER_DIR, \
-                'content'))
+                'contents'))
         # voltconf.py dir resolution
         self.assertEqual(self.CONFIG.VOLT.TEMPLATE_DIR, os.path.join(USER_DIR, \
                 'mytemplates'))
@@ -72,7 +72,7 @@ class SessionConfigRootDirCases(unittest.TestCase):
         self.assertEqual(self.CONFIG.get_root_dir(start_dir), USER_DIR)
 
     def test_get_root_dir_child(self):
-        start_dir = os.path.join(USER_DIR, "content", "foo", "bar", "baz")
+        start_dir = os.path.join(USER_DIR, "contents", "foo", "bar", "baz")
         self.assertEqual(self.CONFIG.get_root_dir(start_dir), USER_DIR)
 
     def test_get_root_dir_error(self):

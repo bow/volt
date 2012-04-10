@@ -21,7 +21,7 @@ def make_sessionconfig_mock():
 
     VOLT = {'USER_CONF': os.path.join(USER_DIR, 'voltconf.py'),
             'ROOT_DIR': USER_DIR,
-            'CONTENT_DIR': os.path.join(USER_DIR, 'content'),
+            'CONTENT_DIR': os.path.join(USER_DIR, 'contents'),
             'TEMPLATE_DIR': os.path.join(USER_DIR, 'templates'),
             'SITE_DIR': os.path.join(USER_DIR, 'site'),
            }

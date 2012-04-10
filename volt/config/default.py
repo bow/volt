@@ -21,11 +21,11 @@ VOLT = Config(
     # Used to determine project root
     USER_CONF = 'voltconf.py',
 
-    # Directory paths for content files, templates, and generated site
-    # relative to a project root
-    CONTENT_DIR = 'content',
+    # Directory paths for content files, templates, assets, 
+    # and generated site relative to a project root
+    CONTENT_DIR = 'contents',
     TEMPLATE_DIR = 'templates',
-    LAYOUT_DIR = 'layout',
+    ASSET_DIR = 'assets',
     SITE_DIR = 'site',
 )
 
@@ -74,7 +74,7 @@ SITE = Config(
     LOG_LEVEL = 30,
 
     # Ignore patterns
-    # Filenames that match this pattern will not be copied from layout directory
+    # Filenames that match this pattern will not be copied from asset directory
     # to site directory
     IGNORE_PATTERN = '',
 )
