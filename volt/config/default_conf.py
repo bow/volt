@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
--------------------
-volt.config.default
--------------------
+------------------------
+volt.config.default_conf
+------------------------
 
 Volt default configurations.
 
@@ -20,6 +20,9 @@ VOLT = Config(
     # User config file name
     # Used to determine project root
     USER_CONF = 'voltconf.py',
+
+    # User widget file name
+    USER_WIDGET = 'widgets.py',
 
     # Directory paths for content files, templates, assets, 
     # and generated site relative to a project root
@@ -43,13 +46,6 @@ SITE = Config(
     # Defaults to none
     ENGINES = (),
 
-    # Plugins used in site generation
-    # Tuple of tuples, each containing a string for the plugin file name
-    # and list of engine names indicating which engine to target
-    # Run according to order listed here
-    # Defaults to none
-    PLUGINS = (('',[]),),
-
     # Extra pages to write that are not controlled by an engine
     # Examples: 404.html, index.html (if not already written by an engine)
     # The tuple should list template names of these pages, which should
@@ -69,7 +65,7 @@ SITE = Config(
     INDEX_HTML_ONLY = True,
 
     # Logging level
-    # If set to logging.DEBUG, Volt will write logs to a file
+    # If set to 10, Volt will write logs to a file
     # 30 is logging.WARNING
     LOG_LEVEL = 30,
 
@@ -77,15 +73,10 @@ SITE = Config(
     # Filenames that match this pattern will not be copied from asset directory
     # to site directory
     IGNORE_PATTERN = '',
+
+    # Jinja2 filter function names
+    FILTERS = ('displaytime',),
+
+    # Jinja2 test function names
+    TESTS = (),
 )
-
-
-# Built-in Jinja2 filters
-JINJA2_FILTERS = Config(
-    # displays time according to the given format
-    displaytime = lambda time, format: time.strftime(format),
-)
-
-
-# Built-in Jinja2 tests
-JINJA2_TESTS = Config()

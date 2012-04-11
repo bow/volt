@@ -35,6 +35,10 @@ from volt.exceptions import ConfigNotFoundError
 from volt.utils import path_import
 
 
+DEFAULT_CONF = 'default_conf'
+DEFAULT_WIDGET = 'default_widgets'
+
+
 class SessionConfig(object):
 
     """Container class for storing all configurations used in a Volt run.
@@ -55,7 +59,7 @@ class SessionConfig(object):
     """
 
     def __init__(self, default_dir=os.path.dirname(__file__), \
-            start_dir=os.getcwd(), default_conf_name='default'):
+            start_dir=os.getcwd(), default_conf_name=DEFAULT_CONF):
         """Initializes SessionConfig.
 
         default_dir -- Absolute directory path of the default configuration.
@@ -64,7 +68,8 @@ class SessionConfig(object):
         """
         self.py3 = (sys.version_info[0] > 2)
         self.start_dir = start_dir
-        self._default = path_import(default_conf_name, default_dir)
+        self.default_dir = default_dir
+        self._default = path_import(default_conf_name, self.default_dir)
         # set flag for lazy-loading
         self._loaded = False
     
@@ -95,12 +100,19 @@ class SessionConfig(object):
                 self._default.VOLT.USER_CONF))[0]
         user = path_import(user_conf_name, root_dir)
 
-        # name of config objects to get
-        target_configs = ['VOLT', 'SITE', 'JINJA2_FILTERS', 'JINJA2_TESTS', ]
+        self._default.VOLT.USER_WIDGET = os.path.join(root_dir, \
+                self._default.VOLT.USER_WIDGET)
+        widget_name = os.path.splitext(os.path.basename(\
+                self._default.VOLT.USER_WIDGET))[0]
+
+        # for combining default and user jinja2 filters and tests
+        _site_conf = getattr(self._default, 'SITE')
+        default_filters = getattr(_site_conf, 'FILTERS')
+        default_tests = getattr(_site_conf, 'TESTS')
 
         # Configs to process is everything in default + anything in user
         # not present in default
-        for item in target_configs:
+        for item in 'VOLT', 'SITE':
             # load from default first and override if present in user
             obj = getattr(self._default, item)
             if hasattr(user, item):
@@ -118,6 +130,10 @@ class SessionConfig(object):
         # set root dir as config in VOLT
         setattr(self.VOLT, 'ROOT_DIR', root_dir)
 
+        # combine filters and tests
+        self.SITE.FILTERS = tuple(set(self.SITE.FILTERS + default_filters))
+        self.SITE.TESTS = tuple(set(self.SITE.TESTS + default_tests))
+
         # and set the loaded flag to True here
         # so we can start referring to the resolved configs
         self._loaded = True
@@ -125,13 +141,25 @@ class SessionConfig(object):
         # set up jinja2 template environment in the SITE Config object
         env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
 
-        # pass jinja2 functions
-        config_jinja2 = {'filters': self.JINJA2_FILTERS, 'tests': self.JINJA2_TESTS}
-        for type in config_jinja2:
-            for func_name in config_jinja2[type]:
-                # env.filters or env.tests
-                target = getattr(env, type)
-                target[func_name] = config_jinja2[type][func_name]
+        # import filters and tests
+        default_widget = path_import(DEFAULT_WIDGET, self.default_dir)
+        try:
+            user_widget = path_import(widget_name, self.VOLT.ROOT_DIR)
+        except ImportError:
+            # pass if the user doesn't have any widget file
+            pass
+        else:
+            # set jinja2 functions
+            for type in 'FILTERS', 'TESTS':
+                for func_name in getattr(self.SITE, type):
+                    # env.filters or env.tests
+                    target = getattr(env, type.lower())
+                    # user-defined functions take precedence
+                    if hasattr(user_widget, func_name):
+                        func = getattr(user_widget, func_name)
+                    else:
+                        func = getattr(default_widget, func_name)
+                    target[func_name] = func
 
         # setattr self jinja2 env
         setattr(self.SITE, 'TEMPLATE_ENV', env)

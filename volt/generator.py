@@ -19,12 +19,13 @@ import sys
 from functools import partial
 from inspect import isclass
 from time import time
+from traceback import format_exc
 
 from volt import VERSION
 from volt.config import CONFIG, SessionConfig
 from volt.engine.core import Engine
 from volt.plugin.core import Plugin
-from volt.utils import console, path_import, write_file, LoggableMixin
+from volt.utils import cachedproperty, console, path_import, write_file, LoggableMixin
 
 
 console = partial(console, format="[gen] %s  %s\n")
@@ -33,6 +34,11 @@ console = partial(console, format="[gen] %s  %s\n")
 class Generator(LoggableMixin):
 
     """Class representing a Volt run."""
+
+    def __init__(self):
+        self.engines = {}
+        self.plugins = {}
+        self.widgets = {}
 
     def main(self):
         """Generates the static site.
@@ -57,7 +63,7 @@ class Generator(LoggableMixin):
         self.run_engines()
         self.write_extra_pages()
 
-    def get_processor_class(self, processor_name, processor_type, \
+    def get_processor(self, processor_name, processor_type, \
             volt_dir=os.path.dirname(__file__)):
         """Returns the engine or plugin class used in site generation.
 
@@ -106,7 +112,7 @@ class Generator(LoggableMixin):
     def run_engines(self):
         """Runs all engines and plugins according to the configurations.
 
-        This method consists of four steps:
+        This method consists of five steps:
 
             1. Engine priming: all engines listed in CONFIG.SITE.ENGINES are
                loaded. Any engines found in the user directory takes
@@ -115,61 +121,91 @@ class Generator(LoggableMixin):
                voltconf.py to yield the final configurations that will be used
                in subsequent engine methods.
 
-            2. Engine activation: all the engines' activate() method are then
-               run. This usually means the engines' units are parsed and stored
-               as its instance attributes in self.units.
+            2. Engine preprocessing: all the engines' preprocess() method are
+               then run. Any unit processing that happens before the plugins
+               are run is done by the preprocess method.
 
-            3. Plugin run: plugins listed in CONFIG.SITE.PLUGINS are loaded and
-               run against their target engines. Similar to engines, plugins
-               are also primed to consolidate the default and user configurations.
+            3. Plugin run: plugins targeting each engine are run to process the
+               the target engines' units. Similar to engines, plugins are also
+               primed to consolidate the default and user configurations.
 
-            4. Engine dispatch: after the engine units have been processed by
+            4. Widget creation: widgets for each engine are created and made
+               accessible from the any templates.
+
+            5. Engine dispatch: after the engine units have been processed by
                the plugins, the engines are then dispatched. This will involve
-               writing the actual HTML files for each engine. Pack-building, if
-               defined for an engine, should be run in this step prior to
-               writing.
+               writing the actual HTML files for each engine. Pagination
+               creation, if defined for an engine, are done during this step
+               prior to writing.
         """
-
         for engine_name in CONFIG.SITE.ENGINES:
-            engine_class = self.get_processor_class(engine_name, 'engines')
-            self.logger.debug('loaded: %s' % engine_class.__name__)
-
+            engine_class = self.get_processor(engine_name, 'engines')
             engine = engine_class()
+            message = "Engine loaded: %s" % engine_name.capitalize()
+            console(message, color='cyan')
+            self.logger.debug(message)
+
             engine.prime()
             self.logger.debug('done: priming %s' % engine_class.__name__)
 
-            message = "Activating engine: %s" % engine_name.capitalize()
-            console(message, color='cyan')
-            self.logger.debug(message)
-            engine.activate()
+            engine.preprocess()
+            self.logger.debug('done: preprocessing %s' % engine_class.__name__)
 
-            self.run_plugins(engine_name, engine.units)
+            self.run_plugins(engine)
+            self.create_widgets(engine)
+            self.engines[engine_name] = engine
 
+        for engine in self.engines:
             message = "Dispatching %s engine to URL '%s'" % \
-                    (engine_class.__name__[:-6].lower(), engine.config.URL)
+                    (engine.lower(), self.engines[engine].config.URL)
             console(message)
             self.logger.debug(message)
-            engine.dispatch()
+            self.engines[engine].widgets = self.widgets
+            self.engines[engine].dispatch()
 
-    def run_plugins(self, engine_name, units):
-        """Runs plugins on the given engine units.
+    def run_plugins(self, engine):
+        """Runs plugins on the given engine units."""
+        if not hasattr(engine.config, 'PLUGINS'):
+            return
 
-        engine_name -- String of engine name.
-        units -- List of units from an engine targeted by the plugin.
-
-        """
-        # run plugins that target the current engine
-        plugins = [x[0] for x in CONFIG.SITE.PLUGINS if engine_name in x[1]]
+        plugins = engine.config.PLUGINS
         for plugin in plugins:
             message = "Running plugin: %s" % plugin
             console(message)
             self.logger.debug(message)
 
-            plugin_class = self.get_processor_class(plugin, 'plugins')
-            if plugin_class:
-                plugin_obj = plugin_class()
-                plugin_obj.prime()
-                plugin_obj.run(units)
+            if not plugin in self.plugins:
+                plugin_class = self.get_processor(plugin, 'plugins')
+                if not plugin_class:
+                    continue
+                self.plugins[plugin] = plugin_class()
+                self.plugins[plugin].prime()
+
+            self.plugins[plugin].run(engine.units)
+
+    @cachedproperty
+    def widgets_mod(self):
+        self.logger.debug('imported: widgets module')
+        return path_import('widgets', CONFIG.VOLT.ROOT_DIR)
+
+    def create_widgets(self, engine):
+        """Creates engine widgets from its units."""
+        if not hasattr(engine.config, 'WIDGETS'):
+            return
+
+        widgets = engine.config.WIDGETS
+        for widget in widgets:
+            console("Creating widget: %s" % widget)
+            try:
+                widget_func = getattr(self.widgets_mod, widget)
+            except AttributeError:
+                message = "Widget %s not found." % widget
+                self.logger.error(message)
+                self.logger.debug(format_exc())
+                raise
+
+            self.widgets[widget] = widget_func(engine.units)
+            self.logger.debug("created: %s widget" % widget)
 
     def write_extra_pages(self):
         """Write nonengine pages, such as a separate index.html or 404.html."""
@@ -186,7 +222,7 @@ class Generator(LoggableMixin):
                 self.logger.error(message)
                 sys.exit(1)
 
-            rendered = template.render(page={}, CONFIG=CONFIG)
+            rendered = template.render(page={}, widgets=self.widgets, CONFIG=CONFIG)
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
             write_file(path, rendered)

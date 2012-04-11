@@ -65,7 +65,8 @@ class AtomicPlugin(Plugin):
         # pass in a built-in Volt jinja2 filter to display date
         # and get template
         env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)))
-        env.filters['displaytime'] = CONFIG.JINJA2_FILTERS['displaytime']
+        # use the builtin displaytime filter
+        env.filters['displaytime'] = CONFIG.SITE.TEMPLATE_ENV.filters['displaytime']
         template = env.get_template(self.config.TEMPLATE_FILE)
 
         # set feed generation time

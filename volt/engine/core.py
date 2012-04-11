@@ -71,7 +71,8 @@ class Engine(LoggableMixin):
     subclassing engine.
 
     Any subclass of Engine must create a 'units' property and override the
-    activate and dispatch methods.
+    dispatch method. Optionally, the preprocess method may be overridden if any
+    unit processing prior to plugin run needs to be performed.
 
     """
 
@@ -81,11 +82,12 @@ class Engine(LoggableMixin):
 
     def __init__(self):
         self.config = Config(self.DEFAULTS)
+        self.widgets = {}
         self.logger.debug('created: %s' % type(self).__name__)
 
-    @abc.abstractmethod
-    def activate(self):
-        """Performs initial processing of resources into unit objects."""
+    def preprocess(self):
+        """Performs initial processing of units before plugins are run."""
+        pass
 
     @abc.abstractmethod
     def dispatch(self):
@@ -384,7 +386,7 @@ class Engine(LoggableMixin):
                 self.logger.error(message)
                 raise IOError(message)
             else:
-                rendered = template.render(page=item, CONFIG=CONFIG)
+                rendered = template.render(page=item, widgets=self.widgets, CONFIG=CONFIG)
                 if sys.version_info[0] < 3:
                     rendered = rendered.encode('utf-8')
                 write_file(item.path, rendered)

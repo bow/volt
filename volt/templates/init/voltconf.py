@@ -1,9 +1,8 @@
-# Volt configurations file
+# Volt configurations
 
 from volt.config import Config
 
 
-# Default site configurations
 SITE = Config(
 
     # Site name
@@ -13,15 +12,8 @@ SITE = Config(
     URL = 'http://mysite.com',
 
     # Engines used in generating the site
-    # Defaults to none, available choices are 'blog' and 'plain'
-    ENGINES = (),
-
-    # Plugins used in site generation
-    # Tuple of tuples, each containing a string for the plugin file name
-    # and list of engine names indicating which engine to target
-    # Run according to order listed here
     # Defaults to none
-    PLUGINS = (('',[]),),
+    ENGINES = (),
 
     # Extra pages to write that are not controlled by an engine
     # Examples: 404.html, index.html (if not already written by an engine)
@@ -41,16 +33,19 @@ SITE = Config(
     # with .htaccess
     INDEX_HTML_ONLY = True,
 
+    # Logging level
+    # If set to 10, Volt will write logs to a file
+    # 30 is logging.WARNING
+    LOG_LEVEL = 30,
+
     # Ignore patterns
     # Filenames that match this pattern will not be copied from asset directory
     # to site directory
     IGNORE_PATTERN = '',
+
+    # Jinja2 filter function names
+    FILTERS = ('displaytime',),
+
+    # Jinja2 test function names
+    TESTS = (),
 )
-
-
-# Built-in Jinja2 filters
-JINJA2_FILTERS = Config()
-
-
-# Built-in Jinja2 tests
-JINJA2_TESTS = Config()

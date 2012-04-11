@@ -110,7 +110,8 @@ class VoltHTTPServer(ThreadingTCPServer, LoggableMixin):
         # check the effects of changing certain configs
         dirs = (x[0] for x in os.walk(CONFIG.VOLT.ROOT_DIR) if
                 CONFIG.VOLT.SITE_DIR not in x[0] and CONFIG.VOLT.ROOT_DIR != x[0])
-        return max(os.stat(x).st_mtime for x in chain(dirs, [CONFIG.VOLT.USER_CONF]))
+        files = [CONFIG.VOLT.USER_CONF, CONFIG.VOLT.USER_WIDGET]
+        return max(os.stat(x).st_mtime for x in chain(dirs, files))
 
     def server_bind(self):
         # overrides server_bind to store the server name.

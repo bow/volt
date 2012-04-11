@@ -21,16 +21,8 @@ SITE = Config(
     # To disable an engine, just remove its name from this list
     ENGINES = ('blog', 'plain', ),
 
-    # Plugins used in site generation
-    # Each plugin entry is a tuple of the plugin name as string
-    # and a list of its target engines
-    # These are run according to the order they are listed here
-    PLUGINS = (
-        # markdown_parser enables posting with markdown
-        ('markdown_parser', ['blog', 'plain']),
-        # atomic generates atom feed for the target engine
-        ('atomic', ['blog']),
-    ),
+    # Jinja2 filters
+    FILTERS = ('taglist', ),
 )
 
 
@@ -42,6 +34,9 @@ ENGINE_PLAIN = Config(
 
     # Plain page permalink, relative to page URL
     PERMALINK = '{slug}',
+
+    # Plugins to be run on plain units
+    PLUGINS = ('markdown_parser', ),
 )
 
 
@@ -53,6 +48,12 @@ ENGINE_BLOG = Config(
 
     # Blog posts permalink, relative to blog URL
     PERMALINK = '{time:%Y/%m/%d}/{slug}',
+
+    # Plugins to be run on blog units
+    PLUGINS = ('markdown_parser', 'atomic', ),
+
+    # Widgets to be created from blog units
+    WIDGETS = ('latest_posts', 'monthly_archive',),
 
     # The number of displayed posts per pagination page
     UNITS_PER_PAGINATION = 10,
@@ -73,15 +74,4 @@ ENGINE_BLOG = Config(
 # Plugin configurations
 PLUGIN_ATOMIC = Config(
     OUTPUT_FILE = os.path.join(os.path.dirname(__file__), 'site', 'atom.xml'),
-)
-
-
-# Jinja custom filters
-def taglist(taglist):
-    """Show categories in comma-separated links."""
-    string = '<a href="/blog/tag/%s/" class="button red">%s</a>'
-    return ', '.join([string % (tag, tag) for tag in taglist])
-
-JINJA2_FILTERS = Config(
-    taglist =  taglist,
 )

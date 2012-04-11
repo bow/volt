@@ -2,6 +2,7 @@ from volt.config import Config
 
 VOLT = Config(
     USER_CONF = 'voltconf.py',
+    USER_WIDGET = 'widgets.py',
     CONTENT_DIR = 'contents',
     TEMPLATE_DIR = 'templates',
 )
@@ -13,13 +14,6 @@ SITE = Config(
     B_URL = 'http://foo.com/',
     C_URL = '/',
     D_URL = '',
+    FILTERS = ('foo', 'bar'),
+    TESTS = (),
 )
-
-def default_foo(): return "foo in default"
-def default_bar(): pass
-
-JINJA2_FILTERS = Config(
-    foo = default_foo,
-    bar = default_bar,
-)
-JINJA2_TESTS = Config()

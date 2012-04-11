@@ -103,7 +103,7 @@ class BlogEngine(TextEngine):
     # Config instance name in voltconf.py
     USER_CONF_ENTRY = 'ENGINE_BLOG'
 
-    def activate(self):
+    def preprocess(self):
         # sort units
         self.sort_units()
         # add prev and next permalinks so blog posts can link to each other

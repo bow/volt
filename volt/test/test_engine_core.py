@@ -30,7 +30,6 @@ SessionConfig_mock = make_sessionconfig_mock()
 
 
 class TestEngine(Engine):
-    def activate(self): pass
     def dispatch(self): pass
     @property
     def units(self):
@@ -73,12 +72,6 @@ class EngineCases(unittest.TestCase):
 
     def setUp(self):
         self.engine = TestEngine()
-
-    def test_activate(self):
-        class TestEngine(Engine):
-            def dispatch(self): pass
-            def units(self): return
-        self.assertRaises(TypeError, TestEngine.__init__, )
 
     def test_dispatch(self):
         class TestEngine(Engine):

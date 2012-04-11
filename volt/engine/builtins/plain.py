@@ -70,10 +70,6 @@ class PlainEngine(TextEngine):
     # Config instance name in voltconf.py
     USER_CONF_ENTRY = 'ENGINE_PLAIN'
 
-    def activate(self):
-        # nothing to do prior to plugin run
-        pass
-
     def dispatch(self):
         # write them according to template
         self.write_units()

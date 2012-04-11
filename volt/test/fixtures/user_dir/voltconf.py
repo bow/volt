@@ -7,6 +7,7 @@ VOLT = Config(
 SITE = Config(
     CUSTOM_OPT = "custom_opt_user",
     TITLE = "Title in user",
+    FILTERS = ('foo',),
 )
 
 ENGINE_TEST = Config(
@@ -15,9 +16,3 @@ ENGINE_TEST = Config(
 )       
 
 ENGINE_TEST_BAD = 'not a Config'
-
-def user_foo(): return "foo in user"
-
-JINJA2_FILTERS = Config(
-    foo = user_foo,
-)
