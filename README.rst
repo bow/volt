@@ -124,19 +124,23 @@ Here's a quick summary of the currently available commands:
   The ``voltconf.py`` file created by this command currently contains almost all
   the default settings. You can safely edit or remove them.
 
+* ``volt demo``: Starts the demo, must be run inside an empty directory.
+
 * ``volt gen``: Generates the website into a ``site`` folder in your current
-  project directory. Can be run from anywhere inside a Volt project directory.
+  project directory.
 
 * ``volt serve``: Generates the website and Starts the server pointing to the
-  ``site`` directory. Can be run from anywhere inside a Volt project directory.
+  ``site`` directory.
 
-* ``volt demo``: Starts the demo, must be run inside an empty directory.
+* ``volt add``: Adds a template for writing your custom engine, plugin, or
+  widget. Custom engines and plugins are stored respectively inside the 
+  ``engines`` and ``plugins`` directory in the root Volt project directory.
+  Widgets are stored inside ``widgets.py`` in the same directory.
 
 * ``volt version``: Shows the current Volt version.
 
-Use your own engines by writing them in an ``engines`` directory inside your
-Volt project directory. Plugins follow the same rule: ``plugins`` inside your
-Volt project directory.
+All of the commands except for ``init`` and ``demo`` can be run from anywhere
+inside a Volt project directory.
 
 The docs are, unfortunately, minimum at the moment. For now, the source is the
 primary documentation.

@@ -75,6 +75,11 @@ class Runner(LoggableMixin):
         parser = ArgParser()
         subparsers = parser.add_subparsers(title='subcommands')
 
+        # parser for add
+        add_parser = subparsers.add_parser('add',
+                help="adds template for custom engine, plugin, or widget")
+        add_parser.add_argument('template', type=str, choices=['engine', 'plugin', 'widget'])
+
         # parser for init
         init_parser = subparsers.add_parser('init',
                 help="starts a bare Volt project")
@@ -106,6 +111,25 @@ class Runner(LoggableMixin):
             eval('%s_parser' % subcmd).set_defaults(run=eval('self.run_%s' % subcmd), name=subcmd)
 
         return parser
+
+    def run_add(self):
+        """Adds template for engine, plugin, or widget."""
+        template = CONFIG.CMD.template
+        template_source = os.path.join(os.path.dirname(__file__), 'templates')
+
+        if template == 'widget':
+            if not os.path.exists(CONFIG.VOLT.USER_WIDGET):
+                shutil.copy2(os.path.join(template_source, 'widgets.py'), os.curdir)
+        else:
+            template_dir = os.path.join(os.getcwd(), template + 's')
+            template_file = template + '.py'
+
+            if not os.path.exists(template_dir):
+                os.mkdir(template_dir)
+
+            if not os.path.exists(os.path.join(template_dir, template_file)):
+                shutil.copy2(os.path.join(template_source, template_file), \
+                        template_dir)
 
     def run_init(self, cmd_name='init'):
         """Starts a new Volt project.
@@ -149,7 +173,6 @@ class Runner(LoggableMixin):
 
     def run_gen(self):
         """Generates the static site."""
-        os.chdir(CONFIG.VOLT.ROOT_DIR)
         generator.run()
 
     def run_serve(self):
@@ -175,6 +198,7 @@ def main(cli_arglist=None):
         # only build logger if we're not starting a new project
         if CONFIG.CMD.name not in ['demo', 'init']:
             session.build_logger()
+            os.chdir(CONFIG.VOLT.ROOT_DIR)
 
         logger = logging.getLogger('main')
         logger.debug("running: %s" % CONFIG.CMD.name)
