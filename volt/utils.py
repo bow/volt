@@ -32,13 +32,15 @@ def cachedproperty(func):
     """Decorator for cached property loading."""
     attr_name = func.__name__
     @property
-    def wrapped(self):
-        if not hasattr(self, '_cached'):
-            setattr(self, '_cached', {})
-        if attr_name not in self._cached:
-            self._cached[attr_name] = func(self)
-        return self._cached[attr_name]
-    return wrapped
+    def cached(self):
+        if not hasattr(self, '_cache'):
+            setattr(self, '_cache', {})
+        try:
+            return self._cache[attr_name]
+        except KeyError:
+            result = self._cache[attr_name] = func(self)
+            return result
+    return cached
 
 
 class LoggableMixin(object):
