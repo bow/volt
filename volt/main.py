@@ -193,19 +193,21 @@ def main(cli_arglist=None):
     """
     session = Runner()
     try:
-        CONFIG.CMD = session.build_parsers().parse_args(cli_arglist)
+        cmd = session.build_parsers().parse_args(cli_arglist)
 
         # only build logger if we're not starting a new project
-        if CONFIG.CMD.name not in ['demo', 'init']:
+        if cmd.name not in ['demo', 'init']:
             session.build_logger()
+            # attach parsed object to the package-wide config
+            CONFIG.CMD = cmd
             os.chdir(CONFIG.VOLT.ROOT_DIR)
 
         logger = logging.getLogger('main')
-        logger.debug("running: %s" % CONFIG.CMD.name)
-        CONFIG.CMD.run()
+        logger.debug("running: %s" % cmd.name)
+        cmd.run()
     except ConfigNotFoundError:
         message = "You can only run 'volt %s' inside a Volt project directory" % \
-                CONFIG.CMD.name
+                cmd.name
         console("Error: %s" % message, color='red', is_bright=True)
         console("Start a Volt project by running 'volt init'")
 
