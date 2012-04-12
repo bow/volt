@@ -22,7 +22,7 @@ from time import time
 from traceback import format_exc
 
 from volt import VERSION
-from volt.config import CONFIG, SessionConfig
+from volt.config import CONFIG
 from volt.engine.core import Engine
 from volt.plugin.core import Plugin
 from volt.utils import cachedproperty, console, path_import, write_file, LoggableMixin
@@ -250,9 +250,6 @@ def run():
     """Generates the site."""
 
     logger = logging.getLogger('gen')
-
-    # reload config to reflect any new changes that may have been made
-    CONFIG = SessionConfig()
 
     if CONFIG.SITE.ENGINES:
         sys.stdout.write("\n")

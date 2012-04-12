@@ -19,14 +19,14 @@ from mock import patch
 from volt.engine.core import Engine
 from volt.generator import Generator
 from volt.plugin.core import Plugin
-from volt.test import INSTALL_DIR, USER_DIR, make_sessionconfig_mock
+from volt.test import INSTALL_DIR, USER_DIR, make_uniconfig_mock
 
 
-SessionConfig_mock = make_sessionconfig_mock()
+uniconfig_mock = make_uniconfig_mock()
 
 
 @patch('volt.generator.CONFIG.VOLT.ROOT_DIR', USER_DIR)
-@patch('volt.generator.CONFIG', SessionConfig_mock)
+@patch('volt.generator.CONFIG', uniconfig_mock)
 class GeneratorCases(unittest.TestCase):
 
     def setUp(self):

@@ -1,4 +1,15 @@
-# Tests for Volt
+# -*- coding: utf-8 -*-
+"""
+---------
+volt.test
+---------
+
+Common Volt test utilities.
+
+:copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
+:license: BSD
+
+"""
 
 import os
 from datetime import datetime
@@ -15,7 +26,7 @@ USER_DIR = os.path.join(FIXTURE_DIR, 'user_dir')
 INSTALL_DIR = os.path.join(FIXTURE_DIR, 'install_dir')
 
 
-def make_sessionconfig_mock():
+def make_uniconfig_mock():
 
     configs = ['VOLT', 'SITE', ]
 
@@ -31,14 +42,14 @@ def make_sessionconfig_mock():
                 loader=FileSystemLoader(VOLT['TEMPLATE_DIR']))
            }
 
-    sessionconfig_mock = MagicMock()
+    uniconfig_mock = MagicMock()
 
     for config in configs:
-        setattr(sessionconfig_mock, config, MagicMock())
+        setattr(uniconfig_mock, config, MagicMock())
         for key in eval(config):
-            setattr(getattr(sessionconfig_mock, config), key, eval(config)[key])
+            setattr(getattr(uniconfig_mock, config), key, eval(config)[key])
 
-    return sessionconfig_mock
+    return uniconfig_mock
 
 def make_units_mock():
     # define mock units

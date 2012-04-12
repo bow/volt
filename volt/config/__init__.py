@@ -7,18 +7,17 @@ volt.config
 Volt configuration container module.
 
 This module provides classes for handling configurations used in a Volt site
-generation. These configurations are obtained from two files: 1) the default.py
-file in this module containining all default configurations necessary for a
-Volt site generation, and 2) the voltconf.py file in the user's Volt project
-directory containing all user-defined options that may override one or several
-default options. The final configuration, a result of combining default.py and
-voltconf.py, are accessible through CONFIG, a SessionConfig instance.
+generation. These configurations are obtained from two files: 1) the 
+default_conf.py file in this module containining all default configurations
+values, and 2) the voltconf.py file in the user's Volt project directory
+containing all user-defined options. The final configuration, a result of
+combining default_conf.py and voltconf.py, are accessible through CONFIG, a
+UnifiedConfig instance.
 
 The configurations in default.py and voltconf.py themselves are contained in a
-Config instance. There are four Config instances defined in default.py: VOLT,
-for containing all internal configurations; SITE, to contain site-wide options;
-JINJA2_FILTERS, for Jinja2 built-in filters; and JINJA2_TESTS, for Jinja2
-built-in tests. Users may override any value in these Configs by declaring the
+Config instances. There are two Config instances defined in default.py: VOLT,
+for containing all internal configurations, and SITE, to contain site-wide
+options. Users may override any value in these Configs by declaring the
 same Config instance in their voltconf.py.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
@@ -27,99 +26,82 @@ same Config instance in their voltconf.py.
 """
 
 import os
-import sys
 
 from jinja2 import Environment, FileSystemLoader
 
 from volt.exceptions import ConfigNotFoundError
-from volt.utils import path_import
+from volt.utils import path_import, LoggableMixin
 
 
+DEFAULT_CONF_DIR = os.path.dirname(__file__)
 DEFAULT_CONF = 'default_conf'
 DEFAULT_WIDGET = 'default_widgets'
 
 
-class SessionConfig(object):
+class UnifiedConfigContainer(LoggableMixin):
+
+    """Reloadable lazy container for UnifiedConfig."""
+
+    def __init__(self):
+        self._loaded = None
+
+    def __getattr__(self, name):
+        if self._loaded is None:
+            self._load()
+        return getattr(self._loaded, name)
+
+    def __setattr__(self, name, value):
+        if name == '_loaded':
+            self.__dict__['_loaded'] = value
+        else:
+            if self._loaded is None:
+                self._load()
+            setattr(self._loaded, name, value)    
+
+    def _load(self):
+        self._loaded = UnifiedConfig()
+        self.logger.debug('loaded: UnifiedConfig')
+
+    def reset(self):
+        if self._loaded is not None:
+            self._loaded = None
+            self.logger.debug('reset: UnifiedConfig')
+
+
+class UnifiedConfig(LoggableMixin):
 
     """Container class for storing all configurations used in a Volt run.
     
-    SessionConfig pools in configuration values from volt.config.default and
-    the user's voltconf.py. Resolution of which values are used from default.py
-    and which one is overriden by voltconf.py is deferred until __getattr__
-    is called on a SessionConfig instance. This is done to make SessionConfig
-    more testable, since SessionConfig will resolve all '_DIR' options inside
-    its Configs to have absolute paths. 
-    
-    If options resolution is not deferred, the Volt project root-finding method
-    will raise an error if SessionConfig is not instantiated in a Volt project
-    directory. By making SessionConfig lazy-loads like this, we can instantiate
-    it anywhere we want (e.g. in the test directory) and then test its methods
-    without doing any Config resolution.
+    UnifiedConfig unifies configuration values from volt.config.default_conf
+    and the user's voltconf.py.
 
     """
 
-    def __init__(self, default_dir=os.path.dirname(__file__), \
-            start_dir=os.getcwd(), default_conf_name=DEFAULT_CONF):
-        """Initializes SessionConfig.
+    def __init__(self):
+        """Resolves the unified Config values to use for a Volt run."""
+        default = path_import(DEFAULT_CONF, DEFAULT_CONF_DIR)
+        root_dir = self.get_root_dir(default.VOLT.USER_CONF)
 
-        default_dir -- Absolute directory path of the default configuration.
-        start_dir -- Starting directory for user configuration lookup.
+        user_conf_fname = default.VOLT.USER_CONF.split('.')[0]
+        user_widget_fname = default.VOLT.USER_WIDGET.split('.')[0]
 
-        """
-        self.py3 = (sys.version_info[0] > 2)
-        self.start_dir = start_dir
-        self.default_dir = default_dir
-        self._default = path_import(default_conf_name, self.default_dir)
-        # set flag for lazy-loading
-        self._loaded = False
-    
-    def __getattr__(self, name):
-        if not self._loaded:
-            self._load()
-        return object.__getattribute__(self, name)
-
-    def _load(self):
-        """Loads the default and user configurations and resolve the ones to use.
-
-        Prior to Config resolution, _load will try to find the absolute path of
-        the directory containing voltconf.py, the user-defined configuration.
-        If a path is found, then it will be used to transform all options
-        ending with '_FILE' and '_DIR' to point to their absolute paths. This
-        method will also normalize 'URL' options, set up the Jinja2 template
-        environment to be used throughout Volt site generation, and pools in
-        all user-defined Jinja2 tests and filters defined in voltconf.py
-
-        """
-        # get root and modify path to user conf to absolute path
-        root_dir = self.get_root_dir(self.start_dir)
-        self._default.VOLT.USER_CONF = os.path.join(root_dir, \
-                self._default.VOLT.USER_CONF)
-
-        # import user-defined configs as a module object
-        user_conf_name = os.path.splitext(os.path.basename(\
-                self._default.VOLT.USER_CONF))[0]
-        user = path_import(user_conf_name, root_dir)
-
-        self._default.VOLT.USER_WIDGET = os.path.join(root_dir, \
-                self._default.VOLT.USER_WIDGET)
-        widget_name = os.path.splitext(os.path.basename(\
-                self._default.VOLT.USER_WIDGET))[0]
+        default.VOLT.USER_CONF = os.path.join(root_dir, \
+                default.VOLT.USER_CONF)
+        default.VOLT.USER_WIDGET = os.path.join(root_dir, \
+                default.VOLT.USER_WIDGET)
 
         # for combining default and user jinja2 filters and tests
-        _site_conf = getattr(self._default, 'SITE')
-        default_filters = getattr(_site_conf, 'FILTERS')
-        default_tests = getattr(_site_conf, 'TESTS')
+        default_filters = default.SITE.FILTERS
+        default_tests = default.SITE.TESTS
 
-        # Configs to process is everything in default + anything in user
-        # not present in default
+        user = path_import(user_conf_fname, root_dir)
         for item in 'VOLT', 'SITE':
             # load from default first and override if present in user
-            obj = getattr(self._default, item)
+            obj = getattr(default, item)
             if hasattr(user, item):
                 obj.update(getattr(user, item))
             for opt in obj:
-                # set directory items to absolute paths
-                # directory + file items has 'DIR' + 'FILE' in their items
+                # set directory items to absolute paths if endswith _DIR
                 if opt.endswith('_DIR'):
                     obj[opt] = os.path.join(root_dir, obj[opt])
                 # strip '/'s from URL options
@@ -130,44 +112,47 @@ class SessionConfig(object):
         # set root dir as config in VOLT
         setattr(self.VOLT, 'ROOT_DIR', root_dir)
 
+        self.prep_template(user_widget_fname, default_filters, default_tests)
+
+        self.logger.debug('initialized: UnifiedConfig')
+
+
+    def prep_template(self, user_widget_fname, default_filters, default_tests):
+        """Setups the jinja2 template environment."""
+
+        # set up jinja2 template environment in the SITE Config object
+        env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
         # combine filters and tests
         self.SITE.FILTERS = tuple(set(self.SITE.FILTERS + default_filters))
         self.SITE.TESTS = tuple(set(self.SITE.TESTS + default_tests))
 
-        # and set the loaded flag to True here
-        # so we can start referring to the resolved configs
-        self._loaded = True
-
-        # set up jinja2 template environment in the SITE Config object
-        env = Environment(loader=FileSystemLoader(self.VOLT.TEMPLATE_DIR))
-
         # import filters and tests
-        default_widget = path_import(DEFAULT_WIDGET, self.default_dir)
+        default_widget = path_import(DEFAULT_WIDGET, DEFAULT_CONF_DIR)
         try:
-            user_widget = path_import(widget_name, self.VOLT.ROOT_DIR)
+            user_widget = path_import(user_widget_fname, self.VOLT.ROOT_DIR)
         except ImportError:
             # pass if the user doesn't have any widget file
             pass
-        else:
-            # set jinja2 functions
-            for type in 'FILTERS', 'TESTS':
-                for func_name in getattr(self.SITE, type):
-                    # env.filters or env.tests
-                    target = getattr(env, type.lower())
-                    # user-defined functions take precedence
-                    if hasattr(user_widget, func_name):
-                        func = getattr(user_widget, func_name)
-                    else:
-                        func = getattr(default_widget, func_name)
-                    target[func_name] = func
 
-        # setattr self jinja2 env
+        for func_type in 'FILTERS', 'TESTS':
+            for func_name in getattr(self.SITE, func_type):
+                # user-defined functions take precedence
+                if hasattr(user_widget, func_name):
+                    func = getattr(user_widget, func_name)
+                else:
+                    func = getattr(default_widget, func_name)
+
+                target = getattr(env, func_type.lower())
+                target[func_name] = func
+
         setattr(self.SITE, 'TEMPLATE_ENV', env)
 
-    def get_root_dir(self, start_dir):
+    @classmethod
+    def get_root_dir(self, conf_name, start_dir=os.getcwd()):
         """Returns the root directory of a Volt project.
 
-        start_dir -- Starting directory for voltconf.py lookup.
+        conf_name -- User configuration filename
+        start_dir -- Starting directory for configuration file lookup.
 
         Checks the current directory for a Volt settings file. If it is not
         present, parent directories of the current directory is checked until
@@ -181,10 +166,9 @@ class SessionConfig(object):
                     "'%s' or its parent directories." % os.getcwd())
 
         # recurse if config file not found
-        if not os.path.exists(os.path.join(start_dir, \
-                self._default.VOLT.USER_CONF)):
+        if not os.path.exists(os.path.join(start_dir, conf_name)):
             parent = os.path.dirname(start_dir)
-            return self.get_root_dir(parent)
+            return self.get_root_dir(conf_name, start_dir=parent)
 
         return start_dir
 
@@ -217,4 +201,4 @@ class Config(dict):
         self.__dict__ = self
 
 
-CONFIG = SessionConfig()
+CONFIG = UnifiedConfigContainer()

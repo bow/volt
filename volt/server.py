@@ -81,18 +81,17 @@ class VoltHTTPServer(ThreadingTCPServer, LoggableMixin):
 
         """
         latest_mtime = self.check_dirs_mtime()
+
         if self.last_mtime < latest_mtime:
             message = "Source file modification detected -- regenerating site"
             console(message, color='yellow')
             self.logger.debug(message)
 
             self.last_mtime = latest_mtime
-            # generate the site
-            # not sure I understand why it needs to load first
-            # but hey it works (possible bug later on?)
-            CONFIG._load()
+            CONFIG.reset()
             generator.run()
             self.logger.debug('done: regenerating site')
+
         ThreadingTCPServer.process_request(self, request, client_address)
 
     def check_dirs_mtime(self):
@@ -110,7 +109,11 @@ class VoltHTTPServer(ThreadingTCPServer, LoggableMixin):
         # check the effects of changing certain configs
         dirs = (x[0] for x in os.walk(CONFIG.VOLT.ROOT_DIR) if
                 CONFIG.VOLT.SITE_DIR not in x[0] and CONFIG.VOLT.ROOT_DIR != x[0])
-        files = [CONFIG.VOLT.USER_CONF, CONFIG.VOLT.USER_WIDGET]
+
+        files = [CONFIG.VOLT.USER_CONF]
+        if os.path.exists(CONFIG.VOLT.USER_WIDGET):
+            files.append(CONFIG.VOLT.USER_WIDGET)
+
         return max(os.stat(x).st_mtime for x in chain(dirs, files))
 
     def server_bind(self):

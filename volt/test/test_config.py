@@ -13,19 +13,23 @@ Tests for the volt.config module.
 
 import os
 import unittest
-from inspect import getabsfile
 
-from volt.config import SessionConfig, ConfigNotFoundError
+from mock import patch
+
+from volt.config import UnifiedConfig, ConfigNotFoundError
 from volt.test import INSTALL_DIR, USER_DIR
-from volt.utils import path_import
 
 
-class SessionConfigLoadCases(unittest.TestCase):
+def get_root_dir_mock(x, y):
+    return USER_DIR
 
+
+class UnifiedConfigLoadCases(unittest.TestCase):
+
+    @patch('volt.config.DEFAULT_CONF_DIR', INSTALL_DIR)
+    @patch.object(UnifiedConfig, 'get_root_dir', get_root_dir_mock)
     def setUp(self):
-        def get_root_dir_mock(x): return USER_DIR
-        self.CONFIG = SessionConfig(default_dir=INSTALL_DIR, start_dir=USER_DIR)
-        self.CONFIG.get_root_dir = get_root_dir_mock
+        self.CONFIG = UnifiedConfig()
 
     def test_load_consolidation(self):
         # user config overriding
@@ -61,38 +65,18 @@ class SessionConfigLoadCases(unittest.TestCase):
                 "foo in user")
 
 
-class SessionConfigRootDirCases(unittest.TestCase):
+class UnifiedConfigRootDirCases(unittest.TestCase):
 
     def setUp(self):
-        self.CONFIG = SessionConfig()
-        self.CONFIG._default.VOLT.USER_CONF = "voltconf.py"
+        self.get_root_dir = UnifiedConfig.get_root_dir
 
     def test_get_root_dir_current(self):
-        start_dir = USER_DIR
-        self.assertEqual(self.CONFIG.get_root_dir(start_dir), USER_DIR)
+        self.assertEqual(self.get_root_dir('voltconf.py', USER_DIR), USER_DIR)
 
     def test_get_root_dir_child(self):
         start_dir = os.path.join(USER_DIR, "contents", "foo", "bar", "baz")
-        self.assertEqual(self.CONFIG.get_root_dir(start_dir), USER_DIR)
+        self.assertEqual(self.get_root_dir('voltconf.py', start_dir), USER_DIR)
 
     def test_get_root_dir_error(self):
-        start_dir = INSTALL_DIR
-        self.assertRaises(ConfigNotFoundError, self.CONFIG.get_root_dir, \
-                start_dir)
-
-
-class PathImportCases(unittest.TestCase):
-
-    def test_path_import_string(self):
-        path = os.path.join(INSTALL_DIR, 'engine', 'builtins')
-        mod = path_import('in_install', path)
-        mod_path = os.path.join(INSTALL_DIR, 'engine', 'builtins', 'in_install.py')
-        self.assertEqual(getabsfile(mod), mod_path)
-
-    def test_path_import_list(self):
-        user_path = os.path.join(USER_DIR, 'engines')
-        install_path = os.path.join(INSTALL_DIR, 'engine', 'builtins')
-        paths = [user_path, install_path]
-        mod = path_import('in_both', paths)
-        mod_path = os.path.join(USER_DIR, 'engines', 'in_both.py')
-        self.assertEqual(getabsfile(mod), mod_path)
+        self.assertRaises(ConfigNotFoundError, self.get_root_dir, \
+                'voltconf.py', INSTALL_DIR)

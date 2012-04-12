@@ -23,10 +23,10 @@ from volt.config import Config
 from volt.engine.core import Engine, Page, Unit, Pagination, \
         chain_item_permalinks
 from volt.exceptions import EmptyUnitsWarning
-from volt.test import USER_DIR, make_units_mock, make_sessionconfig_mock
+from volt.test import USER_DIR, make_units_mock, make_uniconfig_mock
 
 
-SessionConfig_mock = make_sessionconfig_mock()
+UniConfig_mock = make_uniconfig_mock()
 
 
 class TestEngine(Engine):
@@ -67,7 +67,7 @@ class EngineCoreMethodsCases(unittest.TestCase):
         self.assertEqual(units[-1].permalink_prev, units[1].permalink)
 
 
-@patch('volt.engine.core.CONFIG', SessionConfig_mock)
+@patch('volt.engine.core.CONFIG', UniConfig_mock)
 class EngineCases(unittest.TestCase):
 
     def setUp(self):
@@ -330,7 +330,7 @@ class PageCases(unittest.TestCase):
                 'journey-through-the-himalayan-mountains-part-1-unusual-guest')
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True)
-    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    @patch('volt.engine.core.CONFIG', UniConfig_mock)
     def test_path_permalinks_index_html_true(self):
         self.page.permalist = ['blog', 'not', 'string']
         self.page.slugify = lambda x: x
@@ -341,7 +341,7 @@ class PageCases(unittest.TestCase):
         self.assertEqual(self.page.permalink_abs, 'http://foo.com/blog/not/string')
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', False)
-    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    @patch('volt.engine.core.CONFIG', UniConfig_mock)
     def test_path_permalinks_index_html_false(self):
         self.page.permalist = ['blog', 'not', 'string']
         self.page.slugify = lambda x: x
@@ -426,34 +426,34 @@ class PaginationCases(unittest.TestCase):
         self.site_dir = os.path.join(USER_DIR, 'site')
 
     @patch('volt.engine.core.CONFIG.SITE.PAGINATION_URL', 'page')
-    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    @patch('volt.engine.core.CONFIG', UniConfig_mock)
     def test_id(self):
         pagin = Pagination(self.units, 0, )
         self.assertEqual(pagin.id, '/')
 
     @patch('volt.engine.core.CONFIG.SITE.PAGINATION_URL', 'page')
-    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    @patch('volt.engine.core.CONFIG', UniConfig_mock)
     def test_init_idx_0(self):
         pagin = Pagination(self.units, 0, )
         self.assertEqual(pagin.path, os.path.join(self.site_dir, 'index.html'))
         self.assertEqual(pagin.permalink, '/')
 
     @patch('volt.engine.core.CONFIG.SITE.PAGINATION_URL', 'page')
-    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    @patch('volt.engine.core.CONFIG', UniConfig_mock)
     def test_init_idx_1(self):
         pagin = Pagination(self.units, 1, )
         self.assertEqual(pagin.path, os.path.join(self.site_dir, 'page', '2', 'index.html'))
         self.assertEqual(pagin.permalink, '/page/2/')
 
     @patch('volt.engine.core.CONFIG.SITE.PAGINATION_URL', 'page')
-    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    @patch('volt.engine.core.CONFIG', UniConfig_mock)
     def test_init_permalist(self):
         pagin = Pagination(self.units, 1, ['tech'])
         self.assertEqual(pagin.path, os.path.join(self.site_dir, 'tech', 'page', '2', 'index.html'))
         self.assertEqual(pagin.permalink, '/tech/page/2/')
 
     @patch('volt.engine.core.CONFIG.SITE.PAGINATION_URL', '')
-    @patch('volt.engine.core.CONFIG', SessionConfig_mock)
+    @patch('volt.engine.core.CONFIG', UniConfig_mock)
     def test_init_pagination_url(self):
         pagin = Pagination(self.units, 1, )
         self.assertEqual(pagin.path, os.path.join(self.site_dir, '2', 'index.html'))
