@@ -74,6 +74,10 @@ SITE = Config(
     # to site directory
     IGNORE_PATTERN = '',
 
+    # Non-engine widgets
+    # These are widgets that do not require engine units to work
+    WIDGETS = (),
+
     # Jinja2 filter function names
     FILTERS = ('displaytime',),
 

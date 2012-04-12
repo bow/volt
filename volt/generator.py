@@ -155,6 +155,9 @@ class Generator(LoggableMixin):
             self.create_widgets(engine)
             self.engines[engine_name] = engine
 
+        # run non-engine widgets
+        self.create_widgets()
+
         for engine in self.engines:
             message = "Dispatching %s engine to URL '%s'" % \
                     (engine.lower(), self.engines[engine].config.URL)
@@ -188,12 +191,16 @@ class Generator(LoggableMixin):
         self.logger.debug('imported: widgets module')
         return path_import('widgets', CONFIG.VOLT.ROOT_DIR)
 
-    def create_widgets(self, engine):
+    def create_widgets(self, engine=None):
         """Creates engine widgets from its units."""
-        if not hasattr(engine.config, 'WIDGETS'):
-            return
+        if engine is not None:
+            try:
+                widgets = engine.config.WIDGETS
+            except AttributeError:
+                return
+        else:
+            widgets = CONFIG.SITE.WIDGETS
 
-        widgets = engine.config.WIDGETS
         for widget in widgets:
             console("Creating widget: %s" % widget)
             try:
@@ -204,8 +211,19 @@ class Generator(LoggableMixin):
                 self.logger.debug(format_exc())
                 raise
 
-            self.widgets[widget] = widget_func(engine.units)
+            if engine is not None:
+                self.widgets[widget] = widget_func(engine.units)
+            else:
+                self.widgets[widget] = widget_func()
             self.logger.debug("created: %s widget" % widget)
+
+    def create_site_widgets(self):
+        """Create engine-independent widgets."""
+        widgets = CONFIG.SITE.WIDGETS
+
+        for widget in widgets:
+            console("Creating site widget: %s" % widget)
+
 
     def write_extra_pages(self):
         """Write nonengine pages, such as a separate index.html or 404.html."""

@@ -21,6 +21,9 @@ SITE = Config(
     # To disable an engine, just remove its name from this list
     ENGINES = ('blog', 'plain', ),
 
+    # Non-engine widgets
+    WIDGETS = ('github_search',),
+
     # Jinja2 filters
     FILTERS = ('taglist', ),
 )
