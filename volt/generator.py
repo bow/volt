@@ -217,14 +217,6 @@ class Generator(LoggableMixin):
                 self.widgets[widget] = widget_func()
             self.logger.debug("created: %s widget" % widget)
 
-    def create_site_widgets(self):
-        """Create engine-independent widgets."""
-        widgets = CONFIG.SITE.WIDGETS
-
-        for widget in widgets:
-            console("Creating site widget: %s" % widget)
-
-
     def write_extra_pages(self):
         """Write nonengine pages, such as a separate index.html or 404.html."""
         for filename in CONFIG.SITE.EXTRA_PAGES:
