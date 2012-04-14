@@ -16,25 +16,26 @@ import os
 import re
 
 from pygments import highlight
-from pygments.lexers import get_lexer_by_name
+from pygments.lexers import get_lexer_by_name, guess_lexer
 from pygments.formatters import HtmlFormatter
 
 from volt.config import Config
 from volt.plugin.core import Plugin
 
 
-_RE_SYNTAX = re.compile(r'(<syntax:(.*?)>(.*?)</syntax>)', re.DOTALL)
+_RE_SYNTAX = re.compile(r'(<syntax(.*?)>(.*?)</syntax>)', re.DOTALL)
 
 
 class SyntaxPlugin(Plugin):
 
     """Highlights code syntax using pygments.
 
-    This processor plugin adds the necessary HTML tags to any text enclosed
-    in a <syntax:[language]></syntax> tag so that its syntaxes are highlighted.
+    This plugin adds the necessary HTML tags to any text enclosed in a
+    in a <syntax></syntax> tag so that its syntaxes are highlighted.
     It uses the pygments library to perform this feat, and can highlight any
-    language recognized by pygments, so long as it is specified by the
-    <syntax:[language]></syntax> tag.
+    language recognized by pygments. If a 'lang=[language]' attribute is not
+    specified, it will attempt to guess the language per pygments'
+    ``guess_lexer`` function.
 
     To avoid unintended results, this plugin should be run before any markup
     processing plugin.
@@ -102,7 +103,11 @@ class SyntaxPlugin(Plugin):
 
         if codeblocks:
             for match, lang, code in codeblocks:
-                lexer = get_lexer_by_name(lang.lower(), stripall=True)
+                if lang:
+                    lang = re.sub(r'\s|lang|=|\"|\'', '', lang)
+                    lexer = get_lexer_by_name(lang.lower(), stripall=True)
+                else:
+                    lexer = guess_lexer(code, stripall=True)
                 formatter = HtmlFormatter(linenos=self.config.LINENO, \
                         cssclass=self.config.CSS_CLASS)
                 highlighted = highlight(code, lexer, formatter)
