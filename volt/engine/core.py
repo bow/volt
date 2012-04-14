@@ -106,15 +106,19 @@ class Engine(LoggableMixin):
         """
         # get user config object
         conf_name = os.path.splitext(os.path.basename(CONFIG.VOLT.USER_CONF))[0]
-        voltconf = path_import(conf_name, CONFIG.VOLT.ROOT_DIR)
-        try:
-            user_config = getattr(voltconf, self.USER_CONF_ENTRY)
-        except AttributeError:
+        user_conf = path_import(conf_name, CONFIG.VOLT.ROOT_DIR)
+
+        # custom engines must define an entry name for the user's voltconf
+        if not hasattr (self, 'USER_CONF_ENTRY'):
             message = "%s must define a %s value as a class attribute." % \
                     (type(self).__name__, 'USER_CONF_ENTRY')
             self.logger.error(message)
-            self.logger.debug(format_exc())
-            raise
+
+        # use default config if the user does not specify any
+        try:
+            user_config = getattr(user_conf, self.USER_CONF_ENTRY)
+        except AttributeError:
+            user_config = Config()
 
         # to ensure proper Config consolidation
         if not isinstance(user_config, Config):

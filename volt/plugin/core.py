@@ -62,14 +62,18 @@ class Plugin(object):
             conf_name = os.path.splitext(os.path.basename(CONFIG.VOLT.USER_CONF))[0]
             voltconf = path_import(conf_name, CONFIG.VOLT.ROOT_DIR)
 
-            user_config = getattr(voltconf, self.USER_CONF_ENTRY)
+            # use default Config if the user does not list any
+            try:
+                user_config = getattr(voltconf, self.USER_CONF_ENTRY)
+            except AttributeError:
+                user_config = Config()
 
             # to ensure proper Config consolidation
             if not isinstance(user_config, Config):
                 raise TypeError("User Config object '%s' must be a Config instance." % \
                         self.USER_CONF_ENTRY)
-
-            self.config.update(user_config)
+            else:
+                self.config.update(user_config)
 
     @abc.abstractmethod
     def run(self):
