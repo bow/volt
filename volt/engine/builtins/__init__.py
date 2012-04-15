@@ -114,5 +114,6 @@ class TextEngine(Engine):
         files = (x for x in targets if os.path.isfile(x))
         units = [TextUnit(fname, self.config) for fname in files]
 
-        self.logger.debug('created: %s %s' % (len(units), type(units[0]).__name__))
+        if units:
+            self.logger.debug('created: %s %s' % (len(units), type(units[0]).__name__))
         return units

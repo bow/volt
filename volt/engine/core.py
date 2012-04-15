@@ -201,7 +201,7 @@ class Engine(LoggableMixin):
             warnings.warn("%s has no units to paginate." % type(self).__name__, \
                     EmptyUnitsWarning)
             # exit function if there's no units to process
-            return
+            return {}
 
         paginator_map = {
                 'all': self._paginate_all,
