@@ -4,4 +4,5 @@ distribute-*
 distribute_setup25.py
 build/
 volt/templates/sandbox/
+volt/templates/docs/
 ROADMAP
