@@ -6,3 +6,4 @@ build/
 volt/templates/sandbox/
 volt/templates/docs/
 ROADMAP
+*.pyc
