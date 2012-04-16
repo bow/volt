@@ -4,6 +4,7 @@ VOLT = Config(
     USER_CONF = 'voltconf.py',
     USER_WIDGET = 'widgets.py',
     CONTENT_DIR = 'contents',
+    ASSET_DIR = 'assets',
     TEMPLATE_DIR = 'templates',
 )
 

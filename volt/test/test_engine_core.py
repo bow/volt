@@ -418,6 +418,56 @@ class UnitCases(unittest.TestCase):
                 ['', 'i', 'love', 'mustard'])
 
 
+class UnitHeaderCases(unittest.TestCase):
+
+    def setUp(self):
+        config = MagicMock(spec=Config)
+        config.GLOBAL_FIELDS = {}
+        TestUnit.title = 'a'
+        self.unit = TestUnit(config)
+
+    def test_parse_header_protected(self):
+        header_string = "content: this is a protected field"
+        self.unit.config.PROTECTED = ('content', )
+        self.assertRaises(ValueError, self.unit.parse_header, header_string)
+
+    @patch.object(TestUnit, 'slugify')
+    def test_parse_header_slug(self, slugify_mock):
+        slugify_mock.return_value = 'foo-slug'
+        header_string = "slug: foo-slug"
+        self.unit.parse_header(header_string)
+        self.assertEqual(self.unit.slug, 'foo-slug')
+
+    def test_parse_header_as_list(self):
+        self.unit.config.FIELDS_AS_LIST = 'tags'
+        self.unit.config.LIST_SEP = ', '
+        header_string = "tags: foo, bar, baz"
+        self.unit.parse_header(header_string)
+        expected = ['bar', 'baz', 'foo']
+        self.unit.tags.sort()
+        self.assertEqual(self.unit.tags, expected)
+
+    def test_parse_header_as_datetime(self):
+        self.unit.config.DATETIME_FORMAT = '%Y/%m/%d %H:%M'
+        self.unit.config.FIELDS_AS_DATETIME = ('time', )
+        header_string = "time: 2004/03/13 22:10"
+        self.unit.parse_header(header_string)
+        self.assertEqual(self.unit.time, datetime(2004, 3, 13, 22, 10))
+
+    def test_parse_header_extra_field(self):
+        header_string = "extra: surprise!"
+        self.unit.parse_header(header_string)
+        self.assertEqual(self.unit.extra, "surprise!")
+
+    def test_parse_header_empty_field(self):
+        header_string = "empty: "
+        self.unit.parse_header(header_string)
+        self.assertEqual(self.unit.empty, '')
+
+    def test_repr(self):
+        self.assertEqual(self.unit.__repr__(), 'TestUnit(test)')
+
+
 @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True)
 class PaginationCases(unittest.TestCase):
 

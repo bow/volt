@@ -569,6 +569,33 @@ class Unit(Page):
     open_text = partial(codecs.open, encoding='utf-8')
     as_datetime = datetime.strptime
 
+    def parse_header(self, header_string):
+        """Returns a dictionary of header field values.
+
+        header_string -- String of header lines.
+
+        """
+        header_lines = [x.strip() for x in header_string.strip().split('\n')]
+        for line in header_lines:
+            if not ':' in line:
+                    raise ValueError("Line '%s' in '%s' is not a proper "
+                            "header entry." % (line, self.id))
+            field, value = [x.strip() for x in line.split(':', 1)]
+
+            self.check_protected(field, self.config.PROTECTED)
+
+            if field == 'slug':
+                value = self.slugify(value)
+
+            elif field in self.config.FIELDS_AS_LIST:
+                value = self.as_list(value, self.config.LIST_SEP)
+
+            elif field in self.config.FIELDS_AS_DATETIME:
+                value = self.as_datetime(value, \
+                        self.config.DATETIME_FORMAT)
+
+            setattr(self, field.lower(), value)
+
     def check_protected(self, field, prot):
         """Checks if the given field can be set by the user or not.
         
