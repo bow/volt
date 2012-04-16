@@ -53,8 +53,8 @@ Here are some of my favorite features:
    generates simple web pages. `See how simple the blog engine code is
    <http://github.com/bow/volt/blob/master/volt/engine/builtins/blog.py>`_ 
    or take a peek at the `main site generator function 
-   <http://github.com/bow/volt/blob/master/volt/gen.py>`_ to get a picture of
-   how the engines work.
+   <http://github.com/bow/volt/blob/master/volt/generator.py>`_ to get a
+   picture of how the engines work.
   
    Finally, Volt comes with a plugin architecture that lets you hook into the
    engines' actions. Five plugins comes packed in with volt: plugins for
@@ -90,7 +90,7 @@ Volt is still in alpha and under heavy development. It's usable enough to be
 used for making `a real website <http://bow.web.id>`_, but things will break
 here and there.
 
-Dependencies:
+Dependency:
 
 * `Jinja2 <http://jinja.pocoo.org/docs/>`_
 
