@@ -135,8 +135,7 @@ class UnifiedConfig(LoggableMixin):
         try:
             user_widget = path_import(user_widget_fname, self.VOLT.ROOT_DIR)
         except ImportError:
-            # pass if the user doesn't have any widget file
-            pass
+           user_widget = None
 
         for func_type in 'FILTERS', 'TESTS':
             for func_name in getattr(self.SITE, func_type):
