@@ -94,6 +94,10 @@ class UnifiedConfig(LoggableMixin):
         default_filters = default.SITE.FILTERS
         default_tests = default.SITE.TESTS
 
+        # asset dir is always inside template dir
+        default.VOLT.ASSET_DIR = os.path.join(default.VOLT.TEMPLATE_DIR, \
+                default.VOLT.ASSET_DIR)
+
         user = path_import(user_conf_fname, root_dir)
         for item in 'VOLT', 'SITE':
             # load from default first and override if present in user
