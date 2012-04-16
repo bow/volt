@@ -40,9 +40,9 @@ class MarkdownParserPlugin(Plugin):
 
     """
 
-    def run(self, units):
-        """Process the given units."""
-        for unit in units:
+    def run(self, engine):
+        """Process the given engine."""
+        for unit in engine.units:
             # markup lookup, in header field first then file extension
             if hasattr(unit, 'markup'):
                 is_markdown = ('markdown' == getattr(unit, 'markup').lower())

@@ -59,8 +59,8 @@ class AtomicPlugin(Plugin):
 
     USER_CONF_ENTRY = 'PLUGIN_ATOMIC'
 
-    def run(self, units):
-        """Process the given units."""
+    def run(self, engine):
+        """Process the given engine."""
 
         # pass in a built-in Volt jinja2 filter to display date
         # and get template
@@ -73,6 +73,6 @@ class AtomicPlugin(Plugin):
         time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
         # render and write to output file
-        rendered = template.render(units=units[:10], CONFIG=CONFIG, time=time)
+        rendered = template.render(units=engine.units[:10], CONFIG=CONFIG, time=time)
         with open(self.config.OUTPUT_FILE, 'w') as target:
             target.write(rendered.encode('utf-8'))

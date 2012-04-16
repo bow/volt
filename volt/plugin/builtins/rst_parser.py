@@ -22,9 +22,9 @@ class RstParserPlugin(Plugin):
 
     """Plugin for transforming rST syntax to html."""
 
-    def run(self, units):
-        """Process the given units."""
-        for unit in units:
+    def run(self, engine):
+        """Process the given engine."""
+        for unit in engine.units:
             if hasattr(unit, 'markup'):
                 is_rst = ('rst' == getattr(unit, 'markup').lower())
             else:

@@ -167,7 +167,7 @@ class Generator(LoggableMixin):
             self.engines[engine].dispatch()
 
     def run_plugins(self, engine):
-        """Runs plugins on the given engine units."""
+        """Runs plugins on the given engine."""
         if not hasattr(engine.config, 'PLUGINS'):
             return
 
@@ -184,7 +184,7 @@ class Generator(LoggableMixin):
                 self.plugins[plugin] = plugin_class()
                 self.plugins[plugin].prime()
 
-            self.plugins[plugin].run(engine.units)
+            self.plugins[plugin].run(engine)
 
     @cachedproperty
     def widgets_mod(self):

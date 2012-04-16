@@ -73,9 +73,9 @@ class SyntaxPlugin(Plugin):
 
     USER_CONF_ENTRY = 'PLUGIN_SYNTAX'
 
-    def run(self, units):
+    def run(self, engine):
         """Process the given units."""
-        for unit in units:
+        for unit in engine.units:
             # get content from unit
             string = getattr(unit, self.config.UNIT_FIELD)
             # highlight syntax in content
