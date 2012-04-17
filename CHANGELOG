@@ -2,29 +2,29 @@
 CHANGELOG
 =========
 
-------
-v0.0.3
-------
+
+Version 0.0.3 (alpha)
+---------------------
 Release date: TBD
 
-**Highlights**
+Highlights:
   
-  * New feature: widgets 
+  o New feature: widgets 
     Widgets enable dynamic retrieval of Unit attributes, useful for creating
     things like a list of most recent posts or a list of archive links. They
     are Python functions stored in ``widgets.py`` in the project root directory.
 
-  * New feature: logging
+  o New feature: logging
     Users can now log their entire Volt run and log their custom engines,
     plugins, or widgets.
 
-  * New command: ``volt add``
+  o New command: ``volt add``
     ``volt add`` creates template files for writing custom engine, plugin, or
     widget, in the root project directory.
 
-  * Improved console messages.
+  o Improved console messages.
 
-  * New settings:
+  o New settings:
     - SITE.LOG_LEVEL
       Integer to set logging level, using values similar to Python's logging
       module.
@@ -43,67 +43,63 @@ Release date: TBD
     - SITE.TESTS
       List of custom Jinja2 tests.
 
-**Others**
-
-  * Changed/removed these setting names/values:
+  o Changed/removed these setting names/values:
     - {ENGINE}.CONTENT_DATETIME_FORMAT -> {ENGINE}.DATETIME_FORMAT
     - SITE.PLUGINS -> removed
     - VOLT.LAYOUT_DIR -> SITE.ASSET_DIR
     - default VOLT.ASSET_DIR value is ``assets``
     - default VOLT.CONTENT_DIR value changed to ``contents`` from ``content``
 
-  * Active engines must now define a ``units`` property method that returns all
+  o Active engines must now define a ``units`` property method that returns all
     its units.
 
-  * Engine.activate renamed to Engine.preprocess and is not an abstract method
+  o Engine.activate renamed to Engine.preprocess and is not an abstract method
     anymore.
 
-  * Plus many other internal code refactorizations and improvements.
+  o Plus many other internal code refactorizations and improvements.
 
-**Fixes**
+Fixes:
 
-  * ``volt serve`` now only runs ``volt gen`` once
+  o ``volt serve`` now only runs ``volt gen`` once
 
-  * All Volt commands work from anywhere inside a Volt project directory now
+  o All Volt commands work from anywhere inside a Volt project directory now
 
 
-------  
-v0.0.2
-------
+Version 0.0.2 (alpha)
+---------------------
 Release date: 2012-25-03
 
-**Highlights**
+Highlights:
 
-  * Preliminary support for more python versions: 3.2 and 2.6
+  o Preliminary support for more python Versions: 3.2 and 2.6
 
-  * Preliminary support for rSt and textile plugins
+  o Preliminary support for rSt and textile plugins
 
-  * Default configuration name changes:
-      - ``PACKS``          -> ``PAGINATIONS``
-      - ``POSTS_PER_PAGE`` -> ``UNITS_PER_PAGINATION``
-      - ``SORT``           -> ``SORT_KEY``
+  o Default configuration name changes:
+    - ``PACKS``          -> ``PAGINATIONS``
+    - ``POSTS_PER_PAGE`` -> ``UNITS_PER_PAGINATION``
+    - ``SORT``           -> ``SORT_KEY``
 
-**Others**
+  o ``volt serve`` now generates the site first before serving any contents.
 
-  * ``volt serve`` now generates the site first before serving any contents.
+  o PyYAML dependency removed.
 
-  * PyYAML dependency removed.
+  o Pygments is now an optional dependency.
 
-  * Pygments is now an optional dependency.
-
-  * Engines and Plugins now store their default settings as a class attribute.
+  o Engines and Plugins now store their default settings as a class attribute.
     Users can override this by creating a Config object with the designated
     name (the value of the Engine/Plugin class attribute 'USER_CONF_ENTRY')
     in the project's voltconf.py.
 
-**Fixes**
+Fixes:
 
-  * Windows terminal output does not display ANSI color codes anymore.
+  o Windows terminal output does not display ANSI color codes anymore.
 
-  * Volt server regeneration now works if voltconf.py is changed.
+  o Volt server regeneration now works if voltconf.py is changed.
 
 
-------  
-v0.0.1
-------
+Version 0.0.1 (alpha)
+---------------------
 Release date: 2012-06-03
+
+Highlights: First Volt release
