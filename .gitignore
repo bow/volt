@@ -2,6 +2,7 @@
 fabfile.py
 distribute-*
 distribute_setup25.py
+docs/build/
 build/
 volt/templates/sandbox/
 volt/templates/docs/
