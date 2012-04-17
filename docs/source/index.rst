@@ -6,12 +6,11 @@
 Welcome to Volt's documentation!
 ================================
 
-Contents:
+Intro
+Highlights
+Showcase
 
-.. toctree::
-   :maxdepth: 2
-
-
+.. include:: contents.rst.inc
 
 Indices and tables
 ==================
@@ -19,4 +18,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
