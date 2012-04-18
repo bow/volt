@@ -1,0 +1,14 @@
+coverage
+mock
+nose
+docutils
+textile
+markdown
+pygments
+
+#setup.py develop
+-e .
+
+# optional dev dependencies
+# Sphinx
+# tox

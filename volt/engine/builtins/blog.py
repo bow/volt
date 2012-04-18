@@ -18,9 +18,6 @@ from volt.config import Config
 from volt.engine.builtins import TextEngine
 
 
-__name__ = 'blog'
-
-
 class BlogEngine(TextEngine):
 
     """Engine for processing text files into a blog.

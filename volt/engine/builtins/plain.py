@@ -17,9 +17,6 @@ from volt.config import Config
 from volt.engine.builtins import TextEngine
 
 
-__name__ = 'plain'
-
-
 class PlainEngine(TextEngine):
 
     """Class for processing plain web pages."""
