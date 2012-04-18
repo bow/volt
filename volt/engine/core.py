@@ -386,7 +386,9 @@ class Engine(LoggableMixin):
             # this indicates a duplicate post, which could result in
             # unexpected results
             if os.path.exists(item.path):
-                message = "File %s already exists." % item.path
+                message = "File %s already exists. Make sure you have no other"\
+                          " entry with eg the same title leading to the same "\
+                          "file path." % item.path
                 self.logger.error(message)
                 raise IOError(message)
             else:
