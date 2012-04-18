@@ -23,9 +23,6 @@ from volt.config import Config
 from volt.plugin.core import Plugin
 
 
-_RE_SYNTAX = re.compile(r'(<syntax(.*?)>(.*?)</syntax>)', re.DOTALL)
-
-
 class SyntaxPlugin(Plugin):
 
     """Highlights code syntax using pygments.
@@ -35,10 +32,17 @@ class SyntaxPlugin(Plugin):
     It uses the pygments library to perform this feat, and can highlight any
     language recognized by pygments. If a 'lang=[language]' attribute is not
     specified, it will attempt to guess the language per pygments'
-    ``guess_lexer`` function.
+    ``guess_lexer`` function. Optionally, the plugin can also be set to
+    highlight any text enclosed in a <pre>(<code>)(</code>)</pre> tag. In this
+    case, the lexer will always guess what programming language is being
+    highlighted since it is not possible to specify one.
 
-    To avoid unintended results, this plugin should be run before any markup
-    processing plugin.
+    If the plugin is set to highlight <syntax> tag, it is recommended to be
+    run *prior* to any markup processing. Conversely, if the plugin is set
+    to highlight <pre>(<code>) tags it should be run *after* markup processing.
+    This is because the <pre>(<code>) tags are usually added by the markup
+    language. Running the plugin prior to markup processing is still possible
+    if the user explicitly sets the <pre>(<code>) tags.
 
     Options for this plugin configurable via voltconf.py are:
 
@@ -57,6 +61,8 @@ class SyntaxPlugin(Plugin):
         `UNIT_FIELD`
             String indicating which unit field to process, defaults to
             'content'.
+        `SYNTAX_TAG`
+            Boolean indicating whether to use <syntax> tag or not.
     """
 
     DEFAULTS = Config(
@@ -69,17 +75,26 @@ class SyntaxPlugin(Plugin):
             LINENO = True,
             # unit field to process
             UNIT_FIELD =  'content',
+            # whether to use the <syntax> (explicit highlighting) tag or
+            # <pre><code> tag (implicit highlighting)
+            # defaults to False (no <syntax> tag)
+            SYNTAX_TAG = False,
     )
 
     USER_CONF_ENTRY = 'PLUGIN_SYNTAX'
 
     def run(self, engine):
         """Process the given units."""
+        if self.config.SYNTAX_TAG:
+            pattern = re.compile(r'(<syntax(.*?)>(.*?)</syntax>)', re.DOTALL)
+        else:
+            pattern = re.compile(r'(<pre>(?:<code>)?(.*?)(?:</code>)?</pre>)', re.DOTALL)
+
         for unit in engine.units:
             # get content from unit
             string = getattr(unit, self.config.UNIT_FIELD)
             # highlight syntax in content
-            string = self.highlight_syntax(string)
+            string = self.highlight_code(string, pattern)
             # override original content with syntax highlighted
             setattr(unit, self.config.UNIT_FIELD, string)
 
@@ -89,25 +104,35 @@ class SyntaxPlugin(Plugin):
         with open(css_file, 'w') as target:
             target.write(css)
 
-    def highlight_syntax(self, string):
-        """Highlights syntaxes in the given string.
+    def highlight_code(self, string, pattern):
+        """Highlights syntaxes in the given string enclosed in a <syntax> tag.
 
-        string -- string containing the code to highlight.
+        string -- String containing the code to highlight.
+        pattern -- Compiled regex object for highlight pattern matching.
         
         """
-        codeblocks = re.findall(_RE_SYNTAX, string)
-        # results: list of tuples of 3 items
+        codeblocks = re.findall(pattern, string)
+        # results: list of tuples of 2 or 3 items
         # item[0] is the whole code block (syntax tag + code to highlight)
-        # item[1] is the programming language
+        # item[1] is the programming language (optional, depends on settings)
         # item[2] is the code to highlight
 
         if codeblocks:
-            for match, lang, code in codeblocks:
+            for codeblock in codeblocks:
+                # if enclosed in <syntax>, we have three tuples
+                if self.config.SYNTAX_TAG:
+                    match, lang, code = codeblock
+                # if enclosed in <pre><code>, lang is always None
+                else:
+                    match, code = codeblock
+                    lang = None
+
                 if lang:
                     lang = re.sub(r'\s|lang|=|\"|\'', '', lang)
                     lexer = get_lexer_by_name(lang.lower(), stripall=True)
                 else:
                     lexer = guess_lexer(code, stripall=True)
+
                 formatter = HtmlFormatter(linenos=self.config.LINENO, \
                         cssclass=self.config.CSS_CLASS)
                 highlighted = highlight(code, lexer, formatter)
