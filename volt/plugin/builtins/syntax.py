@@ -4,7 +4,7 @@
 volt.plugin.builtins.syntax
 ---------------------------
 
-Syntax highlighter processor plugin for Volt.
+Syntax highlighter plugin for Volt.
 
 :copyright: (c) 2012 Wibowo Arindrarto <bow@bow.web.id>
 :license: BSD
@@ -18,6 +18,7 @@ import re
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name, guess_lexer
 from pygments.formatters import HtmlFormatter
+from pygments.util import ClassNotFound
 
 from volt.config import Config
 from volt.plugin.core import Plugin
@@ -27,114 +28,135 @@ class SyntaxPlugin(Plugin):
 
     """Highlights code syntax using pygments.
 
-    This plugin adds the necessary HTML tags to any text enclosed in a
-    in a <syntax></syntax> tag so that its syntaxes are highlighted.
-    It uses the pygments library to perform this feat, and can highlight any
-    language recognized by pygments. If a 'lang=[language]' attribute is not
-    specified, it will attempt to guess the language per pygments'
-    ``guess_lexer`` function. Optionally, the plugin can also be set to
-    highlight any text enclosed in a <pre>(<code>)(</code>)</pre> tag. In this
-    case, the lexer will always guess what programming language is being
-    highlighted since it is not possible to specify one.
+    This plugin performs syntax highlighting for text enclosed in a <pre> or
+    <pre><code> tag. Syntax language can be guessed by the underlying lexer
+    (pygments.lexer) or set explicitly using a 'lang' attribute in the
+    enclosing <pre> tag.
 
-    If the plugin is set to highlight <syntax> tag, it is recommended to be
-    run *prior* to any markup processing. Conversely, if the plugin is set
-    to highlight <pre>(<code>) tags it should be run *after* markup processing.
-    This is because the <pre>(<code>) tags are usually added by the markup
-    language. Running the plugin prior to markup processing is still possible
-    if the user explicitly sets the <pre>(<code>) tags.
+    For example:
+
+        <pre lang="python">
+        print "This is highlighted!"
+        </pre>
+
+    will highlight the <pre> tag-enclosed text using a python lexer.
+
+    Ideally, this plugin is run after markup language processing has been done.
 
     Options for this plugin configurable via voltconf.py are:
-
-        `CSS_CLASS`
-            String indicating the CSS class of the highlighted syntax, defaults
-            to 'syntax'.
 
         `CSS_FILE`
             String indicating absolute path to the CSS file output, defaults to
             syntax_highlight.css in the current directory.
 
-        `LINENO`
-            Boolean indicating whether to output line numbers, defaults to
-            True.
-
         `UNIT_FIELD`
             String indicating which unit field to process, defaults to
             'content'.
-        `SYNTAX_TAG`
-            Boolean indicating whether to use <syntax> tag or not.
+
+        `PYGMENTS_LEXER`
+            Dictionary of pygments lexer configurations, as outlined here:
+            http://pygments.org/docs/lexers/
+
+        `PYGMENTS_HTML`
+            Dictionary of pygments HTMLFormatter configurations, as outlined here:
+            http://pygments.org/docs/formatters/
+
+        `EXTRA_CLASS`
+            String of list of strings of extra css classes to append to the
+            highlighted css selectors.
     """
 
     DEFAULTS = Config(
-            # class name for the highlighted syntax block
-            CSS_CLASS = 'syntax',
             # css output for syntax highlight
             # defaults to current directory
             CSS_FILE = os.path.join(os.getcwd(), 'syntax_highlight.css'),
-            # whether to output line numbers
-            LINENO = True,
             # unit field to process
             UNIT_FIELD =  'content',
-            # whether to use the <syntax> (explicit highlighting) tag or
-            # <pre><code> tag (implicit highlighting)
-            # defaults to False (no <syntax> tag)
-            SYNTAX_TAG = False,
+            # 
+            # options for pygments' lexers, following its defaults
+            PYGMENTS_LEXER = {
+                'stripall': False,
+                'stripnl': True,
+                'ensurenl': True,
+                'tabsize': 0,
+            },
+            # options for pygments' HTMLFormatter, following its defaults
+            PYGMENTS_HTML = {
+                'nowrap': False,
+                'full': False,
+                'title': '',
+                'style': 'default',
+                'noclasses': False,
+                'classprefix': '',
+                'cssclass': 'highlight',
+                'csstyles': '',
+                'prestyles': '',
+                'cssfile': '',
+                'noclobber_cssfile': False,
+                'linenos': False,
+                'hl_lines': [],
+                'linenostart': 1,
+                'linenostep': 1,
+                'linenospecial': 0,
+                'nobackground': False,
+                'lineseparator': "\n",
+                'lineanchors': '',
+                'anchorlinenos': False,
+            },
+            # list of additional css classes for highlighted code
+            EXTRA_CLASS = ['.highlight'],
     )
 
     USER_CONF_ENTRY = 'PLUGIN_SYNTAX'
 
     def run(self, engine):
         """Process the given units."""
-        if self.config.SYNTAX_TAG:
-            pattern = re.compile(r'(<syntax(.*?)>(.*?)</syntax>)', re.DOTALL)
-        else:
-            pattern = re.compile(r'(<pre>(?:<code>)?(.*?)(?:</code>)?</pre>)', re.DOTALL)
+        # build regex patterns
+        pattern = re.compile(r'(<pre(.*?)>(?:<code>)?(.*?)(?:</code>)?</pre>)', re.DOTALL)
+        lang_pattern = re.compile(r'\s|lang|=|\"|\'')
 
         for unit in engine.units:
             # get content from unit
             string = getattr(unit, self.config.UNIT_FIELD)
             # highlight syntax in content
-            string = self.highlight_code(string, pattern)
+            string = self.highlight_code(string, pattern, lang_pattern)
             # override original content with syntax highlighted
             setattr(unit, self.config.UNIT_FIELD, string)
 
         # write syntax highlight css file
-        css = HtmlFormatter().get_style_defs('.' + self.config.CSS_CLASS)
+        css = HtmlFormatter(**self.config.PYGMENTS_HTML).get_style_defs(self.config.EXTRA_CLASS)
         css_file = self.config.CSS_FILE
         with open(css_file, 'w') as target:
             target.write(css)
 
-    def highlight_code(self, string, pattern):
+    def highlight_code(self, string, pattern, lang_pattern):
         """Highlights syntaxes in the given string enclosed in a <syntax> tag.
 
         string -- String containing the code to highlight.
         pattern -- Compiled regex object for highlight pattern matching.
+        lang_pattern -- Compiled regex for obtaining language name (if provided)
         
         """
         codeblocks = re.findall(pattern, string)
         # results: list of tuples of 2 or 3 items
         # item[0] is the whole code block (syntax tag + code to highlight)
-        # item[1] is the programming language (optional, depends on settings)
+        # item[1] is the programming language (optional, depends on usage)
         # item[2] is the code to highlight
 
         if codeblocks:
-            for codeblock in codeblocks:
-                # if enclosed in <syntax>, we have three tuples
-                if self.config.SYNTAX_TAG:
-                    match, lang, code = codeblock
-                # if enclosed in <pre><code>, lang is always None
-                else:
-                    match, code = codeblock
-                    lang = None
-
+            for match, lang, code in codeblocks:
                 if lang:
-                    lang = re.sub(r'\s|lang|=|\"|\'', '', lang)
-                    lexer = get_lexer_by_name(lang.lower(), stripall=True)
+                    lang = re.sub(lang_pattern, '', lang)
+                    try:
+                        lexer = get_lexer_by_name(lang.lower(), **self.config.PYGMENTS_LEXER)
+                    # if the lang is not supported or has a typo
+                    # let pygments guess the language
+                    except ClassNotFound:
+                        lexer = guess_lexer(code, **self.config.PYGMENTS_LEXER)
                 else:
-                    lexer = guess_lexer(code, stripall=True)
+                    lexer = guess_lexer(code, **self.config.PYGMENTS_LEXER)
 
-                formatter = HtmlFormatter(linenos=self.config.LINENO, \
-                        cssclass=self.config.CSS_CLASS)
+                formatter = HtmlFormatter(**self.config.PYGMENTS_HTML)
                 highlighted = highlight(code, lexer, formatter)
                 # add 1 arg because replacement should only be done
                 # once for each match
