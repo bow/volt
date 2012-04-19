@@ -4,6 +4,8 @@ recursive-include extras *
 recursive-include volt *
 recursive-exclude volt *.class
 recursive-exclude volt *.pyc
+recursive-exclude volt *.log
+recursive-exclude volt *.swp
 recursive-exclude . .coverage
 recursive-exclude .  htmlcov
 prune .tox
