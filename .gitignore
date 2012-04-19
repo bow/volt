@@ -1,4 +1,5 @@
 # general / os-specific
+*.pyc
 *.swp
 *.gz
 .DS_STORE
