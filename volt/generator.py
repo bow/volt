@@ -241,24 +241,18 @@ class Generator(LoggableMixin):
 
 def run():
     """Generates the site."""
-
     logger = logging.getLogger('gen')
 
-    if CONFIG.SITE.ENGINES:
-        sys.stdout.write("\n")
-        message = "Volt %s Static Site Generator" % VERSION
-        console(message, is_bright=True)
-        logger.debug(message)
+    sys.stdout.write("\n")
+    message = "Volt %s Static Site Generator" % VERSION
+    console(message, is_bright=True)
+    logger.debug(message)
 
-        # generate the site!
-        start_time = time()
-        Generator().main()
+    # generate the site!
+    start_time = time()
+    Generator().main()
 
-        message = "Site generated in %.3fs" % (time() - start_time)
-        console(message, color='yellow')
-        logger.debug(message)
-        sys.stdout.write('\n')
-    else:
-        message = "All engines are off. Nothing to generate."
-        console(message, is_bright=True, color='red')
-        logger.debug(message)
+    message = "Site generated in %.3fs" % (time() - start_time)
+    console(message, color='yellow')
+    logger.debug(message)
+    sys.stdout.write('\n')

@@ -173,12 +173,20 @@ class Runner(LoggableMixin):
 
     def run_gen(self):
         """Generates the static site."""
-        generator.run()
+        if not CONFIG.SITE.ENGINES:
+            message = "All engines are inactive -- nothing to generate."
+            console(message, is_bright=True, color='red')
+        else:
+            generator.run()
 
     def run_serve(self):
         """Generates the static site, and if successful, runs the Volt server."""
         self.run_gen()
-        server.run()
+        if not os.path.exists(CONFIG.VOLT.SITE_DIR):
+            message = "Site directory not found -- nothing to serve."
+            console(message, is_bright=True, color='red')
+        else:
+            server.run()
 
     def run_version(self):
         """Shows version number."""
@@ -207,10 +215,12 @@ def main(cli_arglist=None):
         logger.debug("running: %s" % cmd.name)
         cmd.run()
     except ConfigNotFoundError:
-        message = "You can only run 'volt %s' inside a Volt project directory" % \
+        message = "You can only run 'volt %s' inside a Volt project directory." % \
                 cmd.name
         console("Error: %s" % message, color='red', is_bright=True)
-        console("Start a Volt project by running 'volt init'")
+        console("Start a Volt project by running 'volt init' inside an empty directory.")
 
         if os.path.exists('volt.log'):
             os.remove('volt.log')
+
+        sys.exit(1)

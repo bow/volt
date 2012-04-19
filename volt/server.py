@@ -61,12 +61,6 @@ class VoltHTTPServer(ThreadingTCPServer, LoggableMixin):
         a file inside these directories are modified.
 
         """
-        if not os.path.exists(CONFIG.VOLT.SITE_DIR):
-            message = "Site directory not found. Nothing to serve."
-            console(message, color='red', is_bright=True)
-            self.logger.debug(message)
-            sys.exit(0)
-
         self.last_mtime = self.check_dirs_mtime()
         ThreadingTCPServer.__init__(self, *args, **kwargs)
         self.logger.debug('created: %s' % type(self).__name__)
