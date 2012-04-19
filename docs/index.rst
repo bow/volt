@@ -55,36 +55,59 @@ ways. By default, the set of posts is taken from a directory named
 according to the engine, ie, the 'blog' engine handles all posts that
 are in the `contents/blog' directory.
 
-URL specifies a relative (to the site URL) path in which the posts
-    will appear.  For instance, if your ENGINE_PLAIN configuration has
-    an `URL` setting `/page`, your static pages will appear under
-    SITE_URL/page.
+**URL**
+    The engine's URL specifies a relative (to the site URL) path in
+    which the posts will appear.  For instance, if your ENGINE_PLAIN
+    configuration has an `URL` setting `/page`, your static pages will
+    appear under SITE_URL/page.
 
-PERMALINK Each post has a canonical URL associated, under which it
-    will be found.  This setting specifies the permalink pattern of
-    articles for this engine. It allows the use of variables. The
-    permalink pattern is appended to the SITE_URL/ENGINE_URL/ pattern.
-    Examples of possible variables are:
+**PERMALINK**
+    Each post has a canonical URL associated, under which it will be
+    found.  This setting specifies the permalink pattern of articles
+    for this engine. It allows the use of variables. The permalink
+    pattern is appended to the SITE_URL/ENGINE_URL/ pattern.  Examples
+    of possible variables are:
 
     * {slug}
 
     :todo: what else is possible?
     
-PLUGINS
+**PLUGINS**
 
     :todo: TODO
 
-WIDGETS
+**WIDGETS**
 
     :todo: TODO
 
-UNITS_PER_PAGINATION
+**UNITS_PER_PAGINATION**
 
     :todo: TODO
 
-PAGINATIONS
+**PAGINATIONS**
     ('','tag/{tags}', '{time:%Y/%m/%d}', '{time:%Y/%m}', '{time:%Y}'),
+
     :todo: TODO
+
+**GLOBAL_FIELDS**
+    If you use e.g. {tags} in your PAGINATIONS setting, all posts will
+    have to have a tags attriute set, or volt will refuse to generate
+    your site. You can avoid this by setting default values for
+    attributes in case they are not explicitely specified. This is
+    what the `GLOBAL_FIELDS` option is for.
+
+    :todo: can this also be specified in a SITE Config, or is it
+           limited to ENGINES?
+
+    You can specify a GLOBAL_FIELDS option in the engine Config. This
+    will set all Units in your blog engine that does not have a tags
+    attribute to have a tags attribute with 'uncategorized' as the
+    value. This way, you can set a default tag for all your blog posts
+    and only have an explicit declaration for posts that you want.
+    For example:
+
+        GLOBAL_FIELDS = {'tags': 'uncategorized'},
+    
 
 Pagination
 ++++++++++
