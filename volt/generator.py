@@ -227,7 +227,8 @@ class Generator(LoggableMixin):
             template = CONFIG.SITE.TEMPLATE_ENV.get_template(filename)
             path = os.path.join(CONFIG.VOLT.SITE_DIR, filename)
             if os.path.exists(path):
-                message = "'%s' already exists." % path
+                message = "File %s already exists. Make sure there are no "\
+                          "other entries leading to this file path." % path
                 console("Error: %s" % message, is_bright=True, color='red')
                 self.logger.error(message)
                 sys.exit(1)
