@@ -182,7 +182,7 @@ class Runner(LoggableMixin):
 
     def run_version(self):
         """Shows version number."""
-        console("Volt %s\n" % VERSION)
+        console("Volt %s" % VERSION)
 
 
 def main(cli_arglist=None):
@@ -196,10 +196,11 @@ def main(cli_arglist=None):
         cmd = session.build_parsers().parse_args(cli_arglist)
 
         # only build logger if we're not starting a new project
-        if cmd.name not in ['demo', 'init']:
+        # or just checking version
+        if cmd.name not in ['demo', 'init', 'version']:
             session.build_logger()
             # attach parsed object to the package-wide config
-            CONFIG.CMD = cmd
+            setattr(CONFIG, 'CMD', cmd)
             os.chdir(CONFIG.VOLT.ROOT_DIR)
 
         logger = logging.getLogger('main')
