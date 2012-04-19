@@ -17,3 +17,4 @@ distribute_setup25.py
 ROADMAP
 volt/templates/sandbox/
 volt/templates/docs/
+docs/_build/
