@@ -66,7 +66,11 @@ def github_search():
         {% endfor %}
     """
     import json
-    import urllib
+    try: #try python3 first
+        from urllib.request import urlopen
+        from urllib.parse import urlencode
+    except ImportError: # fallback to python2
+        from urllib import urlencode, urlopen
     from datetime import datetime
     from volt.utils import console
 
@@ -76,9 +80,9 @@ def github_search():
     base_url = 'http://github.com/api/v2/json/repos/search/'
 
     # retrieve search results using urllib and json
-    query = '%s%s' % (query_string.replace(' ', '+'), '?' + urllib.urlencode(args))
+    query = '%s%s' % (query_string.replace(' ', '+'), '?' + urlencode(args))
     try:
-        response = urllib.urlopen(base_url + query).read()
+        response = urlopen(base_url + query).read().decode('utf-8')
     except IOError:
         console("WARNING: github_search can not connect to the internet.\n", \
                 color='red', is_bright=True)
