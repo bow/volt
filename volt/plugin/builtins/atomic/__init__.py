@@ -13,6 +13,7 @@ Atom feed generator plugin.
 
 from __future__ import with_statement
 import os
+import sys
 from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
@@ -75,4 +76,6 @@ class AtomicPlugin(Plugin):
         # render and write to output file
         rendered = template.render(units=engine.units[:10], CONFIG=CONFIG, time=time)
         with open(self.config.OUTPUT_FILE, 'w') as target:
+            if sys.version_info[0] < 3:
+                rendered = rendered.encode('utf-8')
             target.write(rendered)
