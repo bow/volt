@@ -38,7 +38,7 @@ _REQUIRED_ENGINE_PAGINATIONS = ('PAGINATIONS', 'UNITS_PER_PAGINATION',)
 # regex objects for unit header and permalink processing
 _RE_DELIM = re.compile(r'^---$', re.MULTILINE)
 _RE_SPACES = re.compile(r'\s([A|a]n??)\s|_|\s+')
-_RE_PRUNE = re.compile(r'A-|An-|[\!"#\$%&\'\(\)\*\+\,\./:;<=>\?@\[\\\]\^`\{\|\}~]')
+_RE_PRUNE = re.compile(r'A-|An-|[^a-zA-Z0-9_-]')
 _RE_MULTIPLE = re.compile(r'-+')
 _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
@@ -455,23 +455,15 @@ class Page(LoggableMixin):
         """Returns a slugified version of the given string."""
         string = string.strip()
 
+        # perform user-defined character mapping
+        for target in CONFIG.SITE.SLUG_CHAR_MAP:
+            string = string.replace(target, CONFIG.SITE.SLUG_CHAR_MAP[target])
+
         # replace spaces, etc with dash
         string = re.sub(_RE_SPACES, '-', string)
 
-        # remove english articles, bad chars, and dashes in front and end
+        # remove english articles, and non-ascii characters
         string = re.sub(_RE_PRUNE, '', string)
-
-        # error if there are non-ascii chars
-        try:
-            if sys.version_info[0] > 2:
-                assert all(ord(c) < 128 for c in string)
-            else:
-                string.decode('ascii')
-        except (UnicodeDecodeError, UnicodeEncodeError, AssertionError):
-            message = "Slug in '%s' contains non-ascii characters." % self.id
-            self.logger.error(message)
-            self.logger.debug(format_exc())
-            raise
 
         # slug should not begin or end with dash or contain multiple dashes
         string = re.sub(_RE_MULTIPLE, '-', string)

@@ -37,6 +37,7 @@ def make_uniconfig_mock():
             'SITE_DIR': os.path.join(USER_DIR, 'site'),
            }
     SITE = {'URL': 'http://foo.com',
+            'SLUG_CHAR_MAP': {},
             'PAGINATION_URL': '',
             'TEMPLATE_ENV': Environment(\
                 loader=FileSystemLoader(VOLT['TEMPLATE_DIR']))

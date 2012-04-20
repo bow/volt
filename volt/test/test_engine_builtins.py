@@ -49,7 +49,7 @@ class TextEngineCases(unittest.TestCase):
         engine.units
         TextUnit_mock.assert_has_calls(calls, any_order=True)
 
-
+@patch('volt.engine.core.CONFIG', MagicMock())
 class TextUnitCases(unittest.TestCase):
 
     @patch.object(TestTextUnit, 'check_required', MagicMock())

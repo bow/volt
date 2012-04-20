@@ -299,19 +299,23 @@ class PageCases(unittest.TestCase):
         repr = self.page.__repr__()
         self.assertEqual(repr, 'TestPage(test)')
 
-    def test_slugify_error(self):
+    @patch('volt.engine.core.CONFIG', MagicMock())
+    def test_slugify_empty(self):
         slugify = self.page.slugify
-        cases = ['Röyksopp - Eple', '宇多田ヒカル', '&**%&^%&$-']
+        cases = ['宇多田ヒカル', '&**%&^%&$-', u'ßÀœø']
+        for case in cases:
+            self.assertRaises(ValueError, slugify, case)
 
-        if sys.version_info[0] < 3:
-            self.assertRaises(UnicodeDecodeError, slugify, cases[0])
-            self.assertRaises(UnicodeDecodeError, slugify, cases[1])
-        else:
-            for case in cases[:-1]:
-                self.assertRaises(AssertionError, slugify, case)
-        
-        self.assertRaises(ValueError, slugify, cases[2])
+    @patch('volt.engine.core.CONFIG')
+    def test_slugify_char_map_ok(self, config_mock):
+        slugify = self.page.slugify
+        setattr(config_mock, 'SITE', Config())
+        config_mock.SITE.SLUG_CHAR_MAP = {u'ß': 'ss', u'ø': 'o'}
+        self.assertEqual(slugify(u'viel-spaß'), 'viel-spass')
+        self.assertEqual(slugify(u'Røyksopp'), 'royksopp')
+        self.assertEqual(slugify(u'ßnakeørama'), 'ssnakeorama')
 
+    @patch('volt.engine.core.CONFIG', MagicMock())
     def test_slugify_ok(self):
         slugify = self.page.slugify
         self.assertEqual(slugify('Move along people, this is just a test'),
@@ -394,10 +398,12 @@ class UnitCases(unittest.TestCase):
         del self.unit.config.URL
         self.assertRaises(AttributeError, getattr, self.unit, 'permalist')
 
+    @patch('volt.engine.core.CONFIG', MagicMock())
     def test_permalist_error(self):
         self.unit.config.PERMALINK = 'bali/{beach}/party'
         self.assertRaises(AttributeError, getattr, self.unit, 'permalist')
 
+    @patch('volt.engine.core.CONFIG', MagicMock())
     def test_permalist_ok_all_token_is_attrib(self):
         self.unit.slug = 'yo-dawg'
         self.unit.time = datetime(2009, 1, 28, 16, 47)
@@ -405,6 +411,7 @@ class UnitCases(unittest.TestCase):
         self.assertEqual(self.unit.permalist, \
                 ['', '2009', '01', '28', 'yo-dawg'])
 
+    @patch('volt.engine.core.CONFIG', MagicMock())
     def test_permalist_ok_nonattrib_token(self):
         self.unit.slug = 'yo-dawg'
         self.unit.time = datetime(2009, 1, 28, 16, 47)
@@ -412,6 +419,7 @@ class UnitCases(unittest.TestCase):
         self.assertEqual(self.unit.permalist, \
                 ['', '2009', 'mustard', '01', 'yo-dawg'])
 
+    @patch('volt.engine.core.CONFIG', MagicMock())
     def test_permalist_ok_space_in_token(self):
         self.unit.config.PERMALINK = 'i/love /mustard'
         self.assertEqual(self.unit.permalist, \

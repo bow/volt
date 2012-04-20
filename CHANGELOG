@@ -47,6 +47,9 @@ Highlights:
       List of custom Jinja2 filters.
     - SITE.TESTS
       List of custom Jinja2 tests.
+    - SITE.SLUG_CHAR_MAP
+      Dictionary of characters to replace in a slug, useful for specifying
+      custom non-ascii character replacements
 
   o Changed/removed these setting names/values:
     - {ENGINE}.CONTENT_DATETIME_FORMAT -> {ENGINE}.DATETIME_FORMAT

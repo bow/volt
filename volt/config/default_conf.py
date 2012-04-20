@@ -74,6 +74,14 @@ SITE = Config(
     # to site directory
     IGNORE_PATTERN = '',
 
+    # String replacement scheme for slugs
+    # Dictionary, key is the string to replace, value is the replacement string
+    # This is used to replace non-ascii consonants or vowels in a slug with
+    # their ascii equivalents, so the slug meaning is preserved.
+    # For example {u'ß': 'ss'}, would transfrom the slug "viel-Spaß" to
+    # "viel-spass" instead of "viel-spa", preserving its meaning
+    SLUG_CHAR_MAP = {},
+
     # Site plugins
     # These are plugins that work on the whole site
     PLUGINS = (),

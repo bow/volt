@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Volt configurations file
 
 import os
