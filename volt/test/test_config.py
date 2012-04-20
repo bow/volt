@@ -78,5 +78,6 @@ class UnifiedConfigRootDirCases(unittest.TestCase):
         self.assertEqual(self.get_root_dir('voltconf.py', start_dir), USER_DIR)
 
     def test_get_root_dir_error(self):
+        os.chdir(INSTALL_DIR)
         self.assertRaises(ConfigNotFoundError, self.get_root_dir, \
                 'voltconf.py', INSTALL_DIR)

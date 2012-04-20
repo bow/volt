@@ -153,7 +153,7 @@ class UnifiedConfig(LoggableMixin):
         setattr(self.SITE, 'TEMPLATE_ENV', env)
 
     @classmethod
-    def get_root_dir(self, conf_name, start_dir=os.getcwd()):
+    def get_root_dir(self, conf_name, start_dir=None):
         """Returns the root directory of a Volt project.
 
         conf_name -- User configuration filename
@@ -165,6 +165,10 @@ class UnifiedConfig(LoggableMixin):
         '/', raise ConfigNotFoundError.
 
         """
+        # default start_dir setting moved here to facillitate testing
+        if not start_dir:
+            start_dir = os.getcwd()
+
         # raise error if search goes all the way to root without any results
         if os.path.dirname(start_dir) == start_dir:
             raise ConfigNotFoundError("Failed to find Volt config file in "
