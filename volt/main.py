@@ -80,10 +80,6 @@ class Runner(LoggableMixin):
                 help="adds template for custom engine, plugin, or widget")
         add_parser.add_argument('template', type=str, choices=['engine', 'plugin', 'widget'])
 
-        # parser for init
-        init_parser = subparsers.add_parser('init',
-                help="starts a bare Volt project")
-
         # parser for demo
         demo_parser = subparsers.add_parser('demo',
                 help="quick Volt demo")
@@ -91,6 +87,10 @@ class Runner(LoggableMixin):
         # parser for gen
         gen_parser = subparsers.add_parser('gen',
                 help="generates Volt site using the specified engines")
+
+        # parser for init
+        init_parser = subparsers.add_parser('init',
+                help="starts a bare Volt project")
 
         # parser for serve
         serve_parser = subparsers.add_parser('serve',
