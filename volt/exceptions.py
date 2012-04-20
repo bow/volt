@@ -17,4 +17,4 @@ class ConfigNotFoundError(Exception):
 
 # Volt engine warning and exceptions
 class EmptyUnitsWarning(RuntimeWarning):
-    """Issued when build_packs is called without any units to pack in self.units."""
+    """Issued when paginations is called without any units to pack in self.units."""

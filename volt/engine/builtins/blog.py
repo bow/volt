@@ -27,8 +27,7 @@ class BlogEngine(TextEngine):
     configuration. They are then chained together by adding to each unit
     permalinks that link to the previous and/or next units.
 
-    It also build packs (different combinations of units according to their
-    header field) and paginates them according to the settings in voltconf.py
+    It also creates paginations according to the settings in voltconf.py
 
     """
 
