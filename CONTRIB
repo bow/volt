@@ -6,5 +6,7 @@ everyone here :).
 
 
 Sebastian Spaeth (@spaetz)
-    - Python3-related bug fixes
+    - Fix: Python 3 urllib import errors in the demo widget
+    - Fix: Python 3 character encoding errors in the builtin atomic plugin
+    - Fix: 'volt serve' errors after 'volt init' if no widgets are present
     - General improvements
