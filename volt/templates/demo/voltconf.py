@@ -22,7 +22,10 @@ SITE = Config(
     ENGINES = ('blog', 'plain', ),
 
     # Non-engine widgets
-    WIDGETS = ('github_search',),
+    WIDGETS = (
+        'active_engines',
+        #'github_search',
+    ),
 
     # Jinja2 filters
     FILTERS = ('taglist', ),
@@ -39,7 +42,9 @@ ENGINE_PLAIN = Config(
     PERMALINK = '{slug}',
 
     # Plugins to be run on plain units
-    PLUGINS = ('markdown_parser', ),
+    PLUGINS = (
+        'markdown_parser',
+    ),
 )
 
 
@@ -53,10 +58,16 @@ ENGINE_BLOG = Config(
     PERMALINK = '{time:%Y/%m/%d}/{slug}',
 
     # Plugins to be run on blog units
-    PLUGINS = ('markdown_parser', 'atomic', ),
+    PLUGINS = (
+        'markdown_parser',
+        #'atomic',
+    ),
 
     # Widgets to be created from blog units
-    WIDGETS = ('latest_posts', 'monthly_archive',),
+    WIDGETS = (
+        'monthly_archive',
+        #'latest_posts',
+    ),
 
     # The number of displayed posts per pagination page
     UNITS_PER_PAGINATION = 10,

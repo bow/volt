@@ -31,16 +31,20 @@ from volt.utils import cachedproperty, console, path_import, write_file, Loggabl
 console = partial(console, format="[gen] %s  %s\n")
 
 
-class Generator(LoggableMixin):
+class Site(LoggableMixin):
 
-    """Class representing a Volt run."""
+    """Class representing a Volt site generation run."""
 
     def __init__(self):
         self.engines = {}
         self.plugins = {}
         self.widgets = {}
 
-    def main(self):
+    @cachedproperty
+    def config(self):
+        return CONFIG
+
+    def create(self):
         """Generates the static site.
 
         This method consists of three distinct steps that results in the final
@@ -84,7 +88,7 @@ class Generator(LoggableMixin):
 
         # load engine or plugin
         # user_path has priority over volt_path
-        user_dir = CONFIG.VOLT.ROOT_DIR
+        user_dir = self.config.VOLT.ROOT_DIR
         user_path = os.path.join(user_dir, processor_type)
         volt_path = os.path.join(volt_dir, processor_type[:-1], 'builtins')
 
@@ -104,10 +108,10 @@ class Generator(LoggableMixin):
         message = "Preparing 'site' directory"
         console(message)
         self.logger.debug(message)
-        if os.path.exists(CONFIG.VOLT.SITE_DIR):
-            shutil.rmtree(CONFIG.VOLT.SITE_DIR)
-        shutil.copytree(CONFIG.VOLT.ASSET_DIR, CONFIG.VOLT.SITE_DIR, \
-                ignore=shutil.ignore_patterns(CONFIG.SITE.IGNORE_PATTERN))
+        if os.path.exists(self.config.VOLT.SITE_DIR):
+            shutil.rmtree(self.config.VOLT.SITE_DIR)
+        shutil.copytree(self.config.VOLT.ASSET_DIR, self.config.VOLT.SITE_DIR, \
+                ignore=shutil.ignore_patterns(self.config.SITE.IGNORE_PATTERN))
 
     def run_engines(self):
         """Runs all engines and plugins according to the configurations.
@@ -138,7 +142,7 @@ class Generator(LoggableMixin):
                creation, if defined for an engine, are done during this step
                prior to writing.
         """
-        for engine_name in CONFIG.SITE.ENGINES:
+        for engine_name in self.config.SITE.ENGINES:
             engine_class = self.get_processor(engine_name, 'engines')
             engine = engine_class()
             message = "Engine loaded: %s" % engine_name.capitalize()
@@ -163,6 +167,7 @@ class Generator(LoggableMixin):
                     (engine.lower(), self.engines[engine].config.URL)
             console(message)
             self.logger.debug(message)
+            # attach all widgets to each engine, so they can access it in their templates
             self.engines[engine].widgets = self.widgets
             self.engines[engine].dispatch()
 
@@ -189,7 +194,7 @@ class Generator(LoggableMixin):
     @cachedproperty
     def widgets_mod(self):
         self.logger.debug('imported: widgets module')
-        return path_import('widgets', CONFIG.VOLT.ROOT_DIR)
+        return path_import('widgets', self.config.VOLT.ROOT_DIR)
 
     def create_widgets(self, engine=None):
         """Creates engine widgets from its units."""
@@ -199,7 +204,7 @@ class Generator(LoggableMixin):
             except AttributeError:
                 return
         else:
-            widgets = CONFIG.SITE.WIDGETS
+            widgets = self.config.SITE.WIDGETS
 
         for widget in widgets:
             console("Creating widget: %s" % widget)
@@ -212,20 +217,22 @@ class Generator(LoggableMixin):
                 raise
 
             if engine is not None:
-                self.widgets[widget] = widget_func(engine.units)
+                # engine widgets work on their engine instances
+                self.widgets[widget] = widget_func(engine)
             else:
-                self.widgets[widget] = widget_func()
+                # site widgets work on this site instance
+                self.widgets[widget] = widget_func(self)
             self.logger.debug("created: %s widget" % widget)
 
     def write_extra_pages(self):
         """Write nonengine pages, such as a separate index.html or 404.html."""
-        for filename in CONFIG.SITE.EXTRA_PAGES:
+        for filename in self.config.SITE.EXTRA_PAGES:
             message = "Writing extra page: '%s'" % filename
             console(message)
             self.logger.debug(message)
 
-            template = CONFIG.SITE.TEMPLATE_ENV.get_template(filename)
-            path = os.path.join(CONFIG.VOLT.SITE_DIR, filename)
+            template = self.config.SITE.TEMPLATE_ENV.get_template(filename)
+            path = os.path.join(self.config.VOLT.SITE_DIR, filename)
             if os.path.exists(path):
                 message = "File %s already exists. Make sure there are no "\
                           "other entries leading to this file path." % path
@@ -233,7 +240,7 @@ class Generator(LoggableMixin):
                 self.logger.error(message)
                 sys.exit(1)
 
-            rendered = template.render(page={}, widgets=self.widgets, CONFIG=CONFIG)
+            rendered = template.render(page={}, widgets=self.widgets, CONFIG=self.config)
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
             write_file(path, rendered)
@@ -250,7 +257,7 @@ def run():
 
     # generate the site!
     start_time = time()
-    Generator().main()
+    Site().create()
 
     message = "Site generated in %.3fs" % (time() - start_time)
     console(message, color='yellow')

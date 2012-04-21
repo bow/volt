@@ -9,7 +9,7 @@ def taglist(tags):
     return ', '.join([format % (tag, tag) for tag in tags])
 
 
-def latest_posts(units):
+def latest_posts(engine):
     """Engine widget for showing the latest posts.
     
     Example usage:
@@ -18,7 +18,7 @@ def latest_posts(units):
         {% endfor %}
     """
     # get title and permalink of the five most recent posts
-    posts = [(x.title, x.permalink) for x in units[:5]]
+    posts = [(x.title, x.permalink) for x in engine.units[:5]]
 
     # create title, permalink dict for each post
     results = []
@@ -29,7 +29,7 @@ def latest_posts(units):
     return results
 
 
-def monthly_archive(units):
+def monthly_archive(engine):
     """Engine widget for monthly archive.
 
     Example usage:
@@ -38,7 +38,7 @@ def monthly_archive(units):
         {% endfor %}
     """
     # get string containing time elements to use
-    times = set([x.time.strftime("%Y|%m|%B") for x in units])
+    times = set([x.time.strftime("%Y|%m|%B") for x in engine.units])
 
     # create dicts containing year, month number (for constructing links)
     # and the month name (for display on the page)
@@ -47,7 +47,7 @@ def monthly_archive(units):
         year, month, month_name = timestring.split("|")
         link = "/blog/%s/%s" % (year, month)
         name = "%s %s" % (month_name, year)
-        size = len([x for x in units if \
+        size = len([x for x in engine.units if \
                 x.time.strftime("%Y%m") == '%s%s' % (year, month)])
 
         results.append({'name': name, 
@@ -57,7 +57,27 @@ def monthly_archive(units):
     return results
 
 
-def github_search():
+def active_engines(site):
+    """Site widget for listing all active engines.
+
+    Example usage:
+        {% for item in widgets.active_engines %}
+            <a href="{{ item.link }}">{{ item.name }}</a>
+        {% endfor %}
+
+    Useful for creating dynamic main site navigation, for example.
+    """
+    # retrieve engine URLs from its config and create name from its class name
+    results = []
+    for engine in site.engines.values():
+        link = engine.config.URL
+        name = type(engine).__name__.replace('Engine', '')
+        results.append({'name': name,
+                        'link': link,
+                       })
+    return results
+
+def github_search(site):
     """Site widget for returning github repo search, sorted on last push time.
     
     Example usage:
