@@ -69,6 +69,9 @@ def path_import(name, paths):
     # convert to list if paths is string
     if isinstance(paths, basestring):
         paths = [paths]
+    # force reload
+    if name in sys.modules:
+        del sys.modules[name]
     mod_tuple = imp.find_module(name, paths)
     return imp.load_module(name, *mod_tuple)
 
