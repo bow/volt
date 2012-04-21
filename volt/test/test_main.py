@@ -25,6 +25,7 @@ from volt.test import make_uniconfig_mock, FIXTURE_DIR, USER_DIR, INSTALL_DIR
 
 COMMANDS = ['add', 'demo', 'gen', 'init', 'serve', 'version']
 CMD_INIT_DIR = os.path.join(FIXTURE_DIR, 'test_init')
+CMD_DEMO_DIR = os.path.join(FIXTURE_DIR, 'test_demo')
 
 UniConfig_mock = make_uniconfig_mock()
 
@@ -172,3 +173,33 @@ class MainInitCases(unittest.TestCase):
 
         self.assertEqual(before, after)
         self.assertEqual([self.console_call, call2, call3], console_mock.call_args_list)
+
+
+@patch.object(main, 'logging', MagicMock())
+@patch.object(main.Runner, 'build_logger', MagicMock())
+@patch.object(main, 'console')
+class MainDemoCases(unittest.TestCase):
+
+    def tearDown(self):
+        if os.path.exists(CMD_DEMO_DIR):
+            shutil.rmtree(CMD_DEMO_DIR)
+        # to reset main.CONFIG since it has been loaded with demo's voltconf.py
+        setattr(main, 'CONFIG', UnifiedConfigContainer())
+
+    def prep_demo(self):
+        if os.path.exists(CMD_DEMO_DIR):
+            shutil.rmtree(CMD_DEMO_DIR)
+        os.mkdir(CMD_DEMO_DIR)
+        os.chdir(CMD_DEMO_DIR)
+
+    @patch.object(main.server.VoltHTTPServer, 'serve_forever')
+    def test_demo_ok(self, serveforever_mock, console_mock):
+        exp_call = call('\nPreparing your lightning-speed Volt tour...', is_bright=True)
+
+        self.prep_demo()
+        self.assertFalse(os.path.exists(os.path.join(CMD_DEMO_DIR, 'site')))
+        self.assertRaises(SystemExit, main.main, ['demo'])
+        self.assertTrue(os.path.exists(os.path.join(CMD_DEMO_DIR, 'site')))
+
+        self.assertEqual([exp_call], console_mock.call_args_list)
+        self.assertEqual([call()], serveforever_mock.call_args_list)
