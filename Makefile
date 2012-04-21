@@ -10,6 +10,18 @@ dev:
 nose:
 	nosetests volt/test/
 
+2to3:
+	if test -d .volt; \
+	then echo "None detected."; \
+	else cp -r volt .volt; \
+	2to3 -W -n volt; \
+	fi
+
+3to2:
+	if test -d .volt; \
+	then rm -rf volt/; mv .volt volt; \
+	fi
+
 cov:
 	#nosetests --cover-package=volt --with-coverage --cover-erase --cover-html --cover-html-dir=htmlcov
 	cd volt; coverage run `which nosetests`
