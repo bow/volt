@@ -153,8 +153,8 @@ class Runner(LoggableMixin):
         # we only need the first layer to do the copying
         parent_dir, child_dirs, top_files = os.walk(target_path).next()
 
-        # copy all files in parent
-        for top in top_files:
+        # copy all files in parent that's not a .pyc file
+        for top in [x for x in top_files if not x.endswith('.pyc')]:
             shutil.copy2(os.path.join(parent_dir, top), os.curdir)
         # copy all child directories
         for child in child_dirs:
