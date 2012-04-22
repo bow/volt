@@ -113,7 +113,7 @@ class Site(LoggableMixin):
 
     def prepare_output(self):
         """Copies the asset directory contents to site directory."""
-        message = "Preparing 'site' directory"
+        message = "Preparing output directory: %s" % self.config.VOLT.SITE_DIR
         console(message)
         self.logger.debug(message)
         if os.path.exists(self.config.VOLT.SITE_DIR):
@@ -177,7 +177,7 @@ class Site(LoggableMixin):
 
         for plugin in plugins:
             if engine is not None:
-                message = "Running plugin: %s" % plugin
+                message = "Running engine plugin: %s" % (plugin)
             else:
                 message = "Running site plugin: %s" % plugin
             console(message)
@@ -226,7 +226,7 @@ class Site(LoggableMixin):
 
         for widget in widgets:
             if engine is not None:
-                message = "Creating widget: %s" % widget
+                message = "Creating engine widget: %s" % widget
             else:
                 message = "Creating site widget: %s" % widget
             console(message)
@@ -266,7 +266,7 @@ class Site(LoggableMixin):
     def write_site_pages(self):
         """Write site pages, such as a separate index.html or 404.html."""
         for filename in self.config.SITE.PAGES:
-            message = "Writing extra page: '%s'" % filename
+            message = "Writing site page: '%s'" % filename
             console(message)
             self.logger.debug(message)
 
