@@ -34,7 +34,7 @@ Highlights:
       List of widgets that retrieve information from engine units.
     - {ENGINE}.PLUGINS
       List of plugins to run on the specified engine units.
-    - SITE.EXTRA_PAGES
+    - SITE.PAGES
       List of template file names for creating pages independent from any
       engines. Useful for creating for example a main ``index.html`` file or
       a ``404.html`` file.
@@ -45,7 +45,6 @@ Highlights:
 
   o Changed/removed these setting names/values:
     - {ENGINE}.CONTENT_DATETIME_FORMAT -> {ENGINE}.DATETIME_FORMAT
-    - SITE.PLUGINS -> removed
     - VOLT.LAYOUT_DIR -> SITE.ASSET_DIR
     - default VOLT.ASSET_DIR value is ``assets``
     - default VOLT.CONTENT_DIR value changed to ``contents`` from ``content``

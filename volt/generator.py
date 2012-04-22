@@ -255,7 +255,7 @@ class Site(LoggableMixin):
 
     def write_site_pages(self):
         """Write site pages, such as a separate index.html or 404.html."""
-        for filename in self.config.SITE.EXTRA_PAGES:
+        for filename in self.config.SITE.PAGES:
             message = "Writing extra page: '%s'" % filename
             console(message)
             self.logger.debug(message)

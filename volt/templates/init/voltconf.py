@@ -20,7 +20,7 @@ SITE = Config(
     # Examples: 404.html, index.html (if not already written by an engine)
     # The tuple should list template names of these pages, which should
     # be present in the default template directory
-    EXTRA_PAGES = (),
+    PAGES = (),
 
     # URL to use for pagination
     # This will be used for paginated items after the first one
