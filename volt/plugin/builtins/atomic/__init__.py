@@ -31,11 +31,14 @@ class AtomicPlugin(Plugin):
 
     Options for this plugin configurable via voltconf.py are:
 
+        `OUTPUT_FILE`
+            Name of the generated atom file, defaults to 'atom.xml'.
+
+        `OUTPUT_DIR`
+            Name of the directory for the output file, defaults to 'site'.
+
         `TEMPLATE_FILE`
             Name of the template atom file.
-
-        `OUTPUT_FILE`
-            Name of the generated atom file.
 
         `TIME_FIELD`
             Name of the unit field containing the datetime object used for
@@ -47,21 +50,28 @@ class AtomicPlugin(Plugin):
     """
 
     DEFAULTS = Config(
+        # output file name
+        OUTPUT_FILE = 'atom.xml',
+        # output directory name
+        OUTPUT_DIR = CONFIG.VOLT.SITE_DIR,
         # jinja2 template file
         TEMPLATE_FILE = 'atom_template.xml',
-        # output file name
-        # by default, the feed is written to the current directory
-        OUTPUT_FILE = 'atom.xml',
         # unit field containing datetime object
         TIME_FIELD = 'time',
         # excerpt length in feed items
         EXCERPT_LENGTH = 400,
+        # how many items in a feed
+        FEED_NUM = 10,
     )
 
     USER_CONF_ENTRY = 'PLUGIN_ATOMIC'
 
     def run(self, engine):
         """Process the given engine."""
+
+        output_file = self.config.OUTPUT_FILE
+        output_dir = self.config.OUTPUT_DIR
+        atom_file = os.path.join(output_dir, output_file)
 
         # pass in a built-in Volt jinja2 filter to display date
         # and get template
@@ -74,8 +84,9 @@ class AtomicPlugin(Plugin):
         time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
         # render and write to output file
-        rendered = template.render(units=engine.units[:10], CONFIG=CONFIG, time=time)
-        with open(self.config.OUTPUT_FILE, 'w') as target:
+        rendered = template.render(units=engine.units[:self.config.FEED_NUM], \
+                CONFIG=CONFIG, time=time)
+        with open(atom_file, 'w') as target:
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
             target.write(rendered)

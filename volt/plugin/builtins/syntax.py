@@ -20,7 +20,7 @@ from pygments.lexers import get_lexer_by_name, guess_lexer
 from pygments.formatters import HtmlFormatter
 from pygments.util import ClassNotFound
 
-from volt.config import Config
+from volt.config import CONFIG, Config
 from volt.plugin.core import Plugin
 
 
@@ -45,9 +45,13 @@ class SyntaxPlugin(Plugin):
 
     Options for this plugin configurable via voltconf.py are:
 
-        `CSS_FILE`
-            String indicating absolute path to the CSS file output, defaults to
+        `OUTPUT_FILE`
+            String indicating the CSS file output name, defaults to
             syntax_highlight.css in the current directory.
+
+        `OUTPUT_DIR`
+            String indicating directory name of output css file, defaults to
+            'site'.
 
         `UNIT_FIELD`
             String indicating which unit field to process, defaults to
@@ -68,8 +72,9 @@ class SyntaxPlugin(Plugin):
 
     DEFAULTS = Config(
             # css output for syntax highlight
-            # defaults to current directory
-            CSS_FILE = os.path.join(os.getcwd(), 'syntax_highlight.css'),
+            OUTPUT_FILE = 'syntax_highlight.css',
+            # directory to output css file
+            OUTPUT_DIR = CONFIG.VOLT.SITE_DIR,
             # unit field to process
             UNIT_FIELD =  'content',
             # 
@@ -115,6 +120,10 @@ class SyntaxPlugin(Plugin):
         pattern = re.compile(r'(<pre(.*?)>(?:<code>)?(.*?)(?:</code>)?</pre>)', re.DOTALL)
         lang_pattern = re.compile(r'\s|lang|=|\"|\'')
 
+        output_file = self.config.OUTPUT_FILE
+        output_dir = self.config.OUTPUT_DIR
+        css_file = os.path.join(output_dir, output_file)
+
         for unit in engine.units:
             # get content from unit
             string = getattr(unit, self.config.UNIT_FIELD)
@@ -125,9 +134,9 @@ class SyntaxPlugin(Plugin):
 
         # write syntax highlight css file
         css = HtmlFormatter(**self.config.PYGMENTS_HTML).get_style_defs(self.config.EXTRA_CLASS)
-        css_file = self.config.CSS_FILE
-        with open(css_file, 'w') as target:
-            target.write(css)
+        if not os.path.exists(css_file):
+            with open(css_file, 'w') as target:
+                target.write(css)
 
     def highlight_code(self, string, pattern, lang_pattern):
         """Highlights syntaxes in the given string enclosed in a <syntax> tag.

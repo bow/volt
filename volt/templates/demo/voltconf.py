@@ -87,5 +87,5 @@ ENGINE_BLOG = Config(
 
 # Plugin configurations
 PLUGIN_ATOMIC = Config(
-    OUTPUT_FILE = os.path.join(os.path.dirname(__file__), 'site', 'atom.xml'),
+    OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'site'),
 )
