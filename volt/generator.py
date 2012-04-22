@@ -167,8 +167,12 @@ class Site(LoggableMixin):
                     (engine.lower(), self.engines[engine].config.URL)
             console(message)
             self.logger.debug(message)
-            # attach all widgets to each engine, so they can access it in their templates
+            # attach all widgets to each engine, so they're accessible in templates
             self.engines[engine].widgets = self.widgets
+            # attach plugin names and engines to each engine, for the same reason
+            self.engines[engine].plugins = self.plugins.keys()
+            self.engines[engine].engines = self.engines.keys()
+            # dispatch them
             self.engines[engine].dispatch()
 
     def run_plugins(self, engine):
@@ -240,7 +244,9 @@ class Site(LoggableMixin):
                 self.logger.error(message)
                 sys.exit(1)
 
-            rendered = template.render(page={}, widgets=self.widgets, CONFIG=self.config)
+            rendered = template.render(page={}, CONFIG=self.config, \
+                    widgets=self.widgets, plugins=self.plugins.keys(), \
+                    engines=self.engines.keys())
             if sys.version_info[0] < 3:
                 rendered = rendered.encode('utf-8')
             write_file(path, rendered)
