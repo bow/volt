@@ -57,9 +57,31 @@ Here are some of my favorite features:
    picture of how the engines work.
   
    Finally, Volt comes with a plugin architecture that lets you hook into the
-   engines' actions. Five plugins comes packed in with volt: plugins for
-   atom feed generation, for syntax highlighting, and for parsing three
-   different markup languages (markdown, restructured text, and textile). 
+   engines' actions. Seven plugins comes packed in with volt: 
+
+   - Atom feed generator plugin (atomic, no extra dependency)
+
+   - Markup processing plugins:
+
+     - reStructured text (rst_parser, requires
+       `docutils <http://docutils.sourceforge.net/>`_)
+
+     - Markdown (markdown_parser, requires `python-markdown
+       <http://freewisdom.org/projects/python-markdown/Installation>`_ or
+       `python-discount <http://github.com/trapeze/python-discount>`_)
+
+     - Textile (textile_parser, requires `python-textile 
+       <https://github.com/chrisdrackett/python-textile>`_)
+   
+   - Syntax highlighter plugin (syntax, requires `pygments
+     <http://pygments.org/>`_)
+
+   - CSS minifier plugin (css_minifier, requires `cssmin
+     <https://github.com/zacharyvoase/cssmin>`_)
+
+   - Javascript minifier plugin (js_minifier, requires `jsmin
+     <http://pypi.python.org/pypi/jsmin>`_)
+
    `Browse their code 
    <http://github.com/bow/volt/tree/master/volt/plugin/builtins>`_ 
    to see how you can easily write your own plugin.
@@ -102,17 +124,6 @@ Optional dependencies:
 
 * `python-markdown <http://freewisdom.org/projects/python-markdown/Installation>`_
   (installed by default for ``volt demo``, can be safely removed if not used)
-
-* `python-discount <http://github.com/trapeze/python-discount>`_, for faster
-  markdown processing
-
-* `docutils <http://docutils.sourceforge.net/>`_, for parsing restructured text
-  contents
-
-* `python-textile <https://github.com/chrisdrackett/python-textile>`_, for
-  parsing textile contents
-
-* `pygments <http://pygments.org/>`_, for syntax highlighting in pages
 
 
 -----

@@ -9,6 +9,8 @@ Release date: TBD
 
 Highlights:
   
+  o New builtin plugins: css_minifer and js_minifier
+
   o New feature: widgets 
     Widgets enable dynamic retrieval of Unit attributes, useful for creating
     things like a list of most recent posts or a list of archive links. They
