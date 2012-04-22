@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Volt configurations
 
 from volt.config import Config
@@ -43,7 +44,12 @@ SITE = Config(
     # to site directory
     IGNORE_PATTERN = '',
 
-    # Widgets that do not depend on engine units
+    # Site plugins
+    # These are plugins that work on the whole site
+    PLUGINS = (),
+
+    # Site widgets
+    # These are widgets that work on the whole site
     WIDGETS = (),
 
     # Jinja2 filter function names

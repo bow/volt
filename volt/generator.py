@@ -47,16 +47,21 @@ class Site(LoggableMixin):
     def create(self):
         """Generates the static site.
 
-        This method consists of three distinct steps that results in the final
+        This method consists of five distinct steps that results in the final
         site generation:
 
             1. Output directory preparation: contents from the 'asset'
                directory are copied into a new 'site' directory. If a 'site'
                directory exists prior to the copying, it will be removed.
 
-            2. Engine run: see the run_engines method.
+            2. Engine activation: see the activate_engines method.
 
-            3. Non-engine template processing: site pages that do not belong to
+            3. Site plugin run and site widget creation: all site plugins are
+               run and all site widgets are created
+
+            4. Engine dispatch: see the dispatch_engines method.
+
+            5. Non-engine template processing: site pages that do not belong to
                any engines are then processed. Examples of pages in this
                category are the main index.html and the 404 page. If any engine
                has defined a main index.html, this method will not write
@@ -64,8 +69,11 @@ class Site(LoggableMixin):
 
         """
         self.prepare_output()
-        self.run_engines()
-        self.write_extra_pages()
+        self.activate_engines()
+        self.run_plugins()
+        self.create_widgets()
+        self.dispatch_engines()
+        self.write_site_pages()
 
     def get_processor(self, processor_name, processor_type, \
             volt_dir=os.path.dirname(__file__)):
@@ -113,10 +121,10 @@ class Site(LoggableMixin):
         shutil.copytree(self.config.VOLT.ASSET_DIR, self.config.VOLT.SITE_DIR, \
                 ignore=shutil.ignore_patterns(self.config.SITE.IGNORE_PATTERN))
 
-    def run_engines(self):
-        """Runs all engines and plugins according to the configurations.
+    def activate_engines(self):
+        """Activates all engines according to the configurations.
 
-        This method consists of five steps:
+        This method consists of four steps:
 
             1. Engine priming: all engines listed in CONFIG.SITE.ENGINES are
                loaded. Any engines found in the user directory takes
@@ -135,12 +143,6 @@ class Site(LoggableMixin):
 
             4. Widget creation: widgets for each engine are created and made
                accessible from the any templates.
-
-            5. Engine dispatch: after the engine units have been processed by
-               the plugins, the engines are then dispatched. This will involve
-               writing the actual HTML files for each engine. Pagination
-               creation, if defined for an engine, are done during this step
-               prior to writing.
         """
         for engine_name in self.config.SITE.ENGINES:
             engine_class = self.get_processor(engine_name, 'engines')
@@ -159,41 +161,43 @@ class Site(LoggableMixin):
             self.create_widgets(engine)
             self.engines[engine_name] = engine
 
-        # run non-engine widgets
-        self.create_widgets()
+    def run_plugins(self, engine=None):
+        """Runs plugins on engine or site."""
+        if engine is not None:
+            try:
+                plugins = engine.config.PLUGINS
+            except AttributeError:
+                return
+        else:
+            plugins = self.config.SITE.PLUGINS
 
-        for engine in self.engines:
-            message = "Dispatching %s engine to URL '%s'" % \
-                    (engine.lower(), self.engines[engine].config.URL)
-            console(message)
-            self.logger.debug(message)
-            # attach all widgets to each engine, so they're accessible in templates
-            self.engines[engine].widgets = self.widgets
-            # attach plugin names and engines to each engine, for the same reason
-            self.engines[engine].plugins = self.plugins.keys()
-            self.engines[engine].engines = self.engines.keys()
-            # dispatch them
-            self.engines[engine].dispatch()
-
-    def run_plugins(self, engine):
-        """Runs plugins on the given engine."""
-        if not hasattr(engine.config, 'PLUGINS'):
-            return
-
-        plugins = engine.config.PLUGINS
         for plugin in plugins:
-            message = "Running plugin: %s" % plugin
+            if engine is not None:
+                message = "Running plugin: %s" % plugin
+            else:
+                message = "Running site plugin: %s" % plugin
             console(message)
             self.logger.debug(message)
 
             if not plugin in self.plugins:
-                plugin_class = self.get_processor(plugin, 'plugins')
-                if not plugin_class:
-                    continue
+                try:
+                    plugin_class = self.get_processor(plugin, 'plugins')
+                except ImportError:
+                    message = "Plugin %s not found." % plugin
+                    self.logger.error(message)
+                    self.logger.debug(format_exc())
+                    raise
+
                 self.plugins[plugin] = plugin_class()
                 self.plugins[plugin].prime()
 
-            self.plugins[plugin].run(engine)
+            if engine is not None:
+                # engine plugins work on their engine instances
+                self.plugins[plugin].run(engine)
+            else:
+                # site plugins work on this site instance
+                self.plugins[plugin].run(self)
+            self.logger.debug("ran: %s plugin" % plugin)
 
     @cachedproperty
     def widgets_mod(self):
@@ -201,7 +205,7 @@ class Site(LoggableMixin):
         return path_import('widgets', self.config.VOLT.ROOT_DIR)
 
     def create_widgets(self, engine=None):
-        """Creates engine widgets from its units."""
+        """Create widgets from engine or site."""
         if engine is not None:
             try:
                 widgets = engine.config.WIDGETS
@@ -211,7 +215,13 @@ class Site(LoggableMixin):
             widgets = self.config.SITE.WIDGETS
 
         for widget in widgets:
-            console("Creating widget: %s" % widget)
+            if engine is not None:
+                message = "Creating widget: %s" % widget
+            else:
+                message = "Creating site widget: %s" % widget
+            console(message)
+            self.logger.debug(message)
+
             try:
                 widget_func = getattr(self.widgets_mod, widget)
             except AttributeError:
@@ -228,8 +238,23 @@ class Site(LoggableMixin):
                 self.widgets[widget] = widget_func(self)
             self.logger.debug("created: %s widget" % widget)
 
-    def write_extra_pages(self):
-        """Write nonengine pages, such as a separate index.html or 404.html."""
+    def dispatch_engines(self):
+        """Runs the engines' dispatch method."""
+        for engine in self.engines:
+            message = "Dispatching %s engine to URL '%s'" % \
+                    (engine.lower(), self.engines[engine].config.URL)
+            console(message)
+            self.logger.debug(message)
+            # attach all widgets to each engine, so they're accessible in templates
+            self.engines[engine].widgets = self.widgets
+            # attach plugin names and engines to each engine, for the same reason
+            self.engines[engine].plugins = self.plugins.keys()
+            self.engines[engine].engines = self.engines.keys()
+            # dispatch them
+            self.engines[engine].dispatch()
+
+    def write_site_pages(self):
+        """Write site pages, such as a separate index.html or 404.html."""
         for filename in self.config.SITE.EXTRA_PAGES:
             message = "Writing extra page: '%s'" % filename
             console(message)

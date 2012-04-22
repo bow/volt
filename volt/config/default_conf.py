@@ -74,8 +74,12 @@ SITE = Config(
     # to site directory
     IGNORE_PATTERN = '',
 
-    # Non-engine widgets
-    # These are widgets that do not require engine units to work
+    # Site plugins
+    # These are plugins that work on the whole site
+    PLUGINS = (),
+
+    # Site widgets
+    # These are widgets that work on the whole site
     WIDGETS = (),
 
     # Jinja2 filter function names
