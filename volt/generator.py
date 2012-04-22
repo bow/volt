@@ -161,6 +161,10 @@ class Site(LoggableMixin):
             self.create_widgets(engine)
             self.engines[engine_name] = engine
 
+            # attach engine config values for access in templates
+            setattr(self.config, self.engines[engine_name].USER_CONF_ENTRY, \
+                    self.engines[engine_name].config)
+
     def run_plugins(self, engine=None):
         """Runs plugins on engine or site."""
         if engine is not None:
@@ -197,6 +201,12 @@ class Site(LoggableMixin):
             else:
                 # site plugins work on this site instance
                 self.plugins[plugin].run(self)
+
+            # attach plugin config values (if defined) for access in templates
+            if self.plugins[plugin].USER_CONF_ENTRY is not None:
+                setattr(self.config, self.plugins[plugin].USER_CONF_ENTRY, \
+                        self.plugins[plugin].config)
+
             self.logger.debug("ran: %s plugin" % plugin)
 
     @cachedproperty
