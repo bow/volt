@@ -31,8 +31,13 @@ def activatedin(name, config):
         time so the values are already primed.
 
     Example usage:
-        {{ if "css_minifier" is activein CONFIG }}
+        {{ if "css_minifier" is activatedin CONFIG }}
             <p>CSS Minifier plugin is active</p>
+        {{ endif }}
+
+    or, to check whether several engines/plugins/widgets are active:
+        {{ if ["css_minifier", "blog"] is activatedin CONFIG }}
+            <p>CSS Minifier plugin and Blog engine are active</p>
         {{ endif }}
     """
     # no need to collect _actives if it's already set
@@ -56,5 +61,11 @@ def activatedin(name, config):
         actives = set(engines + plugins + widgets)
         setattr(config, '_actives', actives)
 
-    return any([name in x for x in actives])
+    if isinstance(name, basestring):
+        return any([name in x for x in actives])
+    else:
+        results = []
+        for item in name:
+            results.append(any([item in x for x in actives]))
+        return all(results)
 
