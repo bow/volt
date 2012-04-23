@@ -78,7 +78,11 @@ class Runner(LoggableMixin):
         # parser for add
         add_parser = subparsers.add_parser('add',
                 help="adds template for custom engine, plugin, or widget")
-        add_parser.add_argument('template', type=str, choices=['engine', 'plugin', 'widget'])
+        add_parser.add_argument('template', type=str,
+                choices=['engine', 'plugin', 'widget'],
+                help="extension type")
+        add_parser.add_argument('--builtin', type=str, dest='builtin', 
+                default='', metavar='NAME', help='builtin extension name')
 
         # parser for demo
         demo_parser = subparsers.add_parser('demo',
@@ -114,22 +118,55 @@ class Runner(LoggableMixin):
 
     def run_add(self):
         """Adds template for engine, plugin, or widget."""
+        builtin = CONFIG.CMD.builtin
         template = CONFIG.CMD.template
-        template_source = os.path.join(os.path.dirname(__file__), 'templates')
+        volt_dir = os.path.dirname(__file__)
+        template_source = os.path.join(volt_dir, 'templates')
 
         if template == 'widget':
+            # if template type is widget, only copy / create if it's not
+            # present already
             if not os.path.exists(CONFIG.VOLT.USER_WIDGET):
-                shutil.copy2(os.path.join(template_source, 'widgets.py'), os.curdir)
+
+                # if builtin is not an empty string, get the default widgets
+                if builtin:
+                    builtin_dir = os.path.join(volt_dir, 'config')
+                    shutil.copy2(os.path.join(builtin_dir, 'default_widgets.py'),
+                        os.path.join(os.curdir, 'widgets.py'))
+                # otherwise get the widget template
+                else:
+                    shutil.copy2(os.path.join(template_source, 'widgets.py'),
+                        os.curdir)
         else:
             template_dir = os.path.join(os.getcwd(), template + 's')
-            template_file = template + '.py'
 
+            # create plugin / engine dir in the root dir
+            # unless it's there already
             if not os.path.exists(template_dir):
                 os.mkdir(template_dir)
 
-            if not os.path.exists(os.path.join(template_dir, template_file)):
-                shutil.copy2(os.path.join(template_source, template_file), \
-                        template_dir)
+            # if builtin is specified, try to get the builtin plugin/engine
+            if builtin:
+                builtin_dir = os.path.join(volt_dir, template, 'builtins')
+                try:
+                    if builtin == 'atomic':
+                        shutil.copytree(os.path.join(builtin_dir, builtin), \
+                                os.path.join(template_dir, builtin))
+                    else:
+                        shutil.copy2(os.path.join(builtin_dir, builtin + '.py'), \
+                                template_dir)
+                except IOError:
+                    message = "Builtin %s '%s' not found." % (template, builtin)
+                    console("Error: %s" % message, color='red', is_bright=True)
+                    sys.exit(1)
+
+            # otherwise copy the plugin/engine template
+            else:
+                template_file = template + '.py'
+                if not os.path.exists(os.path.join(template_dir, template_file)):
+                    shutil.copy2(os.path.join(template_source, template_file), \
+                            template_dir)
+
 
     def run_init(self, cmd_name='init'):
         """Starts a new Volt project.
