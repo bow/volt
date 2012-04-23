@@ -147,10 +147,12 @@ Here's a quick summary of the currently available commands:
 * ``volt serve``: Generates the website and Starts the server pointing to the
   ``site`` directory.
 
-* ``volt add``: Adds a template for writing your custom engine, plugin, or
+* ``volt ext``: Adds a template for writing your custom engine, plugin, or
   widget. Custom engines and plugins are stored respectively inside the 
   ``engines`` and ``plugins`` directory in the root Volt project directory.
-  Widgets are stored inside ``widgets.py`` in the same directory.
+  Widgets are stored inside ``widgets.py`` in the same directory. You can also
+  specify an additional ``--builtin`` to copy a builtin engine/plugin/widget
+  to your Volt project directory.
 
 * ``volt version``: Shows the current Volt version.
 

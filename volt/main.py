@@ -75,18 +75,18 @@ class Runner(LoggableMixin):
         parser = ArgParser()
         subparsers = parser.add_subparsers(title='subcommands')
 
-        # parser for add
-        add_parser = subparsers.add_parser('add',
-                help="adds template for custom engine, plugin, or widget")
-        add_parser.add_argument('template', type=str,
-                choices=['engine', 'plugin', 'widget'],
-                help="extension type")
-        add_parser.add_argument('--builtin', type=str, dest='builtin', 
-                default='', metavar='NAME', help='builtin extension name')
-
         # parser for demo
         demo_parser = subparsers.add_parser('demo',
                 help="quick Volt demo")
+
+        # parser for ext
+        ext_parser = subparsers.add_parser('ext',
+                help="adds template for custom engine, plugin, or widget")
+        ext_parser.add_argument('template', type=str,
+                choices=['engine', 'plugin', 'widget'],
+                help="extension type")
+        ext_parser.add_argument('--builtin', type=str, dest='builtin', 
+                default='', metavar='NAME', help='builtin extension name')
 
         # parser for gen
         gen_parser = subparsers.add_parser('gen',
@@ -116,7 +116,7 @@ class Runner(LoggableMixin):
 
         return parser
 
-    def run_add(self):
+    def run_ext(self):
         """Adds template for engine, plugin, or widget."""
         builtin = CONFIG.CMD.builtin
         template = CONFIG.CMD.template

@@ -23,9 +23,10 @@ Highlights:
     Users can now log their entire Volt run and log their custom engines,
     plugins, or widgets.
 
-  o New command: ``volt add``
-    ``volt add`` creates template files for writing custom engine, plugin, or
-    widget, in the root project directory.
+  o New command: ``volt ext``
+    ``volt ext`` creates template files for writing custom engine, plugin, or
+    widget, in the root project directory. It can also be used to copy builtin
+    engines/plugins/widgets into the user's Volt project directory.
 
   o Improved console messages.
 

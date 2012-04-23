@@ -23,7 +23,7 @@ from volt.config import UnifiedConfigContainer
 from volt.test import make_uniconfig_mock, FIXTURE_DIR, USER_DIR, INSTALL_DIR
 
 
-COMMANDS = ['add', 'demo', 'gen', 'init', 'serve', 'version']
+COMMANDS = ['demo', 'ext', 'gen', 'init', 'serve', 'version']
 CMD_INIT_DIR = os.path.join(FIXTURE_DIR, 'test_init')
 CMD_DEMO_DIR = os.path.join(FIXTURE_DIR, 'test_demo')
 
@@ -57,7 +57,7 @@ class MainCases(unittest.TestCase):
                 self.assertEqual(exp_call, console_mock.call_args)
 
     def test_cmd_subcmd_ok(self, console_mock):
-        commands = {'add': ['engine', 'plugin', 'widget']}
+        commands = {'ext': ['engine', 'plugin', 'widget']}
         for cmd in commands:
             with patch.object(main.Runner, 'run_%s' % cmd) as run_cmd:
                 for subcmd in commands[cmd]:

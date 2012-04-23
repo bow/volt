@@ -9,14 +9,18 @@ _volt()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="help add init gen serve demo version"
+    opts="help ext init gen serve demo version"
 
     case "${prev}" in
         help)
-            COMPREPLY=( $(compgen -W "add init gen serve demo version" -- ${cur}) )
+            COMPREPLY=( $(compgen -W "ext init gen serve demo version" -- ${cur}) )
             ;;
-        add)
+        ext)
             case "${cur}" in
+                -*)
+                    local subopts="--builtin"
+                    COMPREPLY=( $(compgen -W "${subopts}" -- ${cur}) )
+                    ;;
                 *)
                     local subopts="engine plugin widget"
                     COMPREPLY=( $(compgen -W "${subopts}" -- ${cur}) )
