@@ -40,10 +40,11 @@ DEFAULT_WIDGET = 'default_widgets'
 
 class UnifiedConfigContainer(LoggableMixin):
 
-    """Reloadable lazy container for UnifiedConfig."""
+    """Reloadable, iterable lazy container for UnifiedConfig."""
 
     def __init__(self):
         self._loaded = None
+        self._confs = None
 
     def __getattr__(self, name):
         if self._loaded is None:
@@ -51,12 +52,36 @@ class UnifiedConfigContainer(LoggableMixin):
         return getattr(self._loaded, name)
 
     def __setattr__(self, name, value):
-        if name == '_loaded':
-            self.__dict__['_loaded'] = value
+        if name in ['_loaded', '_confs']:
+            self.__dict__[name] = value
         else:
             if self._loaded is None:
                 self._load()
             setattr(self._loaded, name, value)    
+
+    def __dir__(self):
+        if self._loaded is None:
+            self._load()
+        return dir(self._loaded)
+
+    def __iter__(self):
+        if self._confs is None:
+            self._confs = []
+            for item in dir(self._loaded):
+                obj = getattr(self._loaded, item)
+                if isinstance(obj, Config):
+                    self._confs.append(obj)
+        return self
+
+    def next(self):
+        if self._loaded is None:
+            self._load()
+        try:
+            return self._confs.pop()
+        except IndexError:
+            # reset for next iteration
+            self._confs = None
+            raise StopIteration
 
     def _load(self):
         self._loaded = UnifiedConfig()
@@ -65,6 +90,7 @@ class UnifiedConfigContainer(LoggableMixin):
     def reset(self):
         if self._loaded is not None:
             self._loaded = None
+            self._confs = None
             self.logger.debug('reset: UnifiedConfig')
 
 
