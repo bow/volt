@@ -23,7 +23,7 @@ def displaytime(datetime_obj, format):
     return datetime_obj.strftime(format)
 
 
-def activein(name, config):
+def activatedin(name, config):
     """Jinja2 test for checking whether an engine, plugin, or widget is active.
     
     name -- Name of engine, plugin, or widget.
@@ -35,14 +35,26 @@ def activein(name, config):
             <p>CSS Minifier plugin is active</p>
         {{ endif }}
     """
-    engines = config.SITE.ENGINES
-    plugins = config.SITE.PLUGINS
-    widgets = config.SITE.WIDGETS
+    # no need to collect _actives if it's already set
+    try:
+        actives = config._actives
+    # _actives not set, then compute it and do a setattr
+    except AttributeError:
+        engines = config.SITE.ENGINES
+        plugins = config.SITE.PLUGINS
+        widgets = config.SITE.WIDGETS
 
-    for conf in config:
-        if hasattr(conf, 'PLUGINS'):
-            plugins += getattr(conf, 'PLUGINS')
-        if hasattr(conf, 'WIDGETS'):
-            widgets += getattr(conf, 'WIDGETS')
+        for conf in config:
+            try:
+                plugins += getattr(conf, 'PLUGINS')
+                widgets += getattr(conf, 'WIDGETS')
+            # we don't care if the Config object doesn't have any plugins
+            # or widgets (e.g. CONFIG.VOLT)
+            except AttributeError:
+                pass
 
-    return any([name in x for x in (engines, plugins, widgets)])
+        actives = set(engines + plugins + widgets)
+        setattr(config, '_actives', actives)
+
+    return any([name in x for x in actives])
+

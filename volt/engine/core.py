@@ -85,8 +85,6 @@ class Engine(LoggableMixin):
         self.logger.debug('created: %s' % type(self).__name__)
         # attributes below are placeholders for template access later on
         self.widgets = {}
-        self.engines = []
-        self.plugins = []
 
     def preprocess(self):
         """Performs initial processing of units before plugins are run."""
@@ -395,8 +393,7 @@ class Engine(LoggableMixin):
                 raise IOError(message)
             else:
                 rendered = template.render(page=item, CONFIG=CONFIG, \
-                        widgets=self.widgets, plugins=self.plugins, \
-                        engines=self.engines)
+                        widgets=self.widgets)
                 if sys.version_info[0] < 3:
                     rendered = rendered.encode('utf-8')
                 write_file(item.path, rendered)

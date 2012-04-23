@@ -94,5 +94,5 @@ SITE = Config(
     FILTERS = ('displaytime',),
 
     # Jinja2 test function names
-    TESTS = ('activein', ),
+    TESTS = ('activatedin', ),
 )

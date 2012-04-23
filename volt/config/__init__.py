@@ -68,9 +68,10 @@ class UnifiedConfigContainer(LoggableMixin):
         if self._confs is None:
             self._confs = []
             for item in dir(self._loaded):
-                obj = getattr(self._loaded, item)
-                if isinstance(obj, Config):
-                    self._confs.append(obj)
+                # config objects are all caps
+                # so we can shortcut the test instead of isinstance
+                if item  == item.upper():
+                    self._confs.append(getattr(self._loaded, item))
         return self
 
     def next(self):
