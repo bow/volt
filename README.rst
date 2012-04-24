@@ -104,7 +104,7 @@ easy back-up and tracking, security, and speed.
 INSTALLATION
 ------------
 
-Latest version from PyPI (0.0.2): ``pip install volt``
+Latest version from PyPI (0.0.3): ``pip install volt``
 
 Bleeding edge from main development repo: ``pip install git+https://github.com/bow/volt.git``
 
