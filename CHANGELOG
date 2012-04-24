@@ -11,7 +11,7 @@ Highlights:
   
   o New builtin plugins: css_minifer and js_minifier.
 
-  o New builtin jinja test: ``activein``, for testing whether an engine,
+  o New builtin jinja test: ``activatedin``, for testing whether an engine,
     plugin, or widget is active.
 
   o New feature: widgets 
@@ -75,7 +75,7 @@ Fixes:
 
 Version 0.0.2 (alpha)
 ---------------------
-Release date: 2012-25-03
+Release date: 2012-03-25
 
 Highlights:
 
