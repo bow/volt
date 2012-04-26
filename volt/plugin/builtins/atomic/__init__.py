@@ -54,7 +54,8 @@ class AtomicPlugin(Plugin):
         OUTPUT_FILE = 'atom.xml',
         # output directory name
         OUTPUT_DIR = CONFIG.VOLT.SITE_DIR,
-        # jinja2 template file
+        # jinja2 template file, try CONFIG.VOLT.TEMPLATE_DIR first
+        # then use builtin directory.
         TEMPLATE_FILE = 'atom_template.xml',
         # unit field containing datetime object
         TIME_FIELD = 'time',
@@ -73,10 +74,10 @@ class AtomicPlugin(Plugin):
         output_dir = self.config.OUTPUT_DIR
         atom_file = os.path.join(output_dir, output_file)
 
+        # jinja2 Env: Load custom template first, falling back to the builtin
+        env = Environment(loader=FileSystemLoader(
+                [CONFIG.VOLT.TEMPLATE_DIR, os.path.dirname(__file__)]))
         # pass in a built-in Volt jinja2 filter to display date
-        # and get template
-        env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)))
-        # use the builtin displaytime filter
         env.filters['displaytime'] = CONFIG.SITE.TEMPLATE_ENV.filters['displaytime']
         template = env.get_template(self.config.TEMPLATE_FILE)
 
