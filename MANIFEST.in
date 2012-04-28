@@ -8,6 +8,7 @@ recursive-exclude volt *.log
 recursive-exclude volt *.swp
 recursive-exclude . .coverage
 recursive-exclude .  htmlcov
+prune .travis.yml
 prune .tox
 prune Makefile
 prune dev-requirements.txt
