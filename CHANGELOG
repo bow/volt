@@ -3,6 +3,16 @@ CHANGELOG
 =========
 
 
+Version 0.0.4 (beta)
+--------------------
+Release date: TBD
+
+Highlights:
+
+  o New feature: custom pagination titles
+  o Builtin atomic plugin can now use user-defined templates
+
+
 Version 0.0.3 (alpha)
 ---------------------
 Release date: 2012-04-24
