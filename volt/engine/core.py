@@ -246,20 +246,28 @@ class Engine(LoggableMixin):
                 raise
             else:
                 args = [field, base_permalist, units_per_pagination]
-                paginate_list = list(paginate(*args))
+                # if pagination_patterns is a dict, then use the supplied
+                # title pattern
+                if isinstance(pagination_patterns, dict):
+                    args.append(pagination_patterns[pattern])
+
+                pagination_in_pattern = paginate(*args)
                 key = '/'.join(base_permalist)
-                paginations[key] = paginate_list
+                paginations[key] = pagination_in_pattern
 
         return paginations
 
-    def _paginate_all(self, field, base_permalist, units_per_pagination):
+    def _paginate_all(self, field, base_permalist, units_per_pagination, \
+            title_pattern=''):
         """Create paginations for all field values (PRIVATE)."""
-        paginated = self._paginator(self.units, base_permalist, units_per_pagination)
+        paginated = self._paginator(self.units, base_permalist, \
+                units_per_pagination, title_pattern)
 
         self.logger.debug('created: %d %s paginations' % (len(paginated), 'all'))
         return paginated
 
-    def _paginate_single(self, field, base_permalist, units_per_pagination):
+    def _paginate_single(self, field, base_permalist, units_per_pagination, \
+            title_pattern=''):
         """Create paginations for string/int/float header field values (PRIVATE)."""
         units = self.units
         str_set = set([getattr(x, field) for x in units])
@@ -268,13 +276,19 @@ class Engine(LoggableMixin):
         for item in str_set:
             matches = [x for x in units if item == getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            pagin = self._paginator(matches, base_permalist, units_per_pagination)
+            if title_pattern:
+                title = title_pattern % str(item)
+            else:
+                title = title_pattern
+            pagin = self._paginator(matches, base_permalist, \
+                    units_per_pagination, title)
             paginated.extend(pagin)
 
         self.logger.debug('created: %d %s paginations' % (len(paginated), field))
         return paginated
 
-    def _paginate_multiple(self, field, base_permalist, units_per_pagination):
+    def _paginate_multiple(self, field, base_permalist, units_per_pagination, \
+            title_pattern=''):
         """Create paginations for list or tuple header field values (PRIVATE)."""
         units = self.units
         item_list_per_unit = (getattr(x, field) for x in units)
@@ -284,13 +298,19 @@ class Engine(LoggableMixin):
         for item in item_set:
             matches = [x for x in units if item in getattr(x, field)]
             base_permalist = base_permalist[:-1] + [str(item)]
-            pagin = self._paginator(matches, base_permalist, units_per_pagination)
+            if title_pattern:
+                title = title_pattern % str(item)
+            else:
+                title = title_pattern
+            pagin = self._paginator(matches, base_permalist, \
+                    units_per_pagination, title)
             paginated.extend(pagin)
 
         self.logger.debug('created: %d %s paginations' % (len(paginated), field))
         return paginated
 
-    def _paginate_datetime(self, field, base_permalist, units_per_pagination):
+    def _paginate_datetime(self, field, base_permalist, \
+            units_per_pagination, title_pattern=''):
         """Create paginations for datetime header field values (PRIVATE)."""
         units = self.units
         # separate the field name from the datetime formatting
@@ -319,19 +339,25 @@ class Engine(LoggableMixin):
                     matches.append(unit)
 
             base_permalist = base_permalist[:-(len(time_tokens))] + list(item)
-            pagin = self._paginator(matches, base_permalist, units_per_pagination)
+            if title_pattern:
+                title = getattr(matches[0], field).strftime(title_pattern)
+            else:
+                title = title_pattern
+            pagin = self._paginator(matches, base_permalist, \
+                    units_per_pagination, title)
             paginated.extend(pagin)
 
         self.logger.debug('created: %d %s paginations' % (len(paginated), field))
         return paginated
 
-    def _paginator(self, units, base_permalist, units_per_pagination):
+    def _paginator(self, units, base_permalist, units_per_pagination, title=''):
         """Create paginations from units (PRIVATE).
 
         units -- List of all units which will be paginated.
         base_permalist -- List of permalink tokens that will be used by all
                           paginations of the given units.
         units_per_pagination -- Number of units to show per pagination.
+        title -- String to use as the pagination title.
 
         """
         paginations = []
@@ -349,7 +375,8 @@ class Engine(LoggableMixin):
             else:
                 units_in_pagination = units[start:]
 
-            pagination = Pagination(units_in_pagination, idx, base_permalist)
+            pagination = Pagination(units_in_pagination, idx, base_permalist, \
+                    title)
             paginations.append(pagination)
 
         if len(paginations) > 1:
@@ -639,7 +666,7 @@ class Pagination(Page):
 
     """
 
-    def __init__(self, units, pagin_idx, base_permalist=[], title=''):
+    def __init__(self, units, pagin_idx, base_permalist=[], title=None):
         """Initializes a Pagination instance.
 
         units -- List containing units to paginate.

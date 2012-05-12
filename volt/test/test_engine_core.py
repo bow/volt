@@ -222,7 +222,7 @@ class EnginePaginationCases(unittest.TestCase):
         [x for x in self.engine._paginate_all(field, base_permalist, 2)]
 
         self.assertEqual(paginator_mock.call_count, 1)
-        expected = call(self.engine.units, ['test'], 2)
+        expected = call(self.engine.units, ['test'], 2, '')
         self.assertEqual(paginator_mock.call_args, expected)
 
     @patch('volt.engine.core.Engine._paginator')
@@ -233,9 +233,9 @@ class EnginePaginationCases(unittest.TestCase):
 
         self.assertEqual(2, paginator_mock.call_count)
         call1 = call(self.engine.units[:2] + [self.engine.units[3]], \
-                ['test', 'author', 'Smith'], 2)
+                ['test', 'author', 'Smith'], 2, '')
         call2 = call([self.engine.units[2], self.engine.units[4]], \
-                ['test', 'author', 'Johnson'], 2)
+                ['test', 'author', 'Johnson'], 2, '')
         paginator_mock.assert_has_calls([call1, call2], any_order=True)
 
     @patch('volt.engine.core.Engine._paginator')
@@ -245,10 +245,10 @@ class EnginePaginationCases(unittest.TestCase):
         [x for x in self.engine._paginate_multiple(field, base_permalist, 2)]
 
         self.assertEqual(4, paginator_mock.call_count)
-        call1 = call([self.engine.units[4]], ['test', 'tag', 'ariadne'], 2)
-        call2 = call(self.engine.units[2:4], ['test', 'tag', 'cobb'], 2)
-        call3 = call(self.engine.units[:3], ['test', 'tag', 'eames'], 2)
-        call4 = call(self.engine.units, ['test', 'tag', 'arthur'], 2)
+        call1 = call([self.engine.units[4]], ['test', 'tag', 'ariadne'], 2, '')
+        call2 = call(self.engine.units[2:4], ['test', 'tag', 'cobb'], 2, '')
+        call3 = call(self.engine.units[:3], ['test', 'tag', 'eames'], 2, '')
+        call4 = call(self.engine.units, ['test', 'tag', 'arthur'], 2, '')
         paginator_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
 
     @patch('volt.engine.core.Engine._paginator')
@@ -258,10 +258,10 @@ class EnginePaginationCases(unittest.TestCase):
         [x for x in self.engine._paginate_datetime(field, base_permalist, 2)]
 
         self.assertEqual(4, paginator_mock.call_count)
-        call1 = call(self.engine.units[:2], ['test', '2010'], 2)
-        call2 = call([self.engine.units[2]], ['test', '1998'], 2)
-        call3 = call([self.engine.units[3]], ['test', '2002'], 2)
-        call4 = call([self.engine.units[4]], ['test', '2011'], 2)
+        call1 = call(self.engine.units[:2], ['test', '2010'], 2, '')
+        call2 = call([self.engine.units[2]], ['test', '1998'], 2, '')
+        call3 = call([self.engine.units[3]], ['test', '2002'], 2, '')
+        call4 = call([self.engine.units[4]], ['test', '2011'], 2, '')
         paginator_mock.assert_has_calls([call1, call2, call3, call4], any_order=True)
 
     @patch('volt.engine.core.Engine._paginator')
@@ -271,11 +271,11 @@ class EnginePaginationCases(unittest.TestCase):
         [x for x in self.engine._paginate_datetime(field, base_permalist, 2)]
 
         self.assertEqual(paginator_mock.call_count, 5)
-        call1 = call([self.engine.units[0]], ['test', '2010', '09'], 2)
-        call2 = call([self.engine.units[1]], ['test', '2010', '07'], 2)
-        call3 = call([self.engine.units[2]], ['test', '1998', '04'], 2)
-        call4 = call([self.engine.units[3]], ['test', '2002', '08'], 2)
-        call5 = call([self.engine.units[4]], ['test', '2011', '09'], 2)
+        call1 = call([self.engine.units[0]], ['test', '2010', '09'], 2, '')
+        call2 = call([self.engine.units[1]], ['test', '2010', '07'], 2, '')
+        call3 = call([self.engine.units[2]], ['test', '1998', '04'], 2, '')
+        call4 = call([self.engine.units[3]], ['test', '2002', '08'], 2, '')
+        call5 = call([self.engine.units[4]], ['test', '2011', '09'], 2, '')
         paginator_mock.assert_has_calls([call1, call2, call3, call4, call5], \
                 any_order=True)
 
@@ -284,9 +284,9 @@ class EnginePaginationCases(unittest.TestCase):
         pagins = [p for p in self.engine._paginator(self.engine.units, ['base'], 2)]
 
         self.assertEqual(3, len(pagins))
-        call1 = call(self.engine.units[:2], 0, ['base'])
-        call2 = call(self.engine.units[2:4], 1, ['base'])
-        call3 = call(self.engine.units[4:], 2, ['base'])
+        call1 = call(self.engine.units[:2], 0, ['base'], '')
+        call2 = call(self.engine.units[2:4], 1, ['base'], '')
+        call3 = call(self.engine.units[4:], 2, ['base'], '')
         Pagination_mock.assert_has_calls([call1, call2, call3], any_order=True)
 
 
