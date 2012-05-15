@@ -8,8 +8,7 @@ install:
   - python setup.py install
 
 before_script:
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then cd build/py3.2/volt/test; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then volt/test; fi"
+  - "cd build/lib/volt/test"
 
 script:
   - nosetests .
