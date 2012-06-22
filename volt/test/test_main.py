@@ -149,13 +149,11 @@ class MainInitCases(unittest.TestCase):
                 color='red', is_bright=True)
 
         self.run_init()
-        before = [x for x in os.listdir(CMD_INIT_DIR) if not x.endswith('.pyc')]
+        before = [x for x in os.listdir(CMD_INIT_DIR) if \
+                not (x.endswith('.pyc') or x == '__pycache__')]
         main.main(['gen'])
-        after = [x for x in os.listdir(CMD_INIT_DIR) if not x.endswith('.pyc')]
-
-        # HACK: to handle __pycache__ directories
-        if '__pycache__' in after:
-            before.append('__pycache__')
+        after = [x for x in os.listdir(CMD_INIT_DIR) if \
+                not (x.endswith('.pyc') or x == '__pycache__')]
 
         [x.sort() for x in before, after]
 
@@ -171,13 +169,11 @@ class MainInitCases(unittest.TestCase):
                 color='red', is_bright=True)
 
         self.run_init()
-        before = [x for x in os.listdir(CMD_INIT_DIR) if not x.endswith('.pyc')]
+        before = [x for x in os.listdir(CMD_INIT_DIR) if \
+                not (x.endswith('.pyc') or x == '__pycache__')]
         main.main(['serve'])
-        after = [x for x in os.listdir(CMD_INIT_DIR) if not x.endswith('.pyc')]
-
-        # HACK: to handle __pycache__ directories
-        if '__pycache__' in after:
-            before.append('__pycache__')
+        after = [x for x in os.listdir(CMD_INIT_DIR) if \
+                not (x.endswith('.pyc') or x == '__pycache__')]
 
         [x.sort() for x in before, after]
 
