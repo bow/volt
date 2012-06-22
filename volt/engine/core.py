@@ -83,6 +83,7 @@ class Engine(LoggableMixin):
     def __init__(self):
         self.config = Config(self.DEFAULTS)
         self.logger.debug('created: %s' % type(self).__name__)
+        self._templates = {}
         # attributes below are placeholders for template access later on
         self.widgets = {}
 
@@ -407,7 +408,13 @@ class Engine(LoggableMixin):
         """
         template_env = CONFIG.SITE.TEMPLATE_ENV
         template_file = os.path.basename(template_path)
-        template = template_env.get_template(template_file)
+
+        # get template from cache if it's already loaded
+        if template_file not in self._templates:
+            template = template_env.get_template(template_file)
+            self._templates[template_file] = template
+        else:
+            template = self._templates[template_file]
 
         for item in items:
             # warn if files are overwritten
