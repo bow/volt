@@ -38,8 +38,10 @@ class TextEngineCases(unittest.TestCase):
         engine = TestTextEngine()
         content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
         engine.config.CONTENT_DIR = content_dir
-        fnames = ['01_radical-notion.md', '02_one-simple-idea.md',
-                  '03_dream-is-collapsing.md', '04_dream-within-a-dream.md',
+        fnames = [os.path.join('2010', '01_radical-notion.md'),
+                  os.path.join('2010', '02_one-simple-idea.md'),
+                  os.path.join('2011', '03_dream-is-collapsing.md'),
+                  '04_dream-within-a-dream.md',
                   '05_528491.md']
         abs_fnames = [os.path.join(content_dir, x) for x in fnames]
 
@@ -48,6 +50,7 @@ class TextEngineCases(unittest.TestCase):
 
         engine.units
         TextUnit_mock.assert_has_calls(calls, any_order=True)
+
 
 @patch('volt.engine.core.CONFIG', MagicMock())
 class TextUnitCases(unittest.TestCase):

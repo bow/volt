@@ -83,10 +83,13 @@ class TextEngine(Engine):
     @cachedproperty
     def units(self):
         """Units whose source are text files in the filesystem."""
-        # get absolute paths of content files
-        targets = glob.iglob(os.path.join(self.config.CONTENT_DIR, '*'))
-        files = (x for x in targets if os.path.isfile(x))
-        units = [TextUnit(fname, self.config) for fname in files]
+        target_dir = self.config.CONTENT_DIR
+        units = []
+        for curdir, children, files in os.walk(target_dir):
+            targets = glob.iglob(os.path.join(curdir, '*'))
+            files = (x for x in targets if os.path.isfile(x))
+            for fname in files:
+                units.append(TextUnit(os.path.join(curdir, fname), self.config))
 
         if units:
             self.logger.debug('created: %s %s' % (len(units), type(units[0]).__name__))
