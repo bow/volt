@@ -38,6 +38,10 @@ class PlainEngine(TextEngine):
         # relative to the default Volt content directory
         CONTENT_DIR = 'plain',
 
+        # Unit filename pattern to match
+        # Defaults to '*' (match all files)
+        UNIT_FNAME_PATTERN = '*',
+
         # File paths of plain page template files
         # relative to the default Volt template directory
         UNIT_TEMPLATE = 'plain_unit.html',

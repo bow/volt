@@ -15,6 +15,7 @@ from __future__ import with_statement
 import glob
 import os
 
+from volt.config import Config
 from volt.engine.core import _RE_DELIM, Engine, Unit
 from volt.utils import cachedproperty
 
@@ -80,13 +81,20 @@ class TextEngine(Engine):
 
     """Engine class for processing text units."""
 
+    # Default configurations for the base text engine
+    DEFAULTS = Config(
+        # Unit filename pattern to match
+        UNIT_FNAME_PATTERN = '*'
+    )
+
     @cachedproperty
     def units(self):
         """Units whose source are text files in the filesystem."""
         target_dir = self.config.CONTENT_DIR
+        pattern = self.config.UNIT_FNAME_PATTERN
         units = []
         for curdir, children, files in os.walk(target_dir):
-            targets = glob.iglob(os.path.join(curdir, '*'))
+            targets = glob.iglob(os.path.join(curdir, pattern))
             files = (x for x in targets if os.path.isfile(x))
             for fname in files:
                 units.append(TextUnit(os.path.join(curdir, fname), self.config))

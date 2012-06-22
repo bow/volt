@@ -39,10 +39,26 @@ class TextEngineCases(unittest.TestCase):
         content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
         engine.config.CONTENT_DIR = content_dir
         fnames = [os.path.join('2010', '01_radical-notion.md'),
-                  os.path.join('2010', '02_one-simple-idea.md'),
+                  os.path.join('2010', '02_one-simple-idea.rst'),
                   os.path.join('2011', '03_dream-is-collapsing.md'),
                   '04_dream-within-a-dream.md',
-                  '05_528491.md']
+                  '05_528491.rst']
+        abs_fnames = [os.path.join(content_dir, x) for x in fnames]
+
+        call_args = zip(abs_fnames, [engine.config] * len(fnames))
+        calls = [call(*x) for x in call_args]
+
+        engine.units
+        TextUnit_mock.assert_has_calls(calls, any_order=True)
+
+    @patch('volt.engine.builtins.TextUnit')
+    def test_units_fname_pattern(self, TextUnit_mock):
+        engine = TestTextEngine()
+        engine.config.UNIT_FNAME_PATTERN = '*.rst'
+        content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
+        engine.config.CONTENT_DIR = content_dir
+        fnames = [os.path.join('2010', '02_one-simple-idea.rst'),
+                  '05_528491.rst']
         abs_fnames = [os.path.join(content_dir, x) for x in fnames]
 
         call_args = zip(abs_fnames, [engine.config] * len(fnames))

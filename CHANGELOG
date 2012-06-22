@@ -11,6 +11,7 @@ Highlights:
 
   o New feature: custom pagination titles
   o Text engines can now parse file in subdirectories
+  o Text engines can now parse files according to a user-defined pattern
   o Builtin atomic plugin can now use user-defined templates
 
   o Changed/removed these setting names/values:
