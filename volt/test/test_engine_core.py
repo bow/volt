@@ -430,7 +430,7 @@ class UnitHeaderCases(unittest.TestCase):
 
     def setUp(self):
         config = MagicMock(spec=Config)
-        config.GLOBAL_FIELDS = {}
+        config.DEFAULT_FIELDS = {}
         TestUnit.title = 'a'
         self.unit = TestUnit(config)
 

@@ -69,7 +69,7 @@ class TextUnitCases(unittest.TestCase):
 
     def test_parse_source_global_fields_ok(self):
         fname = glob.glob(os.path.join(self.content_dir, 'unit_pass', '01*'))[0]
-        self.config.GLOBAL_FIELDS = {'foo': 'bar'}
+        self.config.DEFAULT_FIELDS = {'foo': 'bar'}
         unit = TestTextUnit(fname, self.config)
         self.assertEqual(unit.foo, 'bar')
 

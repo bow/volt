@@ -46,8 +46,8 @@ class PlainEngine(TextEngine):
         # These properties must be defined in each individual plain page unit header
         REQUIRED = ('title', ),
 
-        # Dictionary containing values to be globally set for all posts
-        GLOBAL_FIELDS = {},
+        # Dictionary containing default fields and their values for all units
+        DEFAULT_FIELDS = {},
 
         # Protected properties
         # These properties must not be defined by any individual plain page header,

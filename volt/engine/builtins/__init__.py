@@ -66,10 +66,10 @@ class TextUnit(Unit):
         if not hasattr(self, 'slug'):
             self.slug = self.slugify(self.title)
 
-        # and set global values
-        for field in self.config.GLOBAL_FIELDS:
+        # and set default values
+        for field in self.config.DEFAULT_FIELDS:
             if not hasattr(self, field):
-                setattr(self, field, self.config.GLOBAL_FIELDS[field])
+                setattr(self, field, self.config.DEFAULT_FIELDS[field])
 
 
     def __repr__(self):

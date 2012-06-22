@@ -45,8 +45,8 @@ class BlogEngine(TextEngine):
         # Default is e.g. '2004-03-13 22:10'
         DATETIME_FORMAT = '%Y/%m/%d %H:%M',
 
-        # Dictionary containing values to be globally set for all posts
-        GLOBAL_FIELDS = {},
+        # Dictionary containing default fields and their values for all units
+        DEFAULT_FIELDS = {},
 
         # Directory path for storing blog content 
         # relative to the default Volt content directory

@@ -227,7 +227,7 @@ class Config(dict):
     DATETIME_FORMAT = ''
     FIELDS_AS_LIST = ()
     LIST_SEP = ()
-    GLOBAL_FIELDS = {}
+    DEFAULT_FIELDS = {}
 
     def __init__(self, *args, **kwargs):
         """Initializes Config."""
