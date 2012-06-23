@@ -163,19 +163,3 @@ inside a Volt project directory.
 
 The docs are, unfortunately, minimum at the moment. For now, the source is the
 primary documentation.
-
-
------
-PLANS
------
-
-See the `TODO <https://github.com/bow/volt/blob/master/TODO>`_ list.
-
-
------------
-ATTRIBUTION
------------
-
-Volt was inspired by `Blogofile <http://github.com/EnigmaCurry/blogofile>`_,
-which unfortunately has `ceased development 
-<https://groups.google.com/d/msg/blogofile-discuss/MG02xNwS8Lc/_MK-gmOU2iEJ>`_.
