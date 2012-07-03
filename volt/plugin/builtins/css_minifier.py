@@ -20,7 +20,10 @@ from volt.config import CONFIG, Config
 from volt.plugin.core import Plugin
 
 
-class CssMinifierPlugin(Plugin):
+PLUGIN = 'CssMinifier'
+
+
+class CssMinifier(Plugin):
 
     """Site plugin for minifying CSS."""
 

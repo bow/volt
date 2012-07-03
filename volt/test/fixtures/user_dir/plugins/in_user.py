@@ -1,4 +1,6 @@
 from volt.plugin.core import Plugin
 
-class TestUserPlugin(Plugin):
+PLUGIN = 'TestUser'
+
+class TestUser(Plugin):
     def run(self): pass

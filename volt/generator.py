@@ -103,13 +103,11 @@ class Site(LoggableMixin):
         mod = path_import(processor_name, [user_path, volt_path])
 
         if processor_type == 'engines':
-            cls = Engine
+            cls_name = getattr(mod, 'ENGINE')
         else:
-            cls = Plugin
+            cls_name = getattr(mod, 'PLUGIN')
 
-        for obj in (getattr(mod, x) for x in dir(mod) if isclass(getattr(mod, x))):
-            if obj.__name__ != cls.__name__ and issubclass(obj, cls):
-                return obj
+        return getattr(mod, cls_name)
 
     def prepare_output(self):
         """Copies the asset directory contents to site directory."""

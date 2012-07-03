@@ -18,7 +18,10 @@ from docutils.core import publish_parts
 from volt.plugin.core import Plugin
 
 
-class RstParserPlugin(Plugin):
+PLUGIN = 'RstParser'
+
+
+class RstParser(Plugin):
 
     """Plugin for transforming rST syntax to html."""
 

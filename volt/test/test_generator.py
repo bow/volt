@@ -42,35 +42,35 @@ class SiteCases(unittest.TestCase):
     def test_get_processor_builtin_engine(self):
         returned = self.site.get_processor('in_install', 'engines', \
                 INSTALL_DIR)
-        self.assertEqual(returned.__name__, 'TestBuiltinEngine')
+        self.assertEqual(returned.__name__, 'TestBuiltin')
         self.assertTrue(issubclass(returned, Engine))
 
     def test_get_processor_user_engine(self):
         returned = self.site.get_processor('in_user', 'engines', \
                 INSTALL_DIR)
-        self.assertEqual(returned.__name__, 'TestUserEngine')
+        self.assertEqual(returned.__name__, 'TestUser')
         self.assertTrue(issubclass(returned, Engine))
 
     def test_get_processor_both_engine(self):
         returned = self.site.get_processor('in_both', 'engines', \
                 INSTALL_DIR)
-        self.assertEqual(returned.__name__, 'TestUserEngine')
+        self.assertEqual(returned.__name__, 'TestUser')
         self.assertTrue(issubclass(returned, Engine))
 
     def test_get_processor_builtin_plugin(self):
         returned = self.site.get_processor('in_install', 'plugins', \
                 INSTALL_DIR)
-        self.assertEqual(returned.__name__, 'TestBuiltinPlugin')
+        self.assertEqual(returned.__name__, 'TestBuiltin')
         self.assertTrue(issubclass(returned, Plugin))
 
     def test_get_processor_user_plugin(self):
         returned = self.site.get_processor('in_user', 'plugins', \
                 INSTALL_DIR)
-        self.assertEqual(returned.__name__, 'TestUserPlugin')
+        self.assertEqual(returned.__name__, 'TestUser')
         self.assertTrue(issubclass(returned, Plugin))
 
     def test_get_processor_both_plugin(self):
         returned = self.site.get_processor('in_both', 'plugins', \
                 INSTALL_DIR)
-        self.assertEqual(returned.__name__, 'TestUserPlugin')
+        self.assertEqual(returned.__name__, 'TestUser')
         self.assertTrue(issubclass(returned, Plugin))

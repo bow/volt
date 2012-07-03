@@ -5,6 +5,9 @@ from volt.utils import cachedproperty
 from volt.engine.core import Engine
 
 
+ENGINE = 'MyEngine'
+
+
 class MyEngine(Engine):
 
     # Default engine configurations

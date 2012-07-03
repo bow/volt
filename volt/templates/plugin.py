@@ -3,6 +3,9 @@
 from volt.plugin.core import Plugin
 
 
+PLUGIN = 'MyPlugin'
+
+
 class MyPlugin(Plugin):
 
     # Uncomment to set a default set of plugin configuration values

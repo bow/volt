@@ -24,7 +24,10 @@ except ImportError:
 from volt.plugin.core import Plugin
 
 
-class MarkdownParserPlugin(Plugin):
+PLUGIN = 'MarkdownParser'
+
+
+class MarkdownParser(Plugin):
 
     """Plugin for transforming markdown syntax to html.
 

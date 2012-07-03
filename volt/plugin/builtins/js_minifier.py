@@ -20,7 +20,10 @@ from volt.config import CONFIG, Config
 from volt.plugin.core import Plugin
 
 
-class JsMinifierPlugin(Plugin):
+PLUGIN = 'JsMinifier'
+
+
+class JsMinifier(Plugin):
 
     """Site plugin for minifying javascript."""
 

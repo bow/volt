@@ -18,7 +18,10 @@ import textile
 from volt.plugin.core import Plugin
 
 
-class TextileParserPlugin(Plugin):
+PLUGIN = 'TextileParser'
+
+
+class TextileParser(Plugin):
 
     """Plugin for transforming textile syntax to html."""
 

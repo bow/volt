@@ -24,7 +24,10 @@ from volt.config import CONFIG, Config
 from volt.plugin.core import Plugin
 
 
-class SyntaxPlugin(Plugin):
+PLUGIN = 'Syntax'
+
+
+class Syntax(Plugin):
 
     """Highlights code syntax using pygments.
 

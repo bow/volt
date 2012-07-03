@@ -22,7 +22,10 @@ from volt.config import CONFIG, Config
 from volt.plugin.core import Plugin
 
 
-class AtomicPlugin(Plugin):
+PLUGIN = 'Atomic'
+
+
+class Atomic(Plugin):
 
     """Creates atom feed of engine units.
 
