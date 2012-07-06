@@ -17,14 +17,11 @@ import os
 import shutil
 import sys
 from functools import partial
-from inspect import isclass
 from time import time
 from traceback import format_exc
 
 from volt import VERSION
 from volt.config import CONFIG
-from volt.engine.core import Engine
-from volt.plugin.core import Plugin
 from volt.utils import cachedproperty, console, path_import, write_file, LoggableMixin
 
 
