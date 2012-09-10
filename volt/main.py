@@ -168,16 +168,14 @@ class Runner(LoggableMixin):
                             template_dir)
 
 
-    def run_init(self, cmd_name='init'):
+    def run_init(self, is_demo=False):
         """Starts a new Volt project.
 
         init -- String, must be 'init' or 'demo', denotes which starting files
                 will be copied into the current directory.
 
         """
-        # cmd_name must not be other than 'init' or 'demo'
-        assert cmd_name in ['init', 'demo',]
-
+        cmd_name = 'init' if not is_demo else 'demo'
         dir_content = os.listdir(os.curdir)
         if dir_content != [] and dir_content != ['volt.log']:
             message = "'volt %s' must be run inside an empty directory." % cmd_name
@@ -197,13 +195,13 @@ class Runner(LoggableMixin):
         for child in child_dirs:
             shutil.copytree(os.path.join(parent_dir, child), child)
 
-        if cmd_name == 'init':
+        if not is_demo:
             console("\nVolt project started. Have fun!\n", is_bright=True)
 
     def run_demo(self):
         """Runs a quick demo of Volt."""
         # copy demo files
-        self.run_init(cmd_name='demo')
+        self.run_init(is_demo=True)
         console("\nPreparing your lightning-speed Volt tour...",  is_bright=True)
         # need to pass arglist to serve, so we'll call main
         main(['serve'])

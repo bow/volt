@@ -76,9 +76,8 @@ class MainCases(unittest.TestCase):
     @patch('volt.config.os.getcwd', return_value=FIXTURE_DIR)
     def test_init_demo_nonempty_dir(self, getcwd_mock, console_mock):
         before = os.listdir(FIXTURE_DIR)
-        cmds = ['init', 'demo']
 
-        for cmd in cmds:
+        for cmd in ('init', 'demo'):
             self.assertRaises(SystemExit, main.main, [cmd])
             exp_call = call("Error: 'volt %s' must be "
                     "run inside an empty directory." % cmd, \
