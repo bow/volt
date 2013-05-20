@@ -6,14 +6,13 @@ distribute_setup.use_setuptools()
 import sys
 from setuptools import setup, find_packages
 
-from volt import VERSION
+from volt import __version__
 
 
 install_requires = [
     "Jinja2>=2.6",
     "Markdown>=2.1.1",
 ]
-version = VERSION
 long_description = open("README.rst").read()
 
 # handle python 3
@@ -29,7 +28,7 @@ except ImportError:
 
 setup(
     name = "Volt",
-    version = version,
+    version = __version__,
     description = "The static website generator with potential",
     long_description = long_description,
     author = "Wibowo Arindrarto",

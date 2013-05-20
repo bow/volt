@@ -34,7 +34,7 @@ from socket import getfqdn
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingTCPServer
 
-from volt import VERSION
+from volt import __version__
 from volt import generator
 from volt.config import CONFIG
 from volt.utils import console, LoggableMixin
@@ -133,7 +133,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler, LoggableMixin):
 
     """
 
-    server_version = 'VoltHTTPServer/' + VERSION
+    server_version = 'VoltHTTPServer/' + __version__
 
     def log_error(self, format, *args):
         # overwritten to unclutter log message.
@@ -212,7 +212,7 @@ def run():
     if run_address == '127.0.0.1':
         run_address = 'localhost'
 
-    message = "Volt %s Development Server" % VERSION
+    message = "Volt %s Development Server" % __version__
     console(message, is_bright=True)
     logger.debug(message)
 

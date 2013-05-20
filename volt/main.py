@@ -18,7 +18,7 @@ import sys
 from functools import partial
 from datetime import datetime
 
-from volt import VERSION, generator, server
+from volt import __version__, generator, server
 from volt.config import CONFIG
 from volt.exceptions import ConfigNotFoundError
 from volt.utils import console, LoggableMixin
@@ -66,7 +66,7 @@ class Runner(LoggableMixin):
             logger.addHandler(logfile)
 
             with open('volt.log', 'w') as log:
-                log.write("#Volt %s Log\n" % VERSION)
+                log.write("#Volt %s Log\n" % __version__)
                 log.write("#Date: %s\n" % datetime.now().strftime("%Y-%m-%d"))
                 log.write("#Fields: time, log-level, caller, log-message\n")
 
@@ -225,7 +225,7 @@ class Runner(LoggableMixin):
 
     def run_version(self):
         """Shows version number."""
-        console("Volt %s" % VERSION)
+        console("Volt %s" % __version__)
 
 
 def main(cli_arglist=None):

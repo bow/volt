@@ -20,7 +20,7 @@ from functools import partial
 from time import time
 from traceback import format_exc
 
-from volt import VERSION
+from volt import __version__
 from volt.config import CONFIG
 from volt.utils import cachedproperty, console, path_import, write_file, LoggableMixin
 
@@ -283,7 +283,7 @@ def run():
     logger = logging.getLogger('gen')
 
     sys.stdout.write("\n")
-    message = "Volt %s Static Site Generator" % VERSION
+    message = "Volt %s Static Site Generator" % __version__
     console(message, is_bright=True)
     logger.debug(message)
 

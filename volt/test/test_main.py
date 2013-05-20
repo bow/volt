@@ -18,7 +18,7 @@ import unittest
 
 from mock import patch, call, MagicMock
 
-from volt import VERSION, main
+from volt import __version__, main
 from volt.config import UnifiedConfigContainer
 from volt.test import make_uniconfig_mock, FIXTURE_DIR, USER_DIR, INSTALL_DIR
 
@@ -71,7 +71,7 @@ class MainCases(unittest.TestCase):
             before = os.listdir(path)
             main.main(['version'])
             self.assertEqual(before, os.listdir(path))
-            self.assertEqual(call('Volt %s' % VERSION), console_mock.call_args)
+            self.assertEqual(call('Volt %s' % __version__), console_mock.call_args)
 
     @patch('volt.config.os.getcwd', return_value=FIXTURE_DIR)
     def test_init_demo_nonempty_dir(self, getcwd_mock, console_mock):
