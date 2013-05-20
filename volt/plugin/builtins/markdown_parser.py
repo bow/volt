@@ -12,14 +12,8 @@ Markdown plugin for Volt units.
 """
 
 import os
-import sys
 
-try:
-    import discount
-    has_discount = True
-except ImportError:
-    import markdown
-    has_discount = False
+import markdown
 
 from volt.plugin.core import Plugin
 
@@ -36,11 +30,6 @@ class MarkdownParser(Plugin):
     is defined with 'markdown' in the header field. The header field value
     takes precedence over the file extension.
 
-    The discount module is used for conversion to HTML, with the markdown
-    module as fallback. This is because markdown processing with discount
-    is much faster than by markdown since discount is actually a wrapper
-    for Discount, the markdown parser written in C.
-
     """
 
     def run(self, engine):
@@ -56,23 +45,4 @@ class MarkdownParser(Plugin):
             # if markdown, then process
             if is_markdown:
                 string = getattr(unit, 'content')
-                string = self.get_html(string)
-                setattr(unit, 'content', string)
-
-    def get_html(self, string):
-        """Returns html string of a markdown content.
-
-        string -- string to process
-        
-        """
-        if has_discount:
-            if sys.version_info[0] < 3:
-                marked = discount.Markdown(string.encode('utf-8'))
-                html = marked.get_html_content()
-                return html.decode('utf-8')
-            else:
-                marked = discount.Markdown(string)
-                html = marked.get_html_content()
-                return html
-        else:
-            return markdown.markdown(string)
+                setattr(unit, 'content', markdown.markdown(string))

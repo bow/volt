@@ -42,7 +42,6 @@ setup(
     extras_require = {
         "rst": ["docutils>=0.8.1"],
         "textile": ["textile>=2.1.5"],
-        "fast markdown": ["discount>=0.2.1"],
         "syntax highlight": ["pygments>=1.4"],
     },
     test_suite='nose.collector',

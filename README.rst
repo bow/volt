@@ -70,8 +70,7 @@ Here are some of my favorite features:
        `docutils <http://docutils.sourceforge.net/>`_)
 
      - Markdown (markdown_parser, requires `python-markdown
-       <http://freewisdom.org/projects/python-markdown/Installation>`_ or
-       `python-discount <http://github.com/trapeze/python-discount>`_)
+       <http://freewisdom.org/projects/python-markdown/Installation>`_
 
      - Textile (textile_parser, requires `python-textile 
        <https://github.com/chrisdrackett/python-textile>`_)
