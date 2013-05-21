@@ -3,7 +3,7 @@ VOLT
 ====
 
 .. image:: https://secure.travis-ci.org/bow/volt.png?branch=master
-                :target: https://secure.travis-ci.org/bow/volt
+                :target: https://travis-ci.org/bow/volt
 
 --------------------------------------------------
 The Python static website generator with potential
