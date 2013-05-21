@@ -2,14 +2,13 @@ language: python
 python:
   - "2.6"
   - "2.7"
-  - "3.2"
   - "3.3"
 
 install:
   - python setup.py install
 
 before_script:
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' || $TRAVIS_PYTHON_VERSION == '3.3' ]]; then export VOLT_TEST_DIR=build/lib/volt/test; else export VOLT_TEST_DIR=volt/test; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then export VOLT_TEST_DIR=build/lib/volt/test; else export VOLT_TEST_DIR=volt/test; fi"
 
 script:
   - nosetests $VOLT_TEST_DIR

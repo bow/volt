@@ -127,6 +127,10 @@ Optional dependencies:
 * `python-markdown <http://freewisdom.org/projects/python-markdown/Installation>`_
   (installed by default for ``volt demo``, can be safely removed if not used)
 
+Python versions:
+
+* Volt is tested against Python versions 2.6, 2.7, and 3.3.
+
 
 -----
 USAGE
