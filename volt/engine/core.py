@@ -644,6 +644,8 @@ class Unit(Page):
         req -- Iterable returning string of required header fields.
 
         """
+        if isinstance(req, str):
+            req = [req]
         for field in req:
             if not hasattr(self, field):
                 message = "Required header field '%s' is missing in '%s'." % \
