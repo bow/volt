@@ -57,7 +57,7 @@ class TextUnit(Unit):
         """
         with self.open_text(file_path) as source:
             # open file and remove whitespaces
-            read = filter(None, _RE_DELIM.split(source.read()))
+            read = filter(None, _RE_DELIM.split(source.read(), 2))
             # header should be parsed into dict
             self.parse_header(read.pop(0))
             # content is everything else after header
