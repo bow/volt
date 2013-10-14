@@ -5,7 +5,7 @@ docutils
 textile
 markdown
 pygments
-
+python-dateutil
 #setup.py develop
 -e .
 
