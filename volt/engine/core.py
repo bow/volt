@@ -21,6 +21,7 @@ import re
 import sys
 import warnings
 from datetime import datetime
+import dateutil.parser as dateutil_parser
 from functools import partial, reduce
 from traceback import format_exc
 
@@ -596,7 +597,7 @@ class Unit(Page):
 
     # convenience methods
     open_text = partial(codecs.open, encoding='utf-8')
-    as_datetime = datetime.strptime
+    as_datetime = dateutil_parser
 
     def parse_header(self, header_string):
         """Returns a dictionary of header field values.
@@ -620,14 +621,14 @@ class Unit(Page):
                 value = self.as_list(value, self.config.LIST_SEP)
 
             elif field in self.config.FIELDS_AS_DATETIME:
-                value = self.as_datetime(value, \
-                        self.config.DATETIME_FORMAT)
+                value = self.as_datetime.parse(value)
+
 
             setattr(self, field.lower(), value)
 
     def check_protected(self, field, prot):
         """Checks if the given field can be set by the user or not.
-        
+
         field -- String to check against the list containing protected fields.
         prot -- Iterable returning string of protected fields.
 
