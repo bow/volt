@@ -10,7 +10,7 @@
       <a href="/{{ unit.time|displaytime("%Y/%m")  }}/" class="button green">{{ unit.time|displaytime("%A, %d %B %Y") }}</a>
       | {{ unit.tags|taglist }}
     </header>
-    {{ unit.content|striptags|truncate(length=400, end='...') }} <a href="{{ unit.permalink }}"><small>(more)</small></a>
+    {{ unit.content|striptags|truncate(length=CONFIG.ENGINE_BLOG.EXCERPT_LENGTH, end='...') }} <a href="{{ unit.permalink }}"><small>(more)</small></a>
     {{ engine }}
   </article>
   {% if not loop.last %}

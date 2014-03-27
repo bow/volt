@@ -13,7 +13,7 @@
     <link href="{{ unit.permalink_abs }}" />
     <id>{{ unit.url }}</id>
     <updated>{{ unit.time|displaytime("%Y-%m-%dT%H:%M:%SZ") }}</updated>
-    <summary>{{ unit.content|striptags|truncate(length=400) }}</summary>
+    <summary>{{ unit.content|striptags|truncate(length=CONFIG.PLUGIN_ATOMIC.EXCERPT_LENGTH) }}</summary>
   </entry>
   {% endfor %}
 
