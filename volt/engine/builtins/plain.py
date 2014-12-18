@@ -14,7 +14,7 @@ The plain engine takes text files as resources and writes single web pages.
 """
 
 from volt.config import Config
-from volt.engine.builtins import TextEngine
+from .text import TextEngine
 
 
 ENGINE = 'Plain'

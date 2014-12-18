@@ -15,7 +15,7 @@ constituting a simple blog.
 """
 
 from volt.config import Config
-from volt.engine.builtins import TextEngine
+from .text import TextEngine
 
 
 ENGINE = 'Blog'
