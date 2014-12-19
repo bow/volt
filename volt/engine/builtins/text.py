@@ -35,6 +35,9 @@ class TextUnit(Unit):
     is a single blog post or a single plain page. 
 
     """
+
+    _re_delim = _RE_DELIM
+
     def __init__(self, fname, config):
         """Initializes TextUnit.
 
@@ -63,7 +66,7 @@ class TextUnit(Unit):
         """
         with self.open_text(file_path) as source:
             # open file and remove whitespaces
-            read = filter(None, _RE_DELIM.split(source.read(), 2))
+            read = filter(None, self._re_delim.split(source.read(), 2))
             # header should be parsed into dict
             self.parse_header(read.pop(0))
             # content is everything else after header
@@ -77,7 +80,6 @@ class TextUnit(Unit):
         for field in self.config.DEFAULT_FIELDS:
             if not hasattr(self, field):
                 setattr(self, field, self.config.DEFAULT_FIELDS[field])
-
 
     def __repr__(self):
         return '%s(%s)' % (type(self).__name__, os.path.basename(self.id))
@@ -93,6 +95,8 @@ class TextEngine(Engine):
         UNIT_FNAME_PATTERN = '*'
     )
 
+    unit_class = TextUnit
+
     @cachedproperty
     def units(self):
         """Units whose source are text files in the filesystem."""
@@ -103,7 +107,7 @@ class TextEngine(Engine):
             targets = glob.iglob(os.path.join(curdir, pattern))
             files = (x for x in targets if os.path.isfile(x))
             for fname in files:
-                units.append(TextUnit(os.path.join(curdir, fname), self.config))
+                units.append(self.unit_class(os.path.join(curdir, fname), self.config))
 
         if units:
             self.logger.debug('created: %s %s' % (len(units), type(units[0]).__name__))
