@@ -38,7 +38,7 @@ _REQUIRED_ENGINE_PAGINATIONS = ('PAGINATIONS', 'UNITS_PER_PAGINATION',)
 # regex objects for unit header and permalink processing
 _RE_DELIM = re.compile(r'^---$', re.MULTILINE)
 _RE_SPACES = re.compile(r'\s([A|a]n??)\s|_|\s+')
-_RE_PRUNE = re.compile(r'A-|An-|[^a-zA-Z0-9_-]')
+_RE_PRUNE = re.compile(r'A-|An-|[^a-zA-Z0-9._-]')
 _RE_MULTIPLE = re.compile(r'-+')
 _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
