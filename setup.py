@@ -8,7 +8,7 @@ from volt import __version__
 
 install_requires = [
     "Jinja2>=2.6",
-    "Markdown>=2.1.1",
+    "Markdown>=2.3.1,<2.5",
 ]
 long_description = open("README.rst").read()
 
