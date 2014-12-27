@@ -37,9 +37,9 @@ _REQUIRED_ENGINE_PAGINATIONS = ('PAGINATIONS', 'UNITS_PER_PAGINATION',)
 
 # regex objects for unit header and permalink processing
 _RE_DELIM = re.compile(r'^---$', re.MULTILINE)
-_RE_SPACES = re.compile(r'\s([A|a]n??)\s|_|\s+')
-_RE_PRUNE = re.compile(r'A-|An-|[^a-zA-Z0-9._-]')
-_RE_MULTIPLE = re.compile(r'-+')
+_RE_SPACES = re.compile(r'_|\s+')
+_RE_PRUNE = re.compile(r'[^a-zA-Z0-9._-]|[-_.]+$')
+_RE_MULTIPLE = re.compile(r'[-_.]+')
 _RE_PERMALINK = re.compile(r'(.+?)/+(?!%)')
 
 
@@ -493,14 +493,15 @@ class Page(LoggableMixin):
         # replace spaces, etc with dash
         string = re.sub(_RE_SPACES, '-', string)
 
-        # remove english articles, and non-ascii characters
+        # remove non-ascii characters except for underscores, dashes, dots
         string = re.sub(_RE_PRUNE, '', string)
 
-        # slug should not begin or end with dash or contain multiple dashes
+        # slug should not begin or end with dash or contain multiple
+        # dashes, dots, and/or underscores
         string = re.sub(_RE_MULTIPLE, '-', string)
 
-        # and finally, we string preceeding and succeeding dashes
-        string = string.lower().strip('-')
+        # and finally, we string preceeding and succeeding dashes, dots, underscores
+        string = string.lower().strip('-').strip('_').strip('.')
 
         # error if slug is empty
         if not string:

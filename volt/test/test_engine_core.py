@@ -319,19 +319,19 @@ class PageCases(unittest.TestCase):
     def test_slugify_ok(self):
         slugify = self.page.slugify
         self.assertEqual(slugify('Move along people, this is just a test'),
-                'move-along-people-this-is-just-test')
+                'move-along-people-this-is-just-a-test')
         self.assertEqual(slugify('What does it mean to say !&^#*&@$))*((&?'),
                 'what-does-it-mean-to-say')
         self.assertEqual(slugify('What about the A* search algorithm?'),
                 'what-about-the-a-search-algorithm')
         self.assertEqual(slugify('--This- is a bad -- -*&( ---___- title---'),
-                'this-is-bad-title')
+                'this-is-a-bad-title')
         self.assertEqual(slugify("Hors d'oeuvre, a fully-loaded MP5, and an astronaut from Ann Arbor."),
-                'hors-doeuvre-fully-loaded-mp5-and-astronaut-from-ann-arbor')
+                'hors-doeuvre-a-fully-loaded-mp5-and-an-astronaut-from-ann-arbor')
         self.assertEqual(slugify('Kings of Convenience - Know How (feat. Feist)'),
                 'kings-of-convenience-know-how-feat-feist')
         self.assertEqual(slugify('A Journey Through the Himalayan Mountains. Part 1: An Unusual Guest'),
-                'journey-through-the-himalayan-mountains-part-1-unusual-guest')
+                'a-journey-through-the-himalayan-mountains-part-1-an-unusual-guest')
 
     @patch('volt.engine.core.CONFIG.SITE.INDEX_HTML_ONLY', True)
     @patch('volt.engine.core.CONFIG', UniConfig_mock)
