@@ -19,12 +19,13 @@ from datetime import datetime
 from mock import MagicMock, patch, call
 
 from volt.config import Config
-from volt.engine.builtins import TextEngine, TextUnit
+from volt.engine.builtins.text import TextEngine, TextUnit
 from volt.test import FIXTURE_DIR
 from volt.test.test_engine_core import TestUnit
 
 
 class TestTextEngine(TextEngine):
+
     def activate(self): pass
     def dispatch(self): pass
 
@@ -33,9 +34,10 @@ class TestTextUnit(TestUnit, TextUnit): pass
 
 class TextEngineCases(unittest.TestCase):
 
-    @patch('volt.engine.builtins.TextUnit')
+    @patch('volt.engine.builtins.text.TextUnit')
     def test_units(self, TextUnit_mock):
         engine = TestTextEngine()
+        engine.unit_class = TextUnit_mock
         content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
         engine.config.CONTENT_DIR = content_dir
         fnames = [os.path.join('2010', '01_radical-notion.md'),
@@ -51,9 +53,10 @@ class TextEngineCases(unittest.TestCase):
         engine.units
         TextUnit_mock.assert_has_calls(calls, any_order=True)
 
-    @patch('volt.engine.builtins.TextUnit')
+    @patch('volt.engine.builtins.text.TextUnit')
     def test_units_fname_pattern(self, TextUnit_mock):
         engine = TestTextEngine()
+        engine.unit_class = TextUnit_mock
         engine.config.UNIT_FNAME_PATTERN = '*.rst'
         content_dir = os.path.join(FIXTURE_DIR, 'engines', 'engine_pass')
         engine.config.CONTENT_DIR = content_dir
