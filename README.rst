@@ -110,13 +110,7 @@ Latest version from PyPI (0.0.3): ``pip install volt``
 
 Bleeding edge from main development repo: ``pip install git+https://github.com/bow/volt.git``
 
-Volt is still in alpha and under heavy development. Things will break here and
-there, but it's usable enough for creating real websites:
-
-* `bow.web.id <http://bow.web.id/>`_ (`source <http://github.com/bow/volt>`_,
-  using the latest development version)
-
-* `spaetzblog <http://sspaeth.de/>`_
+Volt is still in alpha and under development. Things will break here and there.
 
 Dependency:
 
@@ -129,7 +123,7 @@ Optional dependencies:
 
 Python versions:
 
-* Volt is tested against Python versions 2.6, 2.7, and 3.3.
+* Volt is tested against CPython versions 2.6, 2.7, 3.3, 3.4, and PyPy 2.7.8.
 
 
 -----
@@ -165,5 +159,4 @@ Here's a quick summary of the currently available commands:
 All of the commands except for ``init`` and ``demo`` can be run from anywhere
 inside a Volt project directory.
 
-The docs are, unfortunately, minimum at the moment. For now, the source is the
-primary documentation.
+The docs are, unfortunately, minimum at the moment.
