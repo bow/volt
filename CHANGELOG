@@ -3,8 +3,8 @@ CHANGELOG
 =========
 
 
-Version 0.0.4 (beta)
---------------------
+Version 0.4.0 (alpha)
+---------------------
 Release date: TBD
 
 Highlights:
@@ -23,13 +23,13 @@ Version 0.0.3 (alpha)
 Release date: 2012-04-24
 
 Highlights:
-  
+
   o New builtin plugins: css_minifer and js_minifier.
 
   o New builtin jinja test: ``activatedin``, for testing whether an engine,
     plugin, or widget is active.
 
-  o New feature: widgets 
+  o New feature: widgets
     Widgets enable dynamic retrieval of Unit attributes, useful for creating
     things like a list of most recent posts or a list of archive links. They
     are Python functions stored in ``widgets.py`` in the project root directory.
