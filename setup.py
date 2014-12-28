@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 
-import sys
 from setuptools import setup, find_packages
 
 from volt import __version__
 
 
 install_requires = [
+    "future>=0.14.3",
     "Jinja2>=2.6",
     "Markdown>=2.3.1,<2.5",
 ]
 long_description = open("README.rst").read()
-
-# handle python 3
-extra = dict()
-if sys.version_info >= (3,):
-    extra['use_2to3'] = True
 
 # handle dependencies for python2.x (x < 7)
 try:
@@ -39,7 +34,7 @@ setup(
     extras_require = {
         "rst": ["docutils>=0.8.1"],
         "textile": ["textile>=2.1.5"],
-        "syntax highlight": ["pygments>=1.4"],
+        "syntax highlight": ["pygments>=1.4,<=1.5"],
     },
     test_suite='nose.collector',
     tests_require=[
@@ -65,6 +60,5 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Utilities",
-    ],
-    **extra
+    ]
 )
