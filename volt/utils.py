@@ -104,11 +104,29 @@ def console(string, format=None, color='grey', is_bright=False, log_time=True):
     sys.stdout.write(string)
 
 
-def write_file(file_path, string):
-    """Writes string to the open file object."""
-    if not os.path.exists(os.path.dirname(file_path)):
-        os.makedirs(os.path.dirname(file_path))
-    with open(file_path, 'w') as target:
-        target.write(string)
-    message = "written: %s" % file_path
-    logger.debug(message)
+def write_file(file_path, text, bufsize=16384):
+    """Writes the given text to a target file path.
+
+    :param file_path: absolute file path of target file
+    :type file_path: str
+    :param text: text contents to write
+    :type text: str
+    :param bufsize: buffer size when writing to file (default: 16384)
+    :type bufsize: int
+    :returns: None
+
+    """
+    try:
+        target = open(file_path, 'w', bufsize)
+    except IOError:
+        file_dir = os.path.dirname(file_path)
+        if not os.path.exists(file_dir):
+            os.makedirs(file_dir)
+            target = open(file_path, 'w', bufsize)
+        else:
+            raise
+
+    # will only be reached when we get a writable target
+    target.write(text)
+    target.close()
+    logger.debug("written: {0}".format(file_path))
