@@ -257,13 +257,13 @@ class Site(LoggableMixin):
 
     def write_site_pages(self):
         """Write site pages, such as a separate index.html or 404.html."""
-        for filename in self.config.SITE.PAGES:
-            message = "Writing site page: '%s'" % filename
+        for site_path, filename in self.config.SITE.PAGES.items():
+            message = "Writing site page: '%s'" % site_path
             console(message)
             self.logger.debug(message)
 
             template = self.config.SITE.TEMPLATE_ENV.get_template(filename)
-            path = os.path.join(self.config.VOLT.SITE_DIR, filename)
+            path = os.path.join(self.config.VOLT.SITE_DIR, site_path.lstrip('/'))
             if os.path.exists(path):
                 message = "File %s already exists. Make sure there are no "\
                           "other entries leading to this file path." % path
