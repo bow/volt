@@ -80,7 +80,6 @@ class Syntax(Plugin):
             OUTPUT_DIR = CONFIG.VOLT.SITE_DIR,
             # unit field to process
             UNIT_FIELD =  'content',
-            # 
             # options for pygments' lexers, following its defaults
             PYGMENTS_LEXER = {
                 'stripall': False,

@@ -51,7 +51,7 @@ class Blog(TextEngine):
         # Dictionary containing default fields and their values for all units
         DEFAULT_FIELDS = {},
 
-        # Directory path for storing blog content 
+        # Directory path for storing blog content
         # relative to the default Volt content directory
         CONTENT_DIR = 'blog',
 

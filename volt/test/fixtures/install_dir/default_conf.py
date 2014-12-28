@@ -10,7 +10,7 @@ VOLT = Config(
 
 SITE = Config(
     TITLE = 'Title in default',
-    DESC = 'Desc in default', 
+    DESC = 'Desc in default',
     A_URL = 'http://foo.com',
     B_URL = 'http://foo.com/',
     C_URL = '/',

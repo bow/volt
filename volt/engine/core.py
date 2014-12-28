@@ -628,7 +628,7 @@ class Unit(Page):
 
     def check_protected(self, field, prot):
         """Checks if the given field can be set by the user or not.
-        
+
         field -- String to check against the list containing protected fields.
         prot -- Iterable returning string of protected fields.
 

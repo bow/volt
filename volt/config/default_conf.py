@@ -24,7 +24,7 @@ VOLT = Config(
     # User widget file name
     USER_WIDGET = 'widgets.py',
 
-    # Directory paths for content files, templates, assets, 
+    # Directory paths for content files, templates, assets,
     # and generated site relative to a project root
     CONTENT_DIR = 'contents',
     TEMPLATE_DIR = 'templates',

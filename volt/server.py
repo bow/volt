@@ -182,7 +182,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler, LoggableMixin):
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
-            if word in (os.curdir, os.pardir): 
+            if word in (os.curdir, os.pardir):
                 continue
             path = os.path.join(path, word)
         # set file path as attribute, to get size in log_request()
@@ -201,7 +201,7 @@ def run():
         server = VoltHTTPServer(address, VoltHTTPRequestHandler)
     except Exception as e:
         ERRORS = { 2: "Site directory '%s' not found" % CONFIG.VOLT.SITE_DIR,
-                  13: "You don't have permission to access port %s" % 
+                  13: "You don't have permission to access port %s" %
                       (CONFIG.CMD.server_port),
                   98: "Port %s already in use" % (CONFIG.CMD.server_port)}
         try:

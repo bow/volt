@@ -13,6 +13,6 @@ SITE = Config(
 ENGINE_TEST = Config(
     FOO = 'engine foo in user',
     BAR = 'engine bar in user',
-)       
+)
 
 ENGINE_TEST_BAD = 'not a Config'

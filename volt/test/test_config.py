@@ -38,7 +38,7 @@ class UnifiedConfigLoadCases(unittest.TestCase):
         self.assertEqual(self.CONFIG.SITE.DESC, 'Desc in default')
         # arbitrary user config
         self.assertEqual(self.CONFIG.SITE.CUSTOM_OPT, 'custom_opt_user')
-    
+
     def test_load_dir_resolution(self):
         # default.py dir resolution
         self.assertEqual(self.CONFIG.VOLT.CONTENT_DIR, os.path.join(USER_DIR, \

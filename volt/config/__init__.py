@@ -7,7 +7,7 @@ volt.config
 Volt configuration container module.
 
 This module provides classes for handling configurations used in a Volt site
-generation. These configurations are obtained from two files: 1) the 
+generation. These configurations are obtained from two files: 1) the
 default_conf.py file in this module containining all default configurations
 values, and 2) the voltconf.py file in the user's Volt project directory
 containing all user-defined options. The final configuration, a result of
@@ -57,7 +57,7 @@ class UnifiedConfigContainer(LoggableMixin):
         else:
             if self._loaded is None:
                 self._load()
-            setattr(self._loaded, name, value)    
+            setattr(self._loaded, name, value)
 
     def __dir__(self):
         if self._loaded is None:
@@ -101,7 +101,7 @@ class UnifiedConfigContainer(LoggableMixin):
 class UnifiedConfig(LoggableMixin):
 
     """Container class for storing all configurations used in a Volt run.
-    
+
     UnifiedConfig unifies configuration values from volt.config.default_conf
     and the user's voltconf.py.
 

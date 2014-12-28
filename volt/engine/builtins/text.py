@@ -33,8 +33,8 @@ class TextUnit(Unit):
     """Class representation of text resources.
 
     This unit represents resources whose metadata (header) is contained
-    in the same file as the content. Some examples of resources like this 
-    is a single blog post or a single plain page. 
+    in the same file as the content. Some examples of resources like this
+    is a single blog post or a single plain page.
 
     """
 

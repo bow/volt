@@ -11,7 +11,7 @@ def taglist(tags):
 
 def latest_posts(engine):
     """Engine widget for showing the latest posts.
-    
+
     Example usage:
         {% for item in widgets.latest_posts %}
             <a href="{{ item.permalink }}">{{ item.title }}</a>
@@ -50,7 +50,7 @@ def monthly_archive(engine):
         size = len([x for x in engine.units if \
                 x.time.strftime("%Y%m") == '%s%s' % (year, month)])
 
-        results.append({'name': name, 
+        results.append({'name': name,
                         'link': link,
                         'size': size
                        })
@@ -79,7 +79,7 @@ def active_engines(site):
 
 def github_search(site):
     """Site widget for returning github repo search, sorted on last push time.
-    
+
     Example usage:
         {% for item in widgets.github_search %}
             <a href="{{ item.url }}">{{ item.name }} ({{ item.watchers }})</a>
