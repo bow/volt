@@ -75,6 +75,9 @@ class UnifiedConfigContainer(LoggableMixin):
         return self
 
     def next(self):
+        return self.__next__()
+
+    def __next__(self):
         if self._loaded is None:
             self._load()
         try:

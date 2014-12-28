@@ -85,7 +85,7 @@ class Runner(LoggableMixin):
         ext_parser.add_argument('template', type=str,
                 choices=['engine', 'plugin', 'widget'],
                 help="extension type")
-        ext_parser.add_argument('--builtin', type=str, dest='builtin', 
+        ext_parser.add_argument('--builtin', type=str, dest='builtin',
                 default='', metavar='NAME', help='builtin extension name')
 
         # parser for gen
@@ -186,7 +186,7 @@ class Runner(LoggableMixin):
         target_path = os.path.join(os.path.dirname(__file__), 'templates', cmd_name)
 
         # we only need the first layer to do the copying
-        parent_dir, child_dirs, top_files = os.walk(target_path).next()
+        parent_dir, child_dirs, top_files = next(os.walk(target_path))
 
         # copy all files in parent that's not a .pyc file
         for top in [x for x in top_files if not x.endswith('.pyc')]:

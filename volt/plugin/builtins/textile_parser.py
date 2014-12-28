@@ -43,6 +43,6 @@ class TextileParser(Plugin):
         """Returns html string of a textile content.
 
         string -- string to process
-        
+
         """
         return textile.textile(string)

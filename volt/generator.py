@@ -81,7 +81,7 @@ class Site(LoggableMixin):
                           or 'plugins'.
         volt_dir -- String denoting absolute path to Volt's installation
                     directory.
-        
+
         This method tries to load engines or plugins from the user's Volt
         project directory first. Failing that, it will try to import engines
         or plugins from Volt's installation directory.

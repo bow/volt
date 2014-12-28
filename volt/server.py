@@ -7,14 +7,14 @@ volt.server
 Development server for Volt.
 
 This module provides a multithreading HTTP server that subclasses
-SocketServer.ThreadingTCPServer. The server can auto-regenerate the Volt site
+socketserver.ThreadingTCPServer. The server can auto-regenerate the Volt site
 after any file inside it is changed and a new HTTP request is sent. It can be
 run from any directory inside a Volt project directory and will always return
 resources relative to the Volt output site directory. If it is run outside of
 a Volt directory, an error will be raised.
 
 A custom HTTP request handler subclassing
-SimpleHTTPServer.SimpleHTTPRequestHandler is also provided. The methods defined
+http.server.SimpleHTTPRequestHandler is also provided. The methods defined
 in this class mostly alters the command line output. Processing logic is similar
 to the parent class.
 
@@ -23,16 +23,19 @@ to the parent class.
 
 """
 
+from future.standard_library import install_aliases
+install_aliases()
+
 import logging
 import os
 import posixpath
 import sys
-import urllib
 from functools import partial
+from http.server import SimpleHTTPRequestHandler
 from itertools import chain
 from socket import getfqdn
-from SimpleHTTPServer import SimpleHTTPRequestHandler
-from SocketServer import ThreadingTCPServer
+from socketserver import ThreadingTCPServer
+from urllib.parse import unquote
 
 from volt import __version__
 from volt import generator
@@ -116,7 +119,7 @@ class VoltHTTPServer(ThreadingTCPServer, LoggableMixin):
         host, port = self.socket.getsockname()[:2]
         self.server_name = getfqdn(host)
         self.server_port = port
-                                                    
+
 
 class VoltHTTPRequestHandler(SimpleHTTPRequestHandler, LoggableMixin):
 
@@ -149,7 +152,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler, LoggableMixin):
             console(message, color='cyan')
         else:
             console(message)
-        
+
         self.logger.debug(message)
 
     def log_request(self, code='-', size='-'):
@@ -172,7 +175,7 @@ class VoltHTTPRequestHandler(SimpleHTTPRequestHandler, LoggableMixin):
         # overrides parent translate_path to enable custom directory setting.
         path = path.split('?',1)[0]
         path = path.split('#',1)[0]
-        path = posixpath.normpath(urllib.unquote(path))
+        path = posixpath.normpath(unquote(path))
         words = path.split('/')
         words = filter(None, words)
         path = CONFIG.VOLT.SITE_DIR
@@ -196,7 +199,7 @@ def run():
     address = ('127.0.0.1', CONFIG.CMD.server_port)
     try:
         server = VoltHTTPServer(address, VoltHTTPRequestHandler)
-    except Exception, e:
+    except Exception as e:
         ERRORS = { 2: "Site directory '%s' not found" % CONFIG.VOLT.SITE_DIR,
                   13: "You don't have permission to access port %s" % 
                       (CONFIG.CMD.server_port),

@@ -11,6 +11,8 @@ Collection of general handy methods used throughout Volt.
 
 """
 
+from past.builtins import basestring
+
 import imp
 import logging
 import os

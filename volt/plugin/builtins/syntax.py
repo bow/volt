@@ -147,14 +147,13 @@ class Syntax(Plugin):
         string -- String containing the code to highlight.
         pattern -- Compiled regex object for highlight pattern matching.
         lang_pattern -- Compiled regex for obtaining language name (if provided)
-        
+
         """
         codeblocks = re.findall(pattern, string)
         # results: list of tuples of 2 or 3 items
         # item[0] is the whole code block (syntax tag + code to highlight)
         # item[1] is the programming language (optional, depends on usage)
         # item[2] is the code to highlight
-
         if codeblocks:
             for match, lang, code in codeblocks:
                 if lang:

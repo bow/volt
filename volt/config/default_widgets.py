@@ -11,6 +11,9 @@ Volt default widgets, and jinja2 filters and tests.
 
 """
 
+from past.builtins import basestring
+
+
 def displaytime(datetime_obj, format):
     """Jinja2 filter for displaying datetime objects according to format.
 
@@ -25,7 +28,7 @@ def displaytime(datetime_obj, format):
 
 def activatedin(name, config):
     """Jinja2 test for checking whether an engine, plugin, or widget is active.
-    
+
     name -- Name of engine, plugin, or widget.
     config -- UnifiedConfigContainer instance, passed as an argument at render
         time so the values are already primed.

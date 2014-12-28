@@ -334,7 +334,7 @@ class Engine(LoggableMixin):
             for unit in units:
                 val = getattr(unit, field)
                 time_str = [[val.strftime(y)] for y in time_tokens]
-                time_tuple = zip(*time_str)
+                time_tuple = list(zip(*time_str))
                 assert len(time_tuple) == 1
                 if item in time_tuple:
                     matches.append(unit)
@@ -593,7 +593,7 @@ class Unit(Page):
             else:
                 permalist.append(self.slugify(token))
 
-        return [unit_base_url.strip('/')] + filter(None, permalist)
+        return [unit_base_url.strip('/')] + [perma for perma in permalist if perma]
 
     # convenience methods
     open_text = partial(codecs.open, encoding='utf-8')
@@ -692,7 +692,7 @@ class Pagination(Page):
         # since paginations are 1-indexed
         self.pagin_idx = pagin_idx + 1
         # precautions for empty string, so double '/'s are not introduced
-        self.base_permalist = filter(None, base_permalist)
+        self.base_permalist = list(filter(None, base_permalist))
         self.logger.debug('created: %s' % self.id)
 
     @cachedproperty
@@ -705,7 +705,7 @@ class Pagination(Page):
         permalist = self.base_permalist
         # add pagination url and index if it's not the first pagination page
         if self.pagin_idx > 1:
-            permalist += filter(None, [CONFIG.SITE.PAGINATION_URL, \
-                    str(self.pagin_idx)])
+            permalist += list(filter(None, [CONFIG.SITE.PAGINATION_URL, \
+                    str(self.pagin_idx)]))
 
         return permalist

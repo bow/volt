@@ -137,7 +137,9 @@ class MainInitCases(unittest.TestCase):
 
         walk = list(os.walk(CMD_INIT_DIR))
         after = [os.path.join(d[0], f) for d in walk for f in d[2] if not f.endswith('.pyc')]
-        [x.sort() for x in before, after]
+
+        before.sort()
+        after.sort()
 
         self.assertEqual(before, after)
         self.assertEqual([self.console_call], console_mock.call_args_list)
@@ -154,7 +156,8 @@ class MainInitCases(unittest.TestCase):
         after = [x for x in os.listdir(CMD_INIT_DIR) if \
                 not (x.endswith('.pyc') or x == '__pycache__')]
 
-        [x.sort() for x in before, after]
+        before.sort()
+        after.sort()
 
         self.assertEqual(before, after)
         self.assertEqual([self.console_call, call2], console_mock.call_args_list)
@@ -174,7 +177,8 @@ class MainInitCases(unittest.TestCase):
         after = [x for x in os.listdir(CMD_INIT_DIR) if \
                 not (x.endswith('.pyc') or x == '__pycache__')]
 
-        [x.sort() for x in before, after]
+        before.sort()
+        after.sort()
 
         self.assertEqual(before, after)
         self.assertEqual([self.console_call, call2, call3], console_mock.call_args_list)

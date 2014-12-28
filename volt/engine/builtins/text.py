@@ -15,6 +15,8 @@ constituting a simple blog.
 """
 
 from __future__ import with_statement
+from builtins import filter
+
 import glob
 import os
 
@@ -68,9 +70,9 @@ class TextUnit(Unit):
             # open file and remove whitespaces
             read = filter(None, self._re_delim.split(source.read(), 2))
             # header should be parsed into dict
-            self.parse_header(read.pop(0))
+            self.parse_header(next(read))
             # content is everything else after header
-            self.content = read.pop(0).strip()
+            self.content = next(read).strip()
 
         # if slug is not set in header, set it now
         if not hasattr(self, 'slug'):
