@@ -1,23 +1,21 @@
 ====
-VOLT
+Volt
 ====
 
-.. image:: https://secure.travis-ci.org/bow/volt.png?branch=master
-                :target: https://travis-ci.org/bow/volt
+|ci| |coverage|
 
---------------------------------------------------
-The Python static website generator with potential
---------------------------------------------------
+.. |ci| image:: https://img.shields.io/travis/bow/volt.png?style=flat
+    :target: https://travis-ci.org/bow/volt
 
-**Another static website generator?**
+.. |coverage| image:: https://img.shields.io/coveralls/bow/volt.png?style=flat
+    :target: https://coveralls.io/r/bow/volt
 
-Sure, why not :)? The number of static site generators is continuously
-growing, but so far I have yet to find a flexible static site that suits my
-needs. So I decided to write my own.
 
-**What's so different about Volt?**
+-----------------------------
+Charge up your static website
+-----------------------------
 
-Here are some of my favorite features:
+Volt is a Python static website generator, with:
 
 1. **Automatic pagination**
 
@@ -32,7 +30,7 @@ Here are some of my favorite features:
 
    And this doesn't apply only to tags. You can use it to create pages based on
    authors, time (year, day, date, whatever you want), and any other data you
-   put in your posts. 
+   put in your posts.
 
    All with a simple URL pattern in the configuration file, like so ::
 
@@ -54,13 +52,13 @@ Here are some of my favorite features:
    responsible for different sections of your site. The blog engine, for
    example generates the blog section of your site, while the plain engine,
    generates simple web pages. `See how simple the blog engine code is
-   <http://github.com/bow/volt/blob/master/volt/engine/builtins/blog.py>`_ 
-   or take a peek at the `main site generator function 
+   <http://github.com/bow/volt/blob/master/volt/engine/builtins/blog.py>`_
+   or take a peek at the `main site generator function
    <http://github.com/bow/volt/blob/master/volt/generator.py>`_ to get a
    picture of how the engines work.
-  
+
    Finally, Volt comes with a plugin architecture that lets you hook into the
-   engines' actions. Seven plugins comes packed in with volt: 
+   engines' actions. Seven plugins comes packed in with volt:
 
    - Atom feed generator plugin (atomic, no extra dependency)
 
@@ -72,9 +70,9 @@ Here are some of my favorite features:
      - Markdown (markdown_parser, requires `python-markdown
        <http://freewisdom.org/projects/python-markdown/Installation>`_
 
-     - Textile (textile_parser, requires `python-textile 
+     - Textile (textile_parser, requires `python-textile
        <https://github.com/chrisdrackett/python-textile>`_)
-   
+
    - Syntax highlighter plugin (syntax, requires `pygments
      <http://pygments.org/>`_)
 
@@ -84,8 +82,8 @@ Here are some of my favorite features:
    - Javascript minifier plugin (js_minifier, requires `jsmin
      <http://pypi.python.org/pypi/jsmin>`_)
 
-   `Browse their code 
-   <http://github.com/bow/volt/tree/master/volt/plugin/builtins>`_ 
+   `Browse their code
+   <http://github.com/bow/volt/tree/master/volt/plugin/builtins>`_
    to see how you can easily write your own plugin.
 
 
@@ -94,12 +92,11 @@ Here are some of my favorite features:
    Sort your content according to time, or title, or author name, or tags,
    anything you want. Set global values for all content, e.g. authors for all
    blog posts. Define your own Jinja2 tests or filters. Set the plugin options.
-   You can do all these in Volt through one central configuration file: 
+   You can do all these in Volt through one central configuration file:
    ``voltconf.py``, conveniently accessible in your project folder.
 
 
-All these with the perks of static websites: easy deployment,
-easy back-up and tracking, security, and speed.
+5. ... other perks of static websites: easy deployment, easy back-up, and more.
 
 
 ------------
@@ -148,7 +145,7 @@ Here's a quick summary of the currently available commands:
   ``site`` directory.
 
 * ``volt ext``: Adds a template for writing your custom engine, plugin, or
-  widget. Custom engines and plugins are stored respectively inside the 
+  widget. Custom engines and plugins are stored respectively inside the
   ``engines`` and ``plugins`` directory in the root Volt project directory.
   Widgets are stored inside ``widgets.py`` in the same directory. You can also
   specify an additional ``--builtin`` to copy a builtin engine/plugin/widget
@@ -158,5 +155,3 @@ Here's a quick summary of the currently available commands:
 
 All of the commands except for ``init`` and ``demo`` can be run from anywhere
 inside a Volt project directory.
-
-The docs are, unfortunately, minimum at the moment.
