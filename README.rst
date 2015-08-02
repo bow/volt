@@ -2,13 +2,16 @@
 Volt
 ====
 
-|ci| |coverage|
+|ci| |coverage| |pypi|
 
 .. |ci| image:: https://img.shields.io/travis/bow/volt.png?style=flat
     :target: https://travis-ci.org/bow/volt
 
 .. |coverage| image:: https://img.shields.io/coveralls/bow/volt.png?style=flat
     :target: https://coveralls.io/r/bow/volt
+
+.. |pypi| image:: https://badge.fury.io/py/volt.svg
+    :target: http://badge.fury.io/py/volt
 
 
 -----------------------------
