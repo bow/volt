@@ -1,4 +1,4 @@
-include README.rst TODO MANIFEST.in CONTRIB LICENSE distribute_setup.py
+include README.rst MANIFEST.in HISTORY.rst LICENSE
 recursive-include docs *
 recursive-include extras *
 recursive-include volt *
@@ -10,5 +10,5 @@ recursive-exclude . .coverage
 recursive-exclude .  htmlcov
 prune .travis.yml
 prune .tox
-prune Makefile
-prune dev-requirements.txt
+prune requirements.txt
+prune requirements-dev.txt

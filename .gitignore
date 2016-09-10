@@ -11,10 +11,3 @@ htmlcov/
 .tox/
 *.egg-info
 .coverage
-distribute-*
-distribute_setup25.py
-
-# volt-specific
-ROADMAP
-volt/templates/sandbox/
-volt/templates/docs/

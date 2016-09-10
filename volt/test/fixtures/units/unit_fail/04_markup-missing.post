@@ -1,8 +1,0 @@
----
-title: Fail
-time: 2004/03/13 22:10
-categories: Testing, Fixture
-tags: test, should, not, pass
----
-
-This one should fail because the header field 'title' is missing.

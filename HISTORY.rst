@@ -2,19 +2,27 @@
 CHANGELOG
 =========
 
+Version 1.0
+-----------
+
+Release 1.0.0
+^^^^^^^^^^^^^
+
+Release date: TBD
+
 
 Version 0.4.0 (alpha)
 ---------------------
-Release date: TBD
+Release date: Unreleased
 
 Highlights:
 
-  o New feature: custom pagination titles
-  o Text engines can now parse file in subdirectories
-  o Text engines can now parse files according to a user-defined pattern
-  o Builtin atomic plugin can now use user-defined templates
+  * New feature: custom pagination titles
+  * Text engines can now parse file in subdirectories
+  * Text engines can now parse files according to a user-defined pattern
+  * Builtin atomic plugin can now use user-defined templates
 
-  o Changed/removed these setting names/values:
+  * Changed/removed these setting names/values:
     - {ENGINE}.GLOBAL_FIELDS -> {ENGINE}.DEFAULT_FIELDS
 
 
@@ -24,31 +32,31 @@ Release date: 2012-04-24
 
 Highlights:
 
-  o New builtin plugins: css_minifer and js_minifier.
+  * New builtin plugins: css_minifer and js_minifier.
 
-  o New builtin jinja test: ``activatedin``, for testing whether an engine,
+  * New builtin jinja test: ``activatedin``, for testing whether an engine,
     plugin, or widget is active.
 
-  o New feature: widgets
+  * New feature: widgets
     Widgets enable dynamic retrieval of Unit attributes, useful for creating
     things like a list of most recent posts or a list of archive links. They
     are Python functions stored in ``widgets.py`` in the project root directory.
 
-  o New feature: logging
+  * New feature: logging
     Users can now log their entire Volt run and log their custom engines,
     plugins, or widgets.
 
-  o New command: ``volt ext``
+  * New command: ``volt ext``
     ``volt ext`` creates template files for writing custom engine, plugin, or
     widget, in the root project directory. It can also be used to copy builtin
     engines/plugins/widgets into the user's Volt project directory.
 
-  o Improved console messages.
+  * Improved console messages.
 
-  o New settings:
+  * New settings:
+
     - SITE.LOG_LEVEL
-      Integer to set logging level, using values similar to Python's logging
-      module.
+      Integer to set logging level, using values similar to Python's logging module.
     - SITE.WIDGETS
       List of widgets that do not retrieve information from engine units.
     - {ENGINE}.WIDGETS
@@ -67,25 +75,26 @@ Highlights:
       Dictionary of characters to replace in a slug, useful for specifying
       custom non-ascii character replacements
 
-  o Changed/removed these setting names/values:
+  * Changed/removed these setting names/values:
+
     - {ENGINE}.CONTENT_DATETIME_FORMAT -> {ENGINE}.DATETIME_FORMAT
     - VOLT.LAYOUT_DIR -> SITE.ASSET_DIR
     - default VOLT.ASSET_DIR value is ``assets``
     - default VOLT.CONTENT_DIR value changed to ``contents`` from ``content``
 
-  o Active engines must now define a ``units`` property method that returns all
+  * Active engines must now define a ``units`` property method that returns all
     its units.
 
-  o Engine.activate renamed to Engine.preprocess and is not an abstract method
+  * Engine.activate renamed to Engine.preprocess and is not an abstract method
     anymore.
 
-  o Plus many other internal code refactorizations and improvements.
+  * Plus many other internal code refactorizations and improvements.
 
 Fixes:
 
-  o ``volt serve`` now only runs ``volt gen`` once
+  * ``volt serve`` now only runs ``volt gen`` once
 
-  o All Volt commands work from anywhere inside a Volt project directory now
+  * All Volt commands work from anywhere inside a Volt project directory now
 
 
 Version 0.0.2 (alpha)
@@ -94,31 +103,31 @@ Release date: 2012-03-25
 
 Highlights:
 
-  o Preliminary support for more python Versions: 3.2 and 2.6
+  * Preliminary support for more python Versions: 3.2 and 2.6
 
-  o Preliminary support for rSt and textile plugins
+  * Preliminary support for rSt and textile plugins
 
-  o Default configuration name changes:
+  * Default configuration name changes:
     - ``PACKS``          -> ``PAGINATIONS``
     - ``POSTS_PER_PAGE`` -> ``UNITS_PER_PAGINATION``
     - ``SORT``           -> ``SORT_KEY``
 
-  o ``volt serve`` now generates the site first before serving any contents.
+  * ``volt serve`` now generates the site first before serving any contents.
 
-  o PyYAML dependency removed.
+  * PyYAML dependency removed.
 
-  o Pygments is now an optional dependency.
+  * Pygments is now an optional dependency.
 
-  o Engines and Plugins now store their default settings as a class attribute.
+  * Engines and Plugins now store their default settings as a class attribute.
     Users can override this by creating a Config object with the designated
     name (the value of the Engine/Plugin class attribute 'USER_CONF_ENTRY')
     in the project's voltconf.py.
 
 Fixes:
 
-  o Windows terminal output does not display ANSI color codes anymore.
+  * Windows terminal output does not display ANSI color codes anymore.
 
-  o Volt server regeneration now works if voltconf.py is changed.
+  * Volt server regeneration now works if voltconf.py is changed.
 
 
 Version 0.0.1 (alpha)

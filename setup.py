@@ -1,52 +1,46 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-from volt import __version__
+from volt import __author__, __contact__, \
+    __homepage__, __version__
 
 
-install_requires = [
-    "future>=0.14.3",
-    "Jinja2>=2.6",
-    "Markdown>=2.3.1,<2.5",
-]
-long_description = open("README.rst").read()
+with open("README.rst") as src:
+    readme = src.read()
 
-# handle dependencies for python2.x (x < 7)
-try:
-    __import__("argparse")
-except ImportError:
-    install_requires.append("argparse")
+with open("HISTORY.rst") as src:
+    history = src.read().replace(".. :changelog:", "").strip()
+
+with open("requirements.txt") as src:
+    requirements = [line.strip() for line in src if not line.startswith("-e")]
+
+with open("requirements-dev.txt") as src:
+    test_requirements = [line.strip() for line in src]
+
 
 setup(
-    name = "Volt",
-    version = __version__,
-    description = "The static website generator with potential",
-    long_description = long_description,
-    author = "Wibowo Arindrarto",
-    author_email = "bow@bow.web.id",
-    url = "http://github.com/bow/volt/",
-    keywords = "static website",
-    license = "BSD",
-    packages = find_packages(),
-    include_package_data = True,
-    install_requires = install_requires,
-    extras_require = {
-        "rst": ["docutils>=0.8.1"],
-        "textile": ["textile>=2.1.5"],
-        "syntax highlight": ["pygments>=1.4,<=1.5"],
-    },
-    test_suite='nose.collector',
-    tests_require=[
-        'nose>=1.1.2',
-        'mock>=0.8.0',
-    ],
-    zip_safe = False,
-    entry_points = """
+    name="Volt",
+    version=__version__,
+    description="Python static website generator",
+    long_description=readme + "\n\n" + history,
+    author=__author__,
+    author_email=__contact__,
+    url=__homepage__,
+    packages=find_packages(exclude=["*.tests", "*.tests.*",
+                                    "tests.*", "tests"]),
+    keywords="static website",
+    license="BSD",
+    include_package_data=True,
+    install_requires=requirements,
+    tests_require=test_requirements,
+    zip_safe=False,
+    entry_points="""
     [console_scripts]
-    volt = volt.main:main
+    volt=volt.cli:main
     """,
-    classifiers = [
+    classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
         "Environment :: Web Environment",
@@ -54,10 +48,7 @@ setup(
         "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: BSD License",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: Python :: 3.5",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Utilities",
     ]
