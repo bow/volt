@@ -80,13 +80,13 @@ class SiteConfig(dict):
                 user_conf = yaml.load(src, Loader=Loader)
             except:
                 # TODO: display traceback depending on log level
-                return ConfigLoad(cls(), ["YAML contains syntax errors."])
+                return ConfigLoad(None, ["Config contains syntax errors."])
 
-        cls.nested_update(conf, user_conf)
         # TODO: implement proper validation
-        errors = conf.validate()
+        errors = cls.validate(user_conf)
         if errors:
-            return ConfigLoad(cls(), errors)
+            return ConfigLoad(None, errors)
+        cls.nested_update(conf, user_conf)
         # TODO; resolve any engines and plugins config?
         return ConfigLoad(conf, [])
 
@@ -111,13 +111,17 @@ class SiteConfig(dict):
                 one[key] = other[key]
         return one
 
-    def validate(self):
+    @classmethod
+    def validate(cls, contents):
         """Performs validation of the config contents.
 
         :returns: Validation error messages as a list of strings.
 
         """
         errors = []
+        if not isinstance(contents, dict):
+            # No point in progressing further if contents is not dictionary
+            return ["Unexpected config structure."]
         return errors
 
     @lazyproperty
