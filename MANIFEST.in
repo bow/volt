@@ -1,14 +1,15 @@
-include README.rst MANIFEST.in HISTORY.rst LICENSE
+include README.rst HISTORY.rst LICENSE MANIFEST.in requirements.txt requirements-dev.txt
+
+recursive-include volt *
 recursive-include docs *
 recursive-include extras *
-recursive-include volt *
+
+recursive-exclude volt *.py[co]
 recursive-exclude volt *.class
-recursive-exclude volt *.pyc
 recursive-exclude volt *.log
 recursive-exclude volt *.swp
 recursive-exclude . .coverage
 recursive-exclude .  htmlcov
+
 prune .travis.yml
 prune .tox
-prune requirements.txt
-prune requirements-dev.txt
