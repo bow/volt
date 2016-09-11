@@ -1,11 +1,15 @@
-CONTRIB
+Authors
 =======
 
-This is a list of people who have contributed to Volt. A special thanks to
-everyone here :).
+
+Core
+----
+* Wibowo Arindrarto (@bow)
 
 
-Sebastian Spaeth (@spaetz)
+Contributors
+------------
+* Sebastian Spaeth (@spaetz)
     - New setting: slug character mapping
     - Fix: Python 3 urllib import errors in the demo widget
     - Fix: Python 3 character encoding errors in the builtin atomic plugin
