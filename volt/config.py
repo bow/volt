@@ -9,6 +9,7 @@
     :license: BSD
 
 """
+from os import path
 from collections import namedtuple, Mapping
 
 import yaml
@@ -26,7 +27,7 @@ DEFAULT_CONFIG = {
     "volt": {
         "contents_path": "contents",
         "templates_path": "templates",
-        "assets_path": "templates/assets",
+        "assets_path": path.join("templates", "assets"),
         "site_path": "site",
         "user_engines_path": "user_engines",
         "config_name": "voltconfig.yaml",
