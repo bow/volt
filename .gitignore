@@ -11,3 +11,4 @@ htmlcov/
 .tox/
 *.egg-info
 .coverage
+coverage.xml
