@@ -1,4 +1,4 @@
-include README.rst HISTORY.rst LICENSE MANIFEST.in requirements.txt requirements-dev.txt
+include README.rst HISTORY.rst LICENSE MANIFEST.in requirements.txt requirements-dev.txt .coveragerc
 
 recursive-include volt *
 recursive-include docs *
