@@ -13,3 +13,6 @@ install:
 
 script:
     - py.test -vv --cov=volt --flake8 tests volt
+
+after_success:
+    - codecov
