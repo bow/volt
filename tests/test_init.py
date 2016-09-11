@@ -7,6 +7,7 @@
     :license: BSD
 
 """
+import os
 from pathlib import Path
 
 import yaml
@@ -36,6 +37,19 @@ def test_init_default():
         # Config must be valid YAML
         with open(str(cfg_path), "r") as src:
             assert yaml.load(src)
+
+
+def test_init_nonwritable_dir():
+    runner = CliRunner()
+    with runner.isolated_filesystem() as fs:
+        os.chmod(fs, 0o555)
+        wp = Path(fs)
+
+        result = runner.invoke(main, ["init"])
+        assert result.exit_code != 0
+        assert isinstance(result.exception, SystemExit)
+        assert "Error: Directory '{0}' is not writable.".format(wp) in \
+            result.output
 
 
 def test_init_nonempty():
