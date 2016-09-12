@@ -10,6 +10,7 @@ before_install:
 
 install:
     - python setup.py install
+    - pip install codecov==2.0.5
 
 script:
     - py.test -vv --cov --cov-config .coveragerc --flake8 tests volt
