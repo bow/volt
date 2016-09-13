@@ -1,13 +1,21 @@
-include README.rst HISTORY.rst LICENSE MANIFEST.in requirements.txt requirements-dev.txt .coveragerc
+include AUTHORS.rst
+include HISTORY.rst
+include README.rst
+include MANIFEST.in
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+include .coveragerc
 
 recursive-include volt *
 recursive-include docs *
 recursive-include extras *
 
-recursive-exclude volt *.py[co]
-recursive-exclude volt *.class
-recursive-exclude volt *.log
-recursive-exclude volt *.swp
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.class
+recursive-exclude * *.log
+recursive-exclude * *.swp
 recursive-exclude . .coverage
 recursive-exclude .  htmlcov
 
