@@ -19,4 +19,4 @@ Volt is a versatile Python static website generator.
 Requirements
 ------------
 
-* Python 3.5
+* Python 3.6
