@@ -1,5 +1,6 @@
-=========
-CHANGELOG
+.. :changelog:
+
+Changelog
 =========
 
 Version 1.0
