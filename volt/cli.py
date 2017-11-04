@@ -5,10 +5,8 @@
 
     Main entry point for command line invocation.
 
-    :copyright: (c) 2012-2016 Wibowo Arindrarto <bow@bow.web.id>
-    :license: BSD
-
 """
+# (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 from pathlib import Path
 
 import click
