@@ -29,7 +29,7 @@ __all__ = []
               help="Logging level. Default: 'info'.")
 @click.pass_context
 def main(ctx, log_level):
-    """static website generator"""
+    """A versatile static website generator"""
     ctx.params["log_level"] = log_level
 
 

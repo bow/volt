@@ -4,7 +4,7 @@
 from setuptools import find_packages, setup
 
 from volt import __author__, __contact__, \
-    __homepage__, __version__
+    __homepage__, __version__, NAME
 
 
 with open("README.rst") as src:
@@ -21,9 +21,9 @@ with open("requirements-dev.txt") as src:
 
 
 setup(
-    name="Volt",
+    name=NAME.capitalize(),
     version=__version__,
-    description="Python static website generator",
+    description="Versatile python static website generator",
     long_description=readme + "\n\n" + changelog,
     author=__author__,
     author_email=__contact__,

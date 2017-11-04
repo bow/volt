@@ -78,7 +78,7 @@ class SiteConfig(dict):
         with open(yaml_fname) as src:
             try:
                 user_conf = yaml.load(src, Loader=Loader)
-            except:
+            except yaml.error.YAMLError:
                 # TODO: display traceback depending on log level
                 return ConfigLoad(None, ["Config contains syntax errors."])
 

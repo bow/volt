@@ -1,14 +1,21 @@
-# general / os-specific
+# python #
 *.pyc
-*.swp
-*.gz
-.DS_STORE
-Thumbs.db
-
-# python test/dev-related
-build/
-htmlcov/
-.tox/
+*.pyo
 *.egg-info
 .coverage
-coverage.xml
+.coverage.*
+.tox
+.cache
+.eggs
+htmlcov/
+# pyenv #
+.python-version
+
+# temp files #
+*.swp
+*.swo
+
+# others #
+.env
+.DS_STORE
+Thumbs.db
