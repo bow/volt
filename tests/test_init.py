@@ -138,7 +138,7 @@ def test_init_with_config_samedir_invalid():
         assert isinstance(result.exception, SystemExit)
         # Expected only the invalid config
         assert list(wp.iterdir()) == [cfg_path]
-        assert "Error: Config contains syntax errors." in result.output
+        assert "Error: config can not be parsed" in result.output
 
 
 def test_init_with_config_samedir_unexpected():
@@ -153,4 +153,4 @@ def test_init_with_config_samedir_unexpected():
         assert isinstance(result.exception, SystemExit)
         # Expected only the invalid config
         assert list(wp.iterdir()) == [cfg_path]
-        assert "Error: Unexpected config structure." in result.output
+        assert "Error: unexpected config structure" in result.output

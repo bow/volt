@@ -80,7 +80,7 @@ class SiteConfig(dict):
                 user_conf = yaml.load(src, Loader=Loader)
             except yaml.error.YAMLError:
                 # TODO: display traceback depending on log level
-                return ConfigLoad(None, ["Config contains syntax errors."])
+                return ConfigLoad(None, ["config can not be parsed"])
 
         # TODO: implement proper validation
         errors = cls.validate(user_conf)
@@ -121,7 +121,7 @@ class SiteConfig(dict):
         errors = []
         if not isinstance(contents, dict):
             # No point in progressing further if contents is not dictionary
-            return ["Unexpected config structure."]
+            return ["unexpected config structure"]
         return errors
 
     @lazyproperty

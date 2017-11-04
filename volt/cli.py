@@ -57,8 +57,9 @@ def init(ctx, config_path, force):
     # always raise and exception if it exist. The for-loop is just so
     # that we don't load all the unecessary directory contents first.
     for _ in unexpected:
-        raise click.UsageError("Work directory is not empty."
-                               " You may want to use the `-f` flag.")
+        raise click.UsageError("work directory is not empty --"
+                               " use the `-f` flag to force init in nonempty"
+                               " directories")
 
     config, errors = SiteConfig.from_yaml(work_path, config_path)
     for error in errors:
