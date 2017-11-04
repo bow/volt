@@ -1,9 +1,17 @@
-# Config file for automatic testing at travis-ci.org
+sudo: false
 
 language: python
 
-python:
-  - "3.6"
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+matrix:
+  include:
+    - env: TOX_ENV=py36
+      python: 3.6
+    - env: TOX_ENV=flake8
+      python: 3.6
 
 before_install:
     - pip install -r requirements-dev.txt
@@ -12,8 +20,7 @@ install:
     - python setup.py install
     - pip install codecov==2.0.5
 
-script:
-    - py.test -vv --cov --cov-config .coveragerc --flake8 tests volt
+script: tox -e $TOX_ENV
 
 after_success:
     - codecov

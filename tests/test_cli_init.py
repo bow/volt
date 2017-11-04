@@ -20,7 +20,7 @@ from volt.config import DEFAULT_CONFIG as DC
 CFG_NAME = DC["volt"]["config_name"]
 
 
-def test_init_default():
+def test_default():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -39,7 +39,7 @@ def test_init_default():
             assert yaml.load(src)
 
 
-def test_init_nonwritable_dir():
+def test_nonwritable_dir():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         os.chmod(fs, 0o555)
@@ -52,7 +52,7 @@ def test_init_nonwritable_dir():
             result.output
 
 
-def test_init_nonempty():
+def test_nonempty():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -66,7 +66,7 @@ def test_init_nonempty():
         assert list(wp.iterdir()) == [exst_file]
 
 
-def test_init_nonempty_with_force():
+def test_nonempty_with_force():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -89,7 +89,7 @@ def test_init_nonempty_with_force():
             assert yaml.load(src)
 
 
-def test_init_with_config_samedir():
+def test_with_config_samedir():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -114,7 +114,7 @@ def test_init_with_config_samedir():
             assert written == cfg
 
 
-def test_init_with_config_samedir_nonexistent():
+def test_with_config_samedir_nonexistent():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -126,7 +126,7 @@ def test_init_with_config_samedir_nonexistent():
         assert not list(wp.iterdir())
 
 
-def test_init_with_config_samedir_invalid():
+def test_with_config_samedir_invalid():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -141,7 +141,7 @@ def test_init_with_config_samedir_invalid():
         assert "Error: config can not be parsed" in result.output
 
 
-def test_init_with_config_samedir_unexpected():
+def test_with_config_samedir_unexpected():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
