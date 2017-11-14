@@ -92,7 +92,7 @@ def test_with_config_samedir():
         wp = Path(fs)
         cfg = {"site": {"name": "test", "url": "http://test.com"}}
         cfg_path = wp.joinpath(CONFIG_FNAME)
-        cfg_s = toml.dumps(cfg, preserve=True)
+        cfg_s = toml.dumps(cfg)
         cfg_path.write_text(cfg_s)
 
         result = runner.invoke(main, ["init", "-c", str(cfg_path)])
