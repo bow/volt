@@ -10,15 +10,15 @@
 from os import path
 from collections import namedtuple, Mapping
 
-import yaml
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
+import toml
 
 from .utils import lazyproperty
 
-__all__ = ["DEFAULT_CONFIG", "SiteConfig"]
+__all__ = ["CONFIG_FNAME", "DEFAULT_CONFIG", "SiteConfig"]
+
+
+# Config file name
+CONFIG_FNAME = "volt.toml"
 
 # Default configuration values
 DEFAULT_CONFIG = {
@@ -27,23 +27,22 @@ DEFAULT_CONFIG = {
         "templates_path": "templates",
         "assets_path": path.join("templates", "assets"),
         "site_path": "site",
-        "user_engines_path": "user_engines",
-        "config_name": "voltconfig.yaml",
+        "engines_path": "engines",
+        "nested_content_lookup": True,
     },
     "site": {
-        "index_html_only": True,
-        "nested_content_lookup": True,
+        "dot_html_url": True,
     }
 }
 
 # Raw configuration text content for a new init
-INIT_CONFIG_STR = """---
-# Volt configuration file
-site:
-  # Name of your static site
-  name:
-  # URL that will point to your static site
-  url:"""
+INIT_CONFIG_STR = """# Volt configuration file
+
+# Site-level configuration
+[site]
+name = ""
+url = ""
+"""
 
 # Helper class for config loading
 ConfigLoad = namedtuple("ConfigLoad", ["result", "errors"])
@@ -56,27 +55,27 @@ class SiteConfig(dict):
     defaults = DEFAULT_CONFIG
 
     @classmethod
-    def from_yaml(cls, work_path, yaml_fname):
-        """Creates configuration instance from the given YAML config file.
+    def from_toml(cls, work_path, toml_fname):
+        """Creates configuration instance from the given TOML config file.
 
-        The loaded YAML configuration will update the default config values.
-        If the ``yaml_path`` parameter is None, the default configuration
+        The loaded TOML configuration will update the default config values.
+        If the ``toml_path`` parameter is None, the default configuration
         will be returned without any change.
 
-        :param str yaml_fname: Name of the YAML config file.
+        :param str toml_fname: Name of the YAML config file.
         :param path work_path: Absolute path to the working directory.
         :returns: a :class:`ConfigLoad` object that contains the result of a
             successful config loading, or a list of error messages, if any.
 
         """
         conf = cls(work_path, cls.defaults)
-        if yaml_fname is None:
+        if toml_fname is None:
             return ConfigLoad(conf, [])
 
-        with open(yaml_fname) as src:
+        with open(toml_fname) as src:
             try:
-                user_conf = yaml.load(src, Loader=Loader)
-            except yaml.error.YAMLError:
+                user_conf = toml.load(src)
+            except (IndexError, toml.TomlDecodeError):
                 # TODO: display traceback depending on log level
                 return ConfigLoad(None, ["config can not be parsed"])
 
@@ -117,7 +116,7 @@ class SiteConfig(dict):
 
         """
         errors = []
-        if not isinstance(contents, dict):
+        if not isinstance(contents, dict) or not contents:
             # No point in progressing further if contents is not dictionary
             return ["unexpected config structure"]
         return errors

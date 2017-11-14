@@ -3,4 +3,5 @@ iso8601==0.1.12
 python-slugify==1.2.4
 pytz==2017.3
 pyyaml==3.12
+toml==0.9.3.1
 Unidecode==0.4.21

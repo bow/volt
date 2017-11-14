@@ -9,7 +9,7 @@
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import os
 
-from .config import DEFAULT_CONFIG, INIT_CONFIG_STR
+from .config import CONFIG_FNAME, INIT_CONFIG_STR
 
 
 class Site(object):
@@ -38,7 +38,6 @@ class Site(object):
         self.config.assets_path.mkdir(parents=True, exist_ok=True)
         # Create initial YAML config file, if requested
         if do_write_config:
-            fname = DEFAULT_CONFIG["volt"]["config_name"]
-            with open(fname, "w") as target:
+            with open(CONFIG_FNAME, "w") as target:
                 print(INIT_CONFIG_STR, file=target)
         return []

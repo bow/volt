@@ -10,14 +10,11 @@
 import os
 from pathlib import Path
 
-import yaml
+import toml
 from click.testing import CliRunner
 
 from volt.cli import main
-from volt.config import DEFAULT_CONFIG as DC
-
-
-CFG_NAME = DC["volt"]["config_name"]
+from volt.config import CONFIG_FNAME, DEFAULT_CONFIG as DC
 
 
 def test_default():
@@ -32,11 +29,11 @@ def test_default():
         assert wp.joinpath(DC["volt"]["contents_path"]).exists()
         assert wp.joinpath(DC["volt"]["templates_path"]).exists()
         assert wp.joinpath(DC["volt"]["assets_path"]).exists()
-        cfg_path = wp.joinpath(CFG_NAME)
+        cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
-        # Config must be valid YAML
+        # Config must be valid TOML
         with open(str(cfg_path), "r") as src:
-            assert yaml.load(src)
+            assert toml.load(src)
 
 
 def test_nonwritable_dir():
@@ -82,11 +79,11 @@ def test_nonempty_with_force():
         assert wp.joinpath(DC["volt"]["contents_path"]).exists()
         assert wp.joinpath(DC["volt"]["templates_path"]).exists()
         assert wp.joinpath(DC["volt"]["assets_path"]).exists()
-        cfg_path = wp.joinpath(DC["volt"]["config_name"])
+        cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
-        # Config must be valid YAML
+        # Config must be valid TOML
         with open(str(cfg_path), "r") as src:
-            assert yaml.load(src)
+            assert toml.load(src)
 
 
 def test_with_config_samedir():
@@ -94,8 +91,8 @@ def test_with_config_samedir():
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
         cfg = {"site": {"name": "test", "url": "http://test.com"}}
-        cfg_path = wp.joinpath(CFG_NAME)
-        cfg_s = yaml.dump(cfg, default_flow_style=False)
+        cfg_path = wp.joinpath(CONFIG_FNAME)
+        cfg_s = toml.dumps(cfg, preserve=True)
         cfg_path.write_text(cfg_s)
 
         result = runner.invoke(main, ["init", "-c", str(cfg_path)])
@@ -110,7 +107,7 @@ def test_with_config_samedir():
         assert cfg_path.exists()
         # Config must be the same as expected
         with open(str(cfg_path), "r") as src:
-            written = yaml.load(src)
+            written = toml.load(src)
             assert written == cfg
 
 
@@ -119,7 +116,7 @@ def test_with_config_samedir_nonexistent():
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
 
-        result = runner.invoke(main, ["init", "-c", "nope.yaml"])
+        result = runner.invoke(main, ["init", "-c", "nope.toml"])
         assert result.exit_code != 0
         assert isinstance(result.exception, SystemExit)
         # Expected no items
@@ -130,8 +127,8 @@ def test_with_config_samedir_invalid():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
-        cfg_path = wp.joinpath(CFG_NAME)
-        cfg_path.write_text("invalid: 'yaml")
+        cfg_path = wp.joinpath(CONFIG_FNAME)
+        cfg_path.write_text("~~~")
 
         result = runner.invoke(main, ["init", "-c", str(cfg_path)])
         assert result.exit_code != 0
@@ -145,8 +142,8 @@ def test_with_config_samedir_unexpected():
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
-        cfg_path = wp.joinpath(CFG_NAME)
-        cfg_path.write_text("this is valid but unexpected")
+        cfg_path = wp.joinpath(CONFIG_FNAME)
+        cfg_path.write_text("")
 
         result = runner.invoke(main, ["init", "-c", str(cfg_path)])
         assert result.exit_code != 0
