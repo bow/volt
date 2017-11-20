@@ -67,21 +67,23 @@ class SiteConfig(dict):
 
         """
         conf = cls(work_path, cls.defaults)
-        if toml_fname is None:
-            return Result.as_success(conf)
 
-        with open(toml_fname) as src:
-            try:
-                user_conf = toml.load(src)
-            except (IndexError, toml.TomlDecodeError):
-                # TODO: display traceback depending on log level
-                return Result.as_failure("config can not be parsed")
+        if toml_fname is not None:
+            with open(toml_fname) as src:
+                try:
+                    user_conf = toml.load(src)
+                except (IndexError, toml.TomlDecodeError):
+                    # TODO: display traceback depending on log level
+                    return Result.as_failure("config can not be parsed")
 
-        # TODO: implement proper validation
-        errors = cls.validate(user_conf)
-        if errors:
-            return Result.as_failure(errors)
-        cls.nested_update(conf, user_conf)
+            # TODO: implement proper validation
+            errors = cls.validate(user_conf)
+            if errors:
+                return Result.as_failure(errors)
+            cls.nested_update(conf, user_conf)
+
+        # Move 'site' to root level.
+        conf.update(**conf.pop("site"))
         # TODO; resolve any engines and plugins config?
         return Result.as_success(conf)
 
