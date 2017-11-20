@@ -8,11 +8,11 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 from os import path
-from collections import namedtuple, Mapping
+from collections import Mapping
 
 import toml
 
-from .utils import lazyproperty
+from .utils import lazyproperty, Result
 
 __all__ = ["CONFIG_FNAME", "DEFAULT_CONFIG", "SiteConfig"]
 
@@ -44,9 +44,6 @@ name = ""
 url = ""
 """
 
-# Helper class for config loading
-ConfigLoad = namedtuple("ConfigLoad", ["result", "errors"])
-
 
 class SiteConfig(dict):
 
@@ -64,28 +61,29 @@ class SiteConfig(dict):
 
         :param str toml_fname: Name of the YAML config file.
         :param path work_path: Absolute path to the working directory.
-        :returns: a :class:`ConfigLoad` object that contains the result of a
-            successful config loading, or a list of error messages, if any.
+        :returns: a :class:`volt.utils.Result` object that contains the result
+            of a successful config loading, or a list of error messages, if
+            any.
 
         """
         conf = cls(work_path, cls.defaults)
         if toml_fname is None:
-            return ConfigLoad(conf, [])
+            return Result.as_success(conf)
 
         with open(toml_fname) as src:
             try:
                 user_conf = toml.load(src)
             except (IndexError, toml.TomlDecodeError):
                 # TODO: display traceback depending on log level
-                return ConfigLoad(None, ["config can not be parsed"])
+                return Result.as_failure("config can not be parsed")
 
         # TODO: implement proper validation
         errors = cls.validate(user_conf)
         if errors:
-            return ConfigLoad(None, errors)
+            return Result.as_failure(errors)
         cls.nested_update(conf, user_conf)
         # TODO; resolve any engines and plugins config?
-        return ConfigLoad(conf, [])
+        return Result.as_success(conf)
 
     def __init__(self, work_path, defaults=None):
         super(SiteConfig, self).__init__(defaults or {})

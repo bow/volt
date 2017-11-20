@@ -7,6 +7,25 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+from collections import namedtuple
+
+
+# Helper tuple for containing success or failure results.
+class Result(namedtuple("Result", ["result", "errors"])):
+
+    @classmethod
+    def as_success(cls, success_value):
+        """Returns the success value, with the error value set to an empty
+        list."""
+        return cls(success_value, [])
+
+    @classmethod
+    def as_failure(cls, failure_message):
+        """Returns the error value in a list, with the success value set to
+        None."""
+        msg = [failure_message] if isinstance(failure_message, str) else \
+            failure_message
+        return cls(None, msg)
 
 
 def lazyproperty(func):
