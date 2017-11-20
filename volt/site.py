@@ -36,7 +36,7 @@ class Site(object):
         self.config.contents_path.mkdir(parents=True, exist_ok=True)
         self.config.templates_path.mkdir(parents=True, exist_ok=True)
         self.config.assets_path.mkdir(parents=True, exist_ok=True)
-        # Create initial YAML config file, if requested
+        # Create initial TOML config file, if requested
         if do_write_config:
             with open(CONFIG_FNAME, "w") as target:
                 print(INIT_CONFIG_STR, file=target)

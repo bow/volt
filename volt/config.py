@@ -59,11 +59,11 @@ class SiteConfig(dict):
         If the ``toml_path`` parameter is None, the default configuration
         will be returned without any change.
 
-        :param str toml_fname: Name of the YAML config file.
+        :param str toml_fname: Name of the TOML config file.
         :param path work_path: Absolute path to the working directory.
-        :returns: a :class:`volt.utils.Result` object that contains the result
-            of a successful config loading, or a list of error messages, if
-            any.
+        :returns: a :class:``volt.utils.Result`` object that contains the
+            result of a successful config loading, or a list of error messages,
+            if any.
 
         """
         conf = cls(work_path, cls.defaults)
@@ -86,7 +86,7 @@ class SiteConfig(dict):
         return Result.as_success(conf)
 
     def __init__(self, work_path, defaults=None):
-        super(SiteConfig, self).__init__(defaults or {})
+        super().__init__(defaults or {})
         self.work_path = work_path.resolve()
 
     @classmethod

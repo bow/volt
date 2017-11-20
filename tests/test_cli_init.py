@@ -3,10 +3,8 @@
     Tests for volt init command
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    :copyright: (c) 2012-2016 Wibowo Arindrarto <bow@bow.web.id>
-    :license: BSD
-
 """
+# (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import os
 from pathlib import Path
 
