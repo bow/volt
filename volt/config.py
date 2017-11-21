@@ -8,11 +8,10 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 from os import path
-from collections import Mapping
 
 import toml
 
-from .utils import lazyproperty, Result
+from .utils import lazyproperty, nested_update, Result
 
 __all__ = ["CONFIG_FNAME", "DEFAULT_CONFIG", "SiteConfig"]
 
@@ -61,23 +60,6 @@ class SiteConfig(dict):
         super().__init__(defaults or self.defaults)
         self.work_path = work_path.resolve()
 
-    def nested_update(self, one, other):
-        """Update function that respects nested values.
-
-        This is similar to Python's dict.update, except when the value to
-        be updated is an instance of :class:`collections.Mapping`, the
-        function will recurse.
-
-        """
-        for key, value in other.items():
-            if isinstance(value, Mapping):
-                nv = self.nested_update(one.get(key, {}), value)
-                one[key] = nv
-            else:
-                one[key] = other[key]
-
-        return one
-
     def update_with_toml(self, toml_fname):
         """Updates the configuration instance with the given TOML config file.
 
@@ -98,7 +80,7 @@ class SiteConfig(dict):
         errors = self.validate(user_conf)
         if errors:
             return Result.as_failure(errors)
-        self.nested_update(self, user_conf)
+        nested_update(self, user_conf)
 
         # Move 'site' to root level.
         self.update(**self.pop("site"))
