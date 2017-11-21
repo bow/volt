@@ -10,14 +10,14 @@ from pathlib import Path
 from volt.config import SiteConfig, CONFIG_FNAME
 
 
-def test_from_toml(tmpdir):
+def test_update_with_toml(tmpdir):
     with tmpdir.as_cwd():
         wp = Path(str(tmpdir))
         cf = tmpdir.join(CONFIG_FNAME)
         cf.write("[site]\n", mode="a")
         cf.write('name = "ts"\n', mode="a")
         cf.write('url = "https://test.com"', mode="a")
-        c, errs = SiteConfig.from_toml(wp, str(cf))
+        c, errs = SiteConfig(wp).update_with_toml(str(cf))
 
     assert errs == []
     assert c.work_path == wp

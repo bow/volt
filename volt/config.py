@@ -51,48 +51,17 @@ class SiteConfig(dict):
 
     defaults = DEFAULT_CONFIG
 
-    @classmethod
-    def from_toml(cls, work_path, toml_fname):
-        """Creates configuration instance from the given TOML config file.
+    def __init__(self, work_path, defaults=None):
+        """Initializes a site-level configuration.
 
-        The loaded TOML configuration will update the default config values.
-        If the ``toml_path`` parameter is None, the default configuration
-        will be returned without any change.
-
-        :param str toml_fname: Name of the TOML config file.
         :param path work_path: Absolute path to the working directory.
-        :returns: a :class:``volt.utils.Result`` object that contains the
-            result of a successful config loading, or a list of error messages,
-            if any.
+        :param dict defaults: Default values for initialization.
 
         """
-        conf = cls(work_path, cls.defaults)
-
-        if toml_fname is not None:
-            with open(toml_fname) as src:
-                try:
-                    user_conf = toml.load(src)
-                except (IndexError, toml.TomlDecodeError):
-                    # TODO: display traceback depending on log level
-                    return Result.as_failure("config can not be parsed")
-
-            # TODO: implement proper validation
-            errors = cls.validate(user_conf)
-            if errors:
-                return Result.as_failure(errors)
-            cls.nested_update(conf, user_conf)
-
-        # Move 'site' to root level.
-        conf.update(**conf.pop("site"))
-        # TODO; resolve any engines and plugins config?
-        return Result.as_success(conf)
-
-    def __init__(self, work_path, defaults=None):
-        super().__init__(defaults or {})
+        super().__init__(defaults or self.defaults)
         self.work_path = work_path.resolve()
 
-    @classmethod
-    def nested_update(cls, one, other):
+    def nested_update(self, one, other):
         """Update function that respects nested values.
 
         This is similar to Python's dict.update, except when the value to
@@ -102,14 +71,41 @@ class SiteConfig(dict):
         """
         for key, value in other.items():
             if isinstance(value, Mapping):
-                nv = cls.nested_update(one.get(key, {}), value)
+                nv = self.nested_update(one.get(key, {}), value)
                 one[key] = nv
             else:
                 one[key] = other[key]
+
         return one
 
-    @classmethod
-    def validate(cls, contents):
+    def update_with_toml(self, toml_fname):
+        """Updates the configuration instance with the given TOML config file.
+
+        :param str toml_fname: Name of the TOML config file.
+        :returns: a :class:``volt.utils.Result`` object that contains the
+            result of a successful config loading, or a list of error messages,
+            if any.
+
+        """
+        with open(toml_fname) as src:
+            try:
+                user_conf = toml.load(src)
+            except (IndexError, toml.TomlDecodeError):
+                # TODO: display traceback depending on log level
+                return Result.as_failure("config can not be parsed")
+
+        # TODO: implement proper validation
+        errors = self.validate(user_conf)
+        if errors:
+            return Result.as_failure(errors)
+        self.nested_update(self, user_conf)
+
+        # Move 'site' to root level.
+        self.update(**self.pop("site"))
+        # TODO; resolve any engines and plugins config?
+        return Result.as_success(self)
+
+    def validate(self, contents):
         """Performs validation of the config contents.
 
         :returns: Validation error messages as a list of strings.

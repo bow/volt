@@ -59,9 +59,12 @@ def init(ctx, config_path, force):
                                " use the `-f` flag to force init in nonempty"
                                " directories")
 
-    config, errors = SiteConfig.from_toml(work_path, config_path)
-    for error in errors:
-        raise click.UsageError(error)
+    config = SiteConfig(work_path)
+    if config_path is not None:
+        config, errors = config.update_with_toml(config_path)
+        for error in errors:
+            raise click.UsageError(error)
+
     site = Site(config)
 
     errors = site.run_init(config_path is None)
