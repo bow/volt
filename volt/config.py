@@ -77,7 +77,7 @@ class SiteConfig(dict):
                 return Result.as_failure("config can not be parsed")
 
         # TODO: implement proper validation
-        errors = self.validate(user_conf)
+        user_conf, errors = self.validate(user_conf)
         if errors:
             return Result.as_failure(errors)
         nested_update(self, user_conf)
@@ -93,11 +93,10 @@ class SiteConfig(dict):
         :returns: Validation error messages as a list of strings.
 
         """
-        errors = []
         if not isinstance(contents, dict) or not contents:
             # No point in progressing further if contents is not dictionary
-            return ["unexpected config structure"]
-        return errors
+            return Result.as_failure("unexpected config structure")
+        return Result.as_success(contents)
 
     @lazyproperty
     def contents_path(self):
