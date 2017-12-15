@@ -21,10 +21,10 @@ def test_update_with_toml(tmpdir):
 
     assert errs == []
     assert c.work_path == wp
-    assert c.contents_path == wp.joinpath("contents")
-    assert c.templates_path == wp.joinpath("templates")
-    assert c.assets_path == wp.joinpath("templates", "assets")
-    assert c.site_path == wp.joinpath("site")
+    assert c.contents_src == wp.joinpath("contents")
+    assert c.templates_src == wp.joinpath("templates")
+    assert c.assets_src == wp.joinpath("templates", "assets")
+    assert c.site_dest == wp.joinpath("site")
     assert c["dot_html_url"]
     assert c["name"] == "ts"
     assert c["url"] == "https://test.com"

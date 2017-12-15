@@ -22,11 +22,11 @@ CONFIG_FNAME = "volt.toml"
 # Default configuration values
 DEFAULT_CONFIG = {
     "volt": {
-        "contents_path": "contents",
-        "templates_path": "templates",
-        "assets_path": path.join("templates", "assets"),
-        "site_path": "site",
-        "engines_path": "engines",
+        "contents_src": "contents",
+        "templates_src": "templates",
+        "assets_src": path.join("templates", "assets"),
+        "site_dest": "site",
+        "engines_src": "engines",
         "nested_content_lookup": True,
     },
     "site": {
@@ -99,24 +99,24 @@ class SiteConfig(dict):
         return Result.as_success(contents)
 
     @lazyproperty
-    def contents_path(self):
+    def contents_src(self):
         """Path to the Volt contents directory."""
-        return self.work_path.joinpath(self["volt"]["contents_path"])
+        return self.work_path.joinpath(self["volt"]["contents_src"])
 
     @lazyproperty
-    def templates_path(self):
+    def templates_src(self):
         """Path to the Volt templates directory."""
-        return self.work_path.joinpath(self["volt"]["templates_path"])
+        return self.work_path.joinpath(self["volt"]["templates_src"])
 
     @lazyproperty
-    def site_path(self):
+    def site_dest(self):
         """Path to the Volt site directory."""
-        return self.work_path.joinpath(self["volt"]["site_path"])
+        return self.work_path.joinpath(self["volt"]["site_dest"])
 
     @lazyproperty
-    def assets_path(self):
+    def assets_src(self):
         """Path to the Volt assets directory."""
-        return self.work_path.joinpath(self["volt"]["assets_path"])
+        return self.work_path.joinpath(self["volt"]["assets_src"])
 
     @lazyproperty
     def site(self):

@@ -24,9 +24,9 @@ def test_default():
         assert result.exit_code == 0
         # Expected 3 items: contents dir, templates dir, config
         assert len(list(wp.iterdir())) == 3
-        assert wp.joinpath(DC["volt"]["contents_path"]).exists()
-        assert wp.joinpath(DC["volt"]["templates_path"]).exists()
-        assert wp.joinpath(DC["volt"]["assets_path"]).exists()
+        assert wp.joinpath(DC["volt"]["contents_src"]).exists()
+        assert wp.joinpath(DC["volt"]["templates_src"]).exists()
+        assert wp.joinpath(DC["volt"]["assets_src"]).exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         # Config must be valid TOML
@@ -74,9 +74,9 @@ def test_nonempty_with_force():
         wp_contents = list(wp.iterdir())
         assert len(wp_contents) == 4
         assert exst_file.exists()
-        assert wp.joinpath(DC["volt"]["contents_path"]).exists()
-        assert wp.joinpath(DC["volt"]["templates_path"]).exists()
-        assert wp.joinpath(DC["volt"]["assets_path"]).exists()
+        assert wp.joinpath(DC["volt"]["contents_src"]).exists()
+        assert wp.joinpath(DC["volt"]["templates_src"]).exists()
+        assert wp.joinpath(DC["volt"]["assets_src"]).exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         # Config must be valid TOML
@@ -99,9 +99,9 @@ def test_with_config_samedir():
         wp_contents = list(wp.iterdir())
         assert len(wp_contents) == 3
         assert cfg_path.exists()
-        assert wp.joinpath(DC["volt"]["contents_path"]).exists()
-        assert wp.joinpath(DC["volt"]["templates_path"]).exists()
-        assert wp.joinpath(DC["volt"]["assets_path"]).exists()
+        assert wp.joinpath(DC["volt"]["contents_src"]).exists()
+        assert wp.joinpath(DC["volt"]["templates_src"]).exists()
+        assert wp.joinpath(DC["volt"]["assets_src"]).exists()
         assert cfg_path.exists()
         # Config must be the same as expected
         with open(str(cfg_path), "r") as src:

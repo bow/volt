@@ -33,9 +33,9 @@ class Site(object):
         if not os.access(wp, os.W_OK):
             return ["Directory '{0}' is not writable.".format(wp)]
         # Create directories
-        self.config.contents_path.mkdir(parents=True, exist_ok=True)
-        self.config.templates_path.mkdir(parents=True, exist_ok=True)
-        self.config.assets_path.mkdir(parents=True, exist_ok=True)
+        self.config.contents_src.mkdir(parents=True, exist_ok=True)
+        self.config.templates_src.mkdir(parents=True, exist_ok=True)
+        self.config.assets_src.mkdir(parents=True, exist_ok=True)
         # Create initial TOML config file, if requested
         if do_write_config:
             with open(CONFIG_FNAME, "w") as target:
