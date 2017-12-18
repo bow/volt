@@ -9,7 +9,7 @@
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import sys
 import importlib.util as iutil
-from collections import namedtuple, Mapping
+from collections import namedtuple
 from os import path
 
 
@@ -81,21 +81,3 @@ def lazyproperty(func):
             return result
 
     return cached
-
-
-def nested_update(one, other):
-    """Update function that respects nested values.
-
-    This is similar to Python's dict.update, except when the value to
-    be updated is an instance of :class:`collections.Mapping`, the
-    function will recurse.
-
-    """
-    for key, value in other.items():
-        if isinstance(value, Mapping):
-            nv = nested_update(one.get(key, {}), value)
-            one[key] = nv
-        else:
-            one[key] = other[key]
-
-    return one
