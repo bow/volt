@@ -7,14 +7,67 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+from collections import OrderedDict
 from pathlib import Path
 
 import click
+import toml
 
 from . import __version__
-from .site import Site
+from .config import SessionConfig, CONFIG_FNAME
+from .utils import Result
 
 __all__ = []
+
+
+class Session(object):
+
+    """Representation of a CLI session."""
+
+    @classmethod
+    def do_init(cls, target_wd, name, url, force, config_fname=CONFIG_FNAME):
+        """Creates directories and files for a new site.
+
+        This function may overwrite any preexisting files and or directories
+        in the target working directory.
+
+        :returns: Error messages as a list of strings.
+
+        """
+        try:
+            target_wd.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            return Result.as_failure(e.strerror)
+
+        try:
+            next(target_wd.iterdir())
+        except StopIteration:
+            pass
+        else:
+            if not force:
+                return Result.as_failure(
+                    "target project directory is not empty -- use the `-f`"
+                    " flag to force init in nonempty directories")
+
+        # Bootstrap directories.
+        bootstrap_conf = SessionConfig(target_wd).site
+        try:
+            bootstrap_conf.contents_src.mkdir(parents=True, exist_ok=True)
+            bootstrap_conf.templates_src.mkdir(parents=True, exist_ok=True)
+            bootstrap_conf.assets_src.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            return Result.as_failure(e.strerror)
+
+        # Create initial TOML config file.
+        init_conf = OrderedDict([
+            ("site", OrderedDict([
+                ("name", name),
+                ("url", url),
+            ]))
+        ])
+        target_wd.joinpath(config_fname).write_text(toml.dumps(init_conf))
+
+        return Result.as_success(None)
 
 
 @click.group()
@@ -50,19 +103,7 @@ def init(ctx, name, url, project_dir, force):
     """Initializes a new Volt project."""
     pwd = Path.cwd() if project_dir is None else Path.cwd().joinpath(
         project_dir)
-    pwd.mkdir(parents=True, exist_ok=True)
-
-    try:
-        next(pwd.iterdir())
-    except StopIteration:
-        pass
-    else:
-        if not force:
-            raise click.UsageError("target project directory is not empty --"
-                                   " use the `-f` flag to force init in"
-                                   " nonempty directories")
-
-    _, errs = Site.run_init(pwd, name, url)
+    _, errs = Session.do_init(pwd, name, url, force)
     if errs:
-        raise click.UsageError(errs)
+        raise click.UsageError(errs.pop())
     # TODO: add message for successful init

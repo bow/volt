@@ -103,13 +103,23 @@ def test_nonwritable_dir(exp_cfg):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         os.chmod(fs, 0o555)
-        wp = Path(fs)
-
         result = runner.invoke(main, ["init"])
         assert result.exit_code != 0
         assert isinstance(result.exception, SystemExit)
-        assert f"directory {wp} is not writable".format(wp) in \
-            result.output
+        assert f"Permission denied" in result.output
+
+
+def test_nonwritable_custom_dir(exp_cfg):
+    runner = CliRunner()
+    with runner.isolated_filesystem() as fs:
+        project_dir = Path(fs).joinpath("foo", "bzzt")
+        project_dir.parent.mkdir(parents=True)
+        os.chmod(str(project_dir.parent), 0o555)
+
+        result = runner.invoke(main, ["init", str(project_dir)])
+        assert result.exit_code != 0
+        assert isinstance(result.exception, SystemExit)
+        assert f"Permission denied" in result.output
 
 
 def test_nonempty(exp_cfg):
