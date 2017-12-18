@@ -14,7 +14,7 @@ import toml
 
 from .utils import Result
 
-__all__ = ["CONFIG_FNAME", "Config", "SessionConfig"]
+__all__ = ["CONFIG_FNAME", "Config", "SessionConfig", "EngineConfig"]
 
 
 # Default config file name.
@@ -45,7 +45,7 @@ class SessionConfig(Config):
 
     """Container for session-level configuration values."""
 
-    def __init__(self, pwd, site_conf=None,
+    def __init__(self, pwd, site_conf=None, engines_conf=None,
                  contents_src="contents", templates_src="templates",
                  assets_src=path.join("templates", "assets"),
                  engines_src="engines", site_dest="site",
@@ -54,6 +54,7 @@ class SessionConfig(Config):
 
         :param pathlib.Path pwd: Path to the project working directory.
         :param dict site_conf: Dictionary containing site configuration values.
+        :param list engines_conf: List containing engine configuration values.
         :param str contents_dname: Base directory name for content lookup.
         :param str templates_dname: Base directory name for template lookup.
         :param str assets_dname: Base directory name for assets lookup.
@@ -90,6 +91,8 @@ class SessionConfig(Config):
             setattr(site_conf, confv, finalv)
 
         self.site = site_conf
+        self.engines = [EngineConfig(site_conf, **ec)
+                        for ec in (engines_conf or [])]
 
     @classmethod
     def from_toml(cls, pwd, toml_fname=CONFIG_FNAME):
@@ -114,10 +117,49 @@ class SessionConfig(Config):
         site_conf = user_conf.pop("site", {})
         if not isinstance(site_conf, dict):
             return Result.as_failure("unexpected config structure")
+        engines_conf = user_conf.pop("engines", [])
 
         try:
-            conf = cls(pwd, site_conf=site_conf)
+            conf = cls(pwd, site_conf=site_conf, engines_conf=engines_conf)
         except Exception as e:
             return Result.as_failure(e.args[0])
         else:
             return Result.as_success(conf)
+
+
+class EngineConfig(Config):
+
+    """Container for engine-level configuration values."""
+
+    def __init__(self, site_config, **kwargs):
+        self.site_config = MappingProxyType(site_config)
+
+        # Required config values with predefined defaults.
+        self.groups = kwargs.pop("groups", None) or []
+        self.group_order = kwargs.pop("group_order", None) or {}
+        self.group_size = kwargs.pop("group_size", 10)
+        self.unit_permalink = kwargs.pop("unit_permalink", "{slug}")
+
+        # Required config values with site-level defaults.
+        for ck in ("recursive_contents_lookup", "dot_html_url"):
+            setattr(self, ck, kwargs.pop(ck, site_config[ck]))
+
+        # Required config values with name-dependent defaults.
+        name = kwargs.pop("name")
+        self.name = name
+
+        self.module_location = kwargs.pop("module_location", None) or \
+            f"volt.engines.{name}"
+
+        site_path = (kwargs.pop("site_path", None) or f"{name}").lstrip("/")
+        self.site_path = site_path
+
+        self.contents_src = site_config.contents_src.joinpath(
+            kwargs.pop("contents_src", None) or name)
+        self.templates_src = site_config.templates_src.joinpath(
+            kwargs.pop("templates_src", None) or name)
+        self.site_dest = site_config.site_dest.joinpath(site_path)
+
+        # Other user-defined engine values.
+        for k, v in kwargs.items():
+            setattr(self, k, v)
