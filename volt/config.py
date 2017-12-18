@@ -8,62 +8,96 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 from os import path
+from types import MappingProxyType
 
 import toml
 
-from .utils import lazyproperty, nested_update, Result
+from .utils import Result
 
-__all__ = ["CONFIG_FNAME", "DEFAULT_CONFIG", "SiteConfig"]
+__all__ = ["CONFIG_FNAME", "Config", "SessionConfig"]
 
 
-# Config file name
+# Default config file name.
 CONFIG_FNAME = "volt.toml"
 
-# Default configuration values
-DEFAULT_CONFIG = {
-    "volt": {
-        "contents_src": "contents",
-        "templates_src": "templates",
-        "assets_src": path.join("templates", "assets"),
-        "site_dest": "site",
-        "engines_src": "engines",
-        "nested_content_lookup": True,
-    },
-    "site": {
-        "dot_html_url": True,
-    }
-}
 
-# Raw configuration text content for a new init
-INIT_CONFIG_STR = """# Volt configuration file
+class Config(dict):
 
-# Site-level configuration
-[site]
-name = ""
-url = ""
-"""
+    """Base configuration object."""
+
+    def __getattr__(self, attr):
+        try:
+            return self[attr]
+        except KeyError as e:
+            raise AttributeError(f"config has no attribute {attr!r}")
+
+    def __setattr__(self, attr, value):
+        self[attr] = value
+
+    def __delattr__(self, attr):
+        try:
+            del self[attr]
+        except KeyError as e:
+            raise AttributeError(f"config has no attribute {attr!r}")
 
 
-class SiteConfig(dict):
+class SessionConfig(Config):
 
-    """Container for site-level configuration values."""
+    """Container for session-level configuration values."""
 
-    defaults = DEFAULT_CONFIG
-
-    def __init__(self, work_path, defaults=None):
+    def __init__(self, pwd, site_conf=None,
+                 contents_src="contents", templates_src="templates",
+                 assets_src=path.join("templates", "assets"),
+                 engines_src="engines", site_dest="site",
+                 recursive_contents_lookup=True, dot_html_url=True):
         """Initializes a site-level configuration.
 
-        :param path work_path: Absolute path to the working directory.
-        :param dict defaults: Default values for initialization.
+        :param pathlib.Path pwd: Path to the project working directory.
+        :param dict site_conf: Dictionary containing site configuration values.
+        :param str contents_dname: Base directory name for content lookup.
+        :param str templates_dname: Base directory name for template lookup.
+        :param str assets_dname: Base directory name for assets lookup.
+        :param str site_dname: Base directory name for site output.
+        :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
+        :param bool recursive_contents_lookup: Whether to search for contents
+            recursively or not.
 
         """
-        super().__init__(defaults or self.defaults)
-        self.work_path = work_path.resolve()
+        pwd = pwd.resolve()
+        self.pwd = pwd
 
-    def update_with_toml(self, toml_fname):
-        """Updates the configuration instance with the given TOML config file.
+        site_conf = Config(site_conf or {})
 
-        :param str toml_fname: Name of the TOML config file.
+        # Resolve path-related configs with current work path.
+        pca_map = {
+            "contents_src": contents_src,
+            "templates_src": templates_src,
+            "assets_src": assets_src,
+            "engines_src": engines_src,
+            "site_dest": site_dest,
+        }
+        for path_confv, argv in pca_map.items():
+            finalv = pwd.joinpath(getattr(site_conf, path_confv, argv))
+            setattr(site_conf, path_confv, finalv)
+
+        # Resolve other configs.
+        ca_map = {
+            "recursive_contents_lookup": recursive_contents_lookup,
+            "dot_html_url": dot_html_url,
+        }
+        for confv, argv in ca_map.items():
+            finalv = getattr(site_conf, confv, argv)
+            setattr(site_conf, confv, finalv)
+
+        self.site = site_conf
+
+    @classmethod
+    def from_toml(cls, pwd, toml_fname=CONFIG_FNAME):
+        """Creates a site configuration from a Volt TOML file.
+
+        :param pathlib.Path pwd: Path to the project working directory.
+        :param str toml_fname: Name of TOML file containing the configuration
+            values.
         :returns: a :class:``volt.utils.Result`` object that contains the
             result of a successful config loading, or a list of error messages,
             if any.
@@ -77,52 +111,13 @@ class SiteConfig(dict):
                 return Result.as_failure("config can not be parsed")
 
         # TODO: implement proper validation
-        user_conf, errors = self.validate(user_conf)
-        if errors:
-            return Result.as_failure(errors)
-        nested_update(self, user_conf)
-
-        # Move 'site' to root level.
-        self.update(**self.pop("site"))
-        # TODO; resolve any engines and plugins config?
-        return Result.as_success(self)
-
-    def validate(self, contents):
-        """Performs validation of the config contents.
-
-        :returns: Validation error messages as a list of strings.
-
-        """
-        if not isinstance(contents, dict) or not contents:
-            # No point in progressing further if contents is not dictionary
+        site_conf = user_conf.pop("site", {})
+        if not isinstance(site_conf, dict):
             return Result.as_failure("unexpected config structure")
-        return Result.as_success(contents)
 
-    @lazyproperty
-    def contents_src(self):
-        """Path to the Volt contents directory."""
-        return self.work_path.joinpath(self["volt"]["contents_src"])
-
-    @lazyproperty
-    def templates_src(self):
-        """Path to the Volt templates directory."""
-        return self.work_path.joinpath(self["volt"]["templates_src"])
-
-    @lazyproperty
-    def site_dest(self):
-        """Path to the Volt site directory."""
-        return self.work_path.joinpath(self["volt"]["site_dest"])
-
-    @lazyproperty
-    def assets_src(self):
-        """Path to the Volt assets directory."""
-        return self.work_path.joinpath(self["volt"]["assets_src"])
-
-    @lazyproperty
-    def site(self):
-        """Returns the site-level configuration."""
-        return self.get("site", {})
-
-    def for_engine(self, name):
-        """Returns an engine-level configuration given its name."""
-        return self.get("engines", {}).get(name, {})
+        try:
+            conf = cls(pwd, site_conf=site_conf)
+        except Exception as e:
+            return Result.as_failure(e.args[0])
+        else:
+            return Result.as_success(conf)

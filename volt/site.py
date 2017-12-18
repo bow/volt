@@ -8,36 +8,47 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import os
+from collections import OrderedDict
 
-from .config import CONFIG_FNAME, INIT_CONFIG_STR
+import toml
+
+from .config import SessionConfig, CONFIG_FNAME
+from .utils import Result
 
 
 class Site(object):
 
-    """Representation of the static site."""
+    """Representation of a static site."""
 
     def __init__(self, config):
-        self.config = config
+        self.config = config.site
 
-    def run_init(self, do_write_config):
+    @classmethod
+    def run_init(cls, target_wd, name, url, config_fname=CONFIG_FNAME):
         """Creates directories and files for a new site.
 
         This function may overwrite any preexisting files and or directories
-        in the working directory. Ideally any checks on whether any overwrite
-        should be performed has been done prior to calling this function.
+        in the target working directory.
 
         :returns: Error messages as a list of strings.
 
         """
-        wp = str(self.config.work_path)
-        if not os.access(wp, os.W_OK):
-            return ["Directory '{0}' is not writable.".format(wp)]
-        # Create directories
-        self.config.contents_src.mkdir(parents=True, exist_ok=True)
-        self.config.templates_src.mkdir(parents=True, exist_ok=True)
-        self.config.assets_src.mkdir(parents=True, exist_ok=True)
-        # Create initial TOML config file, if requested
-        if do_write_config:
-            with open(CONFIG_FNAME, "w") as target:
-                print(INIT_CONFIG_STR, file=target)
-        return []
+        if not os.access(str(target_wd), os.W_OK):
+            return Result.as_failure(f"directory {target_wd} is not writable")
+
+        # Bootstrap directories.
+        bootstrap_conf = SessionConfig(target_wd).site
+        bootstrap_conf.contents_src.mkdir(parents=True, exist_ok=True)
+        bootstrap_conf.templates_src.mkdir(parents=True, exist_ok=True)
+        bootstrap_conf.assets_src.mkdir(parents=True, exist_ok=True)
+
+        # Create initial TOML config file.
+        init_conf = OrderedDict([
+            ("site", OrderedDict([
+                ("name", name),
+                ("url", url),
+            ]))
+        ])
+        target_wd.joinpath(config_fname).write_text(toml.dumps(init_conf))
+
+        return Result.as_success(None)
