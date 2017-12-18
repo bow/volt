@@ -91,7 +91,8 @@ class SessionConfig(Config):
             setattr(site_conf, confv, finalv)
 
         self.site = site_conf
-        self.engines = [EngineConfig(site_conf, **ec)
+        site_conf_proxy = MappingProxyType(site_conf)
+        self.engines = [EngineConfig(site_conf_proxy, **ec)
                         for ec in (engines_conf or [])]
 
     @classmethod
@@ -132,7 +133,7 @@ class EngineConfig(Config):
     """Container for engine-level configuration values."""
 
     def __init__(self, site_config, **kwargs):
-        self.site_config = MappingProxyType(site_config)
+        self.site_config = site_config
 
         # Required config values with predefined defaults.
         self.groups = kwargs.pop("groups", None) or []
@@ -148,17 +149,19 @@ class EngineConfig(Config):
         name = kwargs.pop("name")
         self.name = name
 
-        self.module_location = kwargs.pop("module_location", None) or \
+        self.class_location = kwargs.pop("class_location", None) or \
             f"volt.engines.{name}"
+        self.unit_class_location = kwargs.pop("unit_class_location", None) or \
+            "volt.units:UnitSource"
 
         site_path = (kwargs.pop("site_path", None) or f"{name}").lstrip("/")
         self.site_path = site_path
 
-        self.contents_src = site_config.contents_src.joinpath(
+        self.contents_src = site_config["contents_src"].joinpath(
             kwargs.pop("contents_src", None) or name)
-        self.templates_src = site_config.templates_src.joinpath(
+        self.templates_src = site_config["templates_src"].joinpath(
             kwargs.pop("templates_src", None) or name)
-        self.site_dest = site_config.site_dest.joinpath(site_path)
+        self.site_dest = site_config["site_dest"].joinpath(site_path)
 
         # Other user-defined engine values.
         for k, v in kwargs.items():
