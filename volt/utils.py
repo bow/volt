@@ -7,7 +7,10 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import sys
+import importlib.util as iutil
 from collections import namedtuple, Mapping
+from os import path
 
 
 # Helper tuple for containing success or failure results.
@@ -26,6 +29,36 @@ class Result(namedtuple("Result", ["result", "errors"])):
         msg = [failure_message] if isinstance(failure_message, str) else \
             failure_message
         return cls(None, msg)
+
+
+def import_mod_attr(target):
+    """Imports the attribute of a module given its string path."""
+    try:
+        mod_name, cls_name = target.replace(":", ".").rsplit(".", 1)
+    except ValueError:
+        return Result.as_failure("invalid module attribute import target:"
+                                 f" {target!r}")
+
+    if path.isfile(mod_name):
+        return Result.as_failure("import from file is not yet supported")
+
+    sys.path = [""] + sys.path if not sys.path[0] == "" else sys.path
+
+    try:
+        spec = iutil.find_spec(mod_name)
+    except (ModuleNotFoundError, ValueError):
+        spec = None
+    if spec is None:
+        return Result.as_failure(f"failed to find module {mod_name!r} for"
+                                 " import")
+    mod = iutil.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    try:
+        return Result.as_success(getattr(mod, cls_name))
+    except AttributeError:
+        return Result.as_failure(f"module {mod_name!r} does not contain"
+                                 f" attribute {cls_name!r}")
 
 
 def lazyproperty(func):
