@@ -8,6 +8,7 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 from collections import OrderedDict
+from os import path
 from pathlib import Path
 
 import click
@@ -112,6 +113,9 @@ def init(ctx, name, url, project_dir, timezone, force):
     """Initializes a new Volt project."""
     pwd = Path.cwd() if project_dir is None else Path.cwd().joinpath(
         project_dir)
+    name = path.basename(project_dir) \
+        if (not name and project_dir is not None) else name
+
     _, errs = Session.do_init(pwd, name, url, timezone, force)
     if errs:
         raise click.UsageError(errs.pop())

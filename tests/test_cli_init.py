@@ -45,7 +45,7 @@ def test_default(exp_cfg):
             assert toml.load(src) == exp_cfg
 
 
-def test_project_dir_specified(exp_cfg):
+def test_custom_dir_no_name(exp_cfg):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -62,6 +62,29 @@ def test_project_dir_specified(exp_cfg):
         cfg_path = wp.joinpath(pn, CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
+            exp_cfg["site"]["name"] = "proj"
+            assert toml.load(src) == exp_cfg
+
+
+def test_custom_dir_with_name(exp_cfg):
+    runner = CliRunner()
+    with runner.isolated_filesystem() as fs:
+        wp = Path(fs)
+        pn = "proj"
+        name = "my_proj"
+
+        assert not wp.joinpath(pn).exists()
+        result = runner.invoke(main, ["init", pn, "-n", name])
+        assert result.exit_code == 0
+        # Expected 4 items: contents dir, templates dir, static dir, and config
+        assert len(list(wp.joinpath(pn).iterdir())) == 4
+        assert wp.joinpath(pn, "contents").exists()
+        assert wp.joinpath(pn, "templates").exists()
+        assert wp.joinpath(pn, "static").exists()
+        cfg_path = wp.joinpath(pn, CONFIG_FNAME)
+        assert cfg_path.exists()
+        with open(str(cfg_path), "r") as src:
+            exp_cfg["site"]["name"] = name
             assert toml.load(src) == exp_cfg
 
 
