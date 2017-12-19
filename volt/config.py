@@ -47,7 +47,7 @@ class SessionConfig(Config):
     def __init__(self, pwd, site_conf=None, engines_conf=None,
                  contents_src="contents", templates_src="templates",
                  static_src="static", engines_src="engines", site_dest="site",
-                 recursive_contents_lookup=True, dot_html_url=True):
+                 dot_html_url=True):
         """Initializes a site-level configuration.
 
         :param pathlib.Path pwd: Path to the project working directory.
@@ -58,8 +58,6 @@ class SessionConfig(Config):
         :param str static_src: Base directory name for static files lookup.
         :param str site_src: Base directory name for site output.
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
-        :param bool recursive_contents_lookup: Whether to search for contents
-            recursively or not.
 
         """
         pwd = pwd.resolve()
@@ -80,13 +78,9 @@ class SessionConfig(Config):
             setattr(site_conf, path_confv, finalv)
 
         # Resolve other configs.
-        ca_map = {
-            "recursive_contents_lookup": recursive_contents_lookup,
-            "dot_html_url": dot_html_url,
-        }
-        for confv, argv in ca_map.items():
-            finalv = getattr(site_conf, confv, argv)
-            setattr(site_conf, confv, finalv)
+        confv, argv = "dot_html_url", dot_html_url
+        finalv = getattr(site_conf, confv, argv)
+        setattr(site_conf, confv, finalv)
 
         self.site = site_conf
         site_conf_proxy = MappingProxyType(site_conf)
@@ -140,8 +134,8 @@ class EngineConfig(Config):
         self.unit_permalink = kwargs.pop("unit_permalink", "{slug}")
 
         # Required config values with site-level defaults.
-        for ck in ("recursive_contents_lookup", "dot_html_url"):
-            setattr(self, ck, kwargs.pop(ck, site_config[ck]))
+        ck = "dot_html_url"
+        setattr(self, ck, kwargs.pop(ck, site_config[ck]))
 
         # Required config values with name-dependent defaults.
         name = kwargs.pop("name")
