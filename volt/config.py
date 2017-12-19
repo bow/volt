@@ -151,8 +151,6 @@ class EngineConfig(Config):
 
         self.contents_src = site_config["contents_src"].joinpath(
             kwargs.pop("contents_src", None) or name)
-        self.templates_src = site_config["templates_src"].joinpath(
-            kwargs.pop("templates_src", None) or name)
         self.site_dest = site_config["site_dest"].joinpath(site_path)
 
         # Other user-defined engine values.
