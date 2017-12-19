@@ -55,10 +55,10 @@ class SessionConfig(Config):
         :param pathlib.Path pwd: Path to the project working directory.
         :param dict site_conf: Dictionary containing site configuration values.
         :param list engines_conf: List containing engine configuration values.
-        :param str contents_dname: Base directory name for content lookup.
-        :param str templates_dname: Base directory name for template lookup.
-        :param str assets_dname: Base directory name for assets lookup.
-        :param str site_dname: Base directory name for site output.
+        :param str contents_src: Base directory name for content lookup.
+        :param str templates_src: Base directory name for template lookup.
+        :param str assets_src: Base directory name for assets lookup.
+        :param str site_src: Base directory name for site output.
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
         :param bool recursive_contents_lookup: Whether to search for contents
             recursively or not.
@@ -112,7 +112,7 @@ class SessionConfig(Config):
                 user_conf = toml.load(src)
             except (IndexError, toml.TomlDecodeError):
                 # TODO: display traceback depending on log level
-                return Result.as_failure("config can not be parsed")
+                return Result.as_failure("cannot parse config")
 
         # TODO: implement proper validation
         site_conf = user_conf.pop("site", {})
