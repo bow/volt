@@ -47,7 +47,7 @@ class SessionConfig(Config):
     def __init__(self, pwd, site_conf=None, engines_conf=None,
                  contents_src="contents", templates_src="templates",
                  static_src="static", engines_src="engines", site_dest="site",
-                 dot_html_url=True):
+                 timezone=None, dot_html_url=True):
         """Initializes a site-level configuration.
 
         :param pathlib.Path pwd: Path to the project working directory.
@@ -57,6 +57,8 @@ class SessionConfig(Config):
         :param str templates_src: Base directory name for template lookup.
         :param str static_src: Base directory name for static files lookup.
         :param str site_src: Base directory name for site output.
+        :param str timezone: Geographical timezone name for default timestamp
+            interpretation.
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
 
         """
@@ -78,9 +80,13 @@ class SessionConfig(Config):
             setattr(site_conf, path_confv, finalv)
 
         # Resolve other configs.
-        confv, argv = "dot_html_url", dot_html_url
-        finalv = getattr(site_conf, confv, argv)
-        setattr(site_conf, confv, finalv)
+        ca_map = {
+            "dot_html_url": dot_html_url,
+            "timezone": timezone,
+        }
+        for confv, argv in ca_map.items():
+            finalv = getattr(site_conf, confv, argv)
+            setattr(site_conf, confv, finalv)
 
         self.site = site_conf
         site_conf_proxy = MappingProxyType(site_conf)

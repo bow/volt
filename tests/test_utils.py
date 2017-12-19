@@ -8,8 +8,10 @@
 from pathlib import Path
 
 import pytest
+import pytz
+import tzlocal
 
-from volt.utils import import_mod_attr
+from volt.utils import get_tz, import_mod_attr
 
 
 @pytest.fixture
@@ -90,3 +92,14 @@ def test_import_mod_attr_fail_attribute_missing(tmpdir, mod_toks):
         obj, errs = import_mod_attr("foo.bar.baz.custom.Bzzt")
         assert errs == ["module 'foo.bar.baz.custom' does not contain"
                         " attribute 'Bzzt'"]
+
+
+@pytest.mark.parametrize("tzname, exp_res, exp_errs", [
+    (None, tzlocal.get_localzone(), []),
+    ("Asia/Jakarta", pytz.timezone("Asia/Jakarta"), []),
+    ("bzzt", None, ["cannot interpret timezone 'bzzt'"]),
+])
+def test_get_tz(tzname, exp_res, exp_errs):
+    obs_res, obs_errs = get_tz(tzname)
+    assert obs_res == exp_res
+    assert obs_errs == exp_errs

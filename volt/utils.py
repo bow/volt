@@ -12,6 +12,10 @@ import importlib.util as iutil
 from collections import namedtuple
 from os import path
 
+import pytz
+import pytz.exceptions as tzexc
+import tzlocal
+
 
 # Helper tuple for containing success or failure results.
 class Result(namedtuple("Result", ["result", "errors"])):
@@ -29,6 +33,20 @@ class Result(namedtuple("Result", ["result", "errors"])):
         msg = [failure_message] if isinstance(failure_message, str) else \
             failure_message
         return cls(None, msg)
+
+
+def get_tz(tzname=None):
+    """Retrieves the timezone object representing the given timezone.
+
+    If no timezone name is given, the system default will be used.
+
+    """
+    if tzname is None:
+        return Result.as_success(tzlocal.get_localzone())
+    try:
+        return Result.as_success(pytz.timezone(tzname))
+    except (AttributeError, tzexc.UnknownTimeZoneError):
+        return Result.as_failure(f"cannot interpret timezone {tzname!r}")
 
 
 def import_mod_attr(target):

@@ -27,6 +27,7 @@ def test_from_toml(tmpdir):
     assert c.static_src == pwd.joinpath("static")
     assert c.site_dest == pwd.joinpath("site")
     assert c.dot_html_url
+    assert c.timezone is None
     assert c.name == "ts"
     assert c.url == "https://test.com"
     assert not hasattr(c, "site")

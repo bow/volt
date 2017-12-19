@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 import toml
+import tzlocal
 from click.testing import CliRunner
 
 from volt.cli import main
@@ -18,7 +19,12 @@ from volt.config import CONFIG_FNAME
 
 @pytest.fixture
 def exp_cfg():
-    return {"site": {"name": "", "url": ""}}
+    sc = {
+        "name": "",
+        "url": "",
+        "timezone": tzlocal.get_localzone().zone,
+    }
+    return {"site": sc}
 
 
 def test_default(exp_cfg):
@@ -97,6 +103,37 @@ def test_with_url(exp_cfg):
         with open(str(cfg_path), "r") as src:
             exp_cfg["site"]["url"] = url
             assert toml.load(src) == exp_cfg
+
+
+def test_with_timezone(exp_cfg):
+    runner = CliRunner()
+    with runner.isolated_filesystem() as fs:
+        wp = Path(fs)
+        tz = "Asia/Jakarta"
+
+        result = runner.invoke(main, ["init", "-z", tz])
+        assert result.exit_code == 0
+        # Expected 4 items: contents dir, templates dir, static dir, and config
+        assert len(list(wp.iterdir())) == 4
+        assert wp.joinpath("contents").exists()
+        assert wp.joinpath("templates").exists()
+        assert wp.joinpath("static").exists()
+        cfg_path = wp.joinpath(CONFIG_FNAME)
+        assert cfg_path.exists()
+        with open(str(cfg_path), "r") as src:
+            exp_cfg["site"]["timezone"] = tz
+            assert toml.load(src) == exp_cfg
+
+
+def test_with_timezone_invalid(exp_cfg):
+    runner = CliRunner()
+    with runner.isolated_filesystem() as fs:
+        wp = Path(fs)
+        tz = "Asia/Jakart"
+
+        result = runner.invoke(main, ["init", "-z", tz])
+        assert result.exit_code != 0
+        assert len(list(wp.iterdir())) == 0
 
 
 def test_nonwritable_dir(exp_cfg):
