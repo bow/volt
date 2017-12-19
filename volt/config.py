@@ -7,7 +7,6 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
-from os import path
 from types import MappingProxyType
 
 import toml
@@ -47,8 +46,7 @@ class SessionConfig(Config):
 
     def __init__(self, pwd, site_conf=None, engines_conf=None,
                  contents_src="contents", templates_src="templates",
-                 assets_src=path.join("templates", "assets"),
-                 engines_src="engines", site_dest="site",
+                 static_src="static", engines_src="engines", site_dest="site",
                  recursive_contents_lookup=True, dot_html_url=True):
         """Initializes a site-level configuration.
 
@@ -57,7 +55,7 @@ class SessionConfig(Config):
         :param list engines_conf: List containing engine configuration values.
         :param str contents_src: Base directory name for content lookup.
         :param str templates_src: Base directory name for template lookup.
-        :param str assets_src: Base directory name for assets lookup.
+        :param str static_src: Base directory name for static files lookup.
         :param str site_src: Base directory name for site output.
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
         :param bool recursive_contents_lookup: Whether to search for contents
@@ -73,7 +71,7 @@ class SessionConfig(Config):
         pca_map = {
             "contents_src": contents_src,
             "templates_src": templates_src,
-            "assets_src": assets_src,
+            "static_src": static_src,
             "engines_src": engines_src,
             "site_dest": site_dest,
         }

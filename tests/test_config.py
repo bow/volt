@@ -24,7 +24,7 @@ def test_from_toml(tmpdir):
     assert sc.pwd == pwd
     assert c.contents_src == pwd.joinpath("contents")
     assert c.templates_src == pwd.joinpath("templates")
-    assert c.assets_src == pwd.joinpath("templates", "assets")
+    assert c.static_src == pwd.joinpath("static")
     assert c.site_dest == pwd.joinpath("site")
     assert c.dot_html_url
     assert c.name == "ts"

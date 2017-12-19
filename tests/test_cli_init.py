@@ -28,11 +28,11 @@ def test_default(exp_cfg):
 
         result = runner.invoke(main, ["init"])
         assert result.exit_code == 0
-        # Expected 3 items: contents dir, templates dir, config
-        assert len(list(wp.iterdir())) == 3
+        # Expected 4 items: contents dir, templates dir, static dir, and config
+        assert len(list(wp.iterdir())) == 4
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("templates/assets").exists()
+        assert wp.joinpath("static").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -48,11 +48,11 @@ def test_project_dir_specified(exp_cfg):
         assert not wp.joinpath(pn).exists()
         result = runner.invoke(main, ["init", pn])
         assert result.exit_code == 0
-        # Expected 3 items: contents dir, templates dir, config
-        assert len(list(wp.joinpath(pn).iterdir())) == 3
+        # Expected 4 items: contents dir, templates dir, static dir, and config
+        assert len(list(wp.joinpath(pn).iterdir())) == 4
         assert wp.joinpath(pn, "contents").exists()
         assert wp.joinpath(pn, "templates").exists()
-        assert wp.joinpath(pn, "templates/assets").exists()
+        assert wp.joinpath(pn, "static").exists()
         cfg_path = wp.joinpath(pn, CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -67,11 +67,11 @@ def test_with_name(exp_cfg):
 
         result = runner.invoke(main, ["init", "-n", name])
         assert result.exit_code == 0
-        # Expected 3 items: contents dir, templates dir, config
-        assert len(list(wp.iterdir())) == 3
+        # Expected 4 items: contents dir, templates dir, static dir, and config
+        assert len(list(wp.iterdir())) == 4
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("templates/assets").exists()
+        assert wp.joinpath("static").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -87,11 +87,11 @@ def test_with_url(exp_cfg):
 
         result = runner.invoke(main, ["init", "-u", url])
         assert result.exit_code == 0
-        # Expected 3 items: contents dir, templates dir, config
-        assert len(list(wp.iterdir())) == 3
+        # Expected 4 items: contents dir, templates dir, static dir, and config
+        assert len(list(wp.iterdir())) == 4
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("templates/assets").exists()
+        assert wp.joinpath("static").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -145,13 +145,14 @@ def test_nonempty_with_force(exp_cfg):
 
         result = runner.invoke(main, ["init", "-f"])
         assert result.exit_code == 0
-        # Expected 4 items: contents dir, templates dir, config, and the file
+        # Expected 5 items: contents dir, templates dir, static dir, config,
+        # and the file
         wp_contents = list(wp.iterdir())
-        assert len(wp_contents) == 4
+        assert len(wp_contents) == 5
         assert exst_file.exists()
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("templates/assets").exists()
+        assert wp.joinpath("static").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
