@@ -17,6 +17,28 @@ import pytz.exceptions as tzexc
 import tzlocal
 
 
+class AttrDict(dict):
+
+    """Dictionary whose keys can be accessed as attributes."""
+
+    def __getattr__(self, attr):
+        try:
+            return self[attr]
+        except KeyError as e:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute"
+                                 f" {attr!r}")
+
+    def __setattr__(self, attr, value):
+        self[attr] = value
+
+    def __delattr__(self, attr):
+        try:
+            del self[attr]
+        except KeyError as e:
+            raise AttributeError(f"{self.__class__.__name__} has no attribute"
+                                 f" {attr!r}")
+
+
 # Helper tuple for containing success or failure results.
 class Result(namedtuple("Result", ["result", "errors"])):
 

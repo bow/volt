@@ -7,40 +7,18 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
-from types import MappingProxyType
-
 import toml
 
-from .utils import Result
+from .utils import AttrDict, Result
 
-__all__ = ["CONFIG_FNAME", "Config", "SessionConfig", "EngineConfig"]
+__all__ = ["CONFIG_FNAME", "SessionConfig", "EngineConfig"]
 
 
 # Default config file name.
 CONFIG_FNAME = "volt.toml"
 
 
-class Config(dict):
-
-    """Base configuration object."""
-
-    def __getattr__(self, attr):
-        try:
-            return self[attr]
-        except KeyError as e:
-            raise AttributeError(f"config has no attribute {attr!r}")
-
-    def __setattr__(self, attr, value):
-        self[attr] = value
-
-    def __delattr__(self, attr):
-        try:
-            del self[attr]
-        except KeyError as e:
-            raise AttributeError(f"config has no attribute {attr!r}")
-
-
-class SessionConfig(Config):
+class SessionConfig(AttrDict):
 
     """Container for session-level configuration values."""
 
@@ -65,7 +43,7 @@ class SessionConfig(Config):
         pwd = pwd.resolve()
         self.pwd = pwd
 
-        site_conf = Config(site_conf or {})
+        site_conf = AttrDict(site_conf or {})
 
         # Resolve path-related configs with current work path.
         pca_map = {
@@ -83,14 +61,14 @@ class SessionConfig(Config):
         ca_map = {
             "dot_html_url": dot_html_url,
             "timezone": timezone,
+            "unit_cls": unit_cls,
         }
         for confv, argv in ca_map.items():
             finalv = getattr(site_conf, confv, argv)
             setattr(site_conf, confv, finalv)
 
         self.site = site_conf
-        site_conf_proxy = MappingProxyType(site_conf)
-        self.engines = [EngineConfig(site_conf_proxy, **ec)
+        self.engines = [EngineConfig(site_conf, **ec)
                         for ec in (engines_conf or [])]
 
     @classmethod
@@ -126,7 +104,7 @@ class SessionConfig(Config):
             return Result.as_success(conf)
 
 
-class EngineConfig(Config):
+class EngineConfig(AttrDict):
 
     """Container for engine-level configuration values."""
 
