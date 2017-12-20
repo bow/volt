@@ -44,15 +44,10 @@ class Session(object):
         except OSError as e:
             return Result.as_failure(e.strerror)
 
-        try:
-            next(target_wd.iterdir())
-        except StopIteration:
-            pass
-        else:
-            if not force:
-                return Result.as_failure(
-                    "target project directory is not empty -- use the `-f`"
-                    " flag to force init in nonempty directories")
+        if not force and any(True for _ in target_wd.iterdir()):
+            return Result.as_failure(
+                "target project directory is not empty -- use the `-f` flag to"
+                " force init in nonempty directories")
 
         rtz = get_tz(timezone)
         if rtz.errors:
