@@ -9,7 +9,8 @@
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import toml
 
-from .utils import AttrDict, Result
+from .units import Unit
+from .utils import import_mod_attr, get_tz, AttrDict, Result
 
 __all__ = ["CONFIG_FNAME", "SessionConfig", "EngineConfig"]
 
@@ -25,7 +26,8 @@ class SessionConfig(AttrDict):
     def __init__(self, pwd, site_conf=None, engines_conf=None,
                  contents_src="contents", templates_src="templates",
                  static_src="static", engines_src="engines", site_dest="site",
-                 timezone=None, dot_html_url=True):
+                 timezone=None, dot_html_url=True, unit_cls=Unit,
+                 unit_template_fname="site_unit.html"):
         """Initializes a site-level configuration.
 
         :param pathlib.Path pwd: Path to the project working directory.
@@ -38,6 +40,11 @@ class SessionConfig(AttrDict):
         :param str timezone: Geographical timezone name for default timestamp
             interpretation.
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
+        :param volt.site.Unit unit_cls: Unit class used for creating the
+            site's units.
+        :param str unit_template_fname: File name of the template used for
+            the site's units. This file must exist in the expected template
+            directory.
 
         """
         pwd = pwd.resolve()
@@ -62,11 +69,13 @@ class SessionConfig(AttrDict):
             "dot_html_url": dot_html_url,
             "timezone": timezone,
             "unit_cls": unit_cls,
+            "unit_template_fname": unit_template_fname,
         }
         for confv, argv in ca_map.items():
             finalv = getattr(site_conf, confv, argv)
             setattr(site_conf, confv, finalv)
 
+        site_conf.pwd = pwd
         self.site = site_conf
         self.engines = [EngineConfig(site_conf, **ec)
                         for ec in (engines_conf or [])]
@@ -83,7 +92,7 @@ class SessionConfig(AttrDict):
             if any.
 
         """
-        with open(toml_fname) as src:
+        with pwd.joinpath(toml_fname).open() as src:
             try:
                 user_conf = toml.load(src)
             except (IndexError, toml.TomlDecodeError):
@@ -94,6 +103,21 @@ class SessionConfig(AttrDict):
         site_conf = user_conf.pop("site", {})
         if not isinstance(site_conf, dict):
             return Result.as_failure("unexpected config structure")
+
+        # Get timezone from config or system.
+        rtz = get_tz(site_conf.get("timezone", None))
+        if rtz.errors:
+            return rtz
+        site_conf["timezone"] = rtz.result
+
+        # Import user-defined unit if specified.
+        if "unit" in site_conf:
+            rucls = import_mod_attr(site_conf["unit"])
+            if rucls.errors:
+                return rucls
+            unit_cls = rucls.result
+            site_conf["unit_cls"] = unit_cls
+
         engines_conf = user_conf.pop("engines", [])
 
         try:

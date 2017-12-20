@@ -11,6 +11,7 @@ import sys
 import importlib.util as iutil
 from collections import namedtuple
 from os import path
+from pathlib import Path
 
 import pytz
 import pytz.exceptions as tzexc
@@ -99,6 +100,24 @@ def import_mod_attr(target):
     except AttributeError:
         return Result.as_failure(f"module {mod_name!r} does not contain"
                                  f" attribute {cls_name!r}")
+
+
+def find_pwd(fname, start=None):
+    """Finds the directory containing the filename.
+
+    Directory lookup is performed from the given start directory up until the
+    root (`/`) directory. If no start directory is given, the lookup starts
+    from the current directory.
+
+    """
+    pwd = Path.cwd() if start is None else Path(start).expanduser().resolve()
+
+    while pwd != pwd.parent:
+        if pwd.joinpath(fname).exists():
+            return Result.as_success(pwd)
+        pwd = pwd.parent
+
+    return Result.as_failure("failed to find project directory")
 
 
 def lazyproperty(func):

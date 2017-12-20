@@ -7,16 +7,19 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import shutil
 from collections import OrderedDict
 from os import path
 from pathlib import Path
 
 import click
 import toml
+from jinja2 import Environment, FileSystemLoader
 
 from . import __version__
 from .config import SessionConfig, CONFIG_FNAME
-from .utils import get_tz, Result
+from .site import Site
+from .utils import get_tz, find_pwd, Result
 
 __all__ = []
 
@@ -76,6 +79,38 @@ class Session(object):
 
         return Result.as_success(None)
 
+    @classmethod
+    def do_build(cls, start_lookup_dir=None, clean_dest=True):
+        """Builds the site."""
+        rpwd = find_pwd(CONFIG_FNAME, start_lookup_dir)
+        if rpwd.errors:
+            return rpwd
+
+        rsc = SessionConfig.from_toml(rpwd.result, CONFIG_FNAME)
+        if rsc.errors:
+            return rsc
+
+        session_config = rsc.result
+        # TODO: wipe and write only the necessary ones
+        site_dest = session_config.site.site_dest
+        if clean_dest:
+            try:
+                shutil.rmtree(str(site_dest))
+            except FileNotFoundError:
+                pass
+            site_dest.mkdir(parents=True)
+
+        env = Environment(
+            loader=FileSystemLoader(str(session_config.site.templates_src)),
+            auto_reload=False,
+            enable_async=True)
+        site = Site(session_config, env)
+        rbuild = site.build()
+        if rbuild.errors:
+            return rbuild
+
+        return Result.as_success(None)
+
 
 @click.group()
 @click.version_option(__version__)
@@ -120,3 +155,18 @@ def init(ctx, name, url, project_dir, timezone, force):
     if errs:
         raise click.UsageError(errs.pop())
     # TODO: add message for successful init
+
+
+@main.command()
+@click.argument("project_dir",
+                type=click.Path(exists=True, dir_okay=True, file_okay=False,
+                                readable=True, writable=True),
+                required=False)
+@click.option("-c", "--clean", is_flag=True, default=True,
+              help="If set, Volt will remove the target site directory prior"
+                   " to site creation. Default: set.")
+@click.pass_context
+def build(ctx, project_dir, clean):
+    _, errs = Session.do_build(project_dir, clean)
+    if errs:
+        raise click.UsageError(errs.pop())

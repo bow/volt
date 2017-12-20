@@ -7,22 +7,57 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import jinja2.exceptions as j2exc
+
+from .utils import Result
 
 
 class Site(object):
 
     """Representation of the static site."""
 
-    def __init__(self, session_config):
+    def __init__(self, session_config, template_env):
         self.session_config = session_config
-        self.engines = []
+        self.template_env = template_env
+
+    def gather_units(self, pattern="*.md"):
+        site_config = self.session_config.site
+        unit_cls = site_config.unit_cls
+
+        units = []
+        for unit_path in site_config.contents_src.glob(pattern):
+            runit = unit_cls.load(unit_path, site_config)
+            if runit.errors:
+                return runit
+            units.append(runit.result)
+
+        return Result.as_success(units)
 
     def build(self):
-        engines = []
-        for econf in self.session_config.engines:
-            engine = econf.cls(econf)
-            engines.append(engine)
-        self.engines = engines
+        runits = self.gather_units()
+        if runits.errors:
+            return runits
 
-    def build_root(self):
-        pass
+        session_config = self.session_config
+
+        ut_fname = session_config.site.unit_template_fname
+        try:
+            template = self.template_env.get_template(ut_fname)
+        except j2exc.TemplateNotFound:
+            return Result.as_failure(f"cannot find template {ut_fname!r}")
+        except j2exc.TemplateSyntaxError as e:
+            return Result.as_failure(f"template {ut_fname!r} has syntax"
+                                     f" errors: {e.message}")
+
+        site_dest = session_config.site.site_dest
+        for unit in runits.result:
+            target = site_dest.joinpath(f"{unit.metadata.slug}.html")
+            try:
+                template.stream(unit=unit).dump(str(target))
+            except j2exc.UndefinedError as e:
+                return Result.as_failure(
+                    "cannot write"
+                    f" {str(target.relative_to(session_config.pwd))!r} using"
+                    f" {ut_fname!r}: {e.message}")
+
+        return Result.as_success(None)
