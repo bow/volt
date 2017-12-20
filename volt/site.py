@@ -16,12 +16,12 @@ class Site(object):
 
     """Representation of the static site."""
 
-    def __init__(self, session_config, template_env):
-        self.session_config = session_config
+    def __init__(self, config, template_env):
+        self.config = config
         self.template_env = template_env
 
     def gather_units(self, pattern="*.md"):
-        site_config = self.session_config.site
+        site_config = self.config
         unit_cls = site_config.unit_cls
 
         units = []
@@ -38,9 +38,9 @@ class Site(object):
         if runits.is_failure:
             return runits
 
-        session_config = self.session_config
+        site_config = self.config
 
-        ut_fname = session_config.site.unit_template_fname
+        ut_fname = site_config.unit_template_fname
         try:
             template = self.template_env.get_template(ut_fname)
         except j2exc.TemplateNotFound:
@@ -49,7 +49,7 @@ class Site(object):
             return Result.as_failure(f"template {ut_fname!r} has syntax"
                                      f" errors: {e.message}")
 
-        site_dest = session_config.site.site_dest
+        site_dest = site_config.site_dest
         for unit in runits.data:
             target = site_dest.joinpath(f"{unit.metadata.slug}.html")
             try:
@@ -57,7 +57,7 @@ class Site(object):
             except j2exc.UndefinedError as e:
                 return Result.as_failure(
                     "cannot write"
-                    f" {str(target.relative_to(session_config.pwd))!r} using"
+                    f" {str(target.relative_to(site_config.pwd))!r} using"
                     f" {ut_fname!r}: {e.message}")
 
         return Result.as_success(None)

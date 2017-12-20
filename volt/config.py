@@ -14,18 +14,18 @@ import toml
 from .units import Unit
 from .utils import import_mod_attr, get_tz, AttrDict, Result
 
-__all__ = ["CONFIG_FNAME", "SessionConfig", "SectionConfig"]
+__all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 
 
 # Default config file name.
 CONFIG_FNAME = "volt.toml"
 
 
-class SessionConfig(AttrDict):
+class SiteConfig(AttrDict):
 
-    """Container for session-level configuration values."""
+    """Container for site-level configuration values."""
 
-    def __init__(self, pwd, site_conf=None, sections_conf=None,
+    def __init__(self, pwd, user_site_conf=None, user_sections_conf=None,
                  contents_src="contents", templates_src="templates",
                  static_src="static", engines_src="engines", site_dest="site",
                  timezone=None, dot_html_url=True, unit_cls=Unit,
@@ -33,10 +33,14 @@ class SessionConfig(AttrDict):
                  hide_first_pagination_idx=True):
         """Initializes a site-level configuration.
 
+        If a non-default ``user_site_conf`` is given, this method will consume
+        its contents.
+
         :param pathlib.Path pwd: Path to the project working directory.
-        :param dict site_conf: Dictionary containing site configuration values.
-        :param dict sections_conf: Dictionary containing section configuration
-            values, keyed by the section name.
+        :param dict user_site_conf: Dictionary containing user-supplied site
+            configuration values.
+        :param dict user_sections_conf: Dictionary containing user-supplied
+            section configuration values, keyed by the section name.
         :param str contents_src: Base directory name for content lookup.
         :param str templates_src: Base directory name for template lookup.
         :param str static_src: Base directory name for static files lookup.
@@ -54,9 +58,7 @@ class SessionConfig(AttrDict):
 
         """
         pwd = pwd.resolve()
-        self.pwd = pwd
-
-        site_conf = AttrDict(site_conf or {})
+        user_site_conf = AttrDict(user_site_conf or {})
 
         # Resolve path-related configs with current work path.
         pca_map = {
@@ -67,10 +69,10 @@ class SessionConfig(AttrDict):
             "site_dest": site_dest,
         }
         for path_confv, argv in pca_map.items():
-            finalv = pwd.joinpath(getattr(site_conf, path_confv, argv))
-            setattr(site_conf, path_confv, finalv)
+            self[path_confv] = pwd.joinpath(
+                user_site_conf.pop(path_confv, argv))
 
-        # Resolve other configs.
+        # Resolve other configs with defaults set in kwargs.
         ca_map = {
             "dot_html_url": dot_html_url,
             "hide_first_pagination_idx": hide_first_pagination_idx,
@@ -79,13 +81,15 @@ class SessionConfig(AttrDict):
             "unit_template_fname": unit_template_fname,
         }
         for confv, argv in ca_map.items():
-            finalv = getattr(site_conf, confv, argv)
-            setattr(site_conf, confv, finalv)
+            self[confv] = user_site_conf.pop(confv, argv)
 
-        site_conf.pwd = pwd
-        self.site = site_conf
-        self.sections = {name: SectionConfig(site_conf, name, **sc)
-                         for name, sc in (sections_conf or {}).items()}
+        # Move other custom configs.
+        for k in list(user_site_conf.keys()):
+            self[k] = user_site_conf.pop(k)
+
+        self.pwd = pwd
+        self.sections = {name: SectionConfig(name, self, **sc)
+                         for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
     def from_toml(cls, pwd, toml_fname=CONFIG_FNAME):
@@ -127,7 +131,8 @@ class SessionConfig(AttrDict):
         sections_conf = user_conf.pop("section", {})
 
         try:
-            conf = cls(pwd, site_conf=site_conf, sections_conf=sections_conf)
+            conf = cls(pwd, user_site_conf=site_conf,
+                       user_sections_conf=sections_conf)
         except Exception as e:
             return Result.as_failure(e.args[0])
         else:
@@ -138,7 +143,7 @@ class SectionConfig(AttrDict):
 
     """Container for section-specific configuration values."""
 
-    def __init__(self, site_config, name, **kwargs):
+    def __init__(self, name, site_config, **kwargs):
         self.site_config = site_config
 
         # Required config values with predefined defaults.

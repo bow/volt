@@ -18,7 +18,7 @@ import toml
 from jinja2 import Environment, FileSystemLoader
 
 from . import __version__
-from .config import SessionConfig, CONFIG_FNAME
+from .config import SiteConfig, CONFIG_FNAME
 from .site import Site
 from .utils import get_tz, find_pwd, Result
 
@@ -55,7 +55,7 @@ class Session(object):
             return rtz
 
         # Bootstrap directories.
-        bootstrap_conf = SessionConfig(target_wd, timezone=rtz.data).site
+        bootstrap_conf = SiteConfig(target_wd, timezone=rtz.data)
         try:
             bootstrap_conf.contents_src.mkdir(parents=True, exist_ok=True)
             bootstrap_conf.templates_src.mkdir(parents=True, exist_ok=True)
@@ -82,23 +82,23 @@ class Session(object):
         if rpwd.is_failure:
             return rpwd
 
-        rsc = SessionConfig.from_toml(rpwd.data, CONFIG_FNAME)
+        rsc = SiteConfig.from_toml(rpwd.data, CONFIG_FNAME)
         if rsc.is_failure:
             return rsc
 
-        session_config = rsc.data
+        site_config = rsc.data
         # TODO: wipe and write only the necessary ones
-        site_dest = session_config.site.site_dest
+        site_dest = site_config.site_dest
         if clean_dest:
             with suppress(FileNotFoundError):
                 shutil.rmtree(str(site_dest))
             site_dest.mkdir(parents=True)
 
         env = Environment(
-            loader=FileSystemLoader(str(session_config.site.templates_src)),
+            loader=FileSystemLoader(str(site_config.templates_src)),
             auto_reload=False,
             enable_async=True)
-        site = Site(session_config, env)
+        site = Site(site_config, env)
         rbuild = site.build()
         if rbuild.is_failure:
             return rbuild
