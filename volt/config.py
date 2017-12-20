@@ -7,6 +7,8 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+from urllib.parse import urljoin as urljoin
+
 import toml
 
 from .units import Unit
@@ -27,7 +29,8 @@ class SessionConfig(AttrDict):
                  contents_src="contents", templates_src="templates",
                  static_src="static", engines_src="engines", site_dest="site",
                  timezone=None, dot_html_url=True, unit_cls=Unit,
-                 unit_template_fname="site_unit.html"):
+                 unit_template_fname="page.html",
+                 hide_first_pagination_idx=True):
         """Initializes a site-level configuration.
 
         :param pathlib.Path pwd: Path to the project working directory.
@@ -46,6 +49,8 @@ class SessionConfig(AttrDict):
         :param str unit_template_fname: File name of the template used for
             the site's units. This file must exist in the expected template
             directory.
+        :param bool hide_first_pagination_idx: Whether to show the first
+            pagination's ``idx`` in its URL or not.
 
         """
         pwd = pwd.resolve()
@@ -68,6 +73,7 @@ class SessionConfig(AttrDict):
         # Resolve other configs.
         ca_map = {
             "dot_html_url": dot_html_url,
+            "hide_first_pagination_idx": hide_first_pagination_idx,
             "timezone": timezone,
             "unit_cls": unit_cls,
             "unit_template_fname": unit_template_fname,
@@ -136,28 +142,38 @@ class SectionConfig(AttrDict):
         self.site_config = site_config
 
         # Required config values with predefined defaults.
-        self.groups = kwargs.pop("groups", None) or []
-        self.group_order = kwargs.pop("group_order", None) or {}
-        self.group_size = kwargs.pop("group_size", 10)
-        self.unit_permalink = kwargs.pop("unit_permalink", "{slug}")
+        self.paginations = kwargs.pop("paginations", None) or []
+        self.pagination_size = kwargs.pop("pagination_size", 10)
+        self.unit_order = kwargs.pop("unit_order", None) or \
+            {"key": "pub_time", "reverse": True}
 
         # Required config values with site-level defaults.
-        ck = "dot_html_url"
-        setattr(self, ck, kwargs.pop(ck, site_config[ck]))
+        for ck in ("dot_html_url", "hide_first_pagination_idx"):
+            setattr(self, ck, kwargs.pop(ck, site_config[ck]))
 
         # Required config values with name-dependent defaults.
         self.name = name
+
+        try:
+            spath = kwargs.pop("path")
+            spath = "/" + spath if not spath.startswith("/") else spath
+        except KeyError:
+            spath = f"/{name}"
+        self.path = spath
+
+        try:
+            upath = urljoin(f"{spath}/", kwargs.pop("unit_path_pattern"))
+        except KeyError:
+            upath = f"{spath}/{{slug}}"
+        self.unit_path_pattern = upath
 
         self.engine = kwargs.pop("engine", None) or \
             f"volt.engines.{name.capitalize()}Engine"
         self.unit = kwargs.pop("unit", None) or "volt.units.Unit"
 
-        site_path = (kwargs.pop("site_path", None) or f"{name}").lstrip("/")
-        self.site_path = site_path
-
+        self.site_dest = site_config["site_dest"].joinpath(spath[1:])
         self.contents_src = site_config["contents_src"].joinpath(
             kwargs.pop("contents_src", None) or name)
-        self.site_dest = site_config["site_dest"].joinpath(site_path)
 
         # Other user-defined engine values.
         for k, v in kwargs.items():
