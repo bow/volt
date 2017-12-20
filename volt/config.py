@@ -12,7 +12,7 @@ import toml
 from .units import Unit
 from .utils import import_mod_attr, get_tz, AttrDict, Result
 
-__all__ = ["CONFIG_FNAME", "SessionConfig", "EngineConfig"]
+__all__ = ["CONFIG_FNAME", "SessionConfig", "SectionConfig"]
 
 
 # Default config file name.
@@ -23,7 +23,7 @@ class SessionConfig(AttrDict):
 
     """Container for session-level configuration values."""
 
-    def __init__(self, pwd, site_conf=None, engines_conf=None,
+    def __init__(self, pwd, site_conf=None, sections_conf=None,
                  contents_src="contents", templates_src="templates",
                  static_src="static", engines_src="engines", site_dest="site",
                  timezone=None, dot_html_url=True, unit_cls=Unit,
@@ -32,7 +32,8 @@ class SessionConfig(AttrDict):
 
         :param pathlib.Path pwd: Path to the project working directory.
         :param dict site_conf: Dictionary containing site configuration values.
-        :param list engines_conf: List containing engine configuration values.
+        :param dict sections_conf: Dictionary containing section configuration
+            values, keyed by the section name.
         :param str contents_src: Base directory name for content lookup.
         :param str templates_src: Base directory name for template lookup.
         :param str static_src: Base directory name for static files lookup.
@@ -77,8 +78,8 @@ class SessionConfig(AttrDict):
 
         site_conf.pwd = pwd
         self.site = site_conf
-        self.engines = [EngineConfig(site_conf, **ec)
-                        for ec in (engines_conf or [])]
+        self.sections = {name: SectionConfig(site_conf, name, **sc)
+                         for name, sc in (sections_conf or {}).items()}
 
     @classmethod
     def from_toml(cls, pwd, toml_fname=CONFIG_FNAME):
@@ -117,21 +118,21 @@ class SessionConfig(AttrDict):
                 return rucls
             site_conf["unit_cls"] = rucls.data
 
-        engines_conf = user_conf.pop("engines", [])
+        sections_conf = user_conf.pop("section", {})
 
         try:
-            conf = cls(pwd, site_conf=site_conf, engines_conf=engines_conf)
+            conf = cls(pwd, site_conf=site_conf, sections_conf=sections_conf)
         except Exception as e:
             return Result.as_failure(e.args[0])
         else:
             return Result.as_success(conf)
 
 
-class EngineConfig(AttrDict):
+class SectionConfig(AttrDict):
 
-    """Container for engine-level configuration values."""
+    """Container for section-specific configuration values."""
 
-    def __init__(self, site_config, **kwargs):
+    def __init__(self, site_config, name, **kwargs):
         self.site_config = site_config
 
         # Required config values with predefined defaults.
@@ -145,13 +146,11 @@ class EngineConfig(AttrDict):
         setattr(self, ck, kwargs.pop(ck, site_config[ck]))
 
         # Required config values with name-dependent defaults.
-        name = kwargs.pop("name")
         self.name = name
 
-        self.class_location = kwargs.pop("class_location", None) or \
-            f"volt.engines.{name}"
-        self.unit_class_location = kwargs.pop("unit_class_location", None) or \
-            "volt.units:UnitSource"
+        self.engine = kwargs.pop("engine", None) or \
+            f"volt.engines.{name.capitalize()}Engine"
+        self.unit = kwargs.pop("unit", None) or "volt.units.Unit"
 
         site_path = (kwargs.pop("site_path", None) or f"{name}").lstrip("/")
         self.site_path = site_path
