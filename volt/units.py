@@ -31,14 +31,14 @@ class Unit(object):
 
     """Base class for unit."""
 
-    __slots__ = ("src_path", "config", "metadata", "raw_text")
+    __slots__ = ("src", "config", "metadata", "raw_text")
 
     @classmethod
-    def parse_metadatata(cls, raw, config, src_path):
+    def parse_metadatata(cls, raw, config, src):
         try:
             meta = yaml.load(raw, Loader=Loader) or {}
         except ScannerError as e:
-            return Result.as_failure(f"malformed metadata: {src_path}")
+            return Result.as_failure(f"malformed metadata: {src}")
 
         # Ensure tags is a list of strings.
         tags = meta.get("tags", [])
@@ -57,7 +57,7 @@ class Unit(object):
 
         # Ensure title is supplied.
         if "title" not in meta:
-            meta["title"] = src_path.stem
+            meta["title"] = src.stem
 
         if "slug" not in meta:
             # Set slug from title if not supplied.
@@ -69,10 +69,10 @@ class Unit(object):
         return Result.as_success(AttrDict(meta))
 
     @classmethod
-    def load(cls, src_path, config, encoding="utf-8"):
+    def load(cls, src, config, encoding="utf-8"):
         """Loads the given unit path as an instance of the given unit class."""
         try:
-            raw_bytes = src_path.read_bytes()
+            raw_bytes = src.read_bytes()
         except OSError as e:
             return Result.as_failure(e.strerror)
 
@@ -81,7 +81,7 @@ class Unit(object):
         except UnicodeDecodeError:
             return Result.as_failure(
                 "decoding error: cannot decode"
-                f" {str(src_path.relative_to(config.pwd))!r} using"
+                f" {str(src.relative_to(config.pwd))!r} using"
                 f" {encoding!r}")
 
         split_contents = _RE_WITH_FM.split(raw_contents, 1)
@@ -90,16 +90,16 @@ class Unit(object):
             raw_meta, raw_text = split_contents
         except ValueError:
             return Result.as_failure(
-                f"malformed unit: {str(src_path.relative_to(config.pwd))!r}")
+                f"malformed unit: {str(src.relative_to(config.pwd))!r}")
 
-        rmeta = cls.parse_metadatata(raw_meta, config, src_path)
+        rmeta = cls.parse_metadatata(raw_meta, config, src)
         if rmeta.is_failure:
             return rmeta
 
-        return Result.as_success(cls(src_path, config, rmeta.data, raw_text))
+        return Result.as_success(cls(src, config, rmeta.data, raw_text))
 
-    def __init__(self, src_path, config, metadata, raw_text):
-        self.src_path = src_path
+    def __init__(self, src, config, metadata, raw_text):
+        self.src = src
         self.config = config
         self.metadata = metadata
         self.raw_text = raw_text
