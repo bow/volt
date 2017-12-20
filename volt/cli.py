@@ -9,6 +9,7 @@
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import shutil
 from collections import OrderedDict
+from contextlib import suppress
 from os import path
 from pathlib import Path
 
@@ -89,10 +90,8 @@ class Session(object):
         # TODO: wipe and write only the necessary ones
         site_dest = session_config.site.site_dest
         if clean_dest:
-            try:
+            with suppress(FileNotFoundError):
                 shutil.rmtree(str(site_dest))
-            except FileNotFoundError:
-                pass
             site_dest.mkdir(parents=True)
 
         env = Environment(
