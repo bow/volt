@@ -130,13 +130,10 @@ class SiteConfig(AttrDict):
 
         sections_conf = user_conf.pop("section", {})
 
-        try:
-            conf = cls(pwd, user_site_conf=site_conf,
-                       user_sections_conf=sections_conf)
-        except Exception as e:
-            return Result.as_failure(e.args[0])
-        else:
-            return Result.as_success(conf)
+        conf = cls(pwd, user_site_conf=site_conf,
+                   user_sections_conf=sections_conf)
+
+        return Result.as_success(conf)
 
 
 class SectionConfig(AttrDict):
