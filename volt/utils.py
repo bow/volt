@@ -40,22 +40,47 @@ class AttrDict(dict):
                                  f" {attr!r}")
 
 
+class _Mark(object):
+
+    """Helper class for marking results that always evaluates to False."""
+
+    def __bool__(self):
+        return False
+
+
+_mark = _Mark()
+
+
 # Helper tuple for containing success or failure results.
-class Result(namedtuple("Result", ["result", "errors"])):
+class Result(namedtuple("Result", ["data", "errs"])):
+
+    """Container for return values that may be a success or failure.
+
+    Instances of this class *SHOULD NOT* be created using the default
+    ``__init__`` call, but rather using either the ``as_success`` or
+    ``as_failure`` methods.
+
+    """
 
     @classmethod
     def as_success(cls, success_value):
-        """Returns the success value, with the error value set to an empty
-        list."""
-        return cls(success_value, [])
+        """Returns a success variant with the given value."""
+        return cls(success_value, _mark)
 
     @classmethod
     def as_failure(cls, failure_message):
-        """Returns the error value in a list, with the success value set to
-        None."""
-        msg = [failure_message] if isinstance(failure_message, str) else \
-            failure_message
-        return cls(None, msg)
+        """Returns a failure variant with the given value."""
+        return cls(_mark, failure_message)
+
+    @property
+    def is_failure(self):
+        """Checks whether the instance represents a failure value."""
+        return self.data is _mark
+
+    @property
+    def is_success(self):
+        """Checks whether the instance represents a success value."""
+        return self.errs is _mark
 
 
 def get_tz(tzname=None):

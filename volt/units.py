@@ -93,10 +93,10 @@ class Unit(object):
                 f"malformed unit: {str(src_path.relative_to(config.pwd))!r}")
 
         rmeta = cls.parse_metadatata(raw_meta, config, src_path)
-        if rmeta.errors:
+        if rmeta.is_failure:
             return rmeta
 
-        return Result.as_success(cls(src_path, config, rmeta.result, raw_text))
+        return Result.as_success(cls(src_path, config, rmeta.data, raw_text))
 
     def __init__(self, src_path, config, metadata, raw_text):
         self.src_path = src_path

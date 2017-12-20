@@ -60,7 +60,7 @@ def test_import_mod_attr_ok_custom(istr, mod_toks, tmpdir):
 
 def test_import_mod_attr_fail_invalid_target():
     _, errs = import_mod_attr("os")
-    assert errs == ["invalid module attribute import target: 'os'"]
+    assert errs == "invalid module attribute import target: 'os'"
 
 
 @pytest.mark.parametrize("suffix", [":Test", ".Test"])
@@ -72,14 +72,13 @@ def test_import_mod_attr_fail_from_file(tmpdir, mod_toks, suffix):
         target = mod_path.joinpath("custom.py")
         target.write_text("class Test:\n\tval = 1")
         _, errs = import_mod_attr(str(target) + suffix)
-        assert errs == ["import from file is not yet supported"]
+        assert errs == "import from file is not yet supported"
 
 
 def test_import_mod_attr_fail_nonexistent(tmpdir, mod_toks):
     with tmpdir.as_cwd():
         obj, errs = import_mod_attr("foo.bar.baz.custom:Test")
-        assert errs == ["failed to find module 'foo.bar.baz.custom'"
-                        " for import"]
+        assert errs == "failed to find module 'foo.bar.baz.custom' for import"
 
 
 def test_import_mod_attr_fail_attribute_missing(tmpdir, mod_toks):
@@ -90,16 +89,21 @@ def test_import_mod_attr_fail_attribute_missing(tmpdir, mod_toks):
         target = mod_path.joinpath("custom.py")
         target.write_text("class Test:\n\tval = 1")
         obj, errs = import_mod_attr("foo.bar.baz.custom.Bzzt")
-        assert errs == ["module 'foo.bar.baz.custom' does not contain"
-                        " attribute 'Bzzt'"]
+        assert errs == "module 'foo.bar.baz.custom' does not contain" + \
+                       " attribute 'Bzzt'"
 
 
-@pytest.mark.parametrize("tzname, exp_res, exp_errs", [
-    (None, tzlocal.get_localzone(), []),
-    ("Asia/Jakarta", pytz.timezone("Asia/Jakarta"), []),
-    ("bzzt", None, ["cannot interpret timezone 'bzzt'"]),
+@pytest.mark.parametrize("tzname, exp_data", [
+    (None, tzlocal.get_localzone()),
+    ("Asia/Jakarta", pytz.timezone("Asia/Jakarta")),
 ])
-def test_get_tz(tzname, exp_res, exp_errs):
-    obs_res, obs_errs = get_tz(tzname)
-    assert obs_res == exp_res
-    assert obs_errs == exp_errs
+def test_get_tz_ok(tzname, exp_data):
+    obs_data, obs_errs = get_tz(tzname)
+    assert not obs_errs
+    assert obs_data == exp_data
+
+
+def test_get_tz_fail():
+    obs_data, obs_errs = get_tz("bzzt")
+    assert not obs_data
+    assert obs_errs == "cannot interpret timezone 'bzzt'"

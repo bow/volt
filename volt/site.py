@@ -26,16 +26,16 @@ class Site(object):
 
         units = []
         for unit_path in site_config.contents_src.glob(pattern):
-            runit = unit_cls.load(unit_path, site_config)
-            if runit.errors:
-                return runit
-            units.append(runit.result)
+            res = unit_cls.load(unit_path, site_config)
+            if res.is_failure:
+                return res
+            units.append(res.data)
 
         return Result.as_success(units)
 
     def build(self):
         runits = self.gather_units()
-        if runits.errors:
+        if runits.is_failure:
             return runits
 
         session_config = self.session_config
@@ -50,7 +50,7 @@ class Site(object):
                                      f" errors: {e.message}")
 
         site_dest = session_config.site.site_dest
-        for unit in runits.result:
+        for unit in runits.data:
             target = site_dest.joinpath(f"{unit.metadata.slug}.html")
             try:
                 template.stream(unit=unit).dump(str(target))

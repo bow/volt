@@ -106,17 +106,16 @@ class SessionConfig(AttrDict):
 
         # Get timezone from config or system.
         rtz = get_tz(site_conf.get("timezone", None))
-        if rtz.errors:
+        if rtz.is_failure:
             return rtz
-        site_conf["timezone"] = rtz.result
+        site_conf["timezone"] = rtz.data
 
         # Import user-defined unit if specified.
         if "unit" in site_conf:
             rucls = import_mod_attr(site_conf["unit"])
-            if rucls.errors:
+            if rucls.is_failure:
                 return rucls
-            unit_cls = rucls.result
-            site_conf["unit_cls"] = unit_cls
+            site_conf["unit_cls"] = rucls.data
 
         engines_conf = user_conf.pop("engines", [])
 

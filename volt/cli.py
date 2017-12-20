@@ -51,11 +51,11 @@ class Session(object):
                 " force init in nonempty directories")
 
         rtz = get_tz(timezone)
-        if rtz.errors:
+        if rtz.is_failure:
             return rtz
 
         # Bootstrap directories.
-        bootstrap_conf = SessionConfig(target_wd, timezone=rtz.result).site
+        bootstrap_conf = SessionConfig(target_wd, timezone=rtz.data).site
         try:
             bootstrap_conf.contents_src.mkdir(parents=True, exist_ok=True)
             bootstrap_conf.templates_src.mkdir(parents=True, exist_ok=True)
@@ -68,7 +68,7 @@ class Session(object):
             ("site", OrderedDict([
                 ("name", name),
                 ("url", url),
-                ("timezone", rtz.result.zone),
+                ("timezone", rtz.data.zone),
             ]))
         ])
         target_wd.joinpath(config_fname).write_text(toml.dumps(init_conf))
@@ -79,14 +79,14 @@ class Session(object):
     def do_build(cls, start_lookup_dir=None, clean_dest=True):
         """Builds the site."""
         rpwd = find_pwd(CONFIG_FNAME, start_lookup_dir)
-        if rpwd.errors:
+        if rpwd.is_failure:
             return rpwd
 
-        rsc = SessionConfig.from_toml(rpwd.result, CONFIG_FNAME)
-        if rsc.errors:
+        rsc = SessionConfig.from_toml(rpwd.data, CONFIG_FNAME)
+        if rsc.is_failure:
             return rsc
 
-        session_config = rsc.result
+        session_config = rsc.data
         # TODO: wipe and write only the necessary ones
         site_dest = session_config.site.site_dest
         if clean_dest:
@@ -100,7 +100,7 @@ class Session(object):
             enable_async=True)
         site = Site(session_config, env)
         rbuild = site.build()
-        if rbuild.errors:
+        if rbuild.is_failure:
             return rbuild
 
         return Result.as_success(None)
@@ -147,7 +147,7 @@ def init(ctx, name, url, project_dir, timezone, force):
 
     _, errs = Session.do_init(pwd, name, url, timezone, force)
     if errs:
-        raise click.UsageError(errs.pop())
+        raise click.UsageError(errs)
     # TODO: add message for successful init
 
 
@@ -163,4 +163,4 @@ def init(ctx, name, url, project_dir, timezone, force):
 def build(ctx, project_dir, clean):
     _, errs = Session.do_build(project_dir, clean)
     if errs:
-        raise click.UsageError(errs.pop())
+        raise click.UsageError(errs)

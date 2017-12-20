@@ -20,7 +20,7 @@ def test_from_toml(tmpdir):
         sc, errs = SessionConfig.from_toml(pwd, str(cf))
         c = sc.site
 
-    assert errs == []
+    assert not errs
     assert sc.pwd == pwd
     assert c.contents_src == pwd.joinpath("contents")
     assert c.templates_src == pwd.joinpath("templates")
