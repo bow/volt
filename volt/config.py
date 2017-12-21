@@ -7,6 +7,7 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import os
 from urllib.parse import urljoin as urljoin
 
 import toml
@@ -61,6 +62,7 @@ class SiteConfig(AttrDict):
         user_site_conf = AttrDict(user_site_conf or {})
 
         # Resolve path-related configs with current work path.
+        # TODO: Move this to .from_toml?
         pca_map = {
             "contents_src": contents_src,
             "templates_src": templates_src,
@@ -69,8 +71,12 @@ class SiteConfig(AttrDict):
             "site_dest": site_dest,
         }
         for path_confv, argv in pca_map.items():
-            self[path_confv] = pwd.joinpath(
-                user_site_conf.pop(path_confv, argv))
+            try:
+                finalv = user_site_conf.pop(path_confv)
+                assert not os.path.isabs(finalv)
+            except KeyError:
+                finalv = argv
+            self[path_confv] = pwd.joinpath(finalv)
 
         # Resolve other configs with defaults set in kwargs.
         ca_map = {
