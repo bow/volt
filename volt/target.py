@@ -7,6 +7,9 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import filecmp
+import shutil
+
 import jinja2.exceptions as j2exc
 
 from .utils import Result
@@ -37,3 +40,18 @@ class PageTarget(object):
     def write(self, project_dir):
         # TODO: check cache?
         project_dir.joinpath(self.dest).write_text(self.contents)
+
+
+class StaticTarget(object):
+
+    def __init__(self, src, dest):
+        self.src = src
+        self.dest = dest
+
+    def write(self, project_dir):
+        eff_src = project_dir.joinpath(self.src)
+        eff_dest = project_dir.joinpath(self.dest)
+
+        if not eff_dest.exists() or \
+                not filecmp.cmp(str(eff_src), str(eff_dest), shallow=False):
+            shutil.copy2(str(eff_src), str(eff_dest))

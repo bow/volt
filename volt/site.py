@@ -7,9 +7,13 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import os
+from itertools import chain
+from pathlib import Path
+
 import jinja2.exceptions as j2exc
 
-from .target import PageTarget
+from .target import PageTarget, StaticTarget
 from .utils import Result
 
 
@@ -153,12 +157,33 @@ class Site(object):
 
         return Result.as_success(pages)
 
+    def gather_static_assets(self, cur_dir):
+        items = []
+        dest_rel = self.dest_rel
+        static_rel = self.config.static_src.relative_to(Path(cur_dir))
+
+        entries = list(os.scandir(static_rel))
+        while entries:
+            de = entries.pop()
+            if de.is_dir():
+                entries.extend(os.scandir(de))
+            else:
+                target = StaticTarget(
+                    de.path, dest_rel.joinpath(*Path(de.path).parts[1:]))
+                items.append(target)
+
+        return Result.as_success(items)
+
     def build(self, cur_dir):
         rpages = self.create_pages()
         if rpages.is_failure:
             return rpages
 
-        for target in rpages.data:
+        rstats = self.gather_static_assets(cur_dir)
+        if rstats.is_failure:
+            return rstats
+
+        for target in chain(rpages.data, rstats.data):
             self.plan.add_target(target)
 
         pwd = self.config.pwd
