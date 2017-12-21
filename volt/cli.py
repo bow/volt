@@ -10,7 +10,7 @@
 import shutil
 from collections import OrderedDict
 from contextlib import suppress
-from os import path
+from os import getcwd, path
 from pathlib import Path
 
 import click
@@ -76,7 +76,7 @@ class Session(object):
         return Result.as_success(None)
 
     @classmethod
-    def do_build(cls, start_lookup_dir=None, clean_dest=True):
+    def do_build(cls, cur_dir, start_lookup_dir=None, clean_dest=True):
         """Builds the site."""
         rpwd = find_pwd(CONFIG_FNAME, start_lookup_dir)
         if rpwd.is_failure:
@@ -99,7 +99,7 @@ class Session(object):
             auto_reload=False,
             enable_async=True)
         site = Site(site_config, env)
-        rbuild = site.build()
+        rbuild = site.build(cur_dir)
         if rbuild.is_failure:
             return rbuild
 
@@ -161,6 +161,6 @@ def init(ctx, name, url, project_dir, timezone, force):
                    " to site creation. Default: set.")
 @click.pass_context
 def build(ctx, project_dir, clean):
-    _, errs = Session.do_build(project_dir, clean)
+    _, errs = Session.do_build(getcwd(), project_dir, clean)
     if errs:
         raise click.UsageError(errs)
