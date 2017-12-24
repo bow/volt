@@ -11,7 +11,7 @@ import pytest
 import pytz
 import tzlocal
 
-from volt.utils import get_tz, import_mod_attr
+from volt.utils import get_tz, import_mod_attr, calc_relpath
 
 
 @pytest.fixture
@@ -107,3 +107,44 @@ def test_get_tz_fail():
     obs_data, obs_errs = get_tz("bzzt")
     assert not obs_data
     assert obs_errs == "cannot interpret timezone 'bzzt'"
+
+
+@pytest.mark.parametrize("target, ref, exp", [
+    # target is the same as ref
+    (Path("/a"), Path("/a"), Path(".")),
+    (Path("/a/b"), Path("/a/b"), Path(".")),
+
+    # target is a child of ref
+    (Path("/a/b"), Path("/a"), Path("b")),
+    (Path("/a/b/c"), Path("/a/b"), Path("c")),
+    (Path("/a/b/c"), Path("/a"), Path("b/c")),
+
+    # target is a sibling of ref
+    (Path("/b"), Path("/a"), Path("../b")),
+    (Path("/a/c"), Path("/a/b"), Path("../c")),
+
+    # target and ref shares a common parent
+    (Path("/a/b/c"), Path("/a/d/f"), Path("../../b/c/")),
+    (Path("/a/b/c/d"), Path("/a/b/d/x/z/q"), Path("../../../../c/d")),
+    (Path("/a/b/c/d/e/f"), Path("/a/x/y/z"), Path("../../../b/c/d/e/f")),
+])
+def test_calc_relpath_ok(target, ref, exp):
+    robs = calc_relpath(target, ref)
+    assert robs.is_success, robs.errs
+    assert robs.data == exp
+
+
+@pytest.mark.parametrize("target, ref, errs", [
+    (Path("a"), Path("a/b"), "cannot compute relative paths of non-absolute"
+                             " input paths"),
+    (Path("a/b"), Path("a"), "cannot compute relative paths of non-absolute"
+                             " input paths"),
+    (Path("/a"), Path("a/b"), "cannot compute relative paths of non-absolute"
+                              " input paths"),
+    (Path("a"), Path("/a/b"), "cannot compute relative paths of non-absolute"
+                              " input paths"),
+])
+def test_calc_relpath_fail(target, ref, errs):
+    robs = calc_relpath(target, ref)
+    assert robs.is_failure, robs.data
+    assert robs.errs == errs
