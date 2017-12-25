@@ -129,12 +129,11 @@ def test_get_tz_fail():
     (Path("/a/b/c/d/e/f"), Path("/a/x/y/z"), Path("../../../b/c/d/e/f")),
 ])
 def test_calc_relpath_ok(target, ref, exp):
-    robs = calc_relpath(target, ref)
-    assert robs.is_success, robs.errs
-    assert robs.data == exp
+    obs = calc_relpath(target, ref)
+    assert obs == exp
 
 
-@pytest.mark.parametrize("target, ref, errs", [
+@pytest.mark.parametrize("target, ref, msg", [
     (Path("a"), Path("a/b"), "cannot compute relative paths of non-absolute"
                              " input paths"),
     (Path("a/b"), Path("a"), "cannot compute relative paths of non-absolute"
@@ -144,7 +143,6 @@ def test_calc_relpath_ok(target, ref, exp):
     (Path("a"), Path("/a/b"), "cannot compute relative paths of non-absolute"
                               " input paths"),
 ])
-def test_calc_relpath_fail(target, ref, errs):
-    robs = calc_relpath(target, ref)
-    assert robs.is_failure, robs.data
-    assert robs.errs == errs
+def test_calc_relpath_fail(target, ref, msg):
+    with pytest.raises(ValueError, message=msg):
+        calc_relpath(target, ref)

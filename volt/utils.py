@@ -145,21 +145,20 @@ def find_pwd(fname, start=None):
     return Result.as_failure("failed to find project directory")
 
 
-def calc_relpath(target: Path, ref: Path) -> Result:
+def calc_relpath(target: Path, ref: Path) -> Path:
     """Calculates the target's path relative to the reference.
 
     :param pathlib.Path target: The path to which the relative path will point.
     :param pathlib.Path ref: Reference path.
-    :returns: The relative path from ``ref`` to ``to`` or an error message
-        if any of the input paths are not absolute.
-    :rtype: :class:`Result`.
+    :returns: The relative path from ``ref`` to ``to``.
+    :rtype: :class:`Path`.
 
     """
     ref = ref.expanduser()
     target = target.expanduser()
     if not ref.is_absolute() or not target.is_absolute():
-        return Result.as_failure("cannot compute relative paths of"
-                                 " non-absolute input paths")
+        raise ValueError("cannot compute relative paths of non-absolute"
+                         " input paths")
 
     common = Path(path.commonpath([ref, target]))
     ref_uniq = ref.parts[len(common.parts):]
@@ -167,7 +166,7 @@ def calc_relpath(target: Path, ref: Path) -> Result:
 
     rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
 
-    return Result.as_success(Path(*rel_parts))
+    return Path(*rel_parts)
 
 
 def lazyproperty(func):

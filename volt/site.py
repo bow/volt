@@ -143,7 +143,7 @@ class Site(object):
                                      f" errors: {e.message}")
 
         pages = []
-        dest_rel = calc_relpath(self.config.site_dest, cwd).data
+        dest_rel = calc_relpath(self.config.site_dest, cwd)
         for unit in runits.data:
             dest = dest_rel.joinpath(f"{unit.metadata.slug}.html")
             rrend = PageTarget.from_template(unit, dest, template)
@@ -155,8 +155,8 @@ class Site(object):
 
     def gather_copy_assets(self, cwd):
         items = []
-        src_rel = calc_relpath(self.config.assets_src, cwd).data
-        dest_rel = calc_relpath(self.config.site_dest, cwd).data
+        src_rel = calc_relpath(self.config.assets_src, cwd)
+        dest_rel = calc_relpath(self.config.site_dest, cwd)
         src_rel_len = len(src_rel.parts)
 
         entries = list(os.scandir(src_rel))
@@ -180,7 +180,7 @@ class Site(object):
         if rstats.is_failure:
             return rstats
 
-        plan = SitePlan(calc_relpath(self.config.site_dest, cwd).data)
+        plan = SitePlan(calc_relpath(self.config.site_dest, cwd))
 
         for target in chain(rpages.data, rstats.data):
             plan.add_target(target)
