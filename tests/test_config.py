@@ -23,7 +23,7 @@ def test_from_toml(tmpdir):
     assert sc.pwd == pwd
     assert sc.contents_src == pwd.joinpath("contents")
     assert sc.templates_src == pwd.joinpath("templates")
-    assert sc.static_src == pwd.joinpath("static")
+    assert sc.assets_src == pwd.joinpath("assets")
     assert sc.site_dest == pwd.joinpath("site")
     assert sc.dot_html_url
     assert sc.timezone is not None

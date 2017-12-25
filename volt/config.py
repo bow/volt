@@ -28,7 +28,7 @@ class SiteConfig(AttrDict):
 
     def __init__(self, pwd, user_site_conf=None, user_sections_conf=None,
                  contents_src="contents", templates_src="templates",
-                 static_src="static", engines_src="engines", site_dest="site",
+                 assets_src="assets", engines_src="engines", site_dest="site",
                  timezone=None, dot_html_url=True, unit_cls=Unit,
                  unit_template_fname="page.html",
                  hide_first_pagination_idx=True):
@@ -44,7 +44,7 @@ class SiteConfig(AttrDict):
             section configuration values, keyed by the section name.
         :param str contents_src: Base directory name for content lookup.
         :param str templates_src: Base directory name for template lookup.
-        :param str static_src: Base directory name for static files lookup.
+        :param str assets_src: Base directory name for assets lookup.
         :param str site_src: Base directory name for site output.
         :param str timezone: Geographical timezone name for default timestamp
             interpretation.
@@ -66,7 +66,7 @@ class SiteConfig(AttrDict):
         pca_map = {
             "contents_src": contents_src,
             "templates_src": templates_src,
-            "static_src": static_src,
+            "assets_src": assets_src,
             "engines_src": engines_src,
             "site_dest": site_dest,
         }

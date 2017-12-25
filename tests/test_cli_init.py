@@ -38,7 +38,7 @@ def test_default(exp_cfg):
         assert len(list(wp.iterdir())) == 4
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("static").exists()
+        assert wp.joinpath("assets").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -58,7 +58,7 @@ def test_custom_dir_no_name(exp_cfg):
         assert len(list(wp.joinpath(pn).iterdir())) == 4
         assert wp.joinpath(pn, "contents").exists()
         assert wp.joinpath(pn, "templates").exists()
-        assert wp.joinpath(pn, "static").exists()
+        assert wp.joinpath(pn, "assets").exists()
         cfg_path = wp.joinpath(pn, CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -80,7 +80,7 @@ def test_custom_dir_with_name(exp_cfg):
         assert len(list(wp.joinpath(pn).iterdir())) == 4
         assert wp.joinpath(pn, "contents").exists()
         assert wp.joinpath(pn, "templates").exists()
-        assert wp.joinpath(pn, "static").exists()
+        assert wp.joinpath(pn, "assets").exists()
         cfg_path = wp.joinpath(pn, CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -100,7 +100,7 @@ def test_with_name(exp_cfg):
         assert len(list(wp.iterdir())) == 4
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("static").exists()
+        assert wp.joinpath("assets").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -120,7 +120,7 @@ def test_with_url(exp_cfg):
         assert len(list(wp.iterdir())) == 4
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("static").exists()
+        assert wp.joinpath("assets").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -140,7 +140,7 @@ def test_with_timezone(exp_cfg):
         assert len(list(wp.iterdir())) == 4
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("static").exists()
+        assert wp.joinpath("assets").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:
@@ -212,7 +212,7 @@ def test_nonempty_with_force(exp_cfg):
         assert exst_file.exists()
         assert wp.joinpath("contents").exists()
         assert wp.joinpath("templates").exists()
-        assert wp.joinpath("static").exists()
+        assert wp.joinpath("assets").exists()
         cfg_path = wp.joinpath(CONFIG_FNAME)
         assert cfg_path.exists()
         with open(str(cfg_path), "r") as src:

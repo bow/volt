@@ -42,7 +42,7 @@ class PageTarget(object):
         self.dest.write_text(self.contents)
 
 
-class StaticTarget(object):
+class CopyTarget(object):
 
     def __init__(self, src, dest):
         self.src = src

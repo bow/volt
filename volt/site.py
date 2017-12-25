@@ -13,7 +13,7 @@ from pathlib import Path
 
 import jinja2.exceptions as j2exc
 
-from .target import PageTarget, StaticTarget
+from .target import PageTarget, CopyTarget
 from .utils import calc_relpath, Result
 
 
@@ -153,20 +153,20 @@ class Site(object):
 
         return Result.as_success(pages)
 
-    def gather_static_assets(self, cwd):
+    def gather_copy_assets(self, cwd):
         items = []
-        static_rel = calc_relpath(self.config.static_src, cwd).data
+        src_rel = calc_relpath(self.config.assets_src, cwd).data
         dest_rel = calc_relpath(self.config.site_dest, cwd).data
-        static_tlen = len(static_rel.parts)
+        src_rel_len = len(src_rel.parts)
 
-        entries = list(os.scandir(static_rel))
+        entries = list(os.scandir(src_rel))
         while entries:
             de = entries.pop()
             if de.is_dir():
                 entries.extend(os.scandir(de))
             else:
-                dtoks = Path(de.path).parts[static_tlen:]
-                target = StaticTarget(de.path, dest_rel.joinpath(*dtoks))
+                dtoks = Path(de.path).parts[src_rel_len:]
+                target = CopyTarget(de.path, dest_rel.joinpath(*dtoks))
                 items.append(target)
 
         return Result.as_success(items)
@@ -176,7 +176,7 @@ class Site(object):
         if rpages.is_failure:
             return rpages
 
-        rstats = self.gather_static_assets(cwd)
+        rstats = self.gather_copy_assets(cwd)
         if rstats.is_failure:
             return rstats
 

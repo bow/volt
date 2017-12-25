@@ -59,7 +59,7 @@ class Session(object):
         try:
             bootstrap_conf.contents_src.mkdir(parents=True, exist_ok=True)
             bootstrap_conf.templates_src.mkdir(parents=True, exist_ok=True)
-            bootstrap_conf.static_src.mkdir(parents=True, exist_ok=True)
+            bootstrap_conf.assets_src.mkdir(parents=True, exist_ok=True)
         except OSError as e:
             return Result.as_failure(e.strerror)
 
