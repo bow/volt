@@ -14,7 +14,7 @@ from pathlib import Path
 import jinja2.exceptions as j2exc
 
 from .target import PageTarget, StaticTarget
-from .utils import Result
+from .utils import calc_relpath, Result
 
 
 class SiteNode(object):
@@ -114,10 +114,6 @@ class Site(object):
         self.config = config
         self.template_env = template_env
 
-        dest_rel = config.site_dest.relative_to(config.pwd)
-        self.dest_rel = dest_rel
-        self.plan = SitePlan(dest_rel)
-
     def gather_units(self, pattern="*.md"):
         site_config = self.config
         unit_cls = site_config.unit_cls
@@ -131,7 +127,7 @@ class Site(object):
 
         return Result.as_success(units)
 
-    def create_pages(self):
+    def create_pages(self, cwd):
         runits = self.gather_units()
         if runits.is_failure:
             return runits
@@ -147,7 +143,7 @@ class Site(object):
                                      f" errors: {e.message}")
 
         pages = []
-        dest_rel = self.dest_rel
+        dest_rel = calc_relpath(self.config.site_dest, cwd).data
         for unit in runits.data:
             dest = dest_rel.joinpath(f"{unit.metadata.slug}.html")
             rrend = PageTarget.from_template(unit, dest, template)
@@ -157,10 +153,11 @@ class Site(object):
 
         return Result.as_success(pages)
 
-    def gather_static_assets(self, cur_dir):
+    def gather_static_assets(self, cwd):
         items = []
-        dest_rel = self.dest_rel
-        static_rel = self.config.static_src.relative_to(Path(cur_dir))
+        static_rel = calc_relpath(self.config.static_src, cwd).data
+        dest_rel = calc_relpath(self.config.site_dest, cwd).data
+        static_tlen = len(static_rel.parts)
 
         entries = list(os.scandir(static_rel))
         while entries:
@@ -168,35 +165,35 @@ class Site(object):
             if de.is_dir():
                 entries.extend(os.scandir(de))
             else:
-                target = StaticTarget(
-                    de.path, dest_rel.joinpath(*Path(de.path).parts[1:]))
+                dtoks = Path(de.path).parts[static_tlen:]
+                target = StaticTarget(de.path, dest_rel.joinpath(*dtoks))
                 items.append(target)
 
         return Result.as_success(items)
 
-    def build(self, cur_dir):
-        rpages = self.create_pages()
+    def build(self, cwd):
+        rpages = self.create_pages(cwd)
         if rpages.is_failure:
             return rpages
 
-        rstats = self.gather_static_assets(cur_dir)
+        rstats = self.gather_static_assets(cwd)
         if rstats.is_failure:
             return rstats
 
+        plan = SitePlan(calc_relpath(self.config.site_dest, cwd).data)
+
         for target in chain(rpages.data, rstats.data):
-            self.plan.add_target(target)
+            plan.add_target(target)
 
-        pwd = self.config.pwd
-        for dn in self.plan.dnodes():
-            pwd.joinpath(dn.path).mkdir(parents=True, exist_ok=True)
+        for dn in plan.dnodes():
+            cwd.joinpath(dn.path).mkdir(parents=True, exist_ok=True)
 
-        for fn in self.plan.fnodes():
+        for fn in plan.fnodes():
             try:
-                fn.target.write(pwd)
+                fn.target.write()
             except OSError as e:
                 return Result.as_failure(
-                    "cannot write target"
-                    f" {str(target.dest.relative_to(self.config.pwd))!r}:"
+                    f"cannot write target {str(target.dest)!r}:"
                     f" {e.strerror}")
 
         return Result.as_success(None)

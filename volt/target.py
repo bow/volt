@@ -37,9 +37,9 @@ class PageTarget(object):
     def metadata(self):
         return self.src.metadata
 
-    def write(self, project_dir):
+    def write(self):
         # TODO: check cache?
-        project_dir.joinpath(self.dest).write_text(self.contents)
+        self.dest.write_text(self.contents)
 
 
 class StaticTarget(object):
@@ -48,10 +48,10 @@ class StaticTarget(object):
         self.src = src
         self.dest = dest
 
-    def write(self, project_dir):
-        eff_src = project_dir.joinpath(self.src)
-        eff_dest = project_dir.joinpath(self.dest)
+    def write(self):
+        str_src = str(self.src)
+        str_dest = str(self.dest)
 
-        if not eff_dest.exists() or \
-                not filecmp.cmp(str(eff_src), str(eff_dest), shallow=False):
-            shutil.copy2(str(eff_src), str(eff_dest))
+        if not self.dest.exists() or \
+                not filecmp.cmp(str_src, str_dest, shallow=False):
+            shutil.copy2(str_src, str_dest)
