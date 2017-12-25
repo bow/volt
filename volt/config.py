@@ -73,7 +73,6 @@ class SiteConfig(AttrDict):
         for path_confv, argv in pca_map.items():
             try:
                 finalv = user_site_conf.pop(path_confv)
-                assert not os.path.isabs(finalv)
             except KeyError:
                 finalv = argv
             self[path_confv] = pwd.joinpath(finalv)
@@ -120,6 +119,14 @@ class SiteConfig(AttrDict):
         site_conf = user_conf.pop("site", {})
         if not isinstance(site_conf, dict):
             return Result.as_failure("unexpected config structure")
+        for pathk in ("contents_src", "templates_src", "assets_src",
+                      "site_dest"):
+            try:
+                if os.path.isabs(site_conf[pathk]):
+                    return Result.as_failure(
+                        f"cannot use absolute path for site config {pathk}")
+            except KeyError:
+                continue
 
         # Get timezone from config or system.
         rtz = get_tz(site_conf.get("timezone", None))
