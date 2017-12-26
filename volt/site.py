@@ -133,7 +133,7 @@ class Site(object):
             return runits
 
         conf = self.config
-        tname = conf.unit_template_fname
+        tname = conf.unit_template
         try:
             template = self.template_env.get_template(tname)
         except j2exc.TemplateNotFound:

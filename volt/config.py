@@ -30,7 +30,7 @@ class SiteConfig(AttrDict):
                  contents_src="contents", templates_src="templates",
                  assets_src="assets", engines_src="engines", site_dest="site",
                  timezone=None, dot_html_url=True, unit_cls=Unit,
-                 unit_template_fname="page.html",
+                 unit_template="page.html",
                  hide_first_pagination_idx=True):
         """Initializes a site-level configuration.
 
@@ -51,7 +51,7 @@ class SiteConfig(AttrDict):
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
         :param volt.site.Unit unit_cls: Unit class used for creating the
             site's units.
-        :param str unit_template_fname: File name of the template used for
+        :param str unit_template: File name of the template used for
             the site's units. This file must exist in the expected template
             directory.
         :param bool hide_first_pagination_idx: Whether to show the first
@@ -83,7 +83,7 @@ class SiteConfig(AttrDict):
             "hide_first_pagination_idx": hide_first_pagination_idx,
             "timezone": timezone,
             "unit_cls": unit_cls,
-            "unit_template_fname": unit_template_fname,
+            "unit_template": unit_template,
         }
         for confv, argv in ca_map.items():
             self[confv] = user_site_conf.pop(confv, argv)
