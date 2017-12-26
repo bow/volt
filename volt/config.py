@@ -61,6 +61,131 @@ def validate_site_conf(value):
     return Result.as_success(value)
 
 
+def validate_section_conf(name, value):
+    if not isinstance(value, dict):
+        return Result.as_failure(f"section config {name!r} must be a mapping")
+
+    infix = f"of section {name!r}"
+
+    # Keys whose value must be booleans.
+    for bk in ("dot_html_url", "hide_first_pagination_idx"):
+        if bk not in value:
+            continue
+        if not isinstance(value[bk], bool):
+            return Result.as_failure(f"config {bk!r} {infix} must be a"
+                                     " boolean")
+
+    # Keys whose values must be positive nonzero integers.
+    intk = "pagination_size"
+    if intk in value:
+        uv = value[intk]
+        if not isinstance(uv, int) or uv < 1:
+            return Result.as_failure(f"config {intk!r} {infix} must be a"
+                                     " positive, nonzero integer")
+
+    # Keys whose values must be nonempty strings.
+    for strk in ("path", "engine", "unit", "unit_template",
+                 "unit_path_pattern", "pagination_template"):
+        if strk not in value:
+            continue
+        uv = value[strk]
+        if not isinstance(uv, str) or not uv:
+            return Result.as_failure(f"config {strk!r} {infix} must be a"
+                                     " nonempty string")
+
+    # Keys whose values must be strings representing relative paths.
+    pathk = "contents_src"
+    if pathk in value:
+        uv = value[pathk]
+        if isinstance(uv, str) or not uv:
+            return Result.as_failure(f"config {pathk!r} {infix} must be a"
+                                     " nonempty string")
+        if os.path.isabs(uv):
+            return Result.as_failure(f"config {pathk!r} {infix} must be a"
+                                     " relative path")
+
+    # Keys whose value must be dictionaries of specific structures.
+    vfm = {
+        "paginations": validate_section_pagination,
+        "unit_order": validate_section_unit_order,
+    }
+    for dk, vf in vfm.items():
+        vr = vf(name, value, dk)
+        if vr.is_failure:
+            return vr
+
+    return Result.as_success((name, value))
+
+
+def validate_section_pagination(name, section_config, dk):
+    infix = f"of section {name!r}"
+
+    if dk in section_config:
+        value = section_config[dk]
+        if not isinstance(value, dict):
+            return Result.as_failure(f"config {dk!r} {infix} must be a"
+                                     " mapping")
+        # Assumes keys are strings.
+        for k, v in value.items():
+            # path_pattern: str
+            idk1 = "path_pattern"
+            if idk1 not in v:
+                print(k, v)
+                return Result.as_failure(
+                    f"config '{dk}.{k}.{idk1}' {infix} must be present")
+            v1 = v[idk1]
+            if not isinstance(v1, str) or not v1:
+                return Result.as_failure(
+                    f"config '{dk}.{k}.{idk1}' {infix} must be a nonempty"
+                    " string")
+            if "{idx}" not in v1:
+                return Result.as_failure(
+                    f"config '{dk}.{k}.{idk1}' {infix} must contain the"
+                    " '{idx}' template")
+
+            # size: int
+            idk2 = "size"
+            if idk2 in v:
+                v2 = v[idk2]
+                if not isinstance(v2, int) or v2 < 1:
+                    return Result.as_failure(
+                        f"config '{dk}.{k}.{idk2}' {infix} must be a"
+                        " positive, nonzero integer")
+
+            # pagination_template: str
+            idk3 = "pagination_template"
+            if idk3 in v:
+                v3 = v[idk3]
+                if not isinstance(v3, str) or not v3:
+                    return Result.as_failure(
+                        f"config '{dk}.{k}.{idk3}' {infix} must be a"
+                        " nonempty string")
+
+    return Result.as_success(section_config)
+
+
+def validate_section_unit_order(name, section_config, dk):
+    infix = f"of section {name!r}"
+
+    if dk in section_config:
+        value = section_config[dk]
+        if not isinstance(value, dict):
+            return Result.as_failure(f"config {dk!r} {infix} must be a"
+                                     " mapping")
+        if "key" not in value:
+            return Result.as_failure("config '{dk}.key' {infix} must be"
+                                     " present")
+        iv = value["key"]
+        if not isinstance(iv, str) or not iv:
+            return Result.as_failure("config '{dk}.key' {infix} must be a"
+                                     " nonempty string")
+        if "reverse" in value and not isinstance(value["reverse"], bool):
+            return Result.as_failure("config '{dk}.reverse' {intix} must be a"
+                                     " boolean")
+
+    return Result.as_success(section_config)
+
+
 class SiteConfig(AttrDict):
 
     """Container for site-level configuration values."""
@@ -134,8 +259,9 @@ class SiteConfig(AttrDict):
                          for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
-    def from_user_conf(cls, pwd, user_conf, vfunc=validate_site_conf):
-        vres = vfunc(user_conf.pop("site", {}))
+    def from_user_conf(cls, pwd, user_conf, site_vfunc=validate_site_conf,
+                       section_vfunc=validate_section_conf):
+        vres = site_vfunc(user_conf.pop("site", {}))
         if vres.is_failure:
             return vres
         site_conf = vres.data
@@ -154,6 +280,10 @@ class SiteConfig(AttrDict):
             site_conf["unit_cls"] = rucls.data
 
         sections_conf = user_conf.pop("section", {})
+        for name, sc in sections_conf.items():
+            svres = section_vfunc(name, sc)
+            if svres.is_failure:
+                return svres
 
         conf = cls(pwd, user_site_conf=site_conf,
                    user_sections_conf=sections_conf)
@@ -190,8 +320,13 @@ class SectionConfig(AttrDict):
         self.site_config = site_config
 
         # Required config values with predefined defaults.
-        self.paginations = kwargs.pop("paginations", None) or []
-        self.pagination_size = kwargs.pop("pagination_size", 10)
+        paginations = kwargs.pop("paginations", None) or {}
+        pagination_size = kwargs.pop("pagination_size", 10)
+        for pv in paginations.values():
+            pv.setdefault("pagination_size", pagination_size)
+
+        self.paginations = paginations
+        self.pagination_size = pagination_size
         self.unit_order = kwargs.pop("unit_order", None) or \
             {"key": "pub_time", "reverse": True}
 
