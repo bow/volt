@@ -53,9 +53,8 @@ class SiteConfig(AttrDict):
 
     def __init__(self, pwd, user_site_conf=None, user_sections_conf=None,
                  contents_src="contents", templates_src="templates",
-                 assets_src="assets", engines_src="engines", site_dest="site",
-                 timezone=None, dot_html_url=True, unit_cls=Unit,
-                 unit_template="page.html",
+                 assets_src="assets", site_dest="site", timezone=None,
+                 dot_html_url=True, unit_cls=Unit, unit_template="page.html",
                  hide_first_pagination_idx=True):
         """Initializes a site-level configuration.
 
@@ -92,7 +91,6 @@ class SiteConfig(AttrDict):
             "contents_src": contents_src,
             "templates_src": templates_src,
             "assets_src": assets_src,
-            "engines_src": engines_src,
             "site_dest": site_dest,
         }
         for path_confv, argv in pca_map.items():
