@@ -19,7 +19,7 @@ __all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 
 
 # Default config file name.
-CONFIG_FNAME = "volt.toml"
+CONFIG_FNAME = "Volt.toml"
 
 
 def validate_site_conf(value):
