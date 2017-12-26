@@ -97,24 +97,7 @@ class SiteConfig(AttrDict):
                          for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
-    def from_toml(cls, pwd, toml_fname=CONFIG_FNAME):
-        """Creates a site configuration from a Volt TOML file.
-
-        :param pathlib.Path pwd: Path to the project working directory.
-        :param str toml_fname: Name of TOML file containing the configuration
-            values.
-        :returns: a :class:``volt.utils.Result`` object that contains the
-            result of a successful config loading, or a list of error messages,
-            if any.
-
-        """
-        with pwd.joinpath(toml_fname).open() as src:
-            try:
-                user_conf = toml.load(src)
-            except (IndexError, toml.TomlDecodeError):
-                # TODO: display traceback depending on log level
-                return Result.as_failure("cannot parse config")
-
+    def from_user_conf(cls, pwd, user_conf):
         # TODO: implement proper validation
         site_conf = user_conf.pop("site", {})
         if not isinstance(site_conf, dict):
@@ -147,6 +130,27 @@ class SiteConfig(AttrDict):
                    user_sections_conf=sections_conf)
 
         return Result.as_success(conf)
+
+    @classmethod
+    def from_toml(cls, pwd, toml_fname=CONFIG_FNAME):
+        """Creates a site configuration from a Volt TOML file.
+
+        :param pathlib.Path pwd: Path to the project working directory.
+        :param str toml_fname: Name of TOML file containing the configuration
+            values.
+        :returns: a :class:``volt.utils.Result`` object that contains the
+            result of a successful config loading, or a list of error messages,
+            if any.
+
+        """
+        with pwd.joinpath(toml_fname).open() as src:
+            try:
+                user_conf = toml.load(src)
+            except (IndexError, toml.TomlDecodeError):
+                # TODO: display traceback depending on log level
+                return Result.as_failure("cannot parse config")
+
+        return cls.from_user_conf(pwd, user_conf)
 
 
 class SectionConfig(AttrDict):
