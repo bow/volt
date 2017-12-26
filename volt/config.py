@@ -22,6 +22,31 @@ __all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 CONFIG_FNAME = "volt.toml"
 
 
+def validate_site_conf(value):
+    if not isinstance(value, dict):
+        return Result.as_failure("unexpected config structure")
+
+    # Keys whose values can not be absolute paths.
+    for pathk in ("contents_src", "templates_src", "assets_src", "site_dest"):
+        if pathk not in value:
+            continue
+        if os.path.isabs(value[pathk]):
+            return Result.as_failure("cannot use absolute path for site"
+                                     f" config {pathk!r}")
+
+    # Keys whose values must be strings.
+    for strk in ("timezone", "unit"):
+        if strk not in value:
+            continue
+        if not isinstance(value[strk], str):
+            return Result.as_failure(f"invalid {strk!r} site config value")
+
+    if "section" in value and not isinstance(value["section"], dict):
+        return Result.as_failure("invalid 'section' site config value")
+
+    return Result.as_success(value)
+
+
 class SiteConfig(AttrDict):
 
     """Container for site-level configuration values."""
@@ -97,19 +122,11 @@ class SiteConfig(AttrDict):
                          for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
-    def from_user_conf(cls, pwd, user_conf):
-        # TODO: implement proper validation
-        site_conf = user_conf.pop("site", {})
-        if not isinstance(site_conf, dict):
-            return Result.as_failure("unexpected config structure")
-        for pathk in ("contents_src", "templates_src", "assets_src",
-                      "site_dest"):
-            try:
-                if os.path.isabs(site_conf[pathk]):
-                    return Result.as_failure(
-                        f"cannot use absolute path for site config {pathk}")
-            except KeyError:
-                continue
+    def from_user_conf(cls, pwd, user_conf, vfunc=validate_site_conf):
+        vres = vfunc(user_conf.pop("site", {}))
+        if vres.is_failure:
+            return vres
+        site_conf = vres.data
 
         # Get timezone from config or system.
         rtz = get_tz(site_conf.get("timezone", None))
