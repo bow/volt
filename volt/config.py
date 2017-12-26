@@ -24,25 +24,39 @@ CONFIG_FNAME = "volt.toml"
 
 def validate_site_conf(value):
     if not isinstance(value, dict):
-        return Result.as_failure("unexpected config structure")
+        return Result.as_failure("site config must be a mapping")
 
-    # Keys whose values can not be absolute paths.
+    # Keys whose values must be nonempty strings.
+    for strk in ("timezone", "unit", "unit_template"):
+        if strk not in value:
+            continue
+        uv = value[strk]
+        if not isinstance(uv, str) or not uv:
+            return Result.as_failure(f"site config {strk!r} must be a"
+                                     " nonempty string")
+
+    # Keys whose values must be strings representing relative paths.
     for pathk in ("contents_src", "templates_src", "assets_src", "site_dest"):
         if pathk not in value:
             continue
-        if os.path.isabs(value[pathk]):
-            return Result.as_failure("cannot use absolute path for site"
-                                     f" config {pathk!r}")
+        uv = value[pathk]
+        if isinstance(uv, str) or not uv:
+            return Result.as_failure(f"site config {pathk!r} must be a"
+                                     " nonempty string")
+        if os.path.isabs(uv):
+            return Result.as_failure(f"site config {pathk!r} must be a"
+                                     " relative path")
 
-    # Keys whose values must be strings.
-    for strk in ("timezone", "unit"):
-        if strk not in value:
+    # Keys whose value must be booleans.
+    for bk in ("dot_html_url", "hide_first_pagination_idx"):
+        if bk not in value:
             continue
-        if not isinstance(value[strk], str):
-            return Result.as_failure(f"invalid {strk!r} site config value")
+        if not isinstance(value[bk], bool):
+            return Result.as_failure(f"site config {bk!r} must be a boolean")
 
+    # Section config must be a dictionary.
     if "section" in value and not isinstance(value["section"], dict):
-        return Result.as_failure("invalid 'section' site config value")
+        return Result.as_failure("section config must be a mapping")
 
     return Result.as_success(value)
 
