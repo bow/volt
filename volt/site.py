@@ -116,11 +116,11 @@ class Site(object):
 
     def gather_units(self, pattern="*.md"):
         site_config = self.config
-        unit_cls = site_config.unit_cls
+        unit = site_config.unit
 
         units = []
         for unit_path in site_config.contents_src.glob(pattern):
-            res = unit_cls.load(unit_path, site_config)
+            res = unit.load(unit_path, site_config)
             if res.is_failure:
                 return res
             units.append(res.data)

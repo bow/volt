@@ -193,7 +193,7 @@ class SiteConfig(AttrDict):
     def __init__(self, pwd, user_site_conf=None, user_sections_conf=None,
                  contents_src="contents", templates_src="templates",
                  assets_src="assets", site_dest="site", timezone=None,
-                 dot_html_url=True, unit_cls=Unit, unit_template="page.html",
+                 dot_html_url=True, unit=Unit, unit_template="page.html",
                  hide_first_pagination_idx=True):
         """Initializes a site-level configuration.
 
@@ -212,7 +212,7 @@ class SiteConfig(AttrDict):
         :param str timezone: Geographical timezone name for default timestamp
             interpretation.
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
-        :param volt.site.Unit unit_cls: Unit class used for creating the
+        :param volt.site.Unit unit: Unit class used for creating the
             site's units.
         :param str unit_template: File name of the template used for
             the site's units. This file must exist in the expected template
@@ -244,7 +244,7 @@ class SiteConfig(AttrDict):
             "dot_html_url": dot_html_url,
             "hide_first_pagination_idx": hide_first_pagination_idx,
             "timezone": timezone,
-            "unit_cls": unit_cls,
+            "unit": unit,
             "unit_template": unit_template,
         }
         for confv, argv in ca_map.items():
@@ -277,7 +277,7 @@ class SiteConfig(AttrDict):
             rucls = import_mod_attr(site_conf["unit"])
             if rucls.is_failure:
                 return rucls
-            site_conf["unit_cls"] = rucls.data
+            site_conf["unit"] = rucls.data
 
         sections_conf = user_conf.pop("section", {})
         for name, sc in sections_conf.items():
