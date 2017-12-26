@@ -175,9 +175,9 @@ class SiteConfig(AttrDict):
         with pwd.joinpath(toml_fname).open() as src:
             try:
                 user_conf = toml.load(src)
-            except (IndexError, toml.TomlDecodeError):
+            except (IndexError, toml.TomlDecodeError) as e:
                 # TODO: display traceback depending on log level
-                return Result.as_failure("cannot parse config")
+                return Result.as_failure(f"cannot parse config: {e.args[0]}")
 
         return cls.from_user_conf(pwd, user_conf)
 
