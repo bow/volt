@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    volt.target
-    ~~~~~~~~~~~
+    volt.targets
+    ~~~~~~~~~~~~
 
     Target-related classses and functions.
 

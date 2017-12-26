@@ -13,7 +13,7 @@ from pathlib import Path
 
 import jinja2.exceptions as j2exc
 
-from .target import PageTarget, CopyTarget
+from .targets import PageTarget, CopyTarget
 from .utils import calc_relpath, Result
 
 
