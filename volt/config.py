@@ -8,9 +8,12 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import os
+from pathlib import Path
+from typing import Any, Callable, Dict, Optional
 from urllib.parse import urljoin as urljoin
 
 import toml
+from pytz.tzinfo import DstTzInfo
 
 from .units import Unit
 from .utils import import_mod_attr, get_tz, AttrDict, Result
@@ -21,8 +24,19 @@ __all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 # Default config file name.
 CONFIG_FNAME = "Volt.toml"
 
+# Type aliases.
+RawConfig = Dict[str, Any]
 
-def validate_site_conf(value):
+
+def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
+    """Validates the given site config value.
+
+    :param dict value: Site config mapping to validate.
+    :returns: The input value upon successful validation or an error message
+        when validation fails.
+    :rtype: :class:`Result`.
+
+    """
     if not isinstance(value, dict):
         return Result.as_failure("site config must be a mapping")
 
@@ -61,7 +75,16 @@ def validate_site_conf(value):
     return Result.as_success(value)
 
 
-def validate_section_conf(name, value):
+def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
+    """Validates a single section config.
+
+    :param str name: Name of the section config to validate.
+    :param dict value: Section config mapping to validate.
+    :returns: The input value upon successful validation or an error message
+        when validation fails.
+    :rtype: :class:`Result`.
+
+    """
     if not isinstance(value, dict):
         return Result.as_failure(f"section config {name!r} must be a mapping")
 
@@ -117,70 +140,94 @@ def validate_section_conf(name, value):
     return Result.as_success((name, value))
 
 
-def validate_section_pagination(name, section_config, dk):
+def validate_section_pagination(name: str, section_config: RawConfig,
+                                key: str) -> Result[RawConfig]:
+    """Validates the pagination value of the given section config value.
+
+    :param str name: Name of the section config in which the pagination config
+        exists.
+    :param dict section_config: Section config to validate.
+    :param str key: Name of the key whose value is the pagination config.
+    :returns: The input section config upon successful validation or an error
+        message when validation fails.
+    :rtype: :class:`Result`.
+
+    """
     infix = f"of section {name!r}"
 
-    if dk in section_config:
-        value = section_config[dk]
+    if key in section_config:
+        value = section_config[key]
         if not isinstance(value, dict):
-            return Result.as_failure(f"config {dk!r} {infix} must be a"
+            return Result.as_failure(f"config {key!r} {infix} must be a"
                                      " mapping")
         # Assumes keys are strings.
         for k, v in value.items():
             # path_pattern: str
-            idk1 = "path_pattern"
-            if idk1 not in v:
+            ikey1 = "path_pattern"
+            if ikey1 not in v:
                 print(k, v)
                 return Result.as_failure(
-                    f"config '{dk}.{k}.{idk1}' {infix} must be present")
-            v1 = v[idk1]
+                    f"config '{key}.{k}.{ikey1}' {infix} must be present")
+            v1 = v[ikey1]
             if not isinstance(v1, str) or not v1:
                 return Result.as_failure(
-                    f"config '{dk}.{k}.{idk1}' {infix} must be a nonempty"
+                    f"config '{key}.{k}.{ikey1}' {infix} must be a nonempty"
                     " string")
             if "{idx}" not in v1:
                 return Result.as_failure(
-                    f"config '{dk}.{k}.{idk1}' {infix} must contain the"
+                    f"config '{key}.{k}.{ikey1}' {infix} must contain the"
                     " '{idx}' template")
 
             # size: int
-            idk2 = "size"
-            if idk2 in v:
-                v2 = v[idk2]
+            ikey2 = "size"
+            if ikey2 in v:
+                v2 = v[ikey2]
                 if not isinstance(v2, int) or v2 < 1:
                     return Result.as_failure(
-                        f"config '{dk}.{k}.{idk2}' {infix} must be a"
+                        f"config '{key}.{k}.{ikey2}' {infix} must be a"
                         " positive, nonzero integer")
 
             # pagination_template: str
-            idk3 = "pagination_template"
-            if idk3 in v:
-                v3 = v[idk3]
+            ikey3 = "pagination_template"
+            if ikey3 in v:
+                v3 = v[ikey3]
                 if not isinstance(v3, str) or not v3:
                     return Result.as_failure(
-                        f"config '{dk}.{k}.{idk3}' {infix} must be a"
+                        f"config '{key}.{k}.{ikey3}' {infix} must be a"
                         " nonempty string")
 
     return Result.as_success(section_config)
 
 
-def validate_section_unit_order(name, section_config, dk):
+def validate_section_unit_order(name: str, section_config: RawConfig,
+                                key: str) -> Result[RawConfig]:
+    """Validates the unit_order value of the given section config value.
+
+    :param str name: Name of the section config in which the unit_order config
+        exists.
+    :param dict section_config: Section config to validate.
+    :param str key: Name of the key whose value is the unit_order config.
+    :returns: The input section config upon successful validation or an error
+        message when validation fails.
+    :rtype: :class:`Result`.
+
+    """
     infix = f"of section {name!r}"
 
-    if dk in section_config:
-        value = section_config[dk]
+    if key in section_config:
+        value = section_config[key]
         if not isinstance(value, dict):
-            return Result.as_failure(f"config {dk!r} {infix} must be a"
+            return Result.as_failure(f"config {key!r} {infix} must be a"
                                      " mapping")
         if "key" not in value:
-            return Result.as_failure("config '{dk}.key' {infix} must be"
+            return Result.as_failure("config '{key}.key' {infix} must be"
                                      " present")
         iv = value["key"]
         if not isinstance(iv, str) or not iv:
-            return Result.as_failure("config '{dk}.key' {infix} must be a"
+            return Result.as_failure("config '{key}.key' {infix} must be a"
                                      " nonempty string")
         if "reverse" in value and not isinstance(value["reverse"], bool):
-            return Result.as_failure("config '{dk}.reverse' {intix} must be a"
+            return Result.as_failure("config '{key}.reverse' {infix} must be a"
                                      " boolean")
 
     return Result.as_success(section_config)
@@ -190,27 +237,36 @@ class SiteConfig(AttrDict):
 
     """Container for site-level configuration values."""
 
-    def __init__(self, pwd, user_site_conf=None, user_sections_conf=None,
-                 contents_src="contents", templates_src="templates",
-                 assets_src="assets", site_dest="site", timezone=None,
-                 dot_html_url=True, unit=Unit, unit_template="page.html",
-                 hide_first_pagination_idx=True):
+    def __init__(self, pwd: Path,
+                 user_site_conf: Optional[RawConfig]=None,
+                 user_sections_conf: Optional[RawConfig]=None,
+                 contents_src: str="contents",
+                 templates_src: str="templates",
+                 assets_src: str="assets",
+                 site_dest: str="site",
+                 timezone: Optional[DstTzInfo]=None,
+                 dot_html_url: bool=True,
+                 unit: Unit=Unit,
+                 unit_template: str="page.html",
+                 hide_first_pagination_idx: bool=True) -> None:
         """Initializes a site-level configuration.
 
-        If a non-default ``user_site_conf`` is given, this method will consume
-        its contents.
+        If a non-None ``user_site_conf`` and/or ``user_sections_conf`` are
+        given, this method will consume their contents.
 
         :param pathlib.Path pwd: Path to the project working directory.
-        :param dict user_site_conf: Dictionary containing user-supplied site
+        :param user_site_conf: Dictionary containing user-supplied site
             configuration values.
-        :param dict user_sections_conf: Dictionary containing user-supplied
-            section configuration values, keyed by the section name.
+        :type user_site_conf: dict or None
+        :param user_sections_conf: Dictionary containing user-supplied section
+            configuration values, keyed by the section name.
+        :type user_sections_conf: dict or None
         :param str contents_src: Base directory name for content lookup.
         :param str templates_src: Base directory name for template lookup.
         :param str assets_src: Base directory name for assets lookup.
         :param str site_src: Base directory name for site output.
-        :param str timezone: Geographical timezone name for default timestamp
-            interpretation.
+        :param timezone: Timezone for default timestamp interpretation.
+        :type timezone: pytz.tzinfo.DstTzInfo or None
         :param bool dot_html_url: Whether to output URLs with ``.html`` or not.
         :param volt.site.Unit unit: Unit class used for creating the
             site's units.
@@ -259,8 +315,26 @@ class SiteConfig(AttrDict):
                          for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
-    def from_user_conf(cls, pwd, user_conf, site_vfunc=validate_site_conf,
-                       section_vfunc=validate_section_conf):
+    def from_user_conf(cls, pwd: Path,
+                       user_conf: RawConfig,
+                       site_vfunc: Callable[[RawConfig], Result[RawConfig]]=
+                       validate_site_conf,
+                       section_vfunc: Callable[[RawConfig], Result[RawConfig]]=
+                       validate_section_conf) -> "Result[SiteConfig]":
+        """Creates a ``SiteConfig`` from the given user-supplied config.
+
+        :param pathlib.Path pwd: Path to project directory.
+        :param dict user_conf: Raw user config.
+        :param callable site_vfunc: Callable for validating the ``site``
+            configuration. The callable must accept a single site config value
+            as input and return a :class:`Result`.
+        :param callable section_vfunc: Callable for validating each section
+            config in the site config. The callable must a accept a single
+            section config value as input and return a :class:`Result`.
+        :returns: The site config or an error message if it cannot be created.
+        :rtype: :class:`Result`
+
+        """
         vres = site_vfunc(user_conf.pop("site", {}))
         if vres.is_failure:
             return vres
@@ -291,15 +365,14 @@ class SiteConfig(AttrDict):
         return Result.as_success(conf)
 
     @classmethod
-    def from_toml(cls, pwd, toml_fname=CONFIG_FNAME):
+    def from_toml(cls, pwd, toml_fname=CONFIG_FNAME) -> "Result[SiteConfig]":
         """Creates a site configuration from a Volt TOML file.
 
         :param pathlib.Path pwd: Path to the project working directory.
         :param str toml_fname: Name of TOML file containing the configuration
             values.
-        :returns: a :class:``volt.utils.Result`` object that contains the
-            result of a successful config loading, or a list of error messages,
-            if any.
+        :returns: A dictionary or an error message if it cannot be created.
+        :rtype: :class:`Result`
 
         """
         with pwd.joinpath(toml_fname).open() as src:
@@ -316,7 +389,15 @@ class SectionConfig(AttrDict):
 
     """Container for section-specific configuration values."""
 
-    def __init__(self, name, site_config, **kwargs):
+    def __init__(self, name: str, site_config: SiteConfig, **kwargs) -> None:
+        """Initializes a section-level configuration.
+
+        :param str name: Name of the section.
+        :param volt.config.SiteConfig site_config: The site config in which
+            the section config exists.
+
+        """
+        self.name = name
         self.site_config = site_config
 
         # Required config values with predefined defaults.
@@ -335,8 +416,6 @@ class SectionConfig(AttrDict):
             setattr(self, ck, kwargs.pop(ck, site_config[ck]))
 
         # Required config values with name-dependent defaults.
-        self.name = name
-
         try:
             spath = kwargs.pop("path")
             spath = "/" + spath if not spath.startswith("/") else spath

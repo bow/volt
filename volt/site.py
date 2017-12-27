@@ -10,24 +10,41 @@
 import os
 from itertools import chain
 from pathlib import Path
+from typing import Generator, List
 
 import jinja2.exceptions as j2exc
+from jinja2 import Environment
 
+from .config import SiteConfig
 from .targets import PageTarget, CopyTarget
+from .units import Unit
 from .utils import calc_relpath, Result
+
+__all__ = ["SiteNode", "SitePlan", "Site"]
 
 
 class SiteNode(object):
 
+    """Node of the :class:`SitePlan` tree."""
+
     __slots__ = ("path", "target", "children", "is_dir")
 
-    def __init__(self, path, target=None):
+    def __init__(self, path: Path, target=None) -> None:
+        """Initializes the site node.
+
+        :param pathlib.Path path: Path to the node.
+        :param object target: A target to be created in the site output
+            directory. If set to ``None``, represents a directory. Otherwise,
+            the given value must have a ``dest`` attribute / property that
+            points to the location at which the target is to be created.
+
+        """
         self.path = path
         self.target = target
         self.children = None if target is not None else {}
         self.is_dir = target is None
 
-    def __contains__(self, value):
+    def __contains__(self, value: str) -> bool:
         return self.is_dir and value in self.children
 
     def __iter__(self):
@@ -35,26 +52,60 @@ class SiteNode(object):
             return iter([])
         return iter(self.children.values())
 
-    def add_children(self, part, target=None):
+    def add_child(self, key: str, target=None) -> None:
+        """Adds a child to the node.
+
+        If a child with the given key already exists, nothing is done.
+
+        :param str key: Key to given child.
+        :param object target: A target to be created in the site output
+            directory. If set to ``None``, represents a directory. Otherwise,
+            the given value must have a ``dest`` attribute / property that
+            points to the location at which the target is to be created.
+        :raises TypeError: if the node represents a directory (does not have
+            any children).
+
+        """
         if not self.is_dir:
             raise TypeError("cannot add children to file node")
         # TODO: Adjustable behavior for targets with the same dest? For now
         #       just take the first one.
-        if part in self.children:
+        if key in self.children:
             return
-        self.children[part] = SiteNode(self.path.joinpath(part), target)
+        self.children[key] = SiteNode(self.path.joinpath(key), target)
 
 
 class SitePlan(object):
 
-    """Represents the file and directory layout of the final built site."""
+    """The file and directory layout of the final built site.
 
-    def __init__(self, site_dest_rel):
+    A site plan is essentially an n-ary tree whose nodes represent either
+    directories or files to be created.
+
+    """
+
+    def __init__(self, site_dest_rel: Path) -> None:
+        """Initializes the site plan.
+
+        :param pathlib.Path site_dest_rel: Relative path to the site
+            destination directory from the current working directory.
+
+        """
         self.site_dest_rel = site_dest_rel
         self._root = SiteNode(site_dest_rel)
         self._root_path_len = len(site_dest_rel.parts)
 
-    def add_target(self, target):
+    def add_target(self, target) -> Result[None]:
+        """Adds a target to the plan.
+
+        :param object target: A target to be created in the site output
+            directory. It must have a ``dest`` attribute / property that
+            points to the location at which the target is to be created.
+        :returns: Nothing upon successful target addition or an error message
+            when target cannot be added.
+        :rtype: :class:`Result`.
+
+        """
         # Ensure target dest is relative (to project directory!)
         assert not target.dest.is_absolute()
 
@@ -68,16 +119,18 @@ class SitePlan(object):
         for idx, p in enumerate(target.dest.parts[prefix_len:], start=1):
             try:
                 if idx < rem_len:
-                    cur.add_children(p)
+                    cur.add_child(p)
                     cur = cur.children[p]
                 else:
-                    cur.add_children(p, target)
+                    cur.add_child(p, target)
             except TypeError:
                 return Result.as_failure(
                     f"path of target item {str(cur.path.joinpath(p))!r}"
                     " conflicts with {str(cur.path)!r}")
 
-    def fnodes(self):
+        return Result.as_success(None)
+
+    def fnodes(self) -> Generator[SiteNode, None, None]:
         """Yields all file target nodes, depth-first."""
         # TODO: Maybe compress the paths so we don't have to iterate over all
         #       directory parts?
@@ -88,7 +141,7 @@ class SitePlan(object):
             if not cur.is_dir:
                 yield cur
 
-    def dnodes(self):
+    def dnodes(self) -> Generator[SiteNode, None, None]:
         """Yields the least number of directory nodes required to construct
         the site.
 
@@ -108,18 +161,33 @@ class SitePlan(object):
 
 class Site(object):
 
-    """Representation of the static site."""
+    """The static site."""
 
-    def __init__(self, config, template_env):
+    def __init__(self, config: SiteConfig, template_env: Environment) -> None:
+        """Initializes the static site for building.
+
+        :param volt.config.SiteConfig config: The validated site configuration.
+        :param jinja2.Environment template_env: The jinja2 template
+            environment.
+
+        """
         self.config = config
         self.template_env = template_env
 
-    def gather_units(self, pattern="*.md"):
+    def gather_units(self, ext: str=".md") -> Result[List[Unit]]:
+        """Traverses the root contents directory for unit source files.
+
+        :param str ext: Extension (dot included) of the unit source filenames.
+        :returns: A list of gathered units or an error message indicating
+            failure.
+        :rtype: :class:`Result`
+
+        """
         site_config = self.config
         unit = site_config.unit
 
         units = []
-        for unit_path in site_config.contents_src.glob(pattern):
+        for unit_path in site_config.contents_src.glob(f"*{ext}"):
             res = unit.load(unit_path, site_config)
             if res.is_failure:
                 return res
@@ -127,7 +195,16 @@ class Site(object):
 
         return Result.as_success(units)
 
-    def create_pages(self, cwd):
+    def create_pages(self, cwd: Path) -> Result[List[PageTarget]]:
+        """Creates :class:`PageTarget` instances representing templated page
+        targets.
+
+        :param pathlib.Path cwd: Path to the directory from which Volt is run.
+        :returns: A list of created pages or an error message indicating
+            failure.
+        :rtype: :class:`Result`
+
+        """
         runits = self.gather_units()
         if runits.is_failure:
             return runits
@@ -153,7 +230,16 @@ class Site(object):
 
         return Result.as_success(pages)
 
-    def gather_copy_assets(self, cwd):
+    def gather_copy_assets(self, cwd: Path) -> Result[List[CopyTarget]]:
+        """Creates :class:`CopyTarget` instances representing simple
+        copyable targets.
+
+        :param pathlib.Path cwd: Path to the directory from which Volt is run.
+        :returns: A list of created copy targets or an error message indicating
+            failure.
+        :rtype: :class:`Result`
+
+        """
         items = []
         src_rel = calc_relpath(self.config.assets_src, cwd)
         dest_rel = calc_relpath(self.config.site_dest, cwd)
@@ -171,7 +257,15 @@ class Site(object):
 
         return Result.as_success(items)
 
-    def build(self, cwd):
+    def build(self, cwd: Path) -> Result[None]:
+        """Builds the static site in the destination directory.
+
+        :param pathlib.Path cwd: Path to the directory from which Volt is run.
+        :returns: Nothing when site building completes successfully or an error
+            message indicating failure.
+        :rtype: :class:`Result`
+
+        """
         rpages = self.create_pages(cwd)
         if rpages.is_failure:
             return rpages
@@ -189,11 +283,8 @@ class Site(object):
             cwd.joinpath(dn.path).mkdir(parents=True, exist_ok=True)
 
         for fn in plan.fnodes():
-            try:
-                fn.target.write()
-            except OSError as e:
-                return Result.as_failure(
-                    f"cannot write target {str(target.dest)!r}:"
-                    f" {e.strerror}")
+            wres = fn.target.create()
+            if wres.is_failure:
+                return wres
 
         return Result.as_success(None)

@@ -3,11 +3,12 @@
     volt.unit
     ~~~~~~~~~
 
-    Unit parsing and writing.
+    Unit parsing and creation.
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import re
+from pathlib import Path
 
 import yaml
 from iso8601 import parse_date
@@ -23,18 +24,33 @@ from .utils import AttrDict, Result
 __all__ = ["Unit"]
 
 
+# Regex pattern for splitting front matter and the rest of unit.
 _RE_WITH_FM = re.compile(r"\n---\n+")
+
+# Regex pattern for splitting comma-separated tags
 _RE_TAGS = re.compile(r",\s+")
 
 
 class Unit(object):
 
-    """Base class for unit."""
+    """A single source of text-related content."""
 
     __slots__ = ("src", "config", "metadata", "raw_text")
 
-    @classmethod
-    def parse_metadatata(cls, raw, config, src):
+    @staticmethod
+    def parse_metadata(raw: str, config: "SiteConfig",
+                       src: Path) -> Result[AttrDict]:
+        """Parses the unit metadata into a mapping.
+
+        :param str raw: Raw metadata ready for parsing as YAML.
+        :param volt.config.SiteConfig config: Site-wide configurations.
+        :param pathlib.Path src: Path to the unit from which the metadata
+            was parsed.
+        :returns: The metadata as a mapping or an error message indicating
+            failure.
+        :rtype: :class:`Result`
+
+        """
         try:
             meta = yaml.load(raw, Loader=Loader) or {}
         except ScannerError as e:
@@ -69,8 +85,18 @@ class Unit(object):
         return Result.as_success(AttrDict(meta))
 
     @classmethod
-    def load(cls, src, config, encoding="utf-8"):
-        """Loads the given unit path as an instance of the given unit class."""
+    def load(cls, src: Path, config: "SiteConfig",
+             encoding="utf-8") -> "Result[Unit]":
+        """Creates the unit by loading from the given path.
+
+        :param pathlib.Path src: Path to the unit source.
+        :param volt.config.SiteConfig config: Site-wide configurations.
+        :param str encoding: Name of the unit source encoding.
+        :returns: An instance of the unit or an error message indicating
+            failure.
+        :rtype: :class:`Result`
+
+        """
         try:
             raw_bytes = src.read_bytes()
         except OSError as e:
@@ -92,13 +118,22 @@ class Unit(object):
             return Result.as_failure(
                 f"malformed unit: {str(src.relative_to(config.pwd))!r}")
 
-        rmeta = cls.parse_metadatata(raw_meta, config, src)
+        rmeta = cls.parse_metadata(raw_meta, config, src)
         if rmeta.is_failure:
             return rmeta
 
         return Result.as_success(cls(src, config, rmeta.data, raw_text))
 
-    def __init__(self, src, config, metadata, raw_text):
+    def __init__(self, src: Path, config: "SiteConfig", metadata: AttrDict,
+                 raw_text: str) -> None:
+        """Initializes the unit.
+
+        :param pathlib.Path src: Path to the unit source.
+        :param volt.config.SiteConfig config: Site-wide configurations.
+        :param volt.utils.AttrDict metadata: Unit metadata.
+        :param str raw_text: Raw text contents of the unit.
+
+        """
         self.src = src
         self.config = config
         self.metadata = metadata

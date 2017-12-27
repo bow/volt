@@ -12,6 +12,7 @@ from collections import OrderedDict
 from contextlib import suppress
 from os import path
 from pathlib import Path
+from typing import Optional
 
 import click
 import toml
@@ -27,25 +28,37 @@ __all__ = []
 
 class Session(object):
 
-    """Representation of a CLI session."""
+    """Commands for a single CLI session."""
 
-    @classmethod
-    def do_init(cls, target_wd, name, url, timezone, force,
-                config_fname=CONFIG_FNAME):
-        """Creates directories and files for a new site.
+    @staticmethod
+    def do_init(pwd: Path, name: str, url: str, timezone: str, force: bool,
+                config_fname: str=CONFIG_FNAME) -> Result[None]:
+        """Initializes a new project.
 
         This function may overwrite any preexisting files and or directories
         in the target working directory.
 
-        :returns: Error messages as a list of strings.
+        :param pathlib.path pwd: Path to the project directory to be created.
+        :param str name: Name of the static site, to be put inside the
+            generated config file.
+        :param str url: URL of the static site, to be put inside the generated
+            config file.
+        :param str timezone: Geographical timezone name for timestamp-related
+            values, to be put inside the generated config file.
+        :param bool force: Whether to force project creation in nonempty
+            directories or not.
+        :param str config_name: Name of the config file to generate.
+        :returns: Nothing upon successful execution or an error message when
+            execution fails.
+        :rtype: :class:`Result`.
 
         """
         try:
-            target_wd.mkdir(parents=True, exist_ok=True)
+            pwd.mkdir(parents=True, exist_ok=True)
         except OSError as e:
             return Result.as_failure(e.strerror)
 
-        if not force and any(True for _ in target_wd.iterdir()):
+        if not force and any(True for _ in pwd.iterdir()):
             return Result.as_failure(
                 "target project directory is not empty -- use the `-f` flag to"
                 " force init in nonempty directories")
@@ -55,7 +68,7 @@ class Session(object):
             return rtz
 
         # Bootstrap directories.
-        bootstrap_conf = SiteConfig(target_wd, timezone=rtz.data)
+        bootstrap_conf = SiteConfig(pwd, timezone=rtz.data)
         try:
             bootstrap_conf.contents_src.mkdir(parents=True, exist_ok=True)
             bootstrap_conf.templates_src.mkdir(parents=True, exist_ok=True)
@@ -66,18 +79,35 @@ class Session(object):
         # Create initial TOML config file.
         init_conf = OrderedDict([
             ("site", OrderedDict([
-                ("name", name),
-                ("url", url),
+                ("name", name or ""),
+                ("url", url or ""),
                 ("timezone", rtz.data.zone),
             ]))
         ])
-        target_wd.joinpath(config_fname).write_text(toml.dumps(init_conf))
+        pwd.joinpath(config_fname).write_text(toml.dumps(init_conf))
 
         return Result.as_success(None)
 
-    @classmethod
-    def do_build(cls, cwd, start_lookup_dir=None, clean_dest=True):
-        """Builds the site."""
+    @staticmethod
+    def do_build(cwd: Path, start_lookup_dir: Optional[str]=None,
+                 clean_dest: bool=True) -> Result[None]:
+        """Builds the static site.
+
+        This function may overwrite and/or remove any preexisting files
+        and or directories.
+
+        :param pathlib.Path cwd: Path to the directory from which the command
+            was invoked.
+        :param str start_lookup_dir: Path to the directory from which project
+            directory lookup should start. If set to ``None``, the lookup will
+            start from the current directory.
+        :param bool clean_dest: Whether to remove the entire site output
+            directory prior to building, or not.
+        :returns: Nothing upon successful execution or an error message when
+            execution fails.
+        :rtype: :class:`Result`.
+
+        """
         rpwd = find_pwd(CONFIG_FNAME, start_lookup_dir)
         if rpwd.is_failure:
             return rpwd
@@ -126,7 +156,8 @@ def main(ctx, log_level):
                 required=False)
 @click.option("-n", "--name", type=str, required=False, default="",
               help="Name of the Volt site. If given, the value will be set in"
-                   " the created config file. Default: empty string.")
+                   " the created config file. Default: empty string or the"
+                   " value of `project_dir`, when available.")
 @click.option("-u", "--url", type=str, required=False, default="",
               help="URL of the Volt site. If given, the value will be set in"
                    " the created config file. Default: empty string.")
@@ -138,8 +169,21 @@ def main(ctx, log_level):
                    " in the init directory. Otherwise, init will fail if any"
                    " files and/or directories exist in the target directory.")
 @click.pass_context
-def init(ctx, name, url, project_dir, timezone, force):
-    """Initializes a new Volt project."""
+def init(ctx, project_dir: str, name: Optional[str], url: Optional[str],
+         timezone: Optional[str], force: bool):
+    """Initializes a new project.
+
+    Project initialization consists of:
+
+        1. Creating the project directory and directories for contents,
+           templates, and assets, inside the project directory.
+
+        2. Creating the configuration file.
+
+    If no project directory is specified, this command defaults to
+    initialization in the current directory.
+
+    """
     pwd = Path.cwd() if project_dir is None else Path.cwd().joinpath(
         project_dir)
     name = path.basename(project_dir) \
@@ -160,7 +204,17 @@ def init(ctx, name, url, project_dir, timezone, force):
               help="If set, Volt will remove the target site directory prior"
                    " to site creation. Default: set.")
 @click.pass_context
-def build(ctx, project_dir, clean):
+def build(ctx, project_dir: Optional[str], clean: bool):
+    """Builds the static site.
+
+    This command generates the static site in the site destination directory
+    (default: `site`).
+
+    If no project directory is specified, this command will start lookup of the
+    project directory from the current directory upwards. If a project
+    directory is specified, no repeated lookups will be performed.
+
+    """
     _, errs = Session.do_build(Path.cwd(), project_dir, clean)
     if errs:
         raise click.UsageError(errs)
