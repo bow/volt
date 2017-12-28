@@ -18,34 +18,31 @@ from volt.config import CONFIG_FNAME
 
 
 @pytest.fixture
-def exp_cfg():
-    sc = {
-        "name": "",
-        "url": "",
-        "timezone": tzlocal.get_localzone().zone,
+def fxt_config_tz():
+    return {
+        "site": {
+            "name": "",
+            "url": "",
+            "timezone": tzlocal.get_localzone().zone,
+        }
     }
-    return {"site": sc}
 
 
-def test_default(exp_cfg):
+def test_default(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
 
         result = runner.invoke(main, ["init"])
         assert result.exit_code == 0
-        # Expected 4 items: contents dir, templates dir, static dir, and config
-        assert len(list(wp.iterdir())) == 4
-        assert wp.joinpath("contents").exists()
-        assert wp.joinpath("templates").exists()
-        assert wp.joinpath("assets").exists()
-        cfg_path = wp.joinpath(CONFIG_FNAME)
-        assert cfg_path.exists()
-        with open(str(cfg_path), "r") as src:
-            assert toml.load(src) == exp_cfg
+
+        assert {f.name for f in wp.iterdir()} == \
+            {"contents", "templates", "assets", CONFIG_FNAME}
+        with open(wp.joinpath(CONFIG_FNAME), "r") as src:
+            assert toml.load(src) == fxt_config_tz
 
 
-def test_custom_dir_no_name(exp_cfg):
+def test_custom_dir_no_name(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -54,19 +51,15 @@ def test_custom_dir_no_name(exp_cfg):
         assert not wp.joinpath(pn).exists()
         result = runner.invoke(main, ["init", pn])
         assert result.exit_code == 0
-        # Expected 4 items: contents dir, templates dir, static dir, and config
-        assert len(list(wp.joinpath(pn).iterdir())) == 4
-        assert wp.joinpath(pn, "contents").exists()
-        assert wp.joinpath(pn, "templates").exists()
-        assert wp.joinpath(pn, "assets").exists()
-        cfg_path = wp.joinpath(pn, CONFIG_FNAME)
-        assert cfg_path.exists()
-        with open(str(cfg_path), "r") as src:
-            exp_cfg["site"]["name"] = "proj"
-            assert toml.load(src) == exp_cfg
+
+        assert {f.name for f in wp.joinpath(pn).iterdir()} == \
+            {"contents", "templates", "assets", CONFIG_FNAME}
+        with open(wp.joinpath(pn, CONFIG_FNAME), "r") as src:
+            fxt_config_tz["site"]["name"] = "proj"
+            assert toml.load(src) == fxt_config_tz
 
 
-def test_custom_dir_with_name(exp_cfg):
+def test_custom_dir_with_name(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -76,19 +69,15 @@ def test_custom_dir_with_name(exp_cfg):
         assert not wp.joinpath(pn).exists()
         result = runner.invoke(main, ["init", pn, "-n", name])
         assert result.exit_code == 0
-        # Expected 4 items: contents dir, templates dir, static dir, and config
-        assert len(list(wp.joinpath(pn).iterdir())) == 4
-        assert wp.joinpath(pn, "contents").exists()
-        assert wp.joinpath(pn, "templates").exists()
-        assert wp.joinpath(pn, "assets").exists()
-        cfg_path = wp.joinpath(pn, CONFIG_FNAME)
-        assert cfg_path.exists()
-        with open(str(cfg_path), "r") as src:
-            exp_cfg["site"]["name"] = name
-            assert toml.load(src) == exp_cfg
+
+        assert {f.name for f in wp.joinpath(pn).iterdir()} == \
+            {"contents", "templates", "assets", CONFIG_FNAME}
+        with open(wp.joinpath(pn, CONFIG_FNAME), "r") as src:
+            fxt_config_tz["site"]["name"] = name
+            assert toml.load(src) == fxt_config_tz
 
 
-def test_with_name(exp_cfg):
+def test_with_name(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -96,19 +85,15 @@ def test_with_name(exp_cfg):
 
         result = runner.invoke(main, ["init", "-n", name])
         assert result.exit_code == 0
-        # Expected 4 items: contents dir, templates dir, static dir, and config
-        assert len(list(wp.iterdir())) == 4
-        assert wp.joinpath("contents").exists()
-        assert wp.joinpath("templates").exists()
-        assert wp.joinpath("assets").exists()
-        cfg_path = wp.joinpath(CONFIG_FNAME)
-        assert cfg_path.exists()
-        with open(str(cfg_path), "r") as src:
-            exp_cfg["site"]["name"] = name
-            assert toml.load(src) == exp_cfg
+
+        assert {f.name for f in wp.iterdir()} == \
+            {"contents", "templates", "assets", CONFIG_FNAME}
+        with open(wp.joinpath(CONFIG_FNAME), "r") as src:
+            fxt_config_tz["site"]["name"] = name
+            assert toml.load(src) == fxt_config_tz
 
 
-def test_with_url(exp_cfg):
+def test_with_url(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -116,19 +101,15 @@ def test_with_url(exp_cfg):
 
         result = runner.invoke(main, ["init", "-u", url])
         assert result.exit_code == 0
-        # Expected 4 items: contents dir, templates dir, static dir, and config
-        assert len(list(wp.iterdir())) == 4
-        assert wp.joinpath("contents").exists()
-        assert wp.joinpath("templates").exists()
-        assert wp.joinpath("assets").exists()
-        cfg_path = wp.joinpath(CONFIG_FNAME)
-        assert cfg_path.exists()
-        with open(str(cfg_path), "r") as src:
-            exp_cfg["site"]["url"] = url
-            assert toml.load(src) == exp_cfg
+
+        assert {f.name for f in wp.iterdir()} == \
+            {"contents", "templates", "assets", CONFIG_FNAME}
+        with open(wp.joinpath(CONFIG_FNAME), "r") as src:
+            fxt_config_tz["site"]["url"] = url
+            assert toml.load(src) == fxt_config_tz
 
 
-def test_with_timezone(exp_cfg):
+def test_with_timezone(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -136,19 +117,15 @@ def test_with_timezone(exp_cfg):
 
         result = runner.invoke(main, ["init", "-z", tz])
         assert result.exit_code == 0
-        # Expected 4 items: contents dir, templates dir, static dir, and config
-        assert len(list(wp.iterdir())) == 4
-        assert wp.joinpath("contents").exists()
-        assert wp.joinpath("templates").exists()
-        assert wp.joinpath("assets").exists()
-        cfg_path = wp.joinpath(CONFIG_FNAME)
-        assert cfg_path.exists()
-        with open(str(cfg_path), "r") as src:
-            exp_cfg["site"]["timezone"] = tz
-            assert toml.load(src) == exp_cfg
+
+        assert {f.name for f in wp.iterdir()} == \
+            {"contents", "templates", "assets", CONFIG_FNAME}
+        with open(wp.joinpath(CONFIG_FNAME), "r") as src:
+            fxt_config_tz["site"]["timezone"] = tz
+            assert toml.load(src) == fxt_config_tz
 
 
-def test_with_timezone_invalid(exp_cfg):
+def test_with_timezone_invalid(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -159,17 +136,17 @@ def test_with_timezone_invalid(exp_cfg):
         assert len(list(wp.iterdir())) == 0
 
 
-def test_nonwritable_dir(exp_cfg):
+def test_nonwritable_dir(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         os.chmod(fs, 0o555)
         result = runner.invoke(main, ["init"])
         assert result.exit_code != 0
         assert isinstance(result.exception, SystemExit)
-        assert f"Permission denied" in result.output
+        assert "Permission denied" in result.output
 
 
-def test_nonwritable_custom_dir(exp_cfg):
+def test_nonwritable_custom_dir(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         project_dir = Path(fs).joinpath("foo", "bzzt")
@@ -179,10 +156,10 @@ def test_nonwritable_custom_dir(exp_cfg):
         result = runner.invoke(main, ["init", str(project_dir)])
         assert result.exit_code != 0
         assert isinstance(result.exception, SystemExit)
-        assert f"Permission denied" in result.output
+        assert "Permission denied" in result.output
 
 
-def test_nonempty(exp_cfg):
+def test_nonempty(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -193,10 +170,10 @@ def test_nonempty(exp_cfg):
         assert result.exit_code != 0
         assert isinstance(result.exception, SystemExit)
         # Expected only 1 item: the preexisting file
-        assert list(wp.iterdir()) == [exst_file]
+        assert set(wp.iterdir()) == {exst_file}
 
 
-def test_nonempty_with_force(exp_cfg):
+def test_nonempty_with_force(fxt_config_tz):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         wp = Path(fs)
@@ -205,15 +182,8 @@ def test_nonempty_with_force(exp_cfg):
 
         result = runner.invoke(main, ["init", "-f"])
         assert result.exit_code == 0
-        # Expected 5 items: contents dir, templates dir, static dir, config,
-        # and the file
-        wp_contents = list(wp.iterdir())
-        assert len(wp_contents) == 5
-        assert exst_file.exists()
-        assert wp.joinpath("contents").exists()
-        assert wp.joinpath("templates").exists()
-        assert wp.joinpath("assets").exists()
-        cfg_path = wp.joinpath(CONFIG_FNAME)
-        assert cfg_path.exists()
-        with open(str(cfg_path), "r") as src:
-            assert toml.load(src) == exp_cfg
+
+        assert {f.name for f in wp.iterdir()} == \
+            {"contents", "templates", "assets", CONFIG_FNAME, "existing"}
+        with open(wp.joinpath(CONFIG_FNAME), "r") as src:
+            assert toml.load(src) == fxt_config_tz

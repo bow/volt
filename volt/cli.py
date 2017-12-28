@@ -69,9 +69,8 @@ class Session(object):
         # Bootstrap directories.
         bootstrap_conf = SiteConfig(pwd, timezone=rtz.data)
         try:
-            bootstrap_conf.contents_src.mkdir(parents=True, exist_ok=True)
-            bootstrap_conf.templates_src.mkdir(parents=True, exist_ok=True)
-            bootstrap_conf.assets_src.mkdir(parents=True, exist_ok=True)
+            for dk in ("contents_src", "templates_src", "assets_src"):
+                bootstrap_conf[dk].mkdir(parents=True, exist_ok=True)
         except OSError as e:
             return Result.as_failure(e.strerror)
 
