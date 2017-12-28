@@ -89,7 +89,7 @@ class Session(object):
 
     @staticmethod
     def do_build(cwd: Path, start_lookup_dir: Optional[str]=None,
-                 clean_dest: bool=True) -> Result[None]:
+                 clean: bool=True) -> Result[None]:
         """Builds the static site.
 
         This function may overwrite and/or remove any preexisting files
@@ -100,7 +100,7 @@ class Session(object):
         :param str start_lookup_dir: Path to the directory from which project
             directory lookup should start. If set to ``None``, the lookup will
             start from the current directory.
-        :param bool clean_dest: Whether to remove the entire site output
+        :param bool clean: Whether to remove the entire site output
             directory prior to building, or not.
         :returns: Nothing upon successful execution or an error message when
             execution fails.
@@ -116,12 +116,10 @@ class Session(object):
             return rsc
 
         site_config = rsc.data
-        # TODO: wipe and write only the necessary ones
-        site_dest = site_config.site_dest
-        if clean_dest:
-            with suppress(FileNotFoundError):
-                shutil.rmtree(str(site_dest))
-            site_dest.mkdir(parents=True)
+        with suppress(FileNotFoundError):
+            if clean:
+                # TODO: wipe and write only the necessary ones
+                shutil.rmtree(str(site_config.site_dest))
 
         site = Site(site_config)
         rbuild = site.build(cwd)
@@ -195,9 +193,9 @@ def init(ctx, project_dir: str, name: Optional[str], url: Optional[str],
                 type=click.Path(exists=True, dir_okay=True, file_okay=False,
                                 readable=True, writable=True),
                 required=False)
-@click.option("-c", "--clean", is_flag=True, default=True,
-              help="If set, Volt will remove the target site directory prior"
-                   " to site creation. Default: set.")
+@click.option("--clean/--no-clean", default=True,
+              help="If set, the target site directory will be removed prior"
+                   " to site building. Default: set.")
 @click.pass_context
 def build(ctx, project_dir: Optional[str], clean: bool):
     """Builds the static site.

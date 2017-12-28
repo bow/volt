@@ -335,7 +335,10 @@ class SiteConfig(AttrDict):
         :rtype: :class:`Result`
 
         """
-        vres = site_vfunc(user_conf.pop("site", {}))
+        if "site" not in user_conf:
+            return Result.as_failure("cannot find site configuration in config"
+                                     " file")
+        vres = site_vfunc(user_conf.pop("site"))
         if vres.is_failure:
             return vres
         site_conf = vres.data
