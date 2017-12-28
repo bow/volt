@@ -16,7 +16,6 @@ from typing import Optional
 
 import click
 import toml
-from jinja2 import Environment, FileSystemLoader
 
 from . import __version__
 from .config import SiteConfig, CONFIG_FNAME
@@ -124,11 +123,7 @@ class Session(object):
                 shutil.rmtree(str(site_dest))
             site_dest.mkdir(parents=True)
 
-        env = Environment(
-            loader=FileSystemLoader(str(site_config.templates_src)),
-            auto_reload=False,
-            enable_async=True)
-        site = Site(site_config, env)
+        site = Site(site_config)
         rbuild = site.build(cwd)
         if rbuild.is_failure:
             return rbuild

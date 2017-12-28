@@ -10,10 +10,10 @@
 import os
 from itertools import chain
 from pathlib import Path
-from typing import Generator, List
+from typing import Generator, List, Optional
 
 import jinja2.exceptions as j2exc
-from jinja2 import Environment
+from jinja2 import Environment, FileSystemLoader
 
 from .config import SiteConfig
 from .targets import PageTarget, CopyTarget
@@ -163,16 +163,20 @@ class Site(object):
 
     """The static site."""
 
-    def __init__(self, config: SiteConfig, template_env: Environment) -> None:
+    def __init__(self, config: SiteConfig,
+                 template_env: Optional[Environment]=None) -> None:
         """Initializes the static site for building.
 
         :param volt.config.SiteConfig config: The validated site configuration.
-        :param jinja2.Environment template_env: The jinja2 template
-            environment.
+        :param template_env: The jinja2 template environment. If set to
+            ``None``, a default environment will be created.
+        :type template_env: jinja2.Environment or None
 
         """
         self.config = config
-        self.template_env = template_env
+        self.template_env = template_env or Environment(
+            loader=FileSystemLoader(str(config.templates_src)),
+            auto_reload=False, enable_async=True)
 
     def gather_units(self, ext: str=".md") -> Result[List[Unit]]:
         """Traverses the root contents directory for unit source files.
