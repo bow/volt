@@ -54,7 +54,7 @@ def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
         if pathk not in value:
             continue
         uv = value[pathk]
-        if isinstance(uv, str) or not uv:
+        if not isinstance(uv, str) or not uv:
             return Result.as_failure(f"site config {pathk!r} must be a"
                                      " nonempty string")
         if os.path.isabs(uv):
