@@ -16,7 +16,7 @@ import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader
 
 from .config import SiteConfig
-from .targets import PageTarget, CopyTarget
+from .targets import CopyTarget, PageTarget, Target
 from .units import Unit
 from .utils import calc_relpath, Result
 
@@ -29,14 +29,14 @@ class SiteNode(object):
 
     __slots__ = ("path", "target", "children", "is_dir")
 
-    def __init__(self, path: Path, target=None) -> None:
+    def __init__(self, path: Path, target: Optional[Target]=None) -> None:
         """Initializes the site node.
 
         :param pathlib.Path path: Path to the node.
-        :param object target: A target to be created in the site output
-            directory. If set to ``None``, represents a directory. Otherwise,
-            the given value must have a ``dest`` attribute / property that
-            points to the location at which the target is to be created.
+        :param target: A target to be created in the site output directory.
+            If set to ``None``, represents a directory. Otherwise, the given
+            value must be a subclass of :class:`Target`.
+        :type target: :class:`Target` or None
 
         """
         self.path = path
@@ -52,16 +52,16 @@ class SiteNode(object):
             return iter([])
         return iter(self.children.values())
 
-    def add_child(self, key: str, target=None) -> None:
+    def add_child(self, key: str, target: Optional[Target]=None) -> None:
         """Adds a child to the node.
 
         If a child with the given key already exists, nothing is done.
 
         :param str key: Key to given child.
-        :param object target: A target to be created in the site output
-            directory. If set to ``None``, represents a directory. Otherwise,
-            the given value must have a ``dest`` attribute / property that
-            points to the location at which the target is to be created.
+        :param target: A target to be created in the site output directory.
+            If set to ``None``, represents a directory. Otherwise, the given
+            value must be a subclass of :class:`Target`.
+        :type target: :class:`Target` or None
         :raises TypeError: if the node represents a directory (does not have
             any children).
 
@@ -95,18 +95,17 @@ class SitePlan(object):
         self._root = SiteNode(site_dest_rel)
         self._root_path_len = len(site_dest_rel.parts)
 
-    def add_target(self, target) -> Result[None]:
+    def add_target(self, target: Target) -> Result[None]:
         """Adds a target to the plan.
 
-        :param object target: A target to be created in the site output
-            directory. It must have a ``dest`` attribute / property that
-            points to the location at which the target is to be created.
+        :param volt.targets.Target target: A target to be created in the site
+            output directory.
         :returns: Nothing upon successful target addition or an error message
             when target cannot be added.
         :rtype: :class:`Result`.
 
         """
-        # Ensure target dest is relative (to project directory!)
+        # Ensure target dest is relative (to working directory!)
         assert not target.dest.is_absolute()
 
         # Ensure target dest starts with project site_dest

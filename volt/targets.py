@@ -7,6 +7,7 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import abc
 import filecmp
 import shutil
 from pathlib import Path
@@ -17,12 +18,30 @@ from jinja2 import Template
 from .utils import Result
 from .units import Unit
 
-__all__ = ["PageTarget", "CopyTarget"]
+__all__ = ["CopyTarget", "PageTarget", "Target"]
 
 
-class PageTarget(object):
+class Target(object):
+
+    """A file created in the site output directory."""
+
+    @property
+    @abc.abstractmethod
+    def dest(self) -> Path:
+        """Path to the target, relative to the working directory."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def create(self) -> Result[None]:
+        """Creates the target at the destination."""
+        raise NotImplementedError
+
+
+class PageTarget(Target):
 
     """A target created by writing text contents."""
+
+    __slots__ = ("src", "_dest", "contents")
 
     @classmethod
     def from_template(cls, src: Unit, dest: Path,
@@ -59,8 +78,12 @@ class PageTarget(object):
 
         """
         self.src = src
-        self.dest = dest
+        self._dest = dest
         self.contents = contents
+
+    @property
+    def dest(self) -> Path:
+        return self._dest
 
     @property
     def metadata(self) -> dict:
@@ -85,9 +108,11 @@ class PageTarget(object):
         return Result.as_success(None)
 
 
-class CopyTarget(object):
+class CopyTarget(Target):
 
     """A target created by copying files."""
+
+    __slots__ = ("src", "_dest")
 
     def __init__(self, src: Path, dest: Path) -> None:
         """Initializes the copy target.
@@ -99,7 +124,11 @@ class CopyTarget(object):
 
         """
         self.src = src
-        self.dest = dest
+        self._dest = dest
+
+    @property
+    def dest(self) -> Path:
+        return self._dest
 
     def create(self) -> Result[None]:
         """Copies the source to the destination.
