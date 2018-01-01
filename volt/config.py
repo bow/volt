@@ -40,6 +40,14 @@ def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
     if not isinstance(value, dict):
         return Result.as_failure("site config must be a mapping")
 
+    # Keys whose values must be strings.
+    for strk in ("name", "url"):
+        if strk not in value:
+            continue
+        uv = value[strk]
+        if not isinstance(uv, str):
+            return Result.as_failure(f"site config {strk!r} must be a string")
+
     # Keys whose values must be nonempty strings.
     for strk in ("timezone", "unit", "unit_template"):
         if strk not in value:
@@ -102,7 +110,7 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
     intk = "pagination_size"
     if intk in value:
         uv = value[intk]
-        if not isinstance(uv, int) or uv < 1:
+        if (not isinstance(uv, int) or isinstance(uv, bool)) or uv < 1:
             return Result.as_failure(f"config {intk!r} {infix} must be a"
                                      " positive, nonzero integer")
 
@@ -120,7 +128,7 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
     pathk = "contents_src"
     if pathk in value:
         uv = value[pathk]
-        if isinstance(uv, str) or not uv:
+        if not isinstance(uv, str) or not uv:
             return Result.as_failure(f"config {pathk!r} {infix} must be a"
                                      " nonempty string")
         if os.path.isabs(uv):
@@ -165,7 +173,6 @@ def validate_section_pagination(name: str, section_config: RawConfig,
             # path_pattern: str
             ikey1 = "path_pattern"
             if ikey1 not in v:
-                print(k, v)
                 return Result.as_failure(
                     f"config '{key}.{k}.{ikey1}' {infix} must be present")
             v1 = v[ikey1]
@@ -176,13 +183,13 @@ def validate_section_pagination(name: str, section_config: RawConfig,
             if "{idx}" not in v1:
                 return Result.as_failure(
                     f"config '{key}.{k}.{ikey1}' {infix} must contain the"
-                    " '{idx}' template")
+                    " '{idx}' wildcard")
 
             # size: int
             ikey2 = "size"
             if ikey2 in v:
                 v2 = v[ikey2]
-                if not isinstance(v2, int) or v2 < 1:
+                if (not isinstance(v2, int) or isinstance(v2, bool)) or v2 < 1:
                     return Result.as_failure(
                         f"config '{key}.{k}.{ikey2}' {infix} must be a"
                         " positive, nonzero integer")
@@ -196,7 +203,7 @@ def validate_section_pagination(name: str, section_config: RawConfig,
                         f"config '{key}.{k}.{ikey3}' {infix} must be a"
                         " nonempty string")
 
-    return Result.as_success(section_config)
+    return Result.as_success((name, section_config, key))
 
 
 def validate_section_unit_order(name: str, section_config: RawConfig,
@@ -220,17 +227,17 @@ def validate_section_unit_order(name: str, section_config: RawConfig,
             return Result.as_failure(f"config {key!r} {infix} must be a"
                                      " mapping")
         if "key" not in value:
-            return Result.as_failure("config '{key}.key' {infix} must be"
+            return Result.as_failure(f"config '{key}.key' {infix} must be"
                                      " present")
         iv = value["key"]
         if not isinstance(iv, str) or not iv:
-            return Result.as_failure("config '{key}.key' {infix} must be a"
+            return Result.as_failure(f"config '{key}.key' {infix} must be a"
                                      " nonempty string")
         if "reverse" in value and not isinstance(value["reverse"], bool):
-            return Result.as_failure("config '{key}.reverse' {infix} must be a"
-                                     " boolean")
+            return Result.as_failure(f"config '{key}.reverse' {infix} must be"
+                                     " a boolean")
 
-    return Result.as_success(section_config)
+    return Result.as_success((name, section_config, key))
 
 
 class SiteConfig(AttrDict):
@@ -315,12 +322,12 @@ class SiteConfig(AttrDict):
                          for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
-    def from_user_conf(cls, pwd: Path,
-                       user_conf: RawConfig,
-                       site_vfunc: Callable[[RawConfig], Result[RawConfig]]=
-                       validate_site_conf,
-                       section_vfunc: Callable[[RawConfig], Result[RawConfig]]=
-                       validate_section_conf) -> "Result[SiteConfig]":
+    def from_user_config(
+            cls, pwd: Path, user_conf: RawConfig,
+            site_vfunc: Callable[[RawConfig], Result[RawConfig]]=
+            validate_site_conf,
+            section_vfunc: Callable[[RawConfig], Result[RawConfig]]=
+            validate_section_conf) -> "Result[SiteConfig]":
         """Creates a ``SiteConfig`` from the given user-supplied config.
 
         :param pathlib.Path pwd: Path to project directory.
@@ -385,7 +392,7 @@ class SiteConfig(AttrDict):
                 # TODO: display traceback depending on log level
                 return Result.as_failure(f"cannot parse config: {e.args[0]}")
 
-        return cls.from_user_conf(pwd, user_conf)
+        return cls.from_user_config(pwd, user_conf)
 
 
 class SectionConfig(AttrDict):
@@ -407,7 +414,7 @@ class SectionConfig(AttrDict):
         paginations = kwargs.pop("paginations", None) or {}
         pagination_size = kwargs.pop("pagination_size", 10)
         for pv in paginations.values():
-            pv.setdefault("pagination_size", pagination_size)
+            pv.setdefault("size", pagination_size)
 
         self.paginations = paginations
         self.pagination_size = pagination_size
