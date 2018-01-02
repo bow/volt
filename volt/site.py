@@ -125,7 +125,7 @@ class SitePlan(object):
             except TypeError:
                 return Result.as_failure(
                     f"path of target item {str(cur.path.joinpath(p))!r}"
-                    " conflicts with {str(cur.path)!r}")
+                    f" conflicts with {str(cur.path)!r}")
 
         return Result.as_success(None)
 
@@ -233,14 +233,13 @@ class Site(object):
 
         return Result.as_success(pages)
 
-    def gather_copy_assets(self, cwd: Path) -> Result[List[CopyTarget]]:
+    def gather_copy_assets(self, cwd: Path) -> List[CopyTarget]:
         """Creates :class:`CopyTarget` instances representing simple
         copyable targets.
 
         :param pathlib.Path cwd: Path to the directory from which Volt is run.
-        :returns: A list of created copy targets or an error message indicating
-            failure.
-        :rtype: :class:`Result`
+        :returns: A list of created copy targets.
+        :rtype: list
 
         """
         items = []
@@ -258,7 +257,7 @@ class Site(object):
                 target = CopyTarget(de.path, dest_rel.joinpath(*dtoks))
                 items.append(target)
 
-        return Result.as_success(items)
+        return items
 
     def build(self, cwd: Path) -> Result[None]:
         """Builds the static site in the destination directory.
@@ -273,13 +272,11 @@ class Site(object):
         if rpages.is_failure:
             return rpages
 
-        rstats = self.gather_copy_assets(cwd)
-        if rstats.is_failure:
-            return rstats
+        cassets = self.gather_copy_assets(cwd)
 
         plan = SitePlan(calc_relpath(self.config.site_dest, cwd))
 
-        for target in chain(rpages.data, rstats.data):
+        for target in chain(rpages.data, cassets):
             plan.add_target(target)
 
         for dn in plan.dnodes():

@@ -5,6 +5,7 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+import os
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,8 @@ from click.testing import CliRunner
 
 from volt.cli import main
 from volt.config import CONFIG_FNAME
+
+from .utils import create_fs_fixture
 
 
 @pytest.fixture
@@ -42,22 +45,12 @@ def fxt_layoutf():
     return f
 
 
-def create_project_fixture(fs, layout):
-    for dname in layout["dirs"]:
-        fs.joinpath(dname).mkdir()
-    for fname, contents in layout["files"].items():
-        fp = fs.joinpath(fname)
-        fp.parent.mkdir(parents=True, exist_ok=True)
-        with fp.open(mode="w") as fh:
-            fh.write(contents)
-
-
 def test_ok(fxt_config, fxt_layoutf):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         fs = Path(fs)
 
-        create_project_fixture(fs, fxt_layoutf(fxt_config))
+        create_fs_fixture(fs, fxt_layoutf(fxt_config))
 
         result = runner.invoke(main, ["build"])
         assert result.exit_code == 0
@@ -78,7 +71,7 @@ def test_ok_no_clean(fxt_config, fxt_layoutf):
     with runner.isolated_filesystem() as fs:
         fs = Path(fs)
 
-        create_project_fixture(fs, fxt_layoutf(fxt_config))
+        create_fs_fixture(fs, fxt_layoutf(fxt_config))
         fs.joinpath("site").mkdir()
         fs.joinpath("site", "bzzt").write_text("bzzt")
 
@@ -103,7 +96,7 @@ def test_fail_find_pwd(fxt_config, fxt_layoutf):
 
         layout = fxt_layoutf(fxt_config)
         layout["files"].pop(CONFIG_FNAME)
-        create_project_fixture(fs, layout)
+        create_fs_fixture(fs, layout)
 
         result = runner.invoke(main, ["build"])
         assert result.exit_code != 0
@@ -120,7 +113,7 @@ def test_fail_config_load(fxt_config, fxt_layoutf):
 
         layout = fxt_layoutf(fxt_config)
         layout["files"][CONFIG_FNAME] = "foo"
-        create_project_fixture(fs, layout)
+        create_fs_fixture(fs, layout)
 
         result = runner.invoke(main, ["build"])
         assert result.exit_code != 0
@@ -130,14 +123,14 @@ def test_fail_config_load(fxt_config, fxt_layoutf):
             {"assets", "contents", "templates", "Volt.toml"}
 
 
-def test_fail_build_template_load(fxt_config, fxt_layoutf):
+def test_fail_template_load(fxt_config, fxt_layoutf):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         fs = Path(fs)
 
         layout = fxt_layoutf(fxt_config)
         layout["files"]["templates/page.html"] = "{{ unit.raw_text}"
-        create_project_fixture(fs, layout)
+        create_fs_fixture(fs, layout)
 
         result = runner.invoke(main, ["build"])
         assert result.exit_code != 0
@@ -145,3 +138,20 @@ def test_fail_build_template_load(fxt_config, fxt_layoutf):
 
         assert {f.name for f in fs.iterdir()} == \
             {"assets", "contents", "templates", "Volt.toml"}
+
+
+def test_fail_page_write(fxt_config, fxt_layoutf):
+    runner = CliRunner()
+    with runner.isolated_filesystem() as fs:
+        fs = Path(fs)
+
+        layout = fxt_layoutf(fxt_config)
+        create_fs_fixture(fs, layout)
+        os.chmod(fs.joinpath("assets", "foo1.txt"), 0o000)
+
+        result = runner.invoke(main, ["build"])
+        assert result.exit_code != 0
+        assert "cannot copy" in result.output
+
+        assert {f.name for f in fs.iterdir()} == \
+            {"assets", "contents", "templates", "site", "Volt.toml"}
