@@ -143,9 +143,10 @@ class CopyTarget(Target):
         """
         str_src = str(self.src)
         str_dest = str(self.dest)
+        do_copy = not self.dest.exists() or \
+            not filecmp.cmp(str_src, str_dest, shallow=False)
 
-        if not self.dest.exists() or \
-                not filecmp.cmp(str_src, str_dest, shallow=False):
+        if do_copy:
             try:
                 shutil.copy2(str_src, str_dest)
             except OSError as e:
