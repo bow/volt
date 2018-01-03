@@ -11,7 +11,30 @@ import pytest
 import pytz
 import tzlocal
 
-from volt.utils import get_tz, import_mod_attr, calc_relpath
+from volt.utils import get_tz, import_mod_attr, calc_relpath, AttrDict
+
+
+def test_attr_dict():
+    ad = AttrDict({"a": 1, "b": 2})
+
+    assert ad.a == 1
+    assert not hasattr(ad, "c")
+    with pytest.raises(AttributeError,
+                       message="AttrDict has no attribute 'c'"):
+        ad.c
+
+    ad.x = 100
+    assert ad["x"] == 100
+    assert ad.x == 100
+    assert hasattr(ad, "x")
+    assert getattr(ad, "x", -1) == 100
+
+    with pytest.raises(AttributeError,
+                       message="AttrDict has no attribute 'c'"):
+        del ad.c
+    del ad.x
+    assert not hasattr(ad, "x")
+    assert getattr(ad, "x", -1) == -1
 
 
 @pytest.fixture
