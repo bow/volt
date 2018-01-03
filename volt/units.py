@@ -8,15 +8,16 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import re
+from datetime import datetime
 from pathlib import Path
 
 import yaml
-from iso8601 import parse_date
 from slugify import slugify
 try:
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader
+from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from .utils import AttrDict, Result
@@ -53,7 +54,7 @@ class Unit(object):
         """
         try:
             meta = yaml.load(raw, Loader=Loader) or {}
-        except ScannerError as e:
+        except (ScannerError, ParserError) as e:
             return Result.as_failure(f"malformed metadata: {src}")
 
         # Ensure tags is a list of strings.
@@ -65,10 +66,14 @@ class Unit(object):
 
         # Transform pub_time to timezone-aware datetime object.
         if "pub_time" in meta:
-            dto = parse_date(meta["pub_time"], default_timezone=None)
-            if dto.tzinfo is not None:
-                meta["pub_time"] = dto
-            elif "timezone" in config:
+            dto = meta["pub_time"]
+            if not isinstance(dto, datetime):
+                return Result.as_failure("malformed 'pub_time' metadata:"
+                                         f"{src}")
+
+            if config.timezone is not None and dto.tzinfo is None:
+                print(config.timezone)
+                print(dto.tzinfo)
                 meta["pub_time"] = config.timezone.localize(dto)
 
         # Ensure title is supplied.
@@ -86,7 +91,7 @@ class Unit(object):
 
     @classmethod
     def load(cls, src: Path, config: "SiteConfig",
-             encoding="utf-8") -> "Result[Unit]":
+             encoding: str="utf-8") -> "Result[Unit]":
         """Creates the unit by loading from the given path.
 
         :param pathlib.Path src: Path to the unit source.
@@ -100,15 +105,21 @@ class Unit(object):
         try:
             raw_bytes = src.read_bytes()
         except OSError as e:
-            return Result.as_failure(e.strerror)
+            return Result.as_failure(
+                "cannot load unit"
+                f"{str(src.relative_to(config.pwd))!r}: {e.strerror}")
 
         try:
             raw_contents = raw_bytes.decode(encoding)
         except UnicodeDecodeError:
             return Result.as_failure(
-                "decoding error: cannot decode"
-                f" {str(src.relative_to(config.pwd))!r} using"
-                f" {encoding!r}")
+                "cannot decode unit"
+                f" {str(src.relative_to(config.pwd))!r} using {encoding!r}")
+        except LookupError:
+            return Result.as_failure(
+                "cannot decode unit"
+                f" {str(src.relative_to(config.pwd))!r} using {encoding!r}:"
+                " unknown encoding")
 
         split_contents = _RE_WITH_FM.split(raw_contents, 1)
 
