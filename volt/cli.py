@@ -120,8 +120,8 @@ class Session(object):
                 # TODO: wipe and write only the necessary ones
                 shutil.rmtree(str(site_config.site_dest))
 
-        site = Site(site_config)
-        rbuild = site.build(cwd)
+        site = Site(site_config, cwd)
+        rbuild = site.build()
         if rbuild.is_failure:
             return rbuild
 

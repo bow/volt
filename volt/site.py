@@ -162,20 +162,26 @@ class Site(object):
 
     """The static site."""
 
-    def __init__(self, config: SiteConfig,
+    def __init__(self, config: SiteConfig, cwd: Path,
                  template_env: Optional[Environment]=None) -> None:
         """Initializes the static site for building.
 
         :param volt.config.SiteConfig config: The validated site configuration.
+        :param pathlib.Path cwd: Path to the directory from which Volt is run.
         :param template_env: The jinja2 template environment. If set to
             ``None``, a default environment will be created.
         :type template_env: jinja2.Environment or None
 
         """
         self.config = config
+        self.cwd = cwd
         self.template_env = template_env or Environment(
             loader=FileSystemLoader(str(config.templates_src)),
             auto_reload=False, enable_async=True)
+
+        dest_rel = calc_relpath(config.site_dest, cwd)
+        self.site_dest_rel = dest_rel
+        self.plan = SitePlan(dest_rel)
 
     def gather_units(self, ext: str=".md") -> Result[List[Unit]]:
         """Traverses the root contents directory for unit source files.
@@ -198,11 +204,10 @@ class Site(object):
 
         return Result.as_success(units)
 
-    def create_pages(self, cwd: Path) -> Result[List[PageTarget]]:
+    def create_pages(self) -> Result[List[PageTarget]]:
         """Creates :class:`PageTarget` instances representing templated page
         targets.
 
-        :param pathlib.Path cwd: Path to the directory from which Volt is run.
         :returns: A list of created pages or an error message indicating
             failure.
         :rtype: :class:`Result`
@@ -223,7 +228,7 @@ class Site(object):
                                      f" errors: {e.message}")
 
         pages = []
-        dest_rel = calc_relpath(self.config.site_dest, cwd)
+        dest_rel = self.site_dest_rel
         for unit in runits.data:
             dest = dest_rel.joinpath(f"{unit.metadata.slug}.html")
             rrend = PageTarget.from_template(unit, dest, template)
@@ -233,18 +238,17 @@ class Site(object):
 
         return Result.as_success(pages)
 
-    def gather_copy_assets(self, cwd: Path) -> List[CopyTarget]:
+    def gather_copy_assets(self) -> List[CopyTarget]:
         """Creates :class:`CopyTarget` instances representing simple
         copyable targets.
 
-        :param pathlib.Path cwd: Path to the directory from which Volt is run.
         :returns: A list of created copy targets.
         :rtype: list
 
         """
         items = []
-        src_rel = calc_relpath(self.config.assets_src, cwd)
-        dest_rel = calc_relpath(self.config.site_dest, cwd)
+        dest_rel = self.site_dest_rel
+        src_rel = calc_relpath(self.config.assets_src, self.cwd)
         src_rel_len = len(src_rel.parts)
 
         entries = list(os.scandir(src_rel))
@@ -259,26 +263,26 @@ class Site(object):
 
         return items
 
-    def build(self, cwd: Path) -> Result[None]:
+    def build(self) -> Result[None]:
         """Builds the static site in the destination directory.
 
-        :param pathlib.Path cwd: Path to the directory from which Volt is run.
         :returns: Nothing when site building completes successfully or an error
             message indicating failure.
         :rtype: :class:`Result`
 
         """
-        rpages = self.create_pages(cwd)
+        rpages = self.create_pages()
         if rpages.is_failure:
             return rpages
 
-        cassets = self.gather_copy_assets(cwd)
+        cassets = self.gather_copy_assets()
 
-        plan = SitePlan(calc_relpath(self.config.site_dest, cwd))
+        plan = self.plan
 
         for target in chain(rpages.data, cassets):
             plan.add_target(target)
 
+        cwd = self.cwd
         for dn in plan.dnodes():
             cwd.joinpath(dn.path).mkdir(parents=True, exist_ok=True)
 
