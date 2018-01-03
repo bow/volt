@@ -10,6 +10,7 @@
 import re
 from datetime import datetime
 from pathlib import Path
+from typing import Callable
 
 import yaml
 from slugify import slugify
@@ -32,6 +33,46 @@ _RE_WITH_FM = re.compile(r"\n---\n+")
 _RE_TAGS = re.compile(r",\s+")
 
 
+def validate_metadata(value: dict) -> Result[dict]:
+    """Validates the given metadata.
+
+    :param dict value: Metadata to validate.
+    :returns: The input value upon successful validation or an error message
+        when validation fails.
+    :rtype: :class:`Result`.
+
+    """
+    if not isinstance(value, dict):
+        return Result.as_failure("unit metadata must be a mapping")
+
+    # Keys whose value must be nonempty strings.
+    for strk in ("title", "slug"):
+        if strk not in value:
+            continue
+        uv = value[strk]
+        if not isinstance(uv, str) or not uv:
+            return Result.as_failure(f"unit metadata {strk!r} must be a"
+                                     " nonempty string")
+
+    # Keys whose value must be strings or lists.
+    tk = "tags"
+    if tk in value:
+        uv = value[tk]
+        if not isinstance(uv, (str, list)):
+            return Result.as_failure(f"unit metadata {tk!r} must be a string"
+                                     " or a list")
+
+    # Keys whose value must be a datetime object (relies on YAML parser).
+    dtk = "pub_time"
+    if dtk in value:
+        dto = value[dtk]
+        if not isinstance(dto, datetime):
+            return Result.as_failure(f"unit metadata {dtk!r} must be a valid"
+                                     " iso8601 timestamp")
+
+    return Result.as_success(value)
+
+
 class Unit(object):
 
     """A single source of text-related content."""
@@ -39,14 +80,19 @@ class Unit(object):
     __slots__ = ("src", "config", "metadata", "raw_text")
 
     @staticmethod
-    def parse_metadata(raw: str, config: "SiteConfig",
-                       src: Path) -> Result[AttrDict]:
+    def parse_metadata(
+            raw: str, config: "SiteConfig", src: Path,
+            vfunc: Callable[[dict], Result[dict]]=
+            validate_metadata) -> Result[AttrDict]:
         """Parses the unit metadata into a mapping.
 
         :param str raw: Raw metadata ready for parsing as YAML.
         :param volt.config.SiteConfig config: Site-wide configurations.
         :param pathlib.Path src: Path to the unit from which the metadata
             was parsed.
+        :param callable vfunc: Callable for validating the parsed metadata.
+            The callable must a accept a single dict value as input and
+            return a :class:`Result`.
         :returns: The metadata as a mapping or an error message indicating
             failure.
         :rtype: :class:`Result`
@@ -56,6 +102,10 @@ class Unit(object):
             meta = yaml.load(raw, Loader=Loader) or {}
         except (ScannerError, ParserError) as e:
             return Result.as_failure(f"malformed metadata: {src}")
+
+        vres = vfunc(meta)
+        if vres.is_failure:
+            return vres
 
         # Ensure tags is a list of strings.
         tags = meta.get("tags", [])
@@ -67,13 +117,7 @@ class Unit(object):
         # Transform pub_time to timezone-aware datetime object.
         if "pub_time" in meta:
             dto = meta["pub_time"]
-            if not isinstance(dto, datetime):
-                return Result.as_failure("malformed 'pub_time' metadata:"
-                                         f"{src}")
-
             if config.timezone is not None and dto.tzinfo is None:
-                print(config.timezone)
-                print(dto.tzinfo)
                 meta["pub_time"] = config.timezone.localize(dto)
 
         # Ensure title is supplied.

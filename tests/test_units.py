@@ -13,7 +13,32 @@ import pytest
 import pytz
 
 from volt.config import SiteConfig
-from volt.units import Unit
+from volt.units import validate_metadata, Unit
+
+
+def test_validate_metadata_ok():
+    pass
+
+
+@pytest.mark.parametrize("meta, exp_msg", [
+    *[(v, "unit metadata must be a mapping")
+      for v in (12, 3.5, True, "yes", [])],
+
+    *[({key: value}, f"unit metadata {key!r} must be a nonempty string")
+      for key in ("title", "slug")
+      for value in (12, 3.5, True, "", [], {})],
+
+    *[({"tags": value}, "unit metadata 'tags' must be a string or a list")
+      for value in (12, 3.5, True, {})],
+
+    *[({"pub_time": value},
+       "unit metadata 'pub_time' must be a valid iso8601 timestamp")
+      for value in (12, 3.5, True, "yes", [], {})],
+])
+def test_validate_metadata_fail(meta, exp_msg):
+    vres = validate_metadata(meta)
+    assert vres.is_failure
+    assert vres.errs == exp_msg
 
 
 @pytest.mark.parametrize("raw, fname, exp", [
@@ -90,15 +115,6 @@ def test_unit_parse_metadata_fail():
     assert ures.errs.startswith("malformed metadata")
 
 
-def test_unit_parse_metadata_fail_date():
-    cwd = Path("/fs")
-    ures = Unit.parse_metadata(
-        "---\npub_time: 2018-06-03Z+01:02:03", SiteConfig(cwd),
-        cwd.joinpath("test.md"))
-    assert ures.is_failure, ures
-    assert ures.errs.startswith("malformed 'pub_time' metadata")
-
-
 def test_unit_load_fail_read_bytes():
     src = create_autospec(Path, spec_set=True)
     src.read_bytes.side_effect = OSError
@@ -139,4 +155,5 @@ def test_unit_load_fail_parse_metadata():
         "---\ntitle: foo\npub_time: 2018-06-12T5 \n---\n\nFoo".encode("utf-8")
     ures = Unit.load(src, SiteConfig(Path("/fs")))
     assert ures.is_failure, ures
-    assert ures.errs.startswith("malformed 'pub_time'")
+    assert ures.errs.startswith("unit metadata 'pub_time' must be a valid"
+                                " iso8601 timestamp")
