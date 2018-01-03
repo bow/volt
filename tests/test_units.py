@@ -45,31 +45,29 @@ def test_unit_parse_metadata_ok_pub_time_no_config_tz():
 
 def test_unit_parse_metadata_ok_pub_time_with_config_tz():
     cwd = Path("/fs")
+    tz = pytz.timezone("Africa/Tripoli")
     ures = Unit.parse_metadata(
-        "---\npub_time: 2018-06-03 01:02:03",
-        SiteConfig(cwd, timezone=pytz.timezone("Africa/Tripoli")),
+        "---\npub_time: 2018-06-03 01:02:03", SiteConfig(cwd, timezone=tz),
         cwd.joinpath("test.md"))
     assert ures.is_success, ures
     assert ures.data == {
         "title": "test",
         "slug": "test",
-        "pub_time": dt(2018, 6, 3, 1, 2, 3).astimezone(
-            pytz.timezone("Africa/Tripoli")),
+        "pub_time": tz.localize(dt(2018, 6, 3, 1, 2, 3)),
     }
 
 
 def test_unit_parse_metadata_ok_pub_time_with_config_and_unit_tz():
     cwd = Path("/fs")
+    tz = pytz.timezone("Africa/Tripoli")
     ures = Unit.parse_metadata(
         "---\npub_time: 2018-06-03 21:02:03+05:00",
-        SiteConfig(cwd, timezone=pytz.timezone("Africa/Tripoli")),
-        cwd.joinpath("test.md"))
+        SiteConfig(cwd, timezone=tz), cwd.joinpath("test.md"))
     assert ures.is_success, ures
     assert ures.data == {
         "title": "test",
         "slug": "test",
-        "pub_time": dt(2018, 6, 3, 16, 2, 3).astimezone(
-            pytz.timezone("Africa/Tripoli")),
+        "pub_time": tz.localize(dt(2018, 6, 3, 16, 2, 3)),
     }
 
 
