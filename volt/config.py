@@ -244,7 +244,7 @@ class SiteConfig(AttrDict):
 
     """Container for site-level configuration values."""
 
-    def __init__(self, pwd: Path,
+    def __init__(self, cwd: Path, pwd: Path,
                  user_site_conf: Optional[RawConfig]=None,
                  user_sections_conf: Optional[RawConfig]=None,
                  contents_src: str="contents",
@@ -261,7 +261,8 @@ class SiteConfig(AttrDict):
         If a non-None ``user_site_conf`` and/or ``user_sections_conf`` are
         given, this method will consume their contents.
 
-        :param pathlib.Path pwd: Path to the project working directory.
+        :param pathlib.Path cwd: Path to the invocation directory.
+        :param pathlib.Path pwd: Path to the project directory.
         :param user_site_conf: Dictionary containing user-supplied site
             configuration values.
         :type user_site_conf: dict or None
@@ -318,18 +319,20 @@ class SiteConfig(AttrDict):
             self[k] = user_site_conf.pop(k)
 
         self.pwd = pwd
+        self.cwd = cwd.resolve()
         self.sections = {name: SectionConfig(name, self, **sc)
                          for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
     def from_user_config(
-            cls, pwd: Path, user_conf: RawConfig,
+            cls, cwd: Path, pwd: Path, user_conf: RawConfig,
             site_vfunc: Callable[[RawConfig], Result[RawConfig]]=
             validate_site_conf,
             section_vfunc: Callable[[RawConfig], Result[RawConfig]]=
             validate_section_conf) -> "Result[SiteConfig]":
         """Creates a ``SiteConfig`` from the given user-supplied config.
 
+        :param pathlib.Path cwd: Path to invocation directory.
         :param pathlib.Path pwd: Path to project directory.
         :param dict user_conf: Raw user config.
         :param callable site_vfunc: Callable for validating the ``site``
@@ -369,16 +372,17 @@ class SiteConfig(AttrDict):
             if svres.is_failure:
                 return svres
 
-        conf = cls(pwd, user_site_conf=site_conf,
+        conf = cls(cwd, pwd, user_site_conf=site_conf,
                    user_sections_conf=sections_conf)
 
         return Result.as_success(conf)
 
     @classmethod
-    def from_toml(cls, pwd: Path,
+    def from_toml(cls, cwd: Path, pwd: Path,
                   toml_fname: str=CONFIG_FNAME) -> "Result[SiteConfig]":
         """Creates a site configuration from a Volt TOML file.
 
+        :param pathlib.Path cwd: Path to the invocation directory.
         :param pathlib.Path pwd: Path to the project working directory.
         :param str toml_fname: Name of TOML file containing the configuration
             values.
@@ -393,7 +397,7 @@ class SiteConfig(AttrDict):
                 # TODO: display traceback depending on log level
                 return Result.as_failure(f"cannot parse config: {e.args[0]}")
 
-        return cls.from_user_config(pwd, user_conf)
+        return cls.from_user_config(cwd, pwd, user_conf)
 
 
 class SectionConfig(AttrDict):

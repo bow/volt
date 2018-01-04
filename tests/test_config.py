@@ -195,12 +195,12 @@ def test_validate_section_unit_order_fail(name, uu_config, exp_msg):
 
 def test_site_config_from_toml_ok(tmpdir):
     with tmpdir.as_cwd():
-        pwd = Path(str(tmpdir))
+        cwd = pwd = Path(str(tmpdir))
         cf = tmpdir.join(conf.CONFIG_FNAME)
         cf.write("[site]\n", mode="a")
         cf.write('name = "ts"\n', mode="a")
         cf.write('url = "https://test.com"', mode="a")
-        cres = conf.SiteConfig.from_toml(pwd, str(cf))
+        cres = conf.SiteConfig.from_toml(cwd, pwd, str(cf))
 
     assert cres.is_success, cres
     sc = cres.data
@@ -217,10 +217,10 @@ def test_site_config_from_toml_ok(tmpdir):
 
 def test_site_config_from_toml_fail(tmpdir):
     with tmpdir.as_cwd():
-        pwd = Path(str(tmpdir))
+        cwd = pwd = Path(str(tmpdir))
         cf = tmpdir.join(conf.CONFIG_FNAME)
         cf.write("[site][\n")
-        cres = conf.SiteConfig.from_toml(pwd, str(cf))
+        cres = conf.SiteConfig.from_toml(cwd, pwd, str(cf))
 
     assert cres.is_failure
     assert cres.errs.startswith("cannot parse config: ")
@@ -236,14 +236,15 @@ def test_site_config_from_user_config_ok():
         },
         "section": {"pg": {}},
     }
-    pwd = Path("/fs")
-    scres = conf.SiteConfig.from_user_config(pwd, user_config)
+    cwd = pwd = Path("/fs")
+    scres = conf.SiteConfig.from_user_config(cwd, pwd, user_config)
     assert scres.is_success, scres
     exp = {
         "name": "",
         "url": "",
         "timezone": pytz.timezone("Europe/Amsterdam"),
         "pwd": pwd,
+        "cwd": cwd,
         "contents_src": pwd.joinpath("contents"),
         "templates_src": pwd.joinpath("templates"),
         "assets_src": pwd.joinpath("assets"),
@@ -283,7 +284,8 @@ def test_site_config_from_user_config_ok():
     ({"site": {}, "section": {"foo": True}}, None),
 ])
 def test_site_config_from_user_config_fail(config, exp_msg):
-    robs = conf.SiteConfig.from_user_config(Path("/fs"), config)
+    cwd = pwd = Path("/fs")
+    robs = conf.SiteConfig.from_user_config(cwd, pwd, config)
     assert robs.is_failure, robs
     if exp_msg is not None:
         assert robs.errs == exp_msg
@@ -295,8 +297,8 @@ def test_site_config_from_user_config_fail(config, exp_msg):
     (None, "/foo"),
 ])
 def test_section_config_ok(path, exp_path):
-    cwd = Path("/fs")
-    site_config = conf.SiteConfig(cwd)
+    cwd = pwd = Path("/fs")
+    site_config = conf.SiteConfig(cwd, pwd)
     kwargs = {
         "custom": "value",
         "path": path,

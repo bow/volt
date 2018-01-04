@@ -30,13 +30,14 @@ class Session(object):
     """Commands for a single CLI session."""
 
     @staticmethod
-    def do_init(pwd: Path, name: str, url: str, timezone: str, force: bool,
-                config_fname: str=CONFIG_FNAME) -> Result[None]:
+    def do_init(cwd: Path, pwd: Path, name: str, url: str, timezone: str,
+                force: bool, config_fname: str=CONFIG_FNAME) -> Result[None]:
         """Initializes a new project.
 
         This function may overwrite any preexisting files and or directories
         in the target working directory.
 
+        :param pathlib.path cwd: Path to the invocation directory.
         :param pathlib.path pwd: Path to the project directory to be created.
         :param str name: Name of the static site, to be put inside the
             generated config file.
@@ -67,7 +68,7 @@ class Session(object):
             return rtz
 
         # Bootstrap directories.
-        bootstrap_conf = SiteConfig(pwd, timezone=rtz.data)
+        bootstrap_conf = SiteConfig(cwd, pwd, timezone=rtz.data)
         try:
             for dk in ("contents_src", "templates_src", "assets_src"):
                 bootstrap_conf[dk].mkdir(parents=True, exist_ok=True)
@@ -110,7 +111,7 @@ class Session(object):
         if rpwd.is_failure:
             return rpwd
 
-        rsc = SiteConfig.from_toml(rpwd.data, CONFIG_FNAME)
+        rsc = SiteConfig.from_toml(cwd, rpwd.data, CONFIG_FNAME)
         if rsc.is_failure:
             return rsc
 
@@ -120,7 +121,7 @@ class Session(object):
                 # TODO: wipe and write only the necessary ones
                 shutil.rmtree(str(site_config.site_dest))
 
-        site = Site(site_config, cwd)
+        site = Site(site_config)
         rbuild = site.build()
         if rbuild.is_failure:
             return rbuild
@@ -176,12 +177,12 @@ def init(ctx, project_dir: str, name: Optional[str], url: Optional[str],
     initialization in the current directory.
 
     """
-    pwd = Path.cwd() if project_dir is None else Path.cwd().joinpath(
-        project_dir)
+    cwd = Path.cwd()
+    pwd = cwd if project_dir is None else cwd.joinpath(project_dir)
     name = path.basename(project_dir) \
         if (not name and project_dir is not None) else name
 
-    _, errs = Session.do_init(pwd, name, url, timezone, force)
+    _, errs = Session.do_init(cwd, pwd, name, url, timezone, force)
     if errs:
         raise click.UsageError(errs)
     # TODO: add message for successful init

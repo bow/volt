@@ -162,24 +162,22 @@ class Site(object):
 
     """The static site."""
 
-    def __init__(self, config: SiteConfig, cwd: Path,
+    def __init__(self, config: SiteConfig,
                  template_env: Optional[Environment]=None) -> None:
         """Initializes the static site for building.
 
         :param volt.config.SiteConfig config: The validated site configuration.
-        :param pathlib.Path cwd: Path to the directory from which Volt is run.
         :param template_env: The jinja2 template environment. If set to
             ``None``, a default environment will be created.
         :type template_env: jinja2.Environment or None
 
         """
         self.config = config
-        self.cwd = cwd
         self.template_env = template_env or Environment(
             loader=FileSystemLoader(str(config.templates_src)),
             auto_reload=False, enable_async=True)
 
-        dest_rel = calc_relpath(config.site_dest, cwd)
+        dest_rel = calc_relpath(config.site_dest, config.cwd)
         self.site_dest_rel = dest_rel
         self.plan = SitePlan(dest_rel)
 
@@ -248,7 +246,7 @@ class Site(object):
         """
         items = []
         dest_rel = self.site_dest_rel
-        src_rel = calc_relpath(self.config.assets_src, self.cwd)
+        src_rel = calc_relpath(self.config.assets_src, self.config.cwd)
         src_rel_len = len(src_rel.parts)
 
         entries = list(os.scandir(src_rel))
@@ -282,7 +280,7 @@ class Site(object):
         for target in chain(rpages.data, cassets):
             plan.add_target(target)
 
-        cwd = self.cwd
+        cwd = self.config.cwd
         for dn in plan.dnodes():
             cwd.joinpath(dn.path).mkdir(parents=True, exist_ok=True)
 

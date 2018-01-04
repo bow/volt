@@ -142,7 +142,7 @@ def test_site_gather_units_ok(files):
             "dirs": ["contents"],
             "files": files
         })
-        s = site.Site(SiteConfig(fs), fs)
+        s = site.Site(SiteConfig(fs, fs))
 
         gres = s.gather_units()
         assert gres.is_success
@@ -163,7 +163,7 @@ def test_site_gather_units_fail():
                    for name in ["c1", "c2", "c3"]}
             }
         })
-        s = site.Site(SiteConfig(fs), fs)
+        s = site.Site(SiteConfig(fs, fs))
 
         gres = s.gather_units()
         assert gres.is_failure
@@ -181,7 +181,7 @@ def test_site_create_pages_ok():
                 "templates/page.html": "{{ unit.raw_text }}"
             }
         })
-        s = site.Site(SiteConfig(fs), fs)
+        s = site.Site(SiteConfig(fs, fs))
 
         cres = s.create_pages()
         assert cres.is_success
@@ -201,7 +201,7 @@ def test_site_create_pages_fail_gather_units():
                 "templates/page.html": "{{ unit.raw_text }}"
             }
         })
-        s = site.Site(SiteConfig(fs), fs)
+        s = site.Site(SiteConfig(fs, fs))
 
         cres = s.create_pages()
         assert cres.is_failure
@@ -218,7 +218,7 @@ def test_site_create_pages_fail_no_template():
                 "contents/ok.md": f"---\ntitle: ok\n---\n\nFoo",
             }
         })
-        s = site.Site(SiteConfig(fs), fs)
+        s = site.Site(SiteConfig(fs, fs))
 
         cres = s.create_pages()
         assert cres.is_failure
@@ -236,7 +236,7 @@ def test_site_create_pages_fail_template_error():
                 "templates/page.html": "{{ unit.raw_text"
             }
         })
-        s = site.Site(SiteConfig(fs), fs)
+        s = site.Site(SiteConfig(fs, fs))
 
         cres = s.create_pages()
         assert cres.is_failure
@@ -254,7 +254,7 @@ def test_site_create_pages_fail_page_error():
                 "templates/page.html": "{{ foo.bzzt }}"
             }
         })
-        s = site.Site(SiteConfig(fs), fs)
+        s = site.Site(SiteConfig(fs, fs))
 
         cres = s.create_pages()
         assert cres.is_failure
