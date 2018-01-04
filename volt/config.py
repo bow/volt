@@ -375,7 +375,8 @@ class SiteConfig(AttrDict):
         return Result.as_success(conf)
 
     @classmethod
-    def from_toml(cls, pwd, toml_fname=CONFIG_FNAME) -> "Result[SiteConfig]":
+    def from_toml(cls, pwd: Path,
+                  toml_fname: str=CONFIG_FNAME) -> "Result[SiteConfig]":
         """Creates a site configuration from a Volt TOML file.
 
         :param pathlib.Path pwd: Path to the project working directory.
