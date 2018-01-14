@@ -386,7 +386,8 @@ class SiteConfig(AttrDict):
         :param pathlib.Path pwd: Path to the project working directory.
         :param str toml_fname: Name of TOML file containing the configuration
             values.
-        :returns: A dictionary or an error message if it cannot be created.
+        :returns: A site config instance or an error message indicating
+            failure.
         :rtype: :class:`Result`
 
         """
