@@ -290,7 +290,6 @@ class SiteConfig(AttrDict):
         user_site_conf = AttrDict(user_site_conf or {})
 
         # Resolve path-related configs with current work path.
-        # TODO: Move this to .from_toml?
         pca_map = {
             "contents_src": contents_src,
             "templates_src": templates_src,
@@ -325,7 +324,7 @@ class SiteConfig(AttrDict):
                          for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
-    def from_user_config(
+    def from_raw_config(
             cls, cwd: Path, pwd: Path, user_conf: RawConfig,
             site_vfunc: Callable[[RawConfig], Result[RawConfig]]=
             validate_site_conf,
@@ -398,7 +397,7 @@ class SiteConfig(AttrDict):
                 # TODO: display traceback depending on log level
                 return Result.as_failure(f"cannot parse config: {e.args[0]}")
 
-        return cls.from_user_config(cwd, pwd, user_conf)
+        return cls.from_raw_config(cwd, pwd, user_conf)
 
 
 class SectionConfig(AttrDict):

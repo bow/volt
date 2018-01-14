@@ -227,7 +227,7 @@ def test_site_config_from_toml_fail(tmpdir):
     assert cres.errs.startswith("cannot parse config: ")
 
 
-def test_site_config_from_user_config_ok():
+def test_site_config_from_raw_config_ok():
     user_config = {
         "site": {
             "name": "",
@@ -238,7 +238,7 @@ def test_site_config_from_user_config_ok():
         "section": {"pg": {}},
     }
     cwd = pwd = Path("/fs")
-    scres = conf.SiteConfig.from_user_config(cwd, pwd, user_config)
+    scres = conf.SiteConfig.from_raw_config(cwd, pwd, user_config)
     assert scres.is_success, scres
     exp = {
         "name": "",
@@ -284,9 +284,9 @@ def test_site_config_from_user_config_ok():
     ({"site": {"unit": "bzzt"}}, None),
     ({"site": {}, "section": {"foo": True}}, None),
 ])
-def test_site_config_from_user_config_fail(config, exp_msg):
+def test_site_config_from_raw_config_fail(config, exp_msg):
     cwd = pwd = Path("/fs")
-    robs = conf.SiteConfig.from_user_config(cwd, pwd, config)
+    robs = conf.SiteConfig.from_raw_config(cwd, pwd, config)
     assert robs.is_failure, robs
     if exp_msg is not None:
         assert robs.errs == exp_msg
