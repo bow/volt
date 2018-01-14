@@ -116,7 +116,7 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
 
     # Keys whose values must be nonempty strings.
     for strk in ("path", "engine", "unit", "unit_template",
-                 "unit_path_pattern", "pagination_template"):
+                 "pagination_template"):
         if strk not in value:
             continue
         uv = value[strk]
@@ -125,8 +125,9 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
                                      " nonempty string")
 
     # Keys whose values must be strings representing relative paths.
-    pathk = "contents_src"
-    if pathk in value:
+    for pathk in ("contents_src", "unit_path_pattern"):
+        if pathk not in value:
+            continue
         uv = value[pathk]
         if not isinstance(uv, str) or not uv:
             return Result.as_failure(f"config {pathk!r} {infix} must be a"

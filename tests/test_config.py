@@ -99,11 +99,12 @@ def test_validate_section_conf_ok():
     *[("foo", {key: value},
        f"config {key!r} of section 'foo' must be a nonempty string")
       for key in ("path", "engine", "unit", "unit_template",
-                  "unit_path_pattern", "pagination_template", "contents_src")
+                  "pagination_template", "contents_src")
       for value in (12, 3.5, True, "", [], {})],
 
-    ("foo", {"contents_src": "/a/b"},
-     "config 'contents_src' of section 'foo' must be a relative path"),
+    *[("foo", {key: "/a/b"},
+       f"config {key!r} of section 'foo' must be a relative path")
+      for key in ("contents_src", "unit_path_pattern")],
 
     ("foo", {"paginations": {"pg": {}}},
      "config 'paginations.pg.path_pattern' of section 'foo' must be present"),
