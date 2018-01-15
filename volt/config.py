@@ -16,7 +16,7 @@ import toml
 from pytz.tzinfo import DstTzInfo
 
 from .units import Unit
-from .utils import import_mod_attr, get_tz, AttrDict, Result
+from .utils import import_mod_attr, get_tz, Result
 
 __all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 
@@ -241,7 +241,7 @@ def validate_section_unit_order(name: str, section_config: RawConfig,
     return Result.as_success((name, section_config, key))
 
 
-class SiteConfig(AttrDict):
+class SiteConfig(dict):
 
     """Container for site-level configuration values."""
 
@@ -287,7 +287,8 @@ class SiteConfig(AttrDict):
 
         """
         pwd = pwd.resolve()
-        user_site_conf = AttrDict(user_site_conf or {})
+        cwd = cwd.resolve()
+        user_site_conf = user_site_conf or {}
 
         # Resolve path-related configs with current work path.
         pca_map = {
@@ -315,13 +316,13 @@ class SiteConfig(AttrDict):
             self[confv] = user_site_conf.pop(confv, argv)
 
         # Move other custom configs.
-        for k in list(user_site_conf.keys()):
-            self[k] = user_site_conf.pop(k)
+        self.update(**user_site_conf)
 
-        self.pwd = pwd
-        self.cwd = cwd.resolve()
-        self.sections = {name: SectionConfig(name, self, **sc)
-                         for name, sc in (user_sections_conf or {}).items()}
+        # Config values that cannot be overwritten.
+        self["pwd"] = pwd
+        self["cwd"] = cwd
+        self["sections"] = {name: SectionConfig(name, self, **sc)
+                            for name, sc in (user_sections_conf or {}).items()}
 
     @classmethod
     def from_raw_config(
@@ -401,7 +402,7 @@ class SiteConfig(AttrDict):
         return cls.from_raw_config(cwd, pwd, user_conf)
 
 
-class SectionConfig(AttrDict):
+class SectionConfig(dict):
 
     """Container for section-specific configuration values."""
 
@@ -413,8 +414,8 @@ class SectionConfig(AttrDict):
             the section config exists.
 
         """
-        self.name = name
-        self.site_config = site_config
+        self["name"] = name
+        self["site_config"] = site_config
 
         # Required config values with predefined defaults.
         paginations = kwargs.pop("paginations", None) or {}
@@ -422,14 +423,14 @@ class SectionConfig(AttrDict):
         for pv in paginations.values():
             pv.setdefault("size", pagination_size)
 
-        self.paginations = paginations
-        self.pagination_size = pagination_size
-        self.unit_order = kwargs.pop("unit_order", None) or \
+        self["paginations"] = paginations
+        self["pagination_size"] = pagination_size
+        self["unit_order"] = kwargs.pop("unit_order", None) or \
             {"key": "pub_time", "reverse": True}
 
         # Required config values with site-level defaults.
         for ck in ("dot_html_url", "hide_first_pagination_idx"):
-            setattr(self, ck, kwargs.pop(ck, site_config[ck]))
+            self[ck] = kwargs.pop(ck, site_config[ck])
 
         # Required config values with name-dependent defaults.
         try:
@@ -437,22 +438,22 @@ class SectionConfig(AttrDict):
             spath = "/" + spath if not spath.startswith("/") else spath
         except KeyError:
             spath = f"/{name}"
-        self.path = spath
+        self["path"] = spath
 
         try:
             upath = urljoin(f"{spath}/", kwargs.pop("unit_path_pattern"))
         except KeyError:
             upath = f"{spath}/{{slug}}"
-        self.unit_path_pattern = upath
+        self["unit_path_pattern"] = upath
 
-        self.engine = kwargs.pop("engine", None) or \
+        self["engine"] = kwargs.pop("engine", None) or \
             f"volt.engines.{name.capitalize()}Engine"
-        self.unit = kwargs.pop("unit", None) or "volt.units.Unit"
+        self["unit"] = kwargs.pop("unit", None) or "volt.units.Unit"
 
-        self.site_dest = site_config["site_dest"].joinpath(spath[1:])
-        self.contents_src = site_config["contents_src"].joinpath(
+        self["site_dest"] = site_config["site_dest"].joinpath(spath[1:])
+        self["contents_src"] = site_config["contents_src"].joinpath(
             kwargs.pop("contents_src", None) or name)
 
         # Other user-defined engine values.
         for k, v in kwargs.items():
-            setattr(self, k, v)
+            self[k] = v

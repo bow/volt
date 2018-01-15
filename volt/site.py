@@ -174,10 +174,10 @@ class Site(object):
         """
         self.config = config
         self.template_env = template_env or Environment(
-            loader=FileSystemLoader(str(config.templates_src)),
+            loader=FileSystemLoader(str(config["templates_src"])),
             auto_reload=False, enable_async=True)
 
-        dest_rel = calc_relpath(config.site_dest, config.cwd)
+        dest_rel = calc_relpath(config["site_dest"], config['cwd'])
         self.site_dest_rel = dest_rel
         self.plan = SitePlan(dest_rel)
 
@@ -191,10 +191,10 @@ class Site(object):
 
         """
         site_config = self.config
-        unit = site_config.unit
+        unit = site_config["unit"]
 
         units = []
-        for unit_path in site_config.contents_src.glob(f"*{ext}"):
+        for unit_path in site_config["contents_src"].glob(f"*{ext}"):
             res = unit.load(unit_path, site_config)
             if res.is_failure:
                 return res
@@ -216,7 +216,7 @@ class Site(object):
             return runits
 
         conf = self.config
-        tname = conf.unit_template
+        tname = conf["unit_template"]
         try:
             template = self.template_env.get_template(tname)
         except j2exc.TemplateNotFound:
@@ -228,7 +228,7 @@ class Site(object):
         pages = []
         dest_rel = self.site_dest_rel
         for unit in runits.data:
-            dest = dest_rel.joinpath(f"{unit.metadata.slug}.html")
+            dest = dest_rel.joinpath(f"{unit.metadata['slug']}.html")
             rrend = PageTarget.from_template(unit, dest, template)
             if rrend.is_failure:
                 return rrend
@@ -246,7 +246,7 @@ class Site(object):
         """
         items = []
         dest_rel = self.site_dest_rel
-        src_rel = calc_relpath(self.config.assets_src, self.config.cwd)
+        src_rel = calc_relpath(self.config["assets_src"], self.config['cwd'])
         src_rel_len = len(src_rel.parts)
 
         entries = list(os.scandir(src_rel))
@@ -280,7 +280,7 @@ class Site(object):
         for target in chain(rpages.data, cassets):
             plan.add_target(target)
 
-        cwd = self.config.cwd
+        cwd = self.config['cwd']
         for dn in plan.dnodes():
             cwd.joinpath(dn.path).mkdir(parents=True, exist_ok=True)
 

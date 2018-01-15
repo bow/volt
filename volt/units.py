@@ -21,7 +21,7 @@ except ImportError:
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
-from .utils import AttrDict, Result
+from .utils import Result
 
 __all__ = ["Unit"]
 
@@ -83,7 +83,7 @@ class Unit(object):
     def parse_metadata(
             raw: str, config: "SiteConfig", src: Path,
             vfunc: Callable[[dict], Result[dict]]=
-            validate_metadata) -> Result[AttrDict]:
+            validate_metadata) -> Result[dict]:
         """Parses the unit metadata into a mapping.
 
         :param str raw: Raw metadata ready for parsing as YAML.
@@ -117,8 +117,8 @@ class Unit(object):
         # Transform pub_time to timezone-aware datetime object.
         if "pub_time" in meta:
             dto = meta["pub_time"]
-            if config.timezone is not None and dto.tzinfo is None:
-                meta["pub_time"] = config.timezone.localize(dto)
+            if config["timezone"] is not None and dto.tzinfo is None:
+                meta["pub_time"] = config["timezone"].localize(dto)
 
         # Ensure title is supplied.
         if "title" not in meta:
@@ -131,7 +131,7 @@ class Unit(object):
             # .. or ensure that user supplied values are slugs.
             meta["slug"] = slugify(meta["slug"])
 
-        return Result.as_success(AttrDict(meta))
+        return Result.as_success(meta)
 
     @classmethod
     def load(cls, src: Path, config: "SiteConfig",
@@ -151,18 +151,18 @@ class Unit(object):
         except OSError as e:
             return Result.as_failure(
                 "cannot load unit"
-                f"{str(src.relative_to(config.pwd))!r}: {e.strerror}")
+                f"{str(src.relative_to(config['pwd']))!r}: {e.strerror}")
 
         try:
             raw_contents = raw_bytes.decode(encoding)
         except UnicodeDecodeError:
             return Result.as_failure(
                 "cannot decode unit"
-                f" {str(src.relative_to(config.pwd))!r} using {encoding!r}")
+                f" {str(src.relative_to(config['pwd']))!r} using {encoding!r}")
         except LookupError:
             return Result.as_failure(
                 "cannot decode unit"
-                f" {str(src.relative_to(config.pwd))!r} using {encoding!r}:"
+                f" {str(src.relative_to(config['pwd']))!r} using {encoding!r}:"
                 " unknown encoding")
 
         split_contents = _RE_WITH_FM.split(raw_contents, 1)
@@ -171,7 +171,7 @@ class Unit(object):
             raw_meta, raw_text = split_contents
         except ValueError:
             return Result.as_failure(
-                f"malformed unit: {str(src.relative_to(config.pwd))!r}")
+                f"malformed unit: {str(src.relative_to(config['pwd']))!r}")
 
         rmeta = cls.parse_metadata(raw_meta, config, src)
         if rmeta.is_failure:
@@ -179,13 +179,13 @@ class Unit(object):
 
         return Result.as_success(cls(src, config, rmeta.data, raw_text))
 
-    def __init__(self, src: Path, config: "SiteConfig", metadata: AttrDict,
+    def __init__(self, src: Path, config: "SiteConfig", metadata: dict,
                  raw_text: str) -> None:
         """Initializes the unit.
 
         :param pathlib.Path src: Path to the unit source.
         :param volt.config.SiteConfig config: Site-wide configurations.
-        :param volt.utils.AttrDict metadata: Unit metadata.
+        :param dict metadata: Unit metadata.
         :param str raw_text: Raw text contents of the unit.
 
         """

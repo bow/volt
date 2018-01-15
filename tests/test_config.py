@@ -205,15 +205,16 @@ def test_site_config_from_toml_ok(tmpdir):
 
     assert cres.is_success, cres
     sc = cres.data
-    assert sc.pwd == pwd
-    assert sc.contents_src == pwd.joinpath("contents")
-    assert sc.templates_src == pwd.joinpath("templates")
-    assert sc.assets_src == pwd.joinpath("assets")
-    assert sc.site_dest == pwd.joinpath("site")
-    assert sc.dot_html_url
-    assert sc.timezone is not None
-    assert sc.name == "ts"
-    assert sc.url == "https://test.com"
+    assert sc["cwd"] == cwd
+    assert sc["pwd"] == pwd
+    assert sc["contents_src"] == pwd.joinpath("contents")
+    assert sc["templates_src"] == pwd.joinpath("templates")
+    assert sc["assets_src"] == pwd.joinpath("assets")
+    assert sc["site_dest"] == pwd.joinpath("site")
+    assert sc["dot_html_url"]
+    assert sc["timezone"] is not None
+    assert sc["name"] == "ts"
+    assert sc["url"] == "https://test.com"
 
 
 def test_site_config_from_toml_fail(tmpdir):

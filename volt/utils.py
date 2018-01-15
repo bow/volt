@@ -20,28 +20,6 @@ import tzlocal
 from pytz.tzinfo import DstTzInfo
 
 
-class AttrDict(dict):
-
-    """Dictionary whose keys can be accessed as attributes."""
-
-    def __getattr__(self, attr):
-        try:
-            return self[attr]
-        except KeyError as e:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute"
-                                 f" {attr!r}")
-
-    def __setattr__(self, attr, value):
-        self[attr] = value
-
-    def __delattr__(self, attr):
-        try:
-            del self[attr]
-        except KeyError as e:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute"
-                                 f" {attr!r}")
-
-
 class Mark(object):
 
     """Helper class for marking a :class:`Result` attribute that should be

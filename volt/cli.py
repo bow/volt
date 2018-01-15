@@ -119,7 +119,7 @@ class Session(object):
         with suppress(FileNotFoundError):
             if clean:
                 # TODO: wipe and write only the necessary ones
-                shutil.rmtree(str(site_config.site_dest))
+                shutil.rmtree(str(site_config["site_dest"]))
 
         site = Site(site_config)
         rbuild = site.build()
