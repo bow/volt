@@ -467,9 +467,9 @@ class SectionConfig(ChainMap):
         :rtype: :class:`Result`
 
         """
-        vres = validate_section_conf(name, user_conf)
-        if vres.is_failure:
-            return vres
+        vures = validate_section_conf(name, user_conf)
+        if vures.is_failure:
+            return vures
 
         default_conf = {
             "paginations": {},
@@ -478,17 +478,32 @@ class SectionConfig(ChainMap):
             "unit": "volt.units.Unit",
             "path": f"/{name}",
             "contents_src": f"{name}",
+            "engine": "volt.engines.BlogEngine",
             # Keys whose default values depend on other keys' values.
             "unit_path_pattern": None,
         }
 
-        # TODO: Load engines here and validate its default config.
-        eng_conf = {}
+        resolved = {}
 
         def resolve(key):
             return user_conf.pop(key, default_conf[key])
 
-        resolved = {}
+        eng_name = resolve("engine")
+        reng = import_mod_attr(eng_name)
+        if reng.is_failure:
+            return reng
+        eng = reng.data
+
+        try:
+            eng_conf = eng.default_config()
+        except (AttributeError, TypeError):
+            # AttributeError: when eng is not an Engine subclass.
+            # TypeError: when eng defines default_config as an instance method.
+            return Result.as_failure(
+                f"cannot load default config of {eng_name}")
+        veres = validate_section_conf(name, eng_conf)
+        if veres.is_failure:
+            return veres
 
         # Required config values with predefined defaults.
         paginations = resolve("paginations")
@@ -515,6 +530,7 @@ class SectionConfig(ChainMap):
         resolved.update(**user_conf)
 
         # # Values that cannot be overwritten.
+        resolved["engine"] = eng
         resolved["site_dest"] = site_conf["site_dest"].joinpath(path[1:])
 
         conf = cls(name, resolved, eng_conf, site_conf)
