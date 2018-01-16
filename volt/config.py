@@ -247,7 +247,6 @@ class SiteConfig(dict):
 
     def __init__(self, cwd: Path, pwd: Path,
                  user_site_conf: Optional[RawConfig]=None,
-                 user_sections_conf: Optional[RawConfig]=None,
                  contents_src: str="contents",
                  templates_src: str="templates",
                  assets_src: str="assets",
@@ -267,9 +266,6 @@ class SiteConfig(dict):
         :param user_site_conf: Dictionary containing user-supplied site
             configuration values.
         :type user_site_conf: dict or None
-        :param user_sections_conf: Dictionary containing user-supplied section
-            configuration values, keyed by the section name.
-        :type user_sections_conf: dict or None
         :param str contents_src: Base directory name for content lookup.
         :param str templates_src: Base directory name for template lookup.
         :param str assets_src: Base directory name for assets lookup.
@@ -321,8 +317,19 @@ class SiteConfig(dict):
         # Config values that cannot be overwritten.
         self["pwd"] = pwd
         self["cwd"] = cwd
-        self["sections"] = {name: SectionConfig(name, self, **sc)
-                            for name, sc in (user_sections_conf or {}).items()}
+        self["sections"] = {}
+
+    def add_section(self, name: str, section_conf: RawConfig) -> None:
+        """Adds the given section config to the site config.
+
+        :param str name: Section name of the config.
+        :param dict conf: Section config to add.
+        :returns: None or an error message indicating failure.
+        :rtype: :class:`Result`
+
+        """
+        sc = SectionConfig(name, self, **section_conf)
+        self["sections"][name] = sc
 
     @classmethod
     def from_raw_config(
@@ -367,14 +374,14 @@ class SiteConfig(dict):
                 return rucls
             site_conf["unit"] = rucls.data
 
+        conf = cls(cwd, pwd, user_site_conf=site_conf)
+
         sections_conf = user_conf.pop("section", {})
         for name, sc in sections_conf.items():
             svres = section_vfunc(name, sc)
             if svres.is_failure:
                 return svres
-
-        conf = cls(cwd, pwd, user_site_conf=site_conf,
-                   user_sections_conf=sections_conf)
+            conf.add_section(name, sc)
 
         return Result.as_success(conf)
 
