@@ -240,8 +240,8 @@ def test_site_config_from_raw_config_ok():
     }
     cwd = pwd = Path("/fs")
     scres = conf.SiteConfig.from_raw_config(cwd, pwd, user_config)
-    assert scres.is_success, scres
-    exp = {
+    assert scres.is_success, scres.errs
+    exp_site = {
         "name": "",
         "url": "",
         "timezone": pytz.timezone("Europe/Amsterdam"),
@@ -255,27 +255,34 @@ def test_site_config_from_raw_config_ok():
         "hide_first_pagination_idx": True,
         "unit_template": "page.html",
         "sections": {
-            "pg": {
-                "name": "pg",
-                "paginations": {},
-                "pagination_size": 10,
-                "unit_order": {"key": "pub_time", "reverse": True},
-                "dot_html_url": True,
-                "hide_first_pagination_idx": True,
-                "path": "/pg",
-                "unit_path_pattern": "/pg/{slug}",
-                "engine": "volt.engines.PgEngine",
-                "unit": "volt.units.Unit",
-                "site_dest": pwd.joinpath("site", "pg"),
-                "contents_src": pwd.joinpath("contents", "pg"),
-            }
         }
+    }
+    exp_section = {
+        "name": "pg",
+        "paginations": {},
+        "pagination_size": 10,
+        "unit_order": {"key": "pub_time", "reverse": True},
+        "dot_html_url": True,
+        "hide_first_pagination_idx": True,
+        "path": "/pg",
+        "unit_path_pattern": "/pg/{slug}",
+        "site_dest": pwd.joinpath("site", "pg"),
+        "contents_src": pwd.joinpath("contents", "pg"),
+        # Values that should be present in site config.
+        "dot_html_url": True,
+        "hide_first_pagination_idx": True,
     }
     # Because 'unit' is overwritten by the actual class.
     assert not isinstance(scres.data.pop("unit", ""), str)
     # Because 'site_config' shows up as a recursion.
-    assert scres.data["sections"]["pg"].pop("site_config", None) is not None
-    assert scres.data == exp
+    sec = scres.data["sections"].pop("pg")
+
+    assert scres.data == exp_site
+
+    assert not isinstance(sec.pop("unit", ""), str)
+    for key, value in exp_section.items():
+        assert key in sec, key
+        assert sec[key] == value, value
 
 
 @pytest.mark.parametrize("config, exp_msg", [
@@ -301,17 +308,19 @@ def test_site_config_from_raw_config_fail(config, exp_msg):
 def test_section_config_ok(path, exp_path):
     cwd = pwd = Path("/fs")
     site_config = conf.SiteConfig(cwd, pwd)
-    kwargs = {
+    raw_section_config = {
         "custom": "value",
         "path": path,
         "paginations": {"pg": {"path_pattern": "{idx}"}}
     }
     if path is None:
-        kwargs.pop("path")
-    section_config = conf.SectionConfig("foo", site_config, **kwargs)
-    assert section_config == {
+        raw_section_config.pop("path")
+    scres = conf.SectionConfig.from_raw_configs(
+        "foo", raw_section_config, site_config)
+    assert scres.is_success, scres.errs
+    section_config = scres.data
+    exp_section = {
         "name": "foo",
-        "site_config": site_config,
         "paginations": {"pg": {"path_pattern": "{idx}", "size": 10}},
         "pagination_size": 10,
         "unit_order": {"key": "pub_time", "reverse": True},
@@ -319,9 +328,14 @@ def test_section_config_ok(path, exp_path):
         "hide_first_pagination_idx": True,
         "path": exp_path,
         "unit_path_pattern": "/foo/{slug}",
-        "engine": "volt.engines.FooEngine",
         "contents_src": cwd.joinpath("contents", "foo"),
         "site_dest": cwd.joinpath("site", "foo"),
-        "unit": "volt.units.Unit",
+        # Values that should be present in site config.
+        "dot_html_url": True,
+        "hide_first_pagination_idx": True,
+        # Arbitrary key-value pairs set before.
         "custom": "value",
     }
+    for key, value in exp_section.items():
+        assert key in section_config, key
+        assert section_config[key] == value, value

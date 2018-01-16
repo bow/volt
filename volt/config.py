@@ -8,6 +8,7 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import os
+from collections import ChainMap
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 from urllib.parse import urljoin as urljoin
@@ -319,8 +320,9 @@ class SiteConfig(dict):
         self["cwd"] = cwd
         self["sections"] = {}
 
-    def add_section(self, name: str, section_conf: RawConfig) -> None:
-        """Adds the given section config to the site config.
+    def add_section(self, name: str, section_conf: RawConfig) -> Result[None]:
+        """Adds the given section config to the site config after loading the
+        relevant engine.
 
         :param str name: Section name of the config.
         :param dict conf: Section config to add.
@@ -328,8 +330,11 @@ class SiteConfig(dict):
         :rtype: :class:`Result`
 
         """
-        sc = SectionConfig(name, self, **section_conf)
-        self["sections"][name] = sc
+        rsc = SectionConfig.from_raw_configs(name, section_conf, self)
+        if rsc.is_failure:
+            return rsc
+        self["sections"][name] = rsc.data
+        return Result.as_success(None)
 
     @classmethod
     def from_raw_config(
@@ -381,7 +386,9 @@ class SiteConfig(dict):
             svres = section_vfunc(name, sc)
             if svres.is_failure:
                 return svres
-            conf.add_section(name, sc)
+            ares = conf.add_section(name, sc)
+            if ares.is_failure:
+                return ares
 
         return Result.as_success(conf)
 
@@ -409,58 +416,112 @@ class SiteConfig(dict):
         return cls.from_raw_config(cwd, pwd, user_conf)
 
 
-class SectionConfig(dict):
+class SectionConfig(ChainMap):
 
     """Container for section-specific configuration values."""
 
-    def __init__(self, name: str, site_config: SiteConfig, **kwargs) -> None:
+    def __init__(self, name: str, user_conf: RawConfig, eng_conf: RawConfig,
+                 site_conf: SiteConfig) -> None:
         """Initializes a section-level configuration.
 
+        This method should rarely (if ever) be called by third parties.
+        Instead, use :classmethod:`SectionConfig.from_raw_configs` to
+        create instances of section configs.
+
+        In general, section configuration have the following resolution order
+        (sorted by precedence, from highest to lowest):
+
+            * User-supplied values, given as ``user_section_conf``.
+            * Engine-default values, given as the ``.default_config()`` static
+              method of the given ``Engine``.
+            * Site config values.
+
+        It is assumed that any overriding values have the same type as the
+        values they override. Validations should be done prior to calling this
+        method.
+
         :param str name: Name of the section.
+        :param dict user_conf: Validated user config.
+        :param dict eng_conf: Validated engine-defined config defaults.
         :param volt.config.SiteConfig site_config: The site config in which
             the section config exists.
 
         """
+        super().__init__(user_conf, eng_conf, site_conf)
         self["name"] = name
-        self["site_config"] = site_config
+
+    @classmethod
+    def from_raw_configs(cls, name: str, user_conf: RawConfig,
+                         site_conf: SiteConfig) -> "Result[SectionConfig]":
+        """Creates a section config from the given raw configurations.
+
+        This method may mutate some or all of its input configs.
+
+        :param str name: Name of the section.
+        :param dict user_conf: Raw user config.
+         :param volt.config.SiteConfig site_config: The site config in which
+             the section config exists.
+        :param site_defaults: Keys whose value defaults to the site config.
+        :type site_defaults: iterable of string
+        :returns: A section config or an error message indicating failure.
+        :rtype: :class:`Result`
+
+        """
+        vres = validate_section_conf(name, user_conf)
+        if vres.is_failure:
+            return vres
+
+        default_conf = {
+            "paginations": {},
+            "pagination_size": 10,
+            "unit_order": {"key": "pub_time", "reverse": True},
+            "unit": "volt.units.Unit",
+            "path": f"/{name}",
+            "contents_src": f"{name}",
+            # Keys whose default values depend on other keys' values.
+            "unit_path_pattern": None,
+        }
+
+        # TODO: Load engines here and validate its default config.
+        eng_conf = {}
+
+        def resolve(key):
+            return user_conf.pop(key, default_conf[key])
+
+        resolved = {}
 
         # Required config values with predefined defaults.
-        paginations = kwargs.pop("paginations", None) or {}
-        pagination_size = kwargs.pop("pagination_size", 10)
+        paginations = resolve("paginations")
+        pagination_size = resolve("pagination_size")
         for pv in paginations.values():
             pv.setdefault("size", pagination_size)
+        resolved["paginations"] = paginations
+        resolved["pagination_size"] = pagination_size
+        resolved["unit_order"] = resolve("unit_order")
 
-        self["paginations"] = paginations
-        self["pagination_size"] = pagination_size
-        self["unit_order"] = kwargs.pop("unit_order", None) or \
-            {"key": "pub_time", "reverse": True}
-
-        # Required config values with site-level defaults.
-        for ck in ("dot_html_url", "hide_first_pagination_idx"):
-            self[ck] = kwargs.pop(ck, site_config[ck])
+        runit = import_mod_attr(resolve("unit"))
+        if runit.is_failure:
+            return runit
+        resolved["unit"] = runit.data
 
         # Required config values with name-dependent defaults.
-        try:
-            spath = kwargs.pop("path")
-            spath = "/" + spath if not spath.startswith("/") else spath
-        except KeyError:
-            spath = f"/{name}"
-        self["path"] = spath
+        path = resolve("path")
+        path = f"/{path}" if not path.startswith("/") else path
+        resolved["path"] = path
 
-        try:
-            upath = urljoin(f"{spath}/", kwargs.pop("unit_path_pattern"))
-        except KeyError:
-            upath = f"{spath}/{{slug}}"
-        self["unit_path_pattern"] = upath
+        upp = resolve("unit_path_pattern")
+        upp = f"{path}/{{slug}}" if upp is None else urljoin(f"{path}/", upp)
+        resolved["unit_path_pattern"] = upp
 
-        self["engine"] = kwargs.pop("engine", None) or \
-            f"volt.engines.{name.capitalize()}Engine"
-        self["unit"] = kwargs.pop("unit", None) or "volt.units.Unit"
+        resolved["contents_src"] = site_conf["contents_src"].joinpath(
+            resolve("contents_src"))
 
-        self["site_dest"] = site_config["site_dest"].joinpath(spath[1:])
-        self["contents_src"] = site_config["contents_src"].joinpath(
-            kwargs.pop("contents_src", None) or name)
+        # Other user-defined values.
+        resolved.update(**user_conf)
 
-        # Other user-defined engine values.
-        for k, v in kwargs.items():
-            self[k] = v
+        # # Values that cannot be overwritten.
+        resolved["site_dest"] = site_conf["site_dest"].joinpath(path[1:])
+
+        conf = cls(name, resolved, eng_conf, site_conf)
+
+        return Result.as_success(conf)
