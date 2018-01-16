@@ -68,7 +68,6 @@ def test_validate_section_conf_ok():
         "pagination_size": 10,
         "path": "/foo",
         "engine": "foo.FooEngine",
-        "unit": "foo.FooUnit",
         "unit_template": "foo.html",
         "unit_path_patten": "/foo/{slug}",
         "pagination_template": "foop.html",
@@ -234,7 +233,6 @@ def test_site_config_from_raw_config_ok():
             "name": "",
             "url": "",
             "timezone": "Europe/Amsterdam",
-            "unit": "volt.units.Unit",
         },
         "section": {"pg": {}},
     }
@@ -279,7 +277,6 @@ def test_site_config_from_raw_config_ok():
 
     assert scres.data == exp_site
 
-    assert not isinstance(sec.pop("unit", ""), str)
     for key, value in exp_section.items():
         assert key in sec, key
         assert sec[key] == value, value

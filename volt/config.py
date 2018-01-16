@@ -499,11 +499,6 @@ class SectionConfig(ChainMap):
         resolved["pagination_size"] = pagination_size
         resolved["unit_order"] = resolve("unit_order")
 
-        runit = import_mod_attr(resolve("unit"))
-        if runit.is_failure:
-            return runit
-        resolved["unit"] = runit.data
-
         # Required config values with name-dependent defaults.
         path = resolve("path")
         path = f"/{path}" if not path.startswith("/") else path
