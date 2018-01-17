@@ -81,13 +81,14 @@ class Unit(object):
 
     @staticmethod
     def parse_metadata(
-            raw: str, config: "SiteConfig", src: Path,
+            raw: str, config: "Union[SiteConfig, SectionConfig]", src: Path,
             vfunc: Callable[[dict], Result[dict]]=
             validate_metadata) -> Result[dict]:
         """Parses the unit metadata into a mapping.
 
         :param str raw: Raw metadata ready for parsing as YAML.
-        :param volt.config.SiteConfig config: Site-wide configurations.
+        :param config: Configuration values.
+        :type config: volt.config.SiteConfig or volt.config.SectionConfig.
         :param pathlib.Path src: Path to the unit from which the metadata
             was parsed.
         :param callable vfunc: Callable for validating the parsed metadata.
@@ -134,12 +135,13 @@ class Unit(object):
         return Result.as_success(meta)
 
     @classmethod
-    def load(cls, src: Path, config: "SiteConfig",
+    def load(cls, src: Path, config: "Union[SiteConfig, SectionConfig]",
              encoding: str="utf-8") -> "Result[Unit]":
         """Creates the unit by loading from the given path.
 
         :param pathlib.Path src: Path to the unit source.
-        :param volt.config.SiteConfig config: Site-wide configurations.
+        :param config: Configuration values.
+        :type config: volt.config.SiteConfig or volt.config.SectionConfig.
         :param str encoding: Name of the unit source encoding.
         :returns: An instance of the unit or an error message indicating
             failure.
@@ -179,12 +181,13 @@ class Unit(object):
 
         return Result.as_success(cls(src, config, rmeta.data, raw_text))
 
-    def __init__(self, src: Path, config: "SiteConfig", metadata: dict,
-                 raw_text: str) -> None:
+    def __init__(self, src: Path, config: "Union[SiteConfig, SectionConfig]",
+                 metadata: dict, raw_text: str) -> None:
         """Initializes the unit.
 
         :param pathlib.Path src: Path to the unit source.
-        :param volt.config.SiteConfig config: Site-wide configurations.
+        :param config: Configuration values.
+        :type config: volt.config.SiteConfig or volt.config.SectionConfig.
         :param dict metadata: Unit metadata.
         :param str raw_text: Raw text contents of the unit.
 
