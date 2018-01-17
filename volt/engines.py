@@ -11,6 +11,8 @@ from typing import Any, Dict
 
 from jinja2 import Environment
 
+from .units import Unit
+
 __all__ = ["BlogEngine", "Engine"]
 
 
@@ -23,6 +25,11 @@ class Engine(object):
         self.config = config
         self.template_env = template_env
         self.plan = plan
+
+    @property
+    def unit_class(self) -> Unit:
+        """The unit class of this engine."""
+        return Unit
 
     @staticmethod
     def default_config() -> Dict[str, Any]:
