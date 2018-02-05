@@ -202,21 +202,17 @@ class Site(object):
 
         return Result.as_success(units)
 
-    def create_pages(self) -> Result[List[PageTarget]]:
+    def create_pages(self, units: List[Unit]) -> Result[List[PageTarget]]:
         """Creates :class:`PageTarget` instances representing templated page
         targets.
 
+        :parameter list units: List of units to turn into pages.
         :returns: A list of created pages or an error message indicating
             failure.
         :rtype: :class:`Result`
 
         """
-        runits = self.gather_units()
-        if runits.is_failure:
-            return runits
-
-        conf = self.config
-        tname = conf["unit_template"]
+        tname = self.config["unit_template"]
         try:
             template = self.template_env.get_template(tname)
         except j2exc.TemplateNotFound:
@@ -227,7 +223,7 @@ class Site(object):
 
         pages = []
         dest_rel = self.site_dest_rel
-        for unit in runits.data:
+        for unit in units:
             dest = dest_rel.joinpath(f"{unit.metadata['slug']}.html")
             rrend = PageTarget.from_template(unit, dest, template)
             if rrend.is_failure:
@@ -269,7 +265,11 @@ class Site(object):
         :rtype: :class:`Result`
 
         """
-        rpages = self.create_pages()
+        runits = self.gather_units()
+        if runits.is_failure:
+            return runits
+
+        rpages = self.create_pages(runits.data)
         if rpages.is_failure:
             return rpages
 
