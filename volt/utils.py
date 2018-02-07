@@ -14,9 +14,11 @@ from os import path
 from pathlib import Path
 from typing import Any, Generic, Optional, TypeVar
 
+import jinja2.exceptions as j2exc
 import pytz
 import pytz.exceptions as tzexc
 import tzlocal
+from jinja2 import Environment, Template
 from pytz.tzinfo import DstTzInfo
 
 
@@ -177,6 +179,19 @@ def calc_relpath(target: Path, ref: Path) -> Path:
     rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
 
     return Path(*rel_parts)
+
+
+def load_template(env: Environment, name: str) -> Result[Template]:
+    """Loads a template from the given environment."""
+    try:
+        template = env.get_template(name)
+    except j2exc.TemplateNotFound:
+        return Result.as_failure(f"cannot find template {name!r}")
+    except j2exc.TemplateSyntaxError as e:
+        return Result.as_failure(f"template {name!r} has syntax"
+                                 f" errors: {e.message}")
+
+    return Result.as_success(template)
 
 
 def lazyproperty(func):

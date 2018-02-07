@@ -12,13 +12,12 @@ from itertools import chain
 from pathlib import Path
 from typing import Generator, List, Optional
 
-import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader
 
 from .config import SiteConfig
 from .targets import CopyTarget, PageTarget, Target
 from .units import Unit
-from .utils import calc_relpath, Result
+from .utils import calc_relpath, load_template, Result
 
 __all__ = ["SiteNode", "SitePlan", "Site"]
 
@@ -212,20 +211,16 @@ class Site(object):
         :rtype: :class:`Result`
 
         """
-        tname = self.config["unit_template"]
-        try:
-            template = self.template_env.get_template(tname)
-        except j2exc.TemplateNotFound:
-            return Result.as_failure(f"cannot find template {tname!r}")
-        except j2exc.TemplateSyntaxError as e:
-            return Result.as_failure(f"template {tname!r} has syntax"
-                                     f" errors: {e.message}")
+        rtemplate = load_template(self.template_env,
+                                  self.config["unit_template"])
+        if rtemplate.is_failure:
+            return rtemplate
 
         pages = []
         dest_rel = self.site_dest_rel
         for unit in units:
             dest = dest_rel.joinpath(f"{unit.metadata['slug']}.html")
-            rrend = PageTarget.from_template(unit, dest, template)
+            rrend = PageTarget.from_template(unit, dest, rtemplate.data)
             if rrend.is_failure:
                 return rrend
             pages.append(rrend.data)
