@@ -252,6 +252,18 @@ class Site(object):
 
         return items
 
+    def create_section_targets(self) -> Result[List[Target]]:
+        """Creates all targets from all sections."""
+        targets = []
+        for name, sec_conf in self.config["sections"].items():
+            eng_class = sec_conf.pop("engine")
+            eng = eng_class(sec_conf, self.template_env)
+            rsp = eng.create_targets()
+            if rsp.is_failure:
+                return rsp
+            targets.extend(rsp.data)
+        return Result.as_success(targets)
+
     def build(self) -> Result[None]:
         """Builds the static site in the destination directory.
 
@@ -268,11 +280,13 @@ class Site(object):
         if rpages.is_failure:
             return rpages
 
-        cassets = self.gather_copy_assets()
+        rstargets = self.create_section_targets()
+        if rstargets.is_failure:
+            return rstargets
 
+        assets = self.gather_copy_assets()
         plan = self.plan
-
-        for target in chain(rpages.data, cassets):
+        for target in chain(rpages.data, rstargets.data, assets):
             plan.add_target(target)
 
         cwd = self.config['cwd']

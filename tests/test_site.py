@@ -183,29 +183,11 @@ def test_site_create_pages_ok():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages()
+        cres = s.create_pages(s.gather_units().data)
         assert cres.is_success
         assert len(cres.data) == 1
         page = cres.data.pop()
         assert page.dest == Path("site/ok.html")
-
-
-def test_site_create_pages_fail_gather_units():
-    with TemporaryDirectory() as td:
-        fs = Path(td)
-
-        create_fs_fixture(fs, {
-            "dirs": ["contents", "templates"],
-            "files": {
-                "contents/ok.md": f"---\ntitle: ok\n",
-                "templates/page.html": "{{ unit.raw_text }}"
-            }
-        })
-        s = site.Site(SiteConfig(fs, fs))
-
-        cres = s.create_pages()
-        assert cres.is_failure
-        assert cres.errs.startswith("malformed unit")
 
 
 def test_site_create_pages_fail_no_template():
@@ -220,7 +202,7 @@ def test_site_create_pages_fail_no_template():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages()
+        cres = s.create_pages(s.gather_units().data)
         assert cres.is_failure
         assert cres.errs.startswith("cannot find template")
 
@@ -238,7 +220,7 @@ def test_site_create_pages_fail_template_error():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages()
+        cres = s.create_pages(s.gather_units().data)
         assert cres.is_failure
         assert cres.errs.startswith("template 'page.html' has syntax errors")
 
@@ -256,6 +238,6 @@ def test_site_create_pages_fail_page_error():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages()
+        cres = s.create_pages(s.gather_units().data)
         assert cres.is_failure
         assert cres.errs.startswith("cannot render to")
