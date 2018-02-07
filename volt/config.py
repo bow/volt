@@ -17,7 +17,7 @@ import toml
 from pytz.tzinfo import DstTzInfo
 
 from .units import Unit
-from .utils import import_mod_attr, get_tz, Result
+from .utils import calc_relpath, import_mod_attr, get_tz, Result
 
 __all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 
@@ -319,6 +319,7 @@ class SiteConfig(dict):
         self["pwd"] = pwd
         self["cwd"] = cwd
         self["sections"] = {}
+        self["site_dest_rel"] = calc_relpath(self["site_dest"], cwd)
 
     def add_section(self, name: str, section_conf: RawConfig) -> Result[None]:
         """Adds the given section config to the site config after loading the
@@ -532,6 +533,8 @@ class SectionConfig(ChainMap):
         # # Values that cannot be overwritten.
         resolved["engine"] = eng
         resolved["site_dest"] = site_conf["site_dest"].joinpath(path[1:])
+        resolved["site_dest_rel"] = calc_relpath(resolved["site_dest"],
+                                                 site_conf["cwd"])
 
         conf = cls(name, resolved, eng_conf, site_conf)
 

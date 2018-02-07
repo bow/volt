@@ -249,6 +249,7 @@ def test_site_config_from_raw_config_ok():
         "templates_src": pwd.joinpath("templates"),
         "assets_src": pwd.joinpath("assets"),
         "site_dest": pwd.joinpath("site"),
+        "site_dest_rel": Path("site"),
         "dot_html_url": True,
         "hide_first_pagination_idx": True,
         "unit_template": "page.html",

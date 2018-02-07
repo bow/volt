@@ -16,7 +16,7 @@ from jinja2 import Environment
 
 from .targets import PageTarget, Target
 from .units import Unit
-from .utils import calc_relpath, load_template, Result
+from .utils import load_template, Result
 
 __all__ = ["BlogEngine", "Engine"]
 
@@ -29,9 +29,6 @@ class Engine(abc.ABC):
                  template_env: Environment) -> None:
         self.config = config
         self.template_env = template_env
-
-        dest_rel = calc_relpath(config["site_dest"], config['cwd'])
-        self.site_dest_rel = dest_rel
 
     @property
     def unit_class(self) -> Unit:
@@ -85,7 +82,7 @@ class Engine(abc.ABC):
             return rtemplate
 
         pages = []
-        dest_rel = self.site_dest_rel
+        dest_rel = self.config["site_dest_rel"]
         for unit in units:
             dest = dest_rel.joinpath(f"{unit.metadata['slug']}.html")
             rrend = PageTarget.from_template(unit, dest, rtemplate.data)

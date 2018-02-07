@@ -176,9 +176,7 @@ class Site(object):
             loader=FileSystemLoader(str(config["templates_src"])),
             auto_reload=False, enable_async=True)
 
-        dest_rel = calc_relpath(config["site_dest"], config['cwd'])
-        self.site_dest_rel = dest_rel
-        self.plan = SitePlan(dest_rel)
+        self.plan = SitePlan(self.config["site_dest_rel"])
 
     def gather_units(self, ext: str=".md") -> Result[List[Unit]]:
         """Traverses the root contents directory for unit source files.
@@ -217,7 +215,7 @@ class Site(object):
             return rtemplate
 
         pages = []
-        dest_rel = self.site_dest_rel
+        dest_rel = self.config["site_dest_rel"]
         for unit in units:
             dest = dest_rel.joinpath(f"{unit.metadata['slug']}.html")
             rrend = PageTarget.from_template(unit, dest, rtemplate.data)
@@ -236,7 +234,7 @@ class Site(object):
 
         """
         items = []
-        dest_rel = self.site_dest_rel
+        dest_rel = self.config["site_dest_rel"]
         src_rel = calc_relpath(self.config["assets_src"], self.config['cwd'])
         src_rel_len = len(src_rel.parts)
 
