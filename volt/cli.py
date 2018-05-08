@@ -10,7 +10,6 @@
 import shutil
 from collections import OrderedDict
 from contextlib import suppress
-from os import path
 from pathlib import Path
 from typing import Optional
 
@@ -30,8 +29,9 @@ class Session(object):
     """Commands for a single CLI session."""
 
     @staticmethod
-    def do_init(cwd: Path, pwd: Path, name: str, url: str, timezone: str,
-                force: bool, config_fname: str=CONFIG_FNAME) -> Result[None]:
+    def do_init(cwd: Path, pwd: Optional[Path], name: str, url: str,
+                timezone: Optional[str], force: bool,
+                config_fname: str=CONFIG_FNAME) -> Result[None]:
         """Initializes a new project.
 
         This function may overwrite any preexisting files and or directories
@@ -53,6 +53,8 @@ class Session(object):
         :rtype: :class:`Result`.
 
         """
+        name = pwd.name if (not name and pwd is not None) else name
+        pwd = cwd if pwd is None else cwd.joinpath(pwd)
         try:
             pwd.mkdir(parents=True, exist_ok=True)
         except OSError as e:
@@ -177,12 +179,8 @@ def init(ctx, project_dir: str, name: Optional[str], url: Optional[str],
     initialization in the current directory.
 
     """
-    cwd = Path.cwd()
-    pwd = cwd if project_dir is None else cwd.joinpath(project_dir)
-    name = path.basename(project_dir) \
-        if (not name and project_dir is not None) else name
-
-    _, errs = Session.do_init(cwd, pwd, name, url, timezone, force)
+    pwd = Path(project_dir) if project_dir is not None else project_dir
+    _, errs = Session.do_init(Path.cwd(), pwd, name, url, timezone, force)
     if errs:
         raise click.UsageError(errs)
     # TODO: add message for successful init
