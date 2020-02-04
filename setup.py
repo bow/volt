@@ -3,9 +3,8 @@
 
 from setuptools import find_packages, setup
 
-from volt import __author__, __contact__, \
-    __homepage__, __version__, NAME
-
+import versioneer
+from volt import NAME, __author__, __contact__, __homepage__
 
 with open("README.rst") as src:
     readme = src.read()
@@ -22,7 +21,8 @@ with open("requirements-dev.txt") as src:
 
 setup(
     name=NAME.capitalize(),
-    version=__version__,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="Versatile python static website generator",
     long_description=readme + "\n\n" + changelog,
     author=__author__,
@@ -34,7 +34,7 @@ setup(
     license="BSD",
     include_package_data=True,
     install_requires=requirements,
-    tests_require=test_requirements,
+    extras_require={"dev": test_requirements},
     zip_safe=False,
     entry_points="""
     [console_scripts]

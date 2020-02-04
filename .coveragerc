@@ -10,3 +10,4 @@ exclude_lines =
     if __name__ == .__main__.:
 omit =
     tests/*
+    volt/_version.py
