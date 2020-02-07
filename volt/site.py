@@ -182,9 +182,11 @@ class Site:
 
         """
         self.config = config
-        self.template_env = template_env or Environment(
+        self.template_env = template_env or Environment(  # nosec
             loader=FileSystemLoader(str(config["templates_src"])),
-            auto_reload=False, enable_async=True)
+            auto_reload=False,
+            enable_async=True
+        )  # nosec
 
         self.plan = SitePlan(self.config["site_dest_rel"])
 
