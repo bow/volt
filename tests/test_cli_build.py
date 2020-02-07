@@ -14,7 +14,6 @@ from click.testing import CliRunner
 
 from volt.cli import main
 from volt.config import CONFIG_FNAME
-
 from .utils import create_fs_fixture
 
 

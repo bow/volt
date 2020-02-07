@@ -6,7 +6,6 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 from pathlib import Path
-
 from unittest.mock import call, create_autospec, patch
 
 from volt.targets import CopyTarget, PageTarget

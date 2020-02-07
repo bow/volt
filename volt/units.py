@@ -10,18 +10,23 @@
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 import yaml
 from slugify import slugify
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from .utils import Result
+
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader  # type: ignore
+
+if TYPE_CHECKING:
+    from .config import SectionConfig, SiteConfig  # noqa: F401
+
 
 __all__ = ["Unit"]
 
@@ -33,13 +38,13 @@ _RE_WITH_FM = re.compile(r"\n---\n+")
 _RE_TAGS = re.compile(r",\s+")
 
 
-def validate_metadata(value: dict) -> Result[dict]:
-    """Validates the given metadata.
+def validate_metadata(value: Any) -> Result[dict]:
+    """Validate the given metadata.
 
     :param dict value: Metadata to validate.
+
     :returns: The input value upon successful validation or an error message
         when validation fails.
-    :rtype: :class:`Result`.
 
     """
     if not isinstance(value, dict):
@@ -51,29 +56,32 @@ def validate_metadata(value: dict) -> Result[dict]:
             continue
         uv = value[strk]
         if not isinstance(uv, str) or not uv:
-            return Result.as_failure(f"unit metadata {strk!r} must be a"
-                                     " nonempty string")
+            return Result.as_failure(
+                f"unit metadata {strk!r} must be a nonempty string"
+            )
 
     # Keys whose value must be strings or lists.
     tk = "tags"
     if tk in value:
         uv = value[tk]
         if not isinstance(uv, (str, list)):
-            return Result.as_failure(f"unit metadata {tk!r} must be a string"
-                                     " or a list")
+            return Result.as_failure(
+                f"unit metadata {tk!r} must be a string or a list"
+            )
 
     # Keys whose value must be a datetime object (relies on YAML parser).
     dtk = "pub_time"
     if dtk in value:
         dto = value[dtk]
         if not isinstance(dto, datetime):
-            return Result.as_failure(f"unit metadata {dtk!r} must be a valid"
-                                     " iso8601 timestamp")
+            return Result.as_failure(
+                f"unit metadata {dtk!r} must be a valid iso8601 timestamp"
+            )
 
     return Result.as_success(value)
 
 
-class Unit(object):
+class Unit:
 
     """A single source of text-related content."""
 
@@ -81,27 +89,28 @@ class Unit(object):
 
     @staticmethod
     def parse_metadata(
-            raw: str, config: "Union[SiteConfig, SectionConfig]", src: Path,
-            vfunc: Callable[[dict], Result[dict]]=
-            validate_metadata) -> Result[dict]:
-        """Parses the unit metadata into a mapping.
+        raw: str,
+        config: Union["SiteConfig", "SectionConfig"],
+        src: Path,
+        vfunc: Callable[[dict], Result[dict]] = validate_metadata
+    ) -> Result[dict]:
+        """Parse the unit metadata into a mapping.
 
-        :param str raw: Raw metadata ready for parsing as YAML.
-        :param config: Configuration values.
+        :param raw: Raw metadata ready for parsing as YAML.
+        :param Configuration values.
         :type config: volt.config.SiteConfig or volt.config.SectionConfig.
-        :param pathlib.Path src: Path to the unit from which the metadata
-            was parsed.
-        :param callable vfunc: Callable for validating the parsed metadata.
-            The callable must a accept a single dict value as input and
-            return a :class:`Result`.
+        :param src: Path to the unit from which the metadata was parsed.
+        :param vfunc: Callable for validating the parsed metadata. The callable
+            must a accept a single dict value as input and return a
+            :class:`Result`.
+
         :returns: The metadata as a mapping or an error message indicating
             failure.
-        :rtype: :class:`Result`
 
         """
         try:
             meta = yaml.load(raw, Loader=Loader) or {}
-        except (ScannerError, ParserError) as e:
+        except (ScannerError, ParserError):
             return Result.as_failure(f"malformed metadata: {src}")
 
         vres = vfunc(meta)
@@ -135,17 +144,20 @@ class Unit(object):
         return Result.as_success(meta)
 
     @classmethod
-    def load(cls, src: Path, config: "Union[SiteConfig, SectionConfig]",
-             encoding: str="utf-8") -> "Result[Unit]":
-        """Creates the unit by loading from the given path.
+    def load(
+        cls,
+        src: Path,
+        config: Union["SiteConfig", "SectionConfig"],
+        encoding: str = "utf-8",
+    ) -> Result["Unit"]:
+        """Create the unit by loading from the given path.
 
-        :param pathlib.Path src: Path to the unit source.
-        :param config: Configuration values.
-        :type config: volt.config.SiteConfig or volt.config.SectionConfig.
-        :param str encoding: Name of the unit source encoding.
+        :param src: Path to the unit source.
+        :param Configuration values.
+        :param encoding: Name of the unit source encoding.
+
         :returns: An instance of the unit or an error message indicating
             failure.
-        :rtype: :class:`Result`
 
         """
         try:
@@ -153,19 +165,22 @@ class Unit(object):
         except OSError as e:
             return Result.as_failure(
                 "cannot load unit"
-                f"{str(src.relative_to(config['pwd']))!r}: {e.strerror}")
+                f"{str(src.relative_to(config['pwd']))!r}: {e.strerror}"
+            )
 
         try:
             raw_contents = raw_bytes.decode(encoding)
         except UnicodeDecodeError:
             return Result.as_failure(
                 "cannot decode unit"
-                f" {str(src.relative_to(config['pwd']))!r} using {encoding!r}")
+                f" {str(src.relative_to(config['pwd']))!r} using {encoding!r}"
+            )
         except LookupError:
             return Result.as_failure(
                 "cannot decode unit"
                 f" {str(src.relative_to(config['pwd']))!r} using {encoding!r}:"
-                " unknown encoding")
+                " unknown encoding"
+            )
 
         split_contents = _RE_WITH_FM.split(raw_contents, 1)
 
@@ -173,7 +188,8 @@ class Unit(object):
             raw_meta, raw_text = split_contents
         except ValueError:
             return Result.as_failure(
-                f"malformed unit: {str(src.relative_to(config['pwd']))!r}")
+                f"malformed unit: {str(src.relative_to(config['pwd']))!r}"
+            )
 
         rmeta = cls.parse_metadata(raw_meta, config, src)
         if rmeta.is_failure:
@@ -181,15 +197,19 @@ class Unit(object):
 
         return Result.as_success(cls(src, config, rmeta.data, raw_text))
 
-    def __init__(self, src: Path, config: "Union[SiteConfig, SectionConfig]",
-                 metadata: dict, raw_text: str) -> None:
-        """Initializes the unit.
+    def __init__(
+        self,
+        src: Path,
+        config: Union["SiteConfig", "SectionConfig"],
+        metadata: dict,
+        raw_text: str,
+    ) -> None:
+        """Initialize the unit.
 
-        :param pathlib.Path src: Path to the unit source.
+        :param src: Path to the unit source.
         :param config: Configuration values.
-        :type config: volt.config.SiteConfig or volt.config.SectionConfig.
-        :param dict metadata: Unit metadata.
-        :param str raw_text: Raw text contents of the unit.
+        :param metadata: Unit metadata.
+        :param raw_text: Raw text contents of the unit.
 
         """
         self.src = src

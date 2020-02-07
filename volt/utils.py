@@ -7,12 +7,13 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
-import sys
+
 import importlib.util as iutil
+import sys
 from collections import namedtuple
 from os import path
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Callable, Generic, Optional, TypeVar
 
 import jinja2.exceptions as j2exc
 import pytz
@@ -22,7 +23,7 @@ from jinja2 import Environment, Template
 from pytz.tzinfo import DstTzInfo
 
 
-class Mark(object):
+class Mark:
 
     """Helper class for marking a :class:`Result` attribute that should be
     ignored.
@@ -30,8 +31,7 @@ class Mark(object):
     Instances of this class always evaluates to ``False``.
 
     """
-
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return False
 
 
@@ -54,12 +54,12 @@ class Result(namedtuple("Result", ["data", "errs"]), Generic[T]):
 
     @classmethod
     def as_success(cls, success_value: T) -> "Result[T]":
-        """Returns a success variant with the given value."""
+        """Return a success variant with the given value."""
         return cls(success_value, _mark)
 
     @classmethod
     def as_failure(cls, failure_message: str) -> "Result[Mark]":
-        """Returns a failure variant with the given value."""
+        """Return a failure variant with the given value."""
         return cls(_mark, failure_message)
 
     @property
@@ -73,15 +73,14 @@ class Result(namedtuple("Result", ["data", "errs"]), Generic[T]):
         return self.errs is _mark
 
 
-def get_tz(tzname: Optional[str]=None) -> Result[DstTzInfo]:
-    """Retrieves the timezone object with the given name.
+def get_tz(tzname: Optional[str] = None) -> Result[DstTzInfo]:
+    """Retrieve the timezone object with the given name.
 
     If no timezone name is given, the system default will be used.
 
     :param tzname: Name of the timezone to retrieve.
-    :type tzname: str or None
+
     :returns: The timezone object or a message indicating failure.
-    :rtype: :class:`Result`
 
     """
     if tzname is None:
@@ -93,15 +92,15 @@ def get_tz(tzname: Optional[str]=None) -> Result[DstTzInfo]:
 
 
 def import_mod_attr(target: str) -> Result[Any]:
-    """Imports the attribute of a module given its string path.
+    """Import the attribute of a module given its string path.
 
     For example, specifying ``pathlib.Path`` is essentially the same as
     executing ``from pathlib import Path```.
 
-    :param str target: The target object to import.
+    :param target: The target object to import.
+
     :returns: The object indicated by the input or an error message indicating
         failure.
-    :rtype: :class:`Result`
 
     """
     try:
@@ -123,7 +122,7 @@ def import_mod_attr(target: str) -> Result[Any]:
         return Result.as_failure(f"failed to find module {mod_name!r} for"
                                  " import")
     mod = iutil.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    spec.loader.exec_module(mod)  # type: ignore
 
     try:
         return Result.as_success(getattr(mod, cls_name))
@@ -132,19 +131,19 @@ def import_mod_attr(target: str) -> Result[Any]:
                                  f" attribute {cls_name!r}")
 
 
-def find_pwd(fname: str, start: Optional[Path]=None) -> Result[Path]:
-    """Finds the directory containing the filename.
+def find_pwd(fname: str, start: Optional[Path] = None) -> Result[Path]:
+    """Find the directory containing the filename.
 
     Directory lookup is performed from the given start directory up until the
     root (`/`) directory. If no start directory is given, the lookup starts
     from the current directory.
 
-    :param str fname: The filename that should be present in the directory.
+    :param fname: The filename that should be present in the directory.
     :param start: The path from which lookup should start. If given as
         ``None``, lookup will start from the current directory.
+
     :returns: The path to the directory that contains the filename or an error
         message indicating failure.
-    :rtype: :class:`Result`
 
     """
     pwd = Path.cwd() if start is None else Path(start).expanduser().resolve()
@@ -158,12 +157,12 @@ def find_pwd(fname: str, start: Optional[Path]=None) -> Result[Path]:
 
 
 def calc_relpath(target: Path, ref: Path) -> Path:
-    """Calculates the target's path relative to the reference.
+    """Calculate the target's path relative to the reference.
 
-    :param pathlib.Path target: The path to which the relative path will point.
-    :param pathlib.Path ref: Reference path.
+    :param target: The path to which the relative path will point.
+    :param ref: Reference path.
+
     :returns: The relative path from ``ref`` to ``to``.
-    :rtype: :class:`Path`
 
     """
     ref = ref.expanduser()
@@ -182,7 +181,7 @@ def calc_relpath(target: Path, ref: Path) -> Path:
 
 
 def load_template(env: Environment, name: str) -> Result[Template]:
-    """Loads a template from the given environment."""
+    """Load a template from the given environment."""
     try:
         template = env.get_template(name)
     except j2exc.TemplateNotFound:
@@ -194,7 +193,7 @@ def load_template(env: Environment, name: str) -> Result[Template]:
     return Result.as_success(template)
 
 
-def lazyproperty(func):
+def lazyproperty(func: Callable) -> Callable:
     """Decorator for lazy property loading.
 
     This decorator adds a dictionary called ``_cached`` to the instance
@@ -205,8 +204,8 @@ def lazyproperty(func):
     """
     attr_name = func.__name__
 
-    @property
-    def cached(self):
+    @property  # type: ignore
+    def cached(self):  # type: ignore
         if not hasattr(self, '_cached'):
             setattr(self, '_cached', {})
         try:

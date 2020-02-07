@@ -11,7 +11,7 @@ import pytest
 import pytz
 import tzlocal
 
-from volt.utils import get_tz, import_mod_attr, calc_relpath
+from volt.utils import calc_relpath, get_tz, import_mod_attr
 
 
 @pytest.fixture
@@ -144,5 +144,5 @@ def test_calc_relpath_ok(target, ref, exp):
                               " input paths"),
 ])
 def test_calc_relpath_fail(target, ref, msg):
-    with pytest.raises(ValueError, message=msg):
+    with pytest.raises(ValueError, match=msg):
         calc_relpath(target, ref)

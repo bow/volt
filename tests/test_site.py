@@ -6,15 +6,14 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest
-from tempfile import TemporaryDirectory
 
 from volt import site
 from volt.config import SiteConfig
 from volt.targets import Target
 from volt.utils import Result
-
 from .utils import create_fs_fixture
 
 
@@ -65,7 +64,7 @@ def test_site_node_with_target():
 
     assert "key" not in sn
     assert list(iter(sn)) == []
-    with pytest.raises(TypeError, message="cannot add children to file node"):
+    with pytest.raises(TypeError, match="cannot add children to file node"):
         sn.add_child("test", MockTarget())
     assert "key" not in sn
     assert list(iter(sn)) == []

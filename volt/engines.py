@@ -10,13 +10,14 @@
 import abc
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Type
 
 from jinja2 import Environment
 
+from .config import SectionConfig
 from .targets import PageTarget, Target
 from .units import Unit
-from .utils import load_template, Result
+from .utils import Result, load_template
 
 __all__ = ["BlogEngine", "Engine"]
 
@@ -25,13 +26,16 @@ class Engine(abc.ABC):
 
     """Builder for a site section."""
 
-    def __init__(self, config: "SectionConfig",
-                 template_env: Environment) -> None:
+    def __init__(
+        self,
+        config: SectionConfig,
+        template_env: Environment,
+    ) -> None:
         self.config = config
         self.template_env = template_env
 
     @property
-    def unit_class(self) -> Unit:
+    def unit_class(self) -> Type[Unit]:
         """The unit class of this engine."""
         return Unit
 
@@ -45,10 +49,12 @@ class Engine(abc.ABC):
         """
         return {}
 
-    def gather_units(self, ext: str=".md",
-                     drafts_dirname: str="drafts") -> Result[List[Unit]]:
-        """Gathers all of the engine units except ones in the drafts
-        directory."""
+    def gather_units(
+        self,
+        ext: str = ".md",
+        drafts_dirname: str = "drafts",
+    ) -> Result[List[Unit]]:
+        """Gather all engine units except ones in the drafts directory."""
         config = self.config
         unit = self.unit_class
         units = []
@@ -68,16 +74,18 @@ class Engine(abc.ABC):
         return Result.as_success(units)
 
     def create_unit_pages(self, units: List[Unit]) -> Result[List[PageTarget]]:
-        """Creates :class:`PageTarget` instances of units.
+        """Create :class:`PageTarget` instances of the given units.
 
-        :parameter list units: List of units to turn into pages.
+        :param units: List of units to process.
+
         :returns: A list of created pages or an error message indicating
             failure.
-        :rtype: :class:`Result`
 
         """
-        rtemplate = load_template(self.template_env,
-                                  self.config["unit_template"])
+        rtemplate = load_template(
+            self.template_env,
+            self.config["unit_template"],
+        )
         if rtemplate.is_failure:
             return rtemplate
 
@@ -94,7 +102,7 @@ class Engine(abc.ABC):
 
     @abc.abstractmethod
     def create_targets(self) -> Result[List[Target]]:
-        """Creates all the targets of the section.
+        """Create all the targets of the section.
 
         Subclasses must override this method.
 

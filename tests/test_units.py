@@ -13,7 +13,7 @@ import pytest
 import pytz
 
 from volt.config import SiteConfig
-from volt.units import validate_metadata, Unit
+from volt.units import Unit, validate_metadata
 
 
 def test_validate_metadata_ok():
