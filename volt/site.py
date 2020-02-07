@@ -112,11 +112,16 @@ class SitePlan:
 
         """
         # Ensure target dest is relative (to working directory!)
-        assert not target.dest.is_absolute()
+        if target.dest.is_absolute():
+            return Result.as_failure("target is not a relative path")
 
         # Ensure target dest starts with project site_dest
         prefix_len = self._root_path_len
-        assert target.dest.parts[:prefix_len] == self._root.path.parts
+        if target.dest.parts[:prefix_len] != self._root.path.parts:
+            return Result.as_failure(
+                "target destination does not start with project site"
+                " destination"
+            )
 
         rem_len = len(target.dest.parts) - prefix_len
         cur = self._root
@@ -131,7 +136,8 @@ class SitePlan:
             except TypeError:
                 return Result.as_failure(
                     f"path of target item {str(cur.path.joinpath(p))!r}"
-                    f" conflicts with {str(cur.path)!r}")
+                    f" conflicts with {str(cur.path)!r}"
+                )
 
         return Result.as_success(None)
 
