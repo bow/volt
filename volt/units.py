@@ -19,11 +19,6 @@ from yaml.scanner import ScannerError
 
 from .utils import Result
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader  # type: ignore
-
 if TYPE_CHECKING:
     from .config import SectionConfig, SiteConfig  # noqa: F401
 
@@ -109,7 +104,7 @@ class Unit:
 
         """
         try:
-            meta = yaml.load(raw, Loader=Loader) or {}
+            meta = yaml.safe_load(raw) or {}
         except (ScannerError, ParserError):
             return Result.as_failure(f"malformed metadata: {src}")
 
