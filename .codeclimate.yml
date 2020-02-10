@@ -1,0 +1,12 @@
+---
+version: "2"
+checks:
+  argument-count:
+    config:
+      threshold: 8
+  file-lines:
+    enabled: false
+exclude_patterns:
+  - "tests/*"
+  - "versioneer.py"
+  - "volt/_version.py"
