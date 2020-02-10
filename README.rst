@@ -1,22 +1,19 @@
-Volt
-====
+``volt``
+========
 
-|ci| |coverage| |pypi|
+|pypi| |ci| |cov| |qual|
 
-.. |ci| image:: https://img.shields.io/travis/bow/volt.png?style=flat
+.. |pypi| image:: https://img.shields.io/pypi/v/volt?labelColor=4d4d4d&color=007c5b&style=flat
+    :target: https://pypi.org/project/volt/
+
+.. |ci| image:: https://img.shields.io/travis/bow/volt?labelColor=4d4d4d&color=007c5b&style=flat
     :target: https://travis-ci.org/bow/volt
 
-.. |coverage| image:: https://codecov.io/gh/bow/volt/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/bow/volt
+.. |cov| image:: https://img.shields.io/codeclimate/coverage/bow/volt?labelColor=4d4d4d&color=007c5b&style=flat
+    :target: https://codeclimate.com/github/bow/volt
 
-.. |pypi| image:: https://badge.fury.io/py/volt.svg
-    :target: http://badge.fury.io/py/volt
-
-
-Volt is a versatile Python static website generator.
+.. |qual| image:: https://img.shields.io/codeclimate/maintainability/bow/volt?labelColor=4d4d4d&color=007c5b&style=flat
+    :target: https://codeclimate.com/github/bow/volt
 
 
-Requirements
-------------
-
-* Python 3.6
+``volt`` is a versatile Python static website generator.
