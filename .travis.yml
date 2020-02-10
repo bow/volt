@@ -4,6 +4,10 @@ cache:
   directories:
     - $HOME/.cache/pip
 
+env:
+  global:
+    - CC_TEST_REPORTER_ID=2c769831e8bcd21982c6b17b4f9c166695dd0f7da4a2ad2ed551d28a040af81f
+
 matrix:
   include:
     - name: "Tests - Python 3.8"
@@ -31,5 +35,13 @@ before_install:
 install:
   - python setup.py install
 
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
 script:
   - tox -e $TOX_ENV
+
+after_success:
+  - if [[ "$TRAVIS_PULL_REQUEST" == "false" && "$TOX_ENV" == "py38" ]]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
