@@ -1,5 +1,3 @@
-sudo: false
-
 language: python
 
 cache:
@@ -8,19 +6,30 @@ cache:
 
 matrix:
   include:
-    - env: TOX_ENV=py36
+    - name: "Tests - Python 3.8"
+      python: 3.8
+      env: TOX_ENV=py38
+    - name: "Security - Python 3.8"
+      python: 3.8
+      env: TOX_ENV=security
+    - name: "Style - Python 3.8"
+      python: 3.8
+      env: TOX_ENV=style
+    - name: "Types - Python 3.8"
+      python: 3.8
+      env: TOX_ENV=types
+    - name: "Tests - Python 3.7"
+      python: 3.7
+      env: TOX_ENV=py37
+    - name: "Tests - Python 3.6"
       python: 3.6
-    - env: TOX_ENV=flake8
-      python: 3.6
+      env: TOX_ENV=py36
 
 before_install:
-    - pip install -r requirements-dev.txt
+  - pip install -r requirements-dev.txt
 
 install:
-    - python setup.py install
-    - pip install codecov==2.0.5
+  - python setup.py install
 
-script: tox -e $TOX_ENV
-
-after_success:
-    - codecov
+script:
+  - tox -e $TOX_ENV
