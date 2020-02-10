@@ -11,6 +11,7 @@ import pytest
 import pytz
 
 from volt import config as conf
+from volt import exceptions as exc
 
 
 def test_validate_site_conf_ok():
@@ -27,9 +28,8 @@ def test_validate_site_conf_ok():
         "section": {},
         "custom": {"user_supplied": 123},
     }
-    vres = conf.validate_site_conf(site_conf)
-    assert vres.is_success
-    assert vres.data == site_conf
+    ret = conf.validate_site_conf(site_conf)
+    assert ret is None
 
 
 @pytest.mark.parametrize("config, exp_msg", [
@@ -56,9 +56,8 @@ def test_validate_site_conf_ok():
       for value in (12, 3.5, True, "yes", [])],
 ])
 def test_validate_site_conf_fail(config, exp_msg):
-    robs = conf.validate_site_conf(config)
-    assert robs.is_failure, robs
-    assert robs.errs == exp_msg
+    with pytest.raises(exc.VoltConfigError, match=exp_msg):
+        conf.validate_site_conf(config)
 
 
 def test_validate_section_conf_ok():
@@ -76,9 +75,8 @@ def test_validate_section_conf_ok():
         "unit_order": {"key": "title"},
         "custom": {"user_supplied": 123},
     }
-    vres = conf.validate_section_conf("foo", section_conf)
-    assert vres.is_success
-    assert vres.data == ("foo", section_conf)
+    ret = conf.validate_section_conf("foo", section_conf)
+    assert ret is None
 
 
 @pytest.mark.parametrize("name, config, exp_msg", [
@@ -109,9 +107,8 @@ def test_validate_section_conf_ok():
      "config 'paginations.pg.path_pattern' of section 'foo' must be present"),
 ])
 def test_validate_section_conf_fail(name, config, exp_msg):
-    robs = conf.validate_section_conf(name, config)
-    assert robs.is_failure, robs
-    assert robs.errs == exp_msg
+    with pytest.raises(exc.VoltConfigError, match=exp_msg):
+        conf.validate_section_conf(name, config)
 
 
 @pytest.mark.parametrize("section_conf", [
@@ -124,9 +121,8 @@ def test_validate_section_conf_fail(name, config, exp_msg):
         }}}
 ])
 def test_validate_section_pagination_ok(section_conf):
-    vres = conf.validate_section_pagination("foo", section_conf, "paginations")
-    assert vres.is_success
-    assert vres.data == ("foo", section_conf, "paginations")
+    ret = conf.validate_section_pagination("foo", section_conf, "paginations")
+    assert ret is None
 
 
 @pytest.mark.parametrize("section_conf", [
@@ -134,9 +130,8 @@ def test_validate_section_pagination_ok(section_conf):
     {"unit_order": {"key": "pub_time", "reverse": True}},
 ])
 def test_validate_section_unit_order_ok(section_conf):
-    vres = conf.validate_section_unit_order("foo", section_conf, "unit_orders")
-    assert vres.is_success
-    assert vres.data == ("foo", section_conf, "unit_orders")
+    ret = conf.validate_section_unit_order("foo", section_conf, "unit_orders")
+    assert ret is None
 
 
 @pytest.mark.parametrize("name, pgn_config, exp_msg", [
@@ -166,10 +161,12 @@ def test_validate_section_unit_order_ok(section_conf):
       for value in (12, 3.5, True, "", [], {})],
 ])
 def test_validate_section_pagination_fail(name, pgn_config, exp_msg):
-    robs = conf.validate_section_pagination(name, {"paginations": pgn_config},
-                                            "paginations")
-    assert robs.is_failure, robs
-    assert robs.errs == exp_msg
+    with pytest.raises(exc.VoltConfigError, match=exp_msg):
+        conf.validate_section_pagination(
+            name,
+            {"paginations": pgn_config},
+            "paginations",
+        )
 
 
 @pytest.mark.parametrize("name, uu_config, exp_msg", [
@@ -187,10 +184,13 @@ def test_validate_section_pagination_fail(name, pgn_config, exp_msg):
       for value in (12, 3.5, "yes", [], {})],
 ])
 def test_validate_section_unit_order_fail(name, uu_config, exp_msg):
-    robs = conf.validate_section_unit_order(name, {"unit_order": uu_config},
-                                            "unit_order")
-    assert robs.is_failure, robs
-    assert robs.errs == exp_msg
+    with pytest.raises(exc.VoltConfigError, match=exp_msg):
+
+        conf.validate_section_unit_order(
+            name,
+            {"unit_order": uu_config},
+            "unit_order",
+        )
 
 
 def test_site_config_from_toml_ok(tmpdir):
@@ -200,10 +200,8 @@ def test_site_config_from_toml_ok(tmpdir):
         cf.write("[site]\n", mode="a")
         cf.write('name = "ts"\n', mode="a")
         cf.write('url = "https://test.com"', mode="a")
-        cres = conf.SiteConfig.from_toml(cwd, pwd, str(cf))
+        sc = conf.SiteConfig.from_toml(cwd, pwd, str(cf))
 
-    assert cres.is_success, cres
-    sc = cres.data
     assert sc["cwd"] == cwd
     assert sc["pwd"] == pwd
     assert sc["contents_src"] == pwd.joinpath("contents")
@@ -221,10 +219,11 @@ def test_site_config_from_toml_fail(tmpdir):
         cwd = pwd = Path(str(tmpdir))
         cf = tmpdir.join(conf.CONFIG_FNAME)
         cf.write("[site][\n")
-        cres = conf.SiteConfig.from_toml(cwd, pwd, str(cf))
-
-    assert cres.is_failure
-    assert cres.errs.startswith("cannot parse config: ")
+        with pytest.raises(
+            exc.VoltConfigError,
+            match="could not parse config: "
+        ):
+            conf.SiteConfig.from_toml(cwd, pwd, str(cf))
 
 
 def test_site_config_from_raw_config_ok():
@@ -237,8 +236,7 @@ def test_site_config_from_raw_config_ok():
         "section": {"pg": {}},
     }
     cwd = pwd = Path("/fs")
-    scres = conf.SiteConfig.from_raw_config(cwd, pwd, user_config)
-    assert scres.is_success, scres.errs
+    sc = conf.SiteConfig.from_raw_config(cwd, pwd, user_config)
     exp_site = {
         "name": "",
         "url": "",
@@ -272,30 +270,43 @@ def test_site_config_from_raw_config_ok():
         "hide_first_pagination_idx": True,
     }
     # Because 'unit' is overwritten by the actual class.
-    assert not isinstance(scres.data.pop("unit", ""), str)
+    assert not isinstance(sc.pop("unit", ""), str)
     # Because 'site_config' shows up as a recursion.
-    sec = scres.data["sections"].pop("pg")
+    sec = sc["sections"].pop("pg")
 
-    assert scres.data == exp_site
+    assert sc == exp_site
 
     for key, value in exp_section.items():
         assert key in sec, key
         assert sec[key] == value, value
 
 
-@pytest.mark.parametrize("config, exp_msg", [
-    ({}, "cannot find site configuration in config file"),
-    ({"site": {"name": 100}}, None),
-    ({"site": {"timezone": "bzzt"}}, None),
-    ({"site": {"unit": "bzzt"}}, None),
-    ({"site": {}, "section": {"foo": True}}, None),
+@pytest.mark.parametrize("config, exc", [
+    (
+        {},
+        exc.VoltConfigError("could not find site configuration in config file"),
+    ),
+    (
+        {"site": {"name": 100}},
+        exc.VoltConfigError("site config 'name' must be a string"),
+    ),
+    (
+        {"site": {"timezone": "bzzt"}},
+        exc.VoltTimezoneError("bzzt"),
+    ),
+    (
+        {"site": {"unit": "bzzt"}},
+        exc.VoltResourceError("invalid module attribute import target: 'bzzt'")
+    ),
+    (
+        {"site": {}, "section": {"foo": True}},
+        exc.VoltConfigError("section config 'foo' must be a mapping")
+    ),
 ])
-def test_site_config_from_raw_config_fail(config, exp_msg):
+def test_site_config_from_raw_config_fail(config, exc):
     cwd = pwd = Path("/fs")
-    robs = conf.SiteConfig.from_raw_config(cwd, pwd, config)
-    assert robs.is_failure, robs
-    if exp_msg is not None:
-        assert robs.errs == exp_msg
+    with pytest.raises(exc.__class__, match=exc.message):
+        conf.SiteConfig.from_raw_config(cwd, pwd, config)
 
 
 @pytest.mark.parametrize("path, exp_path", [
@@ -313,10 +324,11 @@ def test_section_config_ok(path, exp_path):
     }
     if path is None:
         raw_section_config.pop("path")
-    scres = conf.SectionConfig.from_raw_configs(
-        "foo", raw_section_config, site_config)
-    assert scres.is_success, scres.errs
-    section_config = scres.data
+    section_config = conf.SectionConfig.from_raw_configs(
+        "foo",
+        raw_section_config,
+        site_config,
+    )
     exp_section = {
         "name": "foo",
         "paginations": {"pg": {"path_pattern": "{idx}", "size": 10}},

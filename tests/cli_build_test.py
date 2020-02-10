@@ -54,8 +54,9 @@ def test_ok(fxt_config, fxt_layoutf):
         result = runner.invoke(main, ["build"])
         assert result.exit_code == 0
 
-        assert {f.name for f in fs.iterdir()} == \
+        assert {f.name for f in fs.iterdir()} == (
             {"assets", "contents", "templates", "site", "Volt.toml"}
+        )
 
         page = fs.joinpath("site", "foo.html")
         assert page.exists()
@@ -77,8 +78,9 @@ def test_ok_no_clean(fxt_config, fxt_layoutf):
         result = runner.invoke(main, ["build", "--no-clean"])
         assert result.exit_code == 0
 
-        assert {f.name for f in fs.iterdir()} == \
+        assert {f.name for f in fs.iterdir()} == (
             {"assets", "contents", "templates", "site", "Volt.toml"}
+        )
 
         page = fs.joinpath("site", "foo.html")
         assert page.exists()
@@ -99,10 +101,11 @@ def test_fail_find_pwd(fxt_config, fxt_layoutf):
 
         result = runner.invoke(main, ["build"])
         assert result.exit_code != 0
-        assert "failed to find project directory" in result.output
+        assert "project directory not found" in result.output
 
-        assert {f.name for f in fs.iterdir()} == \
+        assert {f.name for f in fs.iterdir()} == (
             {"assets", "contents", "templates"}
+        )
 
 
 def test_fail_config_load(fxt_config, fxt_layoutf):
@@ -116,10 +119,13 @@ def test_fail_config_load(fxt_config, fxt_layoutf):
 
         result = runner.invoke(main, ["build"])
         assert result.exit_code != 0
-        assert "cannot find site configuration in config file" in result.output
+        assert (
+            "could not find site configuration in config file" in result.output
+        )
 
-        assert {f.name for f in fs.iterdir()} == \
+        assert {f.name for f in fs.iterdir()} == (
             {"assets", "contents", "templates", "Volt.toml"}
+        )
 
 
 def test_fail_template_load(fxt_config, fxt_layoutf):
@@ -135,8 +141,9 @@ def test_fail_template_load(fxt_config, fxt_layoutf):
         assert result.exit_code != 0
         assert "template 'page.html' has syntax errors" in result.output
 
-        assert {f.name for f in fs.iterdir()} == \
+        assert {f.name for f in fs.iterdir()} == (
             {"assets", "contents", "templates", "Volt.toml"}
+        )
 
 
 def test_fail_page_write(fxt_config, fxt_layoutf):
@@ -150,7 +157,8 @@ def test_fail_page_write(fxt_config, fxt_layoutf):
 
         result = runner.invoke(main, ["build"])
         assert result.exit_code != 0
-        assert "cannot copy" in result.output
+        assert "could not copy" in result.output
 
-        assert {f.name for f in fs.iterdir()} == \
+        assert {f.name for f in fs.iterdir()} == (
             {"assets", "contents", "templates", "site", "Volt.toml"}
+        )

@@ -12,12 +12,9 @@ from unittest.mock import create_autospec
 import pytest
 import pytz
 
+from volt import exceptions as exc
 from volt.config import SiteConfig
 from volt.units import Unit, validate_metadata
-
-
-def test_validate_metadata_ok():
-    pass
 
 
 @pytest.mark.parametrize("meta, exp_msg", [
@@ -36,9 +33,8 @@ def test_validate_metadata_ok():
       for value in (12, 3.5, True, "yes", [], {})],
 ])
 def test_validate_metadata_fail(meta, exp_msg):
-    vres = validate_metadata(meta)
-    assert vres.is_failure
-    assert vres.errs == exp_msg
+    with pytest.raises(exc.VoltResourceError, match=exp_msg):
+        validate_metadata(meta)
 
 
 @pytest.mark.parametrize("raw, fname, exp", [
@@ -50,18 +46,16 @@ def test_validate_metadata_fail(meta, exp_msg):
 ])
 def test_unit_parse_metadata_ok_simple(raw, fname, exp):
     cwd = pwd = Path("/fs")
-    ures = Unit.parse_metadata(raw, SiteConfig(cwd, pwd), cwd.joinpath(fname))
-    assert ures.is_success, ures
-    assert ures.data == exp, ures
+    unit = Unit.parse_metadata(raw, SiteConfig(cwd, pwd), cwd.joinpath(fname))
+    assert unit == exp
 
 
 def test_unit_parse_metadata_ok_pub_time_no_config_tz():
     cwd = pwd = Path("/fs")
-    ures = Unit.parse_metadata(
+    meta = Unit.parse_metadata(
         "---\npub_time: 2018-06-03 01:02:03", SiteConfig(cwd, pwd),
         cwd.joinpath("test.md"))
-    assert ures.is_success, ures
-    assert ures.data == {
+    assert meta == {
         "title": "test",
         "slug": "test",
         "pub_time": dt(2018, 6, 3, 1, 2, 3),
@@ -71,11 +65,10 @@ def test_unit_parse_metadata_ok_pub_time_no_config_tz():
 def test_unit_parse_metadata_ok_pub_time_with_config_tz():
     cwd = pwd = Path("/fs")
     tz = pytz.timezone("Africa/Tripoli")
-    ures = Unit.parse_metadata(
+    meta = Unit.parse_metadata(
         "---\npub_time: 2018-06-03 01:02:03",
         SiteConfig(cwd, pwd, timezone=tz), cwd.joinpath("test.md"))
-    assert ures.is_success, ures
-    assert ures.data == {
+    assert meta == {
         "title": "test",
         "slug": "test",
         "pub_time": tz.localize(dt(2018, 6, 3, 1, 2, 3)),
@@ -85,11 +78,10 @@ def test_unit_parse_metadata_ok_pub_time_with_config_tz():
 def test_unit_parse_metadata_ok_pub_time_with_config_and_unit_tz():
     cwd = pwd = Path("/fs")
     tz = pytz.timezone("Africa/Tripoli")
-    ures = Unit.parse_metadata(
+    meta = Unit.parse_metadata(
         "---\npub_time: 2018-06-03 21:02:03+05:00",
         SiteConfig(cwd, pwd, timezone=tz), cwd.joinpath("test.md"))
-    assert ures.is_success, ures
-    assert ures.data == {
+    assert meta == {
         "title": "test",
         "slug": "test",
         "pub_time": tz.localize(dt(2018, 6, 3, 16, 2, 3)),
@@ -98,11 +90,10 @@ def test_unit_parse_metadata_ok_pub_time_with_config_and_unit_tz():
 
 def test_unit_parse_metadata_custom_slug():
     cwd = pwd = Path("/fs")
-    ures = Unit.parse_metadata(
+    meta = Unit.parse_metadata(
         "---\nslug: My Custom Slug", SiteConfig(cwd, pwd),
         cwd.joinpath("test.md"))
-    assert ures.is_success, ures
-    assert ures.data == {
+    assert meta == {
         "title": "test",
         "slug": "my-custom-slug",
     }
@@ -110,48 +101,50 @@ def test_unit_parse_metadata_custom_slug():
 
 def test_unit_parse_metadata_fail():
     cwd = pwd = Path("/fs")
-    ures = Unit.parse_metadata("---\nbzzt: {", SiteConfig(cwd, pwd),
-                               Path("/fs/contents/01.md"))
-    assert ures.is_failure
-    assert ures.errs.startswith("malformed metadata")
+    with pytest.raises(exc.VoltResourceError, match="malformed metadata"):
+        Unit.parse_metadata(
+            "---\nbzzt: {",
+            SiteConfig(cwd, pwd),
+            Path("/fs/contents/01.md"),
+        )
 
 
 def test_unit_load_fail_read_bytes():
     src = create_autospec(Path, spec_set=True)
     src.read_bytes.side_effect = OSError
     cwd = pwd = Path("/fs")
-    ures = Unit.load(src, SiteConfig(cwd, pwd))
-    assert ures.is_failure, ures
-    assert ures.errs.startswith("cannot load unit")
+    with pytest.raises(exc.VoltResourceError, match="could not load unit"):
+        Unit.load(src, SiteConfig(cwd, pwd))
 
 
 def test_unit_load_fail_invalid_encoding():
     src = create_autospec(Path, spec_set=True)
     src.read_bytes.return_value = "foo".encode("utf-8")
     cwd = pwd = Path("/fs")
-    ures = Unit.load(src, SiteConfig(cwd, pwd), encoding="utf-16")
-    assert ures.is_failure, ures
-    assert ures.errs.startswith("cannot decode unit")
-    assert ures.errs.endswith("using 'utf-16'")
+    with pytest.raises(
+        exc.VoltResourceError,
+        match=r"could not decode unit .+ using 'utf-16' as encoding",
+    ):
+        Unit.load(src, SiteConfig(cwd, pwd), encoding="utf-16")
 
 
 def test_unit_load_fail_unknown_encoding():
     src = create_autospec(Path, spec_set=True)
     src.read_bytes.return_value = "foo".encode("utf-8")
     cwd = pwd = Path("/fs")
-    ures = Unit.load(src, SiteConfig(cwd, pwd), encoding="utf-100")
-    assert ures.is_failure, ures
-    assert ures.errs.startswith("cannot decode unit")
-    assert ures.errs.endswith("unknown encoding")
+    with pytest.raises(
+        exc.VoltResourceError,
+        match=r"could not decode unit .+ 'utf-100': unknown encoding"
+    ):
+        Unit.load(src, SiteConfig(cwd, pwd), encoding="utf-100")
 
 
 def test_unit_load_fail_malformed_unit():
     src = create_autospec(Path, spec_set=True)
     src.read_bytes.return_value = "---\ntitle: {---\n\nFoo".encode("utf-8")
     cwd = pwd = Path("/fs")
-    ures = Unit.load(src, SiteConfig(cwd, pwd))
-    assert ures.is_failure, ures
-    assert ures.errs.startswith("malformed unit")
+    with pytest.raises(exc.VoltResourceError, match="malformed unit"):
+        Unit.load(src, SiteConfig(cwd, pwd))
 
 
 def test_unit_load_fail_parse_metadata():
@@ -159,7 +152,8 @@ def test_unit_load_fail_parse_metadata():
     src.read_bytes.return_value = \
         "---\ntitle: foo\npub_time: 2018-06-12T5 \n---\n\nFoo".encode("utf-8")
     cwd = pwd = Path("/fs")
-    ures = Unit.load(src, SiteConfig(cwd, pwd))
-    assert ures.is_failure, ures
-    assert ures.errs.startswith("unit metadata 'pub_time' must be a valid"
-                                " iso8601 timestamp")
+    with pytest.raises(
+        exc.VoltResourceError,
+        match="unit metadata 'pub_time' must be a valid iso8601 timestamp",
+    ):
+        Unit.load(src, SiteConfig(cwd, pwd))

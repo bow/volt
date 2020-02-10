@@ -36,8 +36,9 @@ def test_default(fxt_config_tz):
         result = runner.invoke(main, ["init"])
         assert result.exit_code == 0
 
-        assert {f.name for f in wp.iterdir()} == \
+        assert {f.name for f in wp.iterdir()} == (
             {"contents", "templates", "assets", CONFIG_FNAME}
+        )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             assert toml.load(src) == fxt_config_tz
 
@@ -52,8 +53,9 @@ def test_custom_dir_no_name(fxt_config_tz):
         result = runner.invoke(main, ["init", pn])
         assert result.exit_code == 0
 
-        assert {f.name for f in wp.joinpath(pn).iterdir()} == \
+        assert {f.name for f in wp.joinpath(pn).iterdir()} == (
             {"contents", "templates", "assets", CONFIG_FNAME}
+        )
         with open(wp.joinpath(pn, CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["name"] = "proj"
             assert toml.load(src) == fxt_config_tz
@@ -70,8 +72,9 @@ def test_custom_dir_with_name(fxt_config_tz):
         result = runner.invoke(main, ["init", pn, "-n", name])
         assert result.exit_code == 0
 
-        assert {f.name for f in wp.joinpath(pn).iterdir()} == \
+        assert {f.name for f in wp.joinpath(pn).iterdir()} == (
             {"contents", "templates", "assets", CONFIG_FNAME}
+        )
         with open(wp.joinpath(pn, CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["name"] = name
             assert toml.load(src) == fxt_config_tz
@@ -86,8 +89,9 @@ def test_with_name(fxt_config_tz):
         result = runner.invoke(main, ["init", "-n", name])
         assert result.exit_code == 0
 
-        assert {f.name for f in wp.iterdir()} == \
+        assert {f.name for f in wp.iterdir()} == (
             {"contents", "templates", "assets", CONFIG_FNAME}
+        )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["name"] = name
             assert toml.load(src) == fxt_config_tz
@@ -102,8 +106,9 @@ def test_with_url(fxt_config_tz):
         result = runner.invoke(main, ["init", "-u", url])
         assert result.exit_code == 0
 
-        assert {f.name for f in wp.iterdir()} == \
+        assert {f.name for f in wp.iterdir()} == (
             {"contents", "templates", "assets", CONFIG_FNAME}
+        )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["url"] = url
             assert toml.load(src) == fxt_config_tz
@@ -118,8 +123,9 @@ def test_with_timezone(fxt_config_tz):
         result = runner.invoke(main, ["init", "-z", tz])
         assert result.exit_code == 0
 
-        assert {f.name for f in wp.iterdir()} == \
+        assert {f.name for f in wp.iterdir()} == (
             {"contents", "templates", "assets", CONFIG_FNAME}
+        )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["timezone"] = tz
             assert toml.load(src) == fxt_config_tz
@@ -183,7 +189,8 @@ def test_nonempty_with_force(fxt_config_tz):
         result = runner.invoke(main, ["init", "-f"])
         assert result.exit_code == 0
 
-        assert {f.name for f in wp.iterdir()} == \
+        assert {f.name for f in wp.iterdir()} == (
             {"contents", "templates", "assets", CONFIG_FNAME, "existing"}
+        )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             assert toml.load(src) == fxt_config_tz

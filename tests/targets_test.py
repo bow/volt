@@ -8,13 +8,20 @@
 from pathlib import Path
 from unittest.mock import call, create_autospec, patch
 
+import pytest
+
+from volt import exceptions as exc
 from volt.targets import CopyTarget, PageTarget
 from volt.units import Unit
 
 
 def test_page_target():
-    unit = create_autospec(Unit, spec_set=True, instance=True,
-                           metadata={"title": "test"})
+    unit = create_autospec(
+        Unit,
+        spec_set=True,
+        instance=True,
+        metadata={"title": "test"},
+    )
     path = create_autospec(Path, spec_set=True)
     contents = "foo"
     pt = PageTarget(unit, path, contents)
@@ -22,16 +29,15 @@ def test_page_target():
     assert pt.dest == path
     assert pt.metadata == {"title": "test"}
 
-    cres1 = pt.create()
+    res = pt.create()
     assert path.write_text.call_args_list == [call(contents)]
-    assert cres1.is_success
+    assert res is None
 
     path.write_text.reset_mock()
     path.write_text.side_effect = OSError
-    cres2 = pt.create()
+    with pytest.raises(exc.VoltResourceError, match="could not write target"):
+        pt.create()
     assert path.write_text.call_args_list == [call(contents)]
-    assert cres2.is_failure
-    assert cres2.errs.startswith("cannot write target")
 
 
 def test_copy_target():
@@ -44,23 +50,23 @@ def test_copy_target():
     ct.dest.exists.return_value = False
     with patch("shutil.copy2") as copy2, patch("filecmp.cmp") as cmp:
         cmp.return_value = False
-        cres1 = ct.create()
-        cres1.is_success
+        res1 = ct.create()
+        assert res1 is None
         assert copy2.call_count == 1
         assert cmp.call_count == 0
 
     ct.dest.exists.return_value = True
     with patch("shutil.copy2") as copy2, patch("filecmp.cmp") as cmp:
         cmp.return_value = False
-        cres2 = ct.create()
-        cres2.is_success
+        res2 = ct.create()
+        assert res2 is None
         assert copy2.call_count == 1
         assert cmp.call_count == 1
 
     ct.dest.exists.return_value = True
     with patch("shutil.copy2") as copy2, patch("filecmp.cmp") as cmp:
         cmp.return_value = True
-        cres3 = ct.create()
-        cres3.is_success
+        res3 = ct.create()
+        assert res3 is None
         assert copy2.call_count == 0
         assert cmp.call_count == 1

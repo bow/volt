@@ -10,10 +10,9 @@
 
 import importlib.util as iutil
 import sys
-from collections import namedtuple
 from os import path
 from pathlib import Path
-from typing import Any, Callable, Generic, Optional, TypeVar
+from typing import Any, Callable, Optional
 
 import jinja2.exceptions as j2exc
 import pytz
@@ -22,116 +21,80 @@ import tzlocal
 from jinja2 import Environment, Template
 from pytz.tzinfo import DstTzInfo
 
-
-class Mark:
-
-    """Helper class for marking a :class:`Result` attribute that should be
-    ignored.
-
-    Instances of this class always evaluates to ``False``.
-
-    """
-    def __bool__(self) -> bool:
-        return False
+from . import exceptions as exc
 
 
-# The singleton used by Result.
-_mark = Mark()
-# Type parameter for Result.
-T = TypeVar("T")
-
-
-# Helper tuple for containing success or failure results.
-class Result(namedtuple("Result", ["data", "errs"]), Generic[T]):
-
-    """Container for return values that may be a success or failure.
-
-    Instances of this class *SHOULD NOT* be created using the default
-    ``__init__`` call, but rather using either the ``as_success`` or
-    ``as_failure`` methods.
-
-    """
-
-    @classmethod
-    def as_success(cls, success_value: T) -> "Result[T]":
-        """Return a success variant with the given value."""
-        return cls(success_value, _mark)
-
-    @classmethod
-    def as_failure(cls, failure_message: str) -> "Result[Mark]":
-        """Return a failure variant with the given value."""
-        return cls(_mark, failure_message)
-
-    @property
-    def is_failure(self) -> bool:
-        """Checks whether the instance represents a failure value."""
-        return self.data is _mark
-
-    @property
-    def is_success(self) -> bool:
-        """Checks whether the instance represents a success value."""
-        return self.errs is _mark
-
-
-def get_tz(tzname: Optional[str] = None) -> Result[DstTzInfo]:
+def get_tz(tzname: Optional[str] = None) -> DstTzInfo:
     """Retrieve the timezone object with the given name.
 
     If no timezone name is given, the system default will be used.
 
     :param tzname: Name of the timezone to retrieve.
 
-    :returns: The timezone object or a message indicating failure.
+    :returns: The timezone object.
+
+    :raises ~volt.exceptions.VoltTimezoneError: when the given timezone string
+        could not be converted to a timezone object.
 
     """
     if tzname is None:
-        return Result.as_success(tzlocal.get_localzone())
+        return tzlocal.get_localzone()
     try:
-        return Result.as_success(pytz.timezone(tzname))
-    except (AttributeError, tzexc.UnknownTimeZoneError):
-        return Result.as_failure(f"cannot interpret timezone {tzname!r}")
+        return pytz.timezone(tzname)
+    except (AttributeError, tzexc.UnknownTimeZoneError) as e:
+        raise exc.VoltTimezoneError(tzname) from e
 
 
-def import_mod_attr(target: str) -> Result[Any]:
+def import_mod_attr(target: str) -> Any:
     """Import the attribute of a module given its string path.
 
-    For example, specifying ``pathlib.Path`` is essentially the same as
-    executing ``from pathlib import Path```.
+    For example, specifying ``pathlib.Path`` will execute
+    ``from pathlib import Path``` statement.
 
     :param target: The target object to import.
 
-    :returns: The object indicated by the input or an error message indicating
-        failure.
+    :returns: The object indicated by the input.
+
+    :raises ~volt.exceptions.VoltResourceError: when the target could not be
+        imported
 
     """
     try:
         mod_name, cls_name = target.replace(":", ".").rsplit(".", 1)
-    except ValueError:
-        return Result.as_failure("invalid module attribute import target:"
-                                 f" {target!r}")
+    except ValueError as e:
+        raise exc.VoltResourceError(
+            f"invalid module attribute import target: {target!r}"
+        ) from e
 
     if path.isfile(mod_name):
-        return Result.as_failure("import from file is not yet supported")
+        raise exc.VoltResourceError("import from file is not yet supported")
 
     sys.path = [""] + sys.path if not sys.path[0] == "" else sys.path
 
     try:
         spec = iutil.find_spec(mod_name)
-    except (ModuleNotFoundError, ValueError):
-        spec = None
-    if spec is None:
-        return Result.as_failure(f"failed to find module {mod_name!r} for"
-                                 " import")
+        # Spec can be None if mod_name could not be found, so we raise the
+        # exception manually.
+        if spec is None:
+            raise ModuleNotFoundError(f"No module named {mod_name}")
+    except (ModuleNotFoundError, ValueError) as e:
+        raise exc.VoltResourceError(f"failed to import {mod_name!r}") from e
+
     mod = iutil.module_from_spec(spec)
     spec.loader.exec_module(mod)  # type: ignore
 
     try:
-        return Result.as_success(getattr(mod, cls_name))
+        return getattr(mod, cls_name)
     except AttributeError:
-        return Result.as_failure(f"module {mod_name!r} does not contain"
-                                 f" attribute {cls_name!r}")
+        raise exc.VoltResourceError(
+            f"module {mod_name!r} does not contain attribute {cls_name!r}"
+        )
 
 
-def find_pwd(fname: str, start: Optional[Path] = None) -> Result[Path]:
+def find_dir_containing(
+    fname: str,
+    start: Optional[Path] = None,
+) -> Optional[Path]:
     """Find the directory containing the filename.
 
     Directory lookup is performed from the given start directory up until the
@@ -139,21 +102,21 @@ def find_pwd(fname: str, start: Optional[Path] = None) -> Result[Path]:
     from the current directory.
 
     :param fname: The filename that should be present in the directory.
-    :param start: The path from which lookup should start. If given as
-        ``None``, lookup will start from the current directory.
+    :param start: The path from which lookup starts. If set to ``None``, lookup
+        starts from the current directory.
 
-    :returns: The path to the directory that contains the filename or an error
-        message indicating failure.
+    :returns: The path to the directory that contains the filename or None if
+        no such path can be found.
 
     """
     pwd = Path.cwd() if start is None else Path(start).expanduser().resolve()
 
     while pwd != pwd.parent:
         if pwd.joinpath(fname).exists():
-            return Result.as_success(pwd)
+            return pwd
         pwd = pwd.parent
 
-    return Result.as_failure("failed to find project directory")
+    return None
 
 
 def calc_relpath(target: Path, ref: Path) -> Path:
@@ -164,12 +127,16 @@ def calc_relpath(target: Path, ref: Path) -> Path:
 
     :returns: The relative path from ``ref`` to ``to``.
 
+    :raises ValueError: when one of the given input paths is not an absolute
+        path.
+
     """
     ref = ref.expanduser()
     target = target.expanduser()
     if not ref.is_absolute() or not target.is_absolute():
-        raise ValueError("cannot compute relative paths of non-absolute"
-                         " input paths")
+        raise ValueError(
+            "could not compute relative paths of non-absolute input paths"
+        )
 
     common = Path(path.commonpath([ref, target]))
     ref_uniq = ref.parts[len(common.parts):]
@@ -180,17 +147,28 @@ def calc_relpath(target: Path, ref: Path) -> Path:
     return Path(*rel_parts)
 
 
-def load_template(env: Environment, name: str) -> Result[Template]:
-    """Load a template from the given environment."""
+def load_template(env: Environment, name: str) -> Template:
+    """Load a template from the given environment.
+
+    :param env: Jinja2 template environment.
+    :param name: Template name to load.
+
+    :returns: A Jinja2 template.
+
+    :raises `~volt.exceptions.VoltResourceError`: when the template does not
+        exist or it could not be instantiated.
+
+    """
     try:
         template = env.get_template(name)
-    except j2exc.TemplateNotFound:
-        return Result.as_failure(f"cannot find template {name!r}")
+    except j2exc.TemplateNotFound as e:
+        raise exc.VoltResourceError(f"could not find template {name!r}") from e
     except j2exc.TemplateSyntaxError as e:
-        return Result.as_failure(f"template {name!r} has syntax"
-                                 f" errors: {e.message}")
+        raise exc.VoltResourceError(
+            f"template {name!r} has syntax errors: {e.message}"
+        ) from e
 
-    return Result.as_success(template)
+    return template
 
 
 def lazyproperty(func: Callable) -> Callable:

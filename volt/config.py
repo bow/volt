@@ -16,8 +16,9 @@ from urllib.parse import urljoin as urljoin
 import toml
 from pytz.tzinfo import DstTzInfo
 
+from . import exceptions as exc
 from .units import Unit
-from .utils import Result, calc_relpath, get_tz, import_mod_attr
+from .utils import calc_relpath, get_tz, import_mod_attr
 
 __all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 
@@ -29,17 +30,16 @@ CONFIG_FNAME = "Volt.toml"
 RawConfig = Dict[str, Any]
 
 
-def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
+def validate_site_conf(value: RawConfig) -> None:
     """Validate the given site config value.
 
     :param value: Site config mapping to validate.
 
-    :returns: The input value upon successful validation or an error message
-        when validation fails.
+    :raises ~exc.VoltConfigError: when validation fails.
 
     """
     if not isinstance(value, dict):
-        return Result.as_failure("site config must be a mapping")
+        raise exc.VoltConfigError("site config must be a mapping")
 
     # Keys whose values must be strings.
     for strk in ("name", "url"):
@@ -47,7 +47,7 @@ def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
             continue
         uv = value[strk]
         if not isinstance(uv, str):
-            return Result.as_failure(f"site config {strk!r} must be a string")
+            raise exc.VoltConfigError(f"site config {strk!r} must be a string")
 
     # Keys whose values must be nonempty strings.
     for strk in ("timezone", "unit", "unit_template"):
@@ -55,7 +55,7 @@ def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
             continue
         uv = value[strk]
         if not isinstance(uv, str) or not uv:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"site config {strk!r} must be a nonempty string"
             )
 
@@ -65,11 +65,11 @@ def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
             continue
         uv = value[pathk]
         if not isinstance(uv, str) or not uv:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"site config {pathk!r} must be a nonempty string"
             )
         if os.path.isabs(uv):
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"site config {pathk!r} must be a relative path"
             )
 
@@ -78,27 +78,26 @@ def validate_site_conf(value: RawConfig) -> Result[RawConfig]:
         if bk not in value:
             continue
         if not isinstance(value[bk], bool):
-            return Result.as_failure(f"site config {bk!r} must be a boolean")
+            raise exc.VoltConfigError(f"site config {bk!r} must be a boolean")
 
     # Section config must be a dictionary.
     if "section" in value and not isinstance(value["section"], dict):
-        return Result.as_failure("section config must be a mapping")
+        raise exc.VoltConfigError("section config must be a mapping")
 
-    return Result.as_success(value)
+    return None
 
 
-def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
+def validate_section_conf(name: str, value: RawConfig) -> None:
     """Validate a single section config.
 
     :param name: Name of the section config to validate.
     :param value: Section config mapping to validate.
 
-    :returns: The input value upon successful validation or an error message
-        when validation fails.
+    :raises ~exc.VoltConfigError: when validation fails.
 
     """
     if not isinstance(value, dict):
-        return Result.as_failure(f"section config {name!r} must be a mapping")
+        raise exc.VoltConfigError(f"section config {name!r} must be a mapping")
 
     infix = f"of section {name!r}"
 
@@ -107,7 +106,7 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
         if bk not in value:
             continue
         if not isinstance(value[bk], bool):
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config {bk!r} {infix} must be a boolean"
             )
 
@@ -116,7 +115,7 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
     if intk in value:
         uv = value[intk]
         if (not isinstance(uv, int) or isinstance(uv, bool)) or uv < 1:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config {intk!r} {infix} must be a positive, nonzero integer"
             )
 
@@ -128,7 +127,7 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
             continue
         uv = value[strk]
         if not isinstance(uv, str) or not uv:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config {strk!r} {infix} must be a nonempty string"
             )
 
@@ -138,11 +137,11 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
             continue
         uv = value[pathk]
         if not isinstance(uv, str) or not uv:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config {pathk!r} {infix} must be a nonempty string"
             )
         if os.path.isabs(uv):
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config {pathk!r} {infix} must be a relative path"
             )
 
@@ -152,18 +151,16 @@ def validate_section_conf(name: str, value: RawConfig) -> Result[RawConfig]:
         "unit_order": validate_section_unit_order,
     }
     for dk, vf in vfm.items():
-        vr = vf(name, value, dk)
-        if vr.is_failure:
-            return vr
+        vf(name, value, dk)
 
-    return Result.as_success((name, value))
+    return None
 
 
 def validate_section_pagination(
     name: str,
     section_config: RawConfig,
     key: str,
-) -> Result[RawConfig]:
+) -> None:
     """Validate the pagination value of the given section config value.
 
     :param name: Name of the section config in which the pagination config
@@ -171,34 +168,33 @@ def validate_section_pagination(
     :param section_config: Section config to validate.
     :param key: Name of the key whose value is the pagination config.
 
-    :returns: The input section config upon successful validation or an error
-        message when validation fails.
+    :raises ~exc.VoltConfigError: when validation fails.
 
     """
     if key not in section_config:
-        return Result.as_success((name, section_config, key))
+        return None
 
     infix = f"of section {name!r}"
 
     value = section_config[key]
     if not isinstance(value, dict):
-        return Result.as_failure(f"config {key!r} {infix} must be a mapping")
+        raise exc.VoltConfigError(f"config {key!r} {infix} must be a mapping")
 
     # Assumes keys are strings.
     for k, v in value.items():
         # path_pattern: str
         ikey1 = "path_pattern"
         if ikey1 not in v:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config '{key}.{k}.{ikey1}' {infix} must be present"
             )
         v1 = v[ikey1]
         if not isinstance(v1, str) or not v1:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config '{key}.{k}.{ikey1}' {infix} must be a nonempty string"
             )
         if "{idx}" not in v1:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config '{key}.{k}.{ikey1}' {infix} must contain the '{{idx}}'"
                 " wildcard"
             )
@@ -208,7 +204,7 @@ def validate_section_pagination(
         if ikey2 in v:
             v2 = v[ikey2]
             if (not isinstance(v2, int) or isinstance(v2, bool)) or v2 < 1:
-                return Result.as_failure(
+                raise exc.VoltConfigError(
                     f"config '{key}.{k}.{ikey2}' {infix} must be a positive,"
                     " nonzero integer"
                 )
@@ -218,28 +214,27 @@ def validate_section_pagination(
         if ikey3 in v:
             v3 = v[ikey3]
             if not isinstance(v3, str) or not v3:
-                return Result.as_failure(
+                raise exc.VoltConfigError(
                     f"config '{key}.{k}.{ikey3}' {infix} must be a nonempty"
                     " string"
                 )
 
-    return Result.as_success((name, section_config, key))
+    return None
 
 
 def validate_section_unit_order(
     name: str,
     section_config: RawConfig,
     key: str,
-) -> Result[RawConfig]:
+) -> None:
     """Validates the unit_order value of the given section config value.
 
     :param str name: Name of the section config in which the unit_order config
         exists.
     :param dict section_config: Section config to validate.
     :param str key: Name of the key whose value is the unit_order config.
-    :returns: The input section config upon successful validation or an error
-        message when validation fails.
-    :rtype: :class:`Result`.
+
+    :raises ~exc.VoltConfigError: when validation fails.
 
     """
     infix = f"of section {name!r}"
@@ -247,24 +242,24 @@ def validate_section_unit_order(
     if key in section_config:
         value = section_config[key]
         if not isinstance(value, dict):
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config {key!r} {infix} must be a mapping"
             )
         if "key" not in value:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config '{key}.key' {infix} must be present"
             )
         iv = value["key"]
         if not isinstance(iv, str) or not iv:
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config '{key}.key' {infix} must be a nonempty string"
             )
         if "reverse" in value and not isinstance(value["reverse"], bool):
-            return Result.as_failure(
+            raise exc.VoltConfigError(
                 f"config '{key}.reverse' {infix} must be a boolean"
             )
 
-    return Result.as_success((name, section_config, key))
+    return None
 
 
 class SiteConfig(dict):
@@ -340,13 +335,13 @@ class SiteConfig(dict):
         # Move other custom configs.
         self.update(**user_site_conf)
 
-        # Config values that cannot be overwritten.
+        # Config values that could not be overwritten.
         self["pwd"] = pwd
         self["cwd"] = cwd
         self["sections"] = {}
         self["site_dest_rel"] = calc_relpath(self["site_dest"], cwd)
 
-    def add_section(self, name: str, section_conf: RawConfig) -> Result[None]:
+    def add_section(self, name: str, section_conf: RawConfig) -> None:
         """Add the given section config to the site config after loading the
         relevant engine.
 
@@ -356,11 +351,10 @@ class SiteConfig(dict):
         :returns: None or an error message indicating failure.
 
         """
-        rsc = SectionConfig.from_raw_configs(name, section_conf, self)
-        if rsc.is_failure:
-            return rsc
-        self["sections"][name] = rsc.data
-        return Result.as_success(None)
+        sc = SectionConfig.from_raw_configs(name, section_conf, self)
+        self["sections"][name] = sc
+
+        return None
 
     @classmethod
     def from_raw_config(
@@ -368,63 +362,51 @@ class SiteConfig(dict):
         cwd: Path,
         pwd: Path,
         user_conf: RawConfig,
-        site_vfunc: Callable[
-            [RawConfig],
-            Result[RawConfig]
-        ] = validate_site_conf,
-        section_vfunc: Callable[
-            [str, RawConfig],
-            Result[RawConfig]
-        ] = validate_section_conf,
-    ) -> "Result[SiteConfig]":
+        site_vfunc: Callable[[RawConfig], Any] = validate_site_conf,
+        section_vfunc: Callable[[str, RawConfig], Any] = validate_section_conf,
+    ) -> "SiteConfig":
         """Create an instance from the given user-supplied config.
 
         :param cwd: Path to invocation directory.
         :param pwd: Path to project directory.
         :param user_conf: Raw user config.
         :param site_vfunc: Callable for validating the ``site`` configuration.
-            The callable must accept a single site config value as input and
-            return a :class:`Result`.
         :param section_vfunc: Callable for validating each section config in the
-            site config. The callable must a accept a single section config
-            value as input and return a :class:`Result`.
+            site config.
 
-        :returns: The site config or an error message if it cannot be created.
+        :returns: The site config.
+
+        :raises ~volt.exceptions.VoltTimezoneError: when the config timezone
+            name is invalid.
+        :raises ~volt.exceptions.VoltConfigError: when any other
+            configuration-related error occurs.
 
         """
         if "site" not in user_conf:
-            return Result.as_failure("cannot find site configuration in config"
-                                     " file")
-        vres = site_vfunc(user_conf.pop("site"))
-        if vres.is_failure:
-            return vres
-        site_conf = vres.data
+            raise exc.VoltConfigError(
+                "could not find site configuration in config file"
+            )
+
+        site_conf = user_conf.pop("site")
+
+        site_vfunc(site_conf)
 
         # Get timezone from config or system.
-        rtz = get_tz(site_conf.get("timezone", None))
-        if rtz.is_failure:
-            return rtz
-        site_conf["timezone"] = rtz.data
+        tz = get_tz(site_conf.get("timezone", None))
+        site_conf["timezone"] = tz
 
         # Import user-defined unit if specified.
         if "unit" in site_conf:
-            rucls = import_mod_attr(site_conf["unit"])
-            if rucls.is_failure:
-                return rucls
-            site_conf["unit"] = rucls.data
+            site_conf["unit"] = import_mod_attr(site_conf["unit"])
 
         conf = cls(cwd, pwd, user_site_conf=site_conf)
 
         sections_conf = user_conf.pop("section", {})
         for name, sc in sections_conf.items():
-            svres = section_vfunc(name, sc)
-            if svres.is_failure:
-                return svres
-            ares = conf.add_section(name, sc)
-            if ares.is_failure:
-                return ares
+            section_vfunc(name, sc)
+            conf.add_section(name, sc)
 
-        return Result.as_success(conf)
+        return conf
 
     @classmethod
     def from_toml(
@@ -432,7 +414,7 @@ class SiteConfig(dict):
         cwd: Path,
         pwd: Path,
         toml_fname: str = CONFIG_FNAME,
-    ) -> "Result[SiteConfig]":
+    ) -> "SiteConfig":
         """Create a site configuration from a Volt TOML file.
 
         :param cwd: Path to the invocation directory.
@@ -440,8 +422,9 @@ class SiteConfig(dict):
         :param toml_fname: Name of TOML file containing the configuration
             values.
 
-        :returns: A site config instance or an error message indicating
-            failure.
+        :returns: A site config instance.
+
+        :raises ~exc.VoltConfigError: when validation fails.
 
         """
         with pwd.joinpath(toml_fname).open() as src:
@@ -449,7 +432,9 @@ class SiteConfig(dict):
                 user_conf = cast(Dict[str, Any], toml.load(src))
             except (IndexError, toml.TomlDecodeError) as e:
                 # TODO: display traceback depending on log level
-                return Result.as_failure(f"cannot parse config: {e.args[0]}")
+                raise exc.VoltConfigError(
+                    f"could not parse config: {e.args[0]}"
+                ) from e
 
         return cls.from_raw_config(cwd, pwd, user_conf)
 
@@ -498,7 +483,7 @@ class SectionConfig(ChainMap):
         name: str,
         user_conf: RawConfig,
         site_conf: SiteConfig,
-    ) -> "Result[SectionConfig]":
+    ) -> "SectionConfig":
         """Create a section config from the given raw configurations.
 
         This method may mutate some or all of its input configs.
@@ -507,12 +492,12 @@ class SectionConfig(ChainMap):
         :param user_conf: Raw user config.
         :param site_config: The site config in which the section config exists.
 
-        :returns: A section config or an error message indicating failure.
+        :returns: A section config.
+
+        :raises ~exc.VoltConfigError: when any validation error occurs.
 
         """
-        vures = validate_section_conf(name, user_conf)
-        if vures.is_failure:
-            return vures
+        validate_section_conf(name, user_conf)
 
         default_conf = {
             "paginations": {},
@@ -532,22 +517,18 @@ class SectionConfig(ChainMap):
             return user_conf.pop(key, default_conf[key])
 
         eng_name = resolve("engine")
-        reng = import_mod_attr(eng_name)
-        if reng.is_failure:
-            return reng
-        eng = reng.data
+        eng = import_mod_attr(eng_name)
 
         try:
             eng_conf = eng.default_config()
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError) as e:
             # AttributeError: when eng is not an Engine subclass.
             # TypeError: when eng defines default_config as an instance method.
-            return Result.as_failure(
-                f"cannot load default config of {eng_name}"
-            )
-        veres = validate_section_conf(name, eng_conf)
-        if veres.is_failure:
-            return veres
+            raise exc.VoltConfigError(
+                f"could not load default config of {eng_name}"
+            ) from e
+
+        validate_section_conf(name, eng_conf)
 
         # Required config values with predefined defaults.
         paginations = resolve("paginations")
@@ -583,4 +564,4 @@ class SectionConfig(ChainMap):
 
         conf = cls(name, resolved, eng_conf, site_conf)
 
-        return Result.as_success(conf)
+        return conf

@@ -17,9 +17,10 @@ import click
 import toml
 
 from . import __version__
+from . import exceptions as exc
 from .config import CONFIG_FNAME, SiteConfig
 from .site import Site
-from .utils import Result, find_pwd, get_tz
+from .utils import find_dir_containing, get_tz
 
 
 class Session:
@@ -35,7 +36,7 @@ class Session:
         timezone: Optional[str],
         force: bool,
         config_fname: str = CONFIG_FNAME,
-    ) -> Result[None]:
+    ) -> None:
         """Initialize a new project.
 
         This function may overwrite any preexisting files and or directories
@@ -53,8 +54,9 @@ class Session:
             or not.
         :param config_name: Name of the config file to generate.
 
-        :returns: Nothing upon successful execution or an error message when
-            execution fails.
+        :raises ~volt.exceptions.VoltCliError:
+            * when the given project directory is not empty and force is False.
+            * when any directory creation fails.
 
         """
         name = pwd.name if (not name and pwd is not None) else name
@@ -62,25 +64,23 @@ class Session:
         try:
             pwd.mkdir(parents=True, exist_ok=True)
         except OSError as e:
-            return Result.as_failure(e.strerror)
+            raise exc.VoltCliError(e.strerror) from e
 
         if not force and any(True for _ in pwd.iterdir()):
-            return Result.as_failure(
+            raise exc.VoltCliError(
                 "target project directory is not empty -- use the `-f` flag to"
                 " force init in nonempty directories"
             )
 
-        rtz = get_tz(timezone)
-        if rtz.is_failure:
-            return rtz
+        tz = get_tz(timezone)
 
         # Bootstrap directories.
-        bootstrap_conf = SiteConfig(cwd, pwd, timezone=rtz.data)
+        bootstrap_conf = SiteConfig(cwd, pwd, timezone=tz)
         try:
             for dk in ("contents_src", "templates_src", "assets_src"):
                 bootstrap_conf[dk].mkdir(parents=True, exist_ok=True)
         except OSError as e:
-            return Result.as_failure(e.strerror)
+            raise exc.VoltCliError(e.strerror) from e
 
         # Create initial TOML config file.
         init_conf = OrderedDict([
@@ -88,20 +88,20 @@ class Session:
                 "site", OrderedDict([
                     ("name", name or ""),
                     ("url", url or ""),
-                    ("timezone", rtz.data.zone),
+                    ("timezone", tz.zone),
                 ]),
             ),
         ])
         pwd.joinpath(config_fname).write_text(toml.dumps(init_conf))
 
-        return Result.as_success(None)
+        return None
 
     @staticmethod
     def do_build(
         cwd: Path,
         start_lookup_dir: Optional[Path] = None,
         clean: bool = True,
-    ) -> Result[None]:
+    ) -> None:
         """Build the static site.
 
         This function may overwrite and/or remove any preexisting files
@@ -114,30 +114,21 @@ class Session:
         :param clean: Whether to remove the entire site output directory prior
             to building, or not.
 
-        :returns: Nothing upon successful execution or an error message when
-            execution fails.
-
         """
-        rpwd = find_pwd(CONFIG_FNAME, start_lookup_dir)
-        if rpwd.is_failure:
-            return rpwd
+        pwd = find_dir_containing(CONFIG_FNAME, start_lookup_dir)
+        if pwd is None:
+            raise exc.VoltCliError("project directory not found")
 
-        rsc = SiteConfig.from_toml(cwd, rpwd.data, CONFIG_FNAME)
-        if rsc.is_failure:
-            return rsc
-
-        site_config = rsc.data
+        site_config = SiteConfig.from_toml(cwd, pwd, CONFIG_FNAME)
         with suppress(FileNotFoundError):
             if clean:
                 # TODO: wipe and write only the necessary ones
                 shutil.rmtree(str(site_config["site_dest"]))
 
         site = Site(site_config)
-        rbuild = site.build()
-        if rbuild.is_failure:
-            return rbuild
+        site.build()
 
-        return Result.as_success(None)
+        return None
 
 
 @click.group()
@@ -233,9 +224,7 @@ def init(
 
     """
     pwd = Path(project_dir) if project_dir is not None else project_dir
-    _, errs = Session.do_init(Path.cwd(), pwd, name, url, timezone, force)
-    if errs:
-        raise click.UsageError(errs)
+    Session.do_init(Path.cwd(), pwd, name, url, timezone, force)
     # TODO: add message for successful init
 
 
@@ -271,10 +260,8 @@ def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
     directory is specified, no repeated lookups will be performed.
 
     """
-    _, errs = Session.do_build(
+    Session.do_build(
         Path.cwd(),
         Path(project_dir) if project_dir is not None else None,
         clean,
     )
-    if errs:
-        raise click.UsageError(errs)

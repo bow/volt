@@ -10,24 +10,24 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
+from volt import exceptions as exc
 from volt import site
 from volt.config import SiteConfig
 from volt.targets import Target
-from volt.utils import Result
 from .utils import create_fs_fixture
 
 
 class MockTarget(Target):
 
-    def __init__(self, dest=None):
+    def __init__(self, dest=None) -> None:
         self._dest = Path("site/out.html") if dest is None else Path(dest)
 
     @property
-    def dest(self):
+    def dest(self) -> Path:
         return self._dest
 
-    def create(self):
-        return Result.as_success(None)
+    def create(self) -> None:
+        return None
 
 
 def test_site_node_no_target():
@@ -107,13 +107,15 @@ def test_site_node_add_children_existing_key():
 def test_site_plan_ok(targets, dpaths, fpaths):
     sp = site.SitePlan(Path("site"))
     for target in targets:
-        ares = sp.add_target(MockTarget(target))
-        assert ares.is_success, ares
+        res = sp.add_target(MockTarget(target))
+        assert res is None
 
-    assert sorted([n.path for n in sp.dnodes()]) == \
+    assert sorted([n.path for n in sp.dnodes()]) == (
         sorted([Path(dp) for dp in dpaths])
-    assert sorted([n.path for n in sp.fnodes()]) == \
+    )
+    assert sorted([n.path for n in sp.fnodes()]) == (
         sorted([Path(fp) for fp in fpaths])
+    )
 
 
 @pytest.mark.parametrize("target1, target2, exp_msg", [
@@ -123,9 +125,8 @@ def test_site_plan_ok(targets, dpaths, fpaths):
 def test_site_plan_fail(target1, target2, exp_msg):
     sp = site.SitePlan(Path("site"))
     sp.add_target(MockTarget(target1))
-    ares = sp.add_target(MockTarget(target2))
-    assert ares.is_failure
-    assert ares.errs == exp_msg
+    with pytest.raises(ValueError, match=exp_msg):
+        sp.add_target(MockTarget(target2))
 
 
 @pytest.mark.parametrize("files", [
@@ -143,11 +144,10 @@ def test_site_gather_units_ok(files):
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        gres = s.gather_units()
-        assert gres.is_success
+        units = s.gather_units()
         fnames = [fn.rsplit("/", 1)[1] for fn in files]
-        assert len(gres.data) == len(fnames)
-        assert sorted([u.src.name for u in gres.data]) == sorted(fnames)
+        assert len(units) == len(fnames)
+        assert sorted([u.src.name for u in units]) == sorted(fnames)
 
 
 def test_site_gather_units_fail():
@@ -164,9 +164,11 @@ def test_site_gather_units_fail():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        gres = s.gather_units()
-        assert gres.is_failure
-        assert gres.errs == "malformed unit: 'contents/fail.md'"
+        with pytest.raises(
+            exc.VoltResourceError,
+            match="malformed unit: 'contents/fail.md'"
+        ):
+            s.gather_units()
 
 
 def test_site_create_pages_ok():
@@ -182,10 +184,9 @@ def test_site_create_pages_ok():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages(s.gather_units().data)
-        assert cres.is_success
-        assert len(cres.data) == 1
-        page = cres.data.pop()
+        pages = s.create_pages(s.gather_units())
+        assert len(pages) == 1
+        page = pages.pop()
         assert page.dest == Path("site/ok.html")
 
 
@@ -201,9 +202,11 @@ def test_site_create_pages_fail_no_template():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages(s.gather_units().data)
-        assert cres.is_failure
-        assert cres.errs.startswith("cannot find template")
+        with pytest.raises(
+            exc.VoltResourceError,
+            match="could not find template 'page.html'",
+        ):
+            s.create_pages(s.gather_units())
 
 
 def test_site_create_pages_fail_template_error():
@@ -219,9 +222,11 @@ def test_site_create_pages_fail_template_error():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages(s.gather_units().data)
-        assert cres.is_failure
-        assert cres.errs.startswith("template 'page.html' has syntax errors")
+        with pytest.raises(
+            exc.VoltResourceError,
+            match="template 'page.html' has syntax errors",
+        ):
+            s.create_pages(s.gather_units())
 
 
 def test_site_create_pages_fail_page_error():
@@ -237,6 +242,8 @@ def test_site_create_pages_fail_page_error():
         })
         s = site.Site(SiteConfig(fs, fs))
 
-        cres = s.create_pages(s.gather_units().data)
-        assert cres.is_failure
-        assert cres.errs.startswith("cannot render to")
+        with pytest.raises(
+            exc.VoltResourceError,
+            match="could not render to 'site/ok.html' using 'page.html'"
+        ):
+            s.create_pages(s.gather_units())

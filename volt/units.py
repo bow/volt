@@ -17,7 +17,7 @@ from slugify import slugify
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
-from .utils import Result
+from . import exceptions as exc
 
 if TYPE_CHECKING:
     from .config import SectionConfig, SiteConfig  # noqa: F401
@@ -33,17 +33,16 @@ _RE_WITH_FM = re.compile(r"\n---\n+")
 _RE_TAGS = re.compile(r",\s+")
 
 
-def validate_metadata(value: Any) -> Result[dict]:
+def validate_metadata(value: Any) -> None:
     """Validate the given metadata.
 
     :param dict value: Metadata to validate.
 
-    :returns: The input value upon successful validation or an error message
-        when validation fails.
+    :raises ~exc.VoltResourceError: when validation fails.
 
     """
     if not isinstance(value, dict):
-        return Result.as_failure("unit metadata must be a mapping")
+        raise exc.VoltResourceError("unit metadata must be a mapping")
 
     # Keys whose value must be nonempty strings.
     for strk in ("title", "slug"):
@@ -51,7 +50,7 @@ def validate_metadata(value: Any) -> Result[dict]:
             continue
         uv = value[strk]
         if not isinstance(uv, str) or not uv:
-            return Result.as_failure(
+            raise exc.VoltResourceError(
                 f"unit metadata {strk!r} must be a nonempty string"
             )
 
@@ -60,7 +59,7 @@ def validate_metadata(value: Any) -> Result[dict]:
     if tk in value:
         uv = value[tk]
         if not isinstance(uv, (str, list)):
-            return Result.as_failure(
+            raise exc.VoltResourceError(
                 f"unit metadata {tk!r} must be a string or a list"
             )
 
@@ -69,11 +68,11 @@ def validate_metadata(value: Any) -> Result[dict]:
     if dtk in value:
         dto = value[dtk]
         if not isinstance(dto, datetime):
-            return Result.as_failure(
+            raise exc.VoltResourceError(
                 f"unit metadata {dtk!r} must be a valid iso8601 timestamp"
             )
 
-    return Result.as_success(value)
+    return None
 
 
 class Unit:
@@ -87,30 +86,24 @@ class Unit:
         raw: str,
         config: Union["SiteConfig", "SectionConfig"],
         src: Path,
-        vfunc: Callable[[dict], Result[dict]] = validate_metadata
-    ) -> Result[dict]:
+        vfunc: Callable[[dict], Any] = validate_metadata
+    ) -> dict:
         """Parse the unit metadata into a mapping.
 
         :param raw: Raw metadata ready for parsing as YAML.
-        :param Configuration values.
-        :type config: volt.config.SiteConfig or volt.config.SectionConfig.
+        :param config: Configuration values.
         :param src: Path to the unit from which the metadata was parsed.
-        :param vfunc: Callable for validating the parsed metadata. The callable
-            must a accept a single dict value as input and return a
-            :class:`Result`.
+        :param vfunc: Callable for validating the parsed metadata.
 
-        :returns: The metadata as a mapping or an error message indicating
-            failure.
+        :returns: The metadata as a mapping.
 
         """
         try:
             meta = yaml.safe_load(raw) or {}
-        except (ScannerError, ParserError):
-            return Result.as_failure(f"malformed metadata: {src}")
+        except (ScannerError, ParserError) as e:
+            raise exc.VoltResourceError(f"malformed metadata: {src}") from e
 
-        vres = vfunc(meta)
-        if vres.is_failure:
-            return vres
+        vfunc(meta)
 
         # Ensure tags is a list of strings.
         tags = meta.get("tags", [])
@@ -136,7 +129,7 @@ class Unit:
             # .. or ensure that user supplied values are slugs.
             meta["slug"] = slugify(meta["slug"])
 
-        return Result.as_success(meta)
+        return meta
 
     @classmethod
     def load(
@@ -144,53 +137,51 @@ class Unit:
         src: Path,
         config: Union["SiteConfig", "SectionConfig"],
         encoding: str = "utf-8",
-    ) -> Result["Unit"]:
+    ) -> "Unit":
         """Create the unit by loading from the given path.
 
         :param src: Path to the unit source.
         :param Configuration values.
         :param encoding: Name of the unit source encoding.
 
-        :returns: An instance of the unit or an error message indicating
-            failure.
+        :returns: An Unit instance.
 
         """
         try:
             raw_bytes = src.read_bytes()
         except OSError as e:
-            return Result.as_failure(
-                "cannot load unit"
+            raise exc.VoltResourceError(
+                "could not load unit"
                 f"{str(src.relative_to(config['pwd']))!r}: {e.strerror}"
-            )
+            ) from e
 
         try:
             raw_contents = raw_bytes.decode(encoding)
-        except UnicodeDecodeError:
-            return Result.as_failure(
-                "cannot decode unit"
+        except UnicodeDecodeError as e:
+            raise exc.VoltResourceError(
+                "could not decode unit"
                 f" {str(src.relative_to(config['pwd']))!r} using {encoding!r}"
-            )
-        except LookupError:
-            return Result.as_failure(
-                "cannot decode unit"
+                " as encoding"
+            ) from e
+        except LookupError as e:
+            raise exc.VoltResourceError(
+                "could not decode unit"
                 f" {str(src.relative_to(config['pwd']))!r} using {encoding!r}:"
                 " unknown encoding"
-            )
+            ) from e
 
         split_contents = _RE_WITH_FM.split(raw_contents, 1)
 
         try:
             raw_meta, raw_text = split_contents
-        except ValueError:
-            return Result.as_failure(
+        except ValueError as e:
+            raise exc.VoltResourceError(
                 f"malformed unit: {str(src.relative_to(config['pwd']))!r}"
-            )
+            ) from e
 
-        rmeta = cls.parse_metadata(raw_meta, config, src)
-        if rmeta.is_failure:
-            return rmeta
+        meta = cls.parse_metadata(raw_meta, config, src)
 
-        return Result.as_success(cls(src, config, rmeta.data, raw_text))
+        return cls(src, config, meta, raw_text)
 
     def __init__(
         self,
@@ -199,7 +190,7 @@ class Unit:
         metadata: dict,
         raw_text: str,
     ) -> None:
-        """Initialize the unit.
+        """Initialize a unit.
 
         :param src: Path to the unit source.
         :param config: Configuration values.

@@ -15,8 +15,8 @@ from pathlib import Path
 import jinja2.exceptions as j2exc
 from jinja2 import Template
 
+from . import exceptions as exc
 from .units import Unit
-from .utils import Result
 
 __all__ = ["CopyTarget", "PageTarget", "Target"]
 
@@ -32,7 +32,7 @@ class Target:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(self) -> Result[None]:
+    def create(self) -> None:
         """Create the target at the destination."""
         raise NotImplementedError
 
@@ -49,7 +49,7 @@ class PageTarget(Target):
         src: Unit,
         dest: Path,
         template: Template,
-    ) -> Result["PageTarget"]:
+    ) -> "PageTarget":
         """Create a :class:`PageTarget` instance from a jinja2 template.
 
         :param src: Source unit containing the data for templating.
@@ -57,19 +57,22 @@ class PageTarget(Target):
             which Volt is invoked.
         :param template: Jinja2 template instance to use.
 
-        :returns: The page target instance or an error message indicating
-            failure.
+        :returns: A page target instance.
+
+        :raises ~exc.VoltResourceError: when rendering with the given template
+            fails.
 
         """
         try:
             contents = template.render(unit=src)
         except j2exc.UndefinedError as e:
-            return Result.as_failure(
-                f"cannot render to {str(dest)!r}"  # type: ignore
+            raise exc.VoltResourceError(
+                f"could not render to {str(dest)!r}"  # type: ignore
                 f" using {template.name!r}:"
-                f" {e.message}")
+                f" {e.message}"
+            ) from e
 
-        return Result.as_success(cls(src, dest, contents))
+        return cls(src, dest, contents)
 
     def __init__(self, src: Unit, dest: Path, contents: str) -> None:
         """Initialize a page target.
@@ -96,22 +99,17 @@ class PageTarget(Target):
 
         return self.src.metadata
 
-    def create(self) -> Result[None]:
-        """Write the text contents to the destination.
-
-        :returns: Nothing when the write succeeds or an error message indicating
-            failure.
-
-        """
+    def create(self) -> None:
+        """Write the text contents to the destination."""
         # TODO: check cache?
         try:
             self.dest.write_text(self.contents)
         except OSError as e:
-            return Result.as_failure(
-                f"cannot write target {str(self.dest)!r}: {e.strerror}"
-            )
+            raise exc.VoltResourceError(
+                f"could not write target {str(self.dest)!r}: {e.strerror}"
+            ) from e
 
-        return Result.as_success(None)
+        return None
 
 
 class CopyTarget(Target):
@@ -137,14 +135,11 @@ class CopyTarget(Target):
         """The copy destination."""
         return self._dest
 
-    def create(self) -> Result[None]:
+    def create(self) -> None:
         """Copy the source to the destination.
 
         The copy is performed only if the destination does not yet exist or,
         if it exists, if the contents are different.
-
-        :returns: Nothing when the copy succeeds or an error message indicating
-            failure.
 
         """
         str_src = str(self.src)
@@ -158,7 +153,8 @@ class CopyTarget(Target):
             try:
                 shutil.copy2(str_src, str_dest)
             except OSError as e:
-                return Result.as_failure(
-                    f"cannot copy {str_src!r} to {str_dest!r}: {e.strerror}")
+                raise exc.VoltResourceError(
+                    f"could not copy {str_src!r} to {str_dest!r}: {e.strerror}"
+                )
 
-        return Result.as_success(None)
+        return None
