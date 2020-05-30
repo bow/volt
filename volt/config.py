@@ -13,8 +13,9 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Type, cast
 from urllib.parse import urljoin as urljoin
 
-import toml
+import yaml
 from pytz.tzinfo import DstTzInfo
+from yaml.parser import ParserError
 
 from . import exceptions as exc
 from .units import Unit
@@ -24,7 +25,7 @@ __all__ = ["CONFIG_FNAME", "SiteConfig", "SectionConfig"]
 
 
 # Default config file name.
-CONFIG_FNAME = "Volt.toml"
+CONFIG_FNAME = "volt.yaml"
 
 # Type aliases.
 RawConfig = Dict[str, Any]
@@ -409,17 +410,17 @@ class SiteConfig(dict):
         return conf
 
     @classmethod
-    def from_toml(
+    def from_yaml(
         cls,
         cwd: Path,
         pwd: Path,
-        toml_fname: str = CONFIG_FNAME,
+        yaml_fname: str = CONFIG_FNAME,
     ) -> "SiteConfig":
-        """Create a site configuration from a Volt TOML file.
+        """Create a site configuration from a Volt YAML file.
 
         :param cwd: Path to the invocation directory.
         :param pwd: Path to the project working directory.
-        :param toml_fname: Name of TOML file containing the configuration
+        :param yaml_fname: Name of YAML file containing the configuration
             values.
 
         :returns: A site config instance.
@@ -427,10 +428,10 @@ class SiteConfig(dict):
         :raises ~exc.VoltConfigError: when validation fails.
 
         """
-        with pwd.joinpath(toml_fname).open() as src:
+        with pwd.joinpath(yaml_fname).open() as src:
             try:
-                user_conf = cast(Dict[str, Any], toml.load(src))
-            except (IndexError, toml.TomlDecodeError) as e:
+                user_conf = cast(Dict[str, Any], yaml.safe_load(src))
+            except ParserError as e:
                 # TODO: display traceback depending on log level
                 raise exc.VoltConfigError(
                     f"could not parse config: {e.args[0]}"

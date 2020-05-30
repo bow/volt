@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 
 import pytest
-import toml
+import yaml
 from click.testing import CliRunner
 
 from volt.cli import main
@@ -34,7 +34,7 @@ def fxt_layoutf():
         return {
             "dirs": ["contents", "assets", "templates"],
             "files": {
-                CONFIG_FNAME: toml.dumps(config),
+                CONFIG_FNAME: yaml.safe_dump(config),
                 "templates/page.html": "{{ unit.raw_text }}",
                 "contents/foo.md": "---\ntitle: Foo\n---\n\nfoobar",
                 "assets/foo1.txt": "this is foo1",
@@ -55,7 +55,7 @@ def test_ok(fxt_config, fxt_layoutf):
         assert result.exit_code == 0
 
         assert {f.name for f in fs.iterdir()} == (
-            {"assets", "contents", "templates", "site", "Volt.toml"}
+            {"assets", "contents", "templates", "site", "volt.yaml"}
         )
 
         page = fs.joinpath("site", "foo.html")
@@ -79,7 +79,7 @@ def test_ok_no_clean(fxt_config, fxt_layoutf):
         assert result.exit_code == 0
 
         assert {f.name for f in fs.iterdir()} == (
-            {"assets", "contents", "templates", "site", "Volt.toml"}
+            {"assets", "contents", "templates", "site", "volt.yaml"}
         )
 
         page = fs.joinpath("site", "foo.html")
@@ -124,7 +124,7 @@ def test_fail_config_load(fxt_config, fxt_layoutf):
         )
 
         assert {f.name for f in fs.iterdir()} == (
-            {"assets", "contents", "templates", "Volt.toml"}
+            {"assets", "contents", "templates", "volt.yaml"}
         )
 
 
@@ -142,7 +142,7 @@ def test_fail_template_load(fxt_config, fxt_layoutf):
         assert "template 'page.html' has syntax errors" in result.output
 
         assert {f.name for f in fs.iterdir()} == (
-            {"assets", "contents", "templates", "Volt.toml"}
+            {"assets", "contents", "templates", "volt.yaml"}
         )
 
 
@@ -160,5 +160,5 @@ def test_fail_page_write(fxt_config, fxt_layoutf):
         assert "could not copy" in result.output
 
         assert {f.name for f in fs.iterdir()} == (
-            {"assets", "contents", "templates", "site", "Volt.toml"}
+            {"assets", "contents", "templates", "site", "volt.yaml"}
         )

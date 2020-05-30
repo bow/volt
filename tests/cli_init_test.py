@@ -9,8 +9,8 @@ import os
 from pathlib import Path
 
 import pytest
-import toml
 import tzlocal
+import yaml
 from click.testing import CliRunner
 
 from volt.cli import main
@@ -21,8 +21,8 @@ from volt.config import CONFIG_FNAME
 def fxt_config_tz():
     return {
         "site": {
-            "name": "",
-            "url": "",
+            "name": None,
+            "url": None,
             "timezone": tzlocal.get_localzone().zone,
         }
     }
@@ -40,7 +40,7 @@ def test_default(fxt_config_tz):
             {"contents", "templates", "assets", CONFIG_FNAME}
         )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
-            assert toml.load(src) == fxt_config_tz
+            assert yaml.safe_load(src) == fxt_config_tz
 
 
 def test_custom_dir_no_name(fxt_config_tz):
@@ -58,7 +58,7 @@ def test_custom_dir_no_name(fxt_config_tz):
         )
         with open(wp.joinpath(pn, CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["name"] = "proj"
-            assert toml.load(src) == fxt_config_tz
+            assert yaml.safe_load(src) == fxt_config_tz
 
 
 def test_custom_dir_with_name(fxt_config_tz):
@@ -77,7 +77,7 @@ def test_custom_dir_with_name(fxt_config_tz):
         )
         with open(wp.joinpath(pn, CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["name"] = name
-            assert toml.load(src) == fxt_config_tz
+            assert yaml.safe_load(src) == fxt_config_tz
 
 
 def test_with_name(fxt_config_tz):
@@ -94,7 +94,7 @@ def test_with_name(fxt_config_tz):
         )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["name"] = name
-            assert toml.load(src) == fxt_config_tz
+            assert yaml.safe_load(src) == fxt_config_tz
 
 
 def test_with_url(fxt_config_tz):
@@ -111,7 +111,7 @@ def test_with_url(fxt_config_tz):
         )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["url"] = url
-            assert toml.load(src) == fxt_config_tz
+            assert yaml.safe_load(src) == fxt_config_tz
 
 
 def test_with_timezone(fxt_config_tz):
@@ -128,7 +128,7 @@ def test_with_timezone(fxt_config_tz):
         )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
             fxt_config_tz["site"]["timezone"] = tz
-            assert toml.load(src) == fxt_config_tz
+            assert yaml.safe_load(src) == fxt_config_tz
 
 
 def test_with_timezone_invalid(fxt_config_tz):
@@ -193,4 +193,4 @@ def test_nonempty_with_force(fxt_config_tz):
             {"contents", "templates", "assets", CONFIG_FNAME, "existing"}
         )
         with open(wp.joinpath(CONFIG_FNAME), "r") as src:
-            assert toml.load(src) == fxt_config_tz
+            assert yaml.safe_load(src) == fxt_config_tz

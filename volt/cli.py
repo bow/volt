@@ -8,13 +8,11 @@
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
 import shutil
-from collections import OrderedDict
 from contextlib import suppress
 from pathlib import Path
 from typing import Optional
 
 import click
-import toml
 
 from . import __version__
 from . import exceptions as exc
@@ -82,17 +80,15 @@ class Session:
         except OSError as e:
             raise exc.VoltCliError(e.strerror) from e
 
-        # Create initial TOML config file.
-        init_conf = OrderedDict([
-            (
-                "site", OrderedDict([
-                    ("name", name or ""),
-                    ("url", url or ""),
-                    ("timezone", tz.zone),
-                ]),
-            ),
-        ])
-        pwd.joinpath(config_fname).write_text(toml.dumps(init_conf))
+        # Create initial YAML config file.
+        init_conf = f"""# Volt configuration file.
+site:
+  name: {name or ''}
+  url: {url or ''}
+  timezone: {tz.zone}
+"""
+
+        pwd.joinpath(config_fname).write_text(init_conf)
 
         return None
 
@@ -119,7 +115,7 @@ class Session:
         if pwd is None:
             raise exc.VoltCliError("project directory not found")
 
-        site_config = SiteConfig.from_toml(cwd, pwd, CONFIG_FNAME)
+        site_config = SiteConfig.from_yaml(cwd, pwd, CONFIG_FNAME)
         with suppress(FileNotFoundError):
             if clean:
                 # TODO: wipe and write only the necessary ones

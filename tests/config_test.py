@@ -52,7 +52,7 @@ def test_validate_site_conf_ok():
       for key in ("dot_html_url", "hide_first_pagination_idx")
       for value in (12, 3.5, "yes", [], {})],
 
-    *[({"section": value}, f"section config must be a mapping")
+    *[({"section": value}, "section config must be a mapping")
       for value in (12, 3.5, True, "yes", [])],
 ])
 def test_validate_site_conf_fail(config, exp_msg):
@@ -193,14 +193,15 @@ def test_validate_section_unit_order_fail(name, uu_config, exp_msg):
         )
 
 
-def test_site_config_from_toml_ok(tmpdir):
+def test_site_config_from_yaml_ok(tmpdir):
     with tmpdir.as_cwd():
         cwd = pwd = Path(str(tmpdir))
         cf = tmpdir.join(conf.CONFIG_FNAME)
-        cf.write("[site]\n", mode="a")
-        cf.write('name = "ts"\n', mode="a")
-        cf.write('url = "https://test.com"', mode="a")
-        sc = conf.SiteConfig.from_toml(cwd, pwd, str(cf))
+        cf.write("""site:
+  name: ts
+  url: https://test.com
+""")
+        sc = conf.SiteConfig.from_yaml(cwd, pwd, str(cf))
 
     assert sc["cwd"] == cwd
     assert sc["pwd"] == pwd
@@ -214,7 +215,7 @@ def test_site_config_from_toml_ok(tmpdir):
     assert sc["url"] == "https://test.com"
 
 
-def test_site_config_from_toml_fail(tmpdir):
+def test_site_config_from_yaml_fail(tmpdir):
     with tmpdir.as_cwd():
         cwd = pwd = Path(str(tmpdir))
         cf = tmpdir.join(conf.CONFIG_FNAME)
@@ -223,7 +224,7 @@ def test_site_config_from_toml_fail(tmpdir):
             exc.VoltConfigError,
             match="could not parse config: "
         ):
-            conf.SiteConfig.from_toml(cwd, pwd, str(cf))
+            conf.SiteConfig.from_yaml(cwd, pwd, str(cf))
 
 
 def test_site_config_from_raw_config_ok():
