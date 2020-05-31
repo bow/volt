@@ -16,4 +16,4 @@
     :target: https://codeclimate.com/github/bow/volt
 
 
-``volt`` is a versatile Python static website generator.
+``volt`` is a versatile static website generator.
