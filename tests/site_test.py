@@ -178,7 +178,7 @@ def test_site_create_pages_ok():
         create_fs_fixture(fs, {
             "dirs": ["contents", "templates"],
             "files": {
-                "contents/ok.md": f"---\ntitle: ok\n---\nFoo",
+                "contents/ok.md": "---\ntitle: ok\n---\nFoo",
                 "templates/page.html": "{{ unit.raw_text }}"
             }
         })
@@ -197,7 +197,7 @@ def test_site_create_pages_fail_no_template():
         create_fs_fixture(fs, {
             "dirs": ["contents", "templates"],
             "files": {
-                "contents/ok.md": f"---\ntitle: ok\n---\n\nFoo",
+                "contents/ok.md": "---\ntitle: ok\n---\n\nFoo",
             }
         })
         s = site.Site(SiteConfig(fs, fs))
@@ -216,7 +216,7 @@ def test_site_create_pages_fail_template_error():
         create_fs_fixture(fs, {
             "dirs": ["contents", "templates"],
             "files": {
-                "contents/ok.md": f"---\ntitle: ok\n---\n\nFoo",
+                "contents/ok.md": "---\ntitle: ok\n---\n\nFoo",
                 "templates/page.html": "{{ unit.raw_text"
             }
         })
@@ -236,7 +236,7 @@ def test_site_create_pages_fail_page_error():
         create_fs_fixture(fs, {
             "dirs": ["contents", "templates"],
             "files": {
-                "contents/ok.md": f"---\ntitle: ok\n---\n\nFoo",
+                "contents/ok.md": "---\ntitle: ok\n---\n\nFoo",
                 "templates/page.html": "{{ foo.bzzt }}"
             }
         })

@@ -67,7 +67,7 @@ class PageTarget(Target):
             contents = template.render(unit=src)
         except j2exc.UndefinedError as e:
             raise exc.VoltResourceError(
-                f"could not render to {str(dest)!r}"  # type: ignore
+                f"could not render to {str(dest)!r}"
                 f" using {template.name!r}:"
                 f" {e.message}"
             ) from e
