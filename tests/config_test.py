@@ -8,7 +8,7 @@
 from pathlib import Path
 
 import pytest
-import pytz
+from pendulum.tz.timezone import Timezone
 
 from volt import config as conf
 from volt import exceptions as exc
@@ -241,7 +241,7 @@ def test_site_config_from_raw_config_ok():
     exp_site = {
         "name": "",
         "url": "",
-        "timezone": pytz.timezone("Europe/Amsterdam"),
+        "timezone": Timezone("Europe/Amsterdam"),
         "pwd": pwd,
         "cwd": cwd,
         "contents_src": pwd.joinpath("contents"),
@@ -274,6 +274,8 @@ def test_site_config_from_raw_config_ok():
     assert not isinstance(sc.pop("unit", ""), str)
     # Because 'site_config' shows up as a recursion.
     sec = sc["sections"].pop("pg")
+    # Because timezones can not be compared for equality.
+    assert sc.pop("timezone").name == exp_site.pop("timezone").name
 
     assert sc == exp_site
 

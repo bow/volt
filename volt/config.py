@@ -14,7 +14,7 @@ from typing import Any, Callable, Dict, Optional, Type, cast
 from urllib.parse import urljoin as urljoin
 
 import yaml
-from pytz.tzinfo import DstTzInfo
+from pendulum.tz.timezone import Timezone
 from yaml.parser import ParserError
 
 from . import exceptions as exc
@@ -276,7 +276,7 @@ class SiteConfig(dict):
         templates_src: str = "templates",
         assets_src: str = "assets",
         site_dest: str = "site",
-        timezone: Optional[DstTzInfo] = None,
+        timezone: Optional[Timezone] = None,
         dot_html_url: bool = True,
         unit: Type[Unit] = Unit,
         unit_template: str = "page.html",

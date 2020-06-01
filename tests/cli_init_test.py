@@ -9,9 +9,9 @@ import os
 from pathlib import Path
 
 import pytest
-import tzlocal
 import yaml
 from click.testing import CliRunner
+from pendulum.tz import local_timezone
 
 from volt.cli import main
 from volt.config import CONFIG_FNAME
@@ -23,7 +23,7 @@ def fxt_config_tz():
         "site": {
             "name": None,
             "url": None,
-            "timezone": tzlocal.get_localzone().zone,
+            "timezone": local_timezone().name,
         }
     }
 

@@ -85,7 +85,7 @@ class Session:
 site:
   name: {name or ''}
   url: {url or ''}
-  timezone: {tz.zone}
+  timezone: {tz.name}
 """
 
         pwd.joinpath(config_fname).write_text(init_conf)

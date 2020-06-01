@@ -15,16 +15,15 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 import jinja2.exceptions as j2exc
-import pytz
-import pytz.exceptions as tzexc
-import tzlocal
 from jinja2 import Environment, Template
-from pytz.tzinfo import DstTzInfo
+from pendulum.tz import local_timezone
+from pendulum.tz.timezone import Timezone
+from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
 from . import exceptions as exc
 
 
-def get_tz(tzname: Optional[str] = None) -> DstTzInfo:
+def get_tz(tzname: Optional[str] = None) -> Timezone:
     """Retrieve the timezone object with the given name.
 
     If no timezone name is given, the system default will be used.
@@ -38,10 +37,10 @@ def get_tz(tzname: Optional[str] = None) -> DstTzInfo:
 
     """
     if tzname is None:
-        return tzlocal.get_localzone()
+        return local_timezone()
     try:
-        return pytz.timezone(tzname)
-    except (AttributeError, tzexc.UnknownTimeZoneError) as e:
+        return Timezone(tzname)
+    except (AttributeError, ValueError, InvalidTimezone) as e:
         raise exc.VoltTimezoneError(tzname) from e
 
 

@@ -12,7 +12,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Union
 
+import pendulum
 import yaml
+from pendulum.datetime import DateTime
 from slugify import slugify
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
@@ -116,7 +118,10 @@ class Unit:
         if "pub_time" in meta:
             dto = meta["pub_time"]
             if config["timezone"] is not None and dto.tzinfo is None:
-                meta["pub_time"] = config["timezone"].localize(dto)
+                dto = pendulum.instance(dto, tz=config["timezone"])
+            if not isinstance(meta["pub_time"], DateTime):
+                dto = pendulum.instance(dto)
+            meta["pub_time"] = dto
 
         # Ensure title is supplied.
         if "title" not in meta:

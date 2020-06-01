@@ -8,8 +8,8 @@
 from pathlib import Path
 
 import pytest
-import pytz
-import tzlocal
+from pendulum.tz import local_timezone
+from pendulum.tz.timezone import Timezone
 
 from volt import exceptions as exc
 from volt.utils import calc_relpath, get_tz, import_mod_attr
@@ -102,12 +102,12 @@ def test_import_mod_attr_fail_attribute_missing(tmpdir, mod_toks):
 
 
 @pytest.mark.parametrize("tzname, exp_tz", [
-    (None, tzlocal.get_localzone()),
-    ("Asia/Jakarta", pytz.timezone("Asia/Jakarta")),
+    (None, local_timezone()),
+    ("Asia/Jakarta", Timezone("Asia/Jakarta")),
 ])
 def test_get_tz_ok(tzname, exp_tz):
     obs_tz = get_tz(tzname)
-    assert exp_tz == obs_tz
+    assert exp_tz.name == obs_tz.name
 
 
 def test_get_tz_fail():

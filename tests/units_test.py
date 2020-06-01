@@ -5,12 +5,12 @@
 
 """
 # (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
-from datetime import datetime as dt
 from pathlib import Path
 from unittest.mock import create_autospec
 
 import pytest
-import pytz
+from pendulum import datetime as dt
+from pendulum.tz.timezone import Timezone
 
 from volt import exceptions as exc
 from volt.config import SiteConfig
@@ -64,27 +64,28 @@ def test_unit_parse_metadata_ok_pub_time_no_config_tz():
 
 def test_unit_parse_metadata_ok_pub_time_with_config_tz():
     cwd = pwd = Path("/fs")
-    tz = pytz.timezone("Africa/Tripoli")
+    tz = Timezone("Africa/Tripoli")
     meta = Unit.parse_metadata(
         "---\npub_time: 2018-06-03 01:02:03",
         SiteConfig(cwd, pwd, timezone=tz), cwd.joinpath("test.md"))
     assert meta == {
         "title": "test",
         "slug": "test",
-        "pub_time": tz.localize(dt(2018, 6, 3, 1, 2, 3)),
+        "pub_time": dt(2018, 6, 3, 1, 2, 3, tz=tz),
     }
 
 
 def test_unit_parse_metadata_ok_pub_time_with_config_and_unit_tz():
     cwd = pwd = Path("/fs")
-    tz = pytz.timezone("Africa/Tripoli")
+    tz = Timezone("Africa/Tripoli")
     meta = Unit.parse_metadata(
         "---\npub_time: 2018-06-03 21:02:03+05:00",
         SiteConfig(cwd, pwd, timezone=tz), cwd.joinpath("test.md"))
+    utc = Timezone("UTC")
+    assert dt(2018, 6, 3, 16, 2, 3, tz=utc) == utc.convert(meta.pop("pub_time"))
     assert meta == {
         "title": "test",
         "slug": "test",
-        "pub_time": tz.localize(dt(2018, 6, 3, 16, 2, 3)),
     }
 
 
