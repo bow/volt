@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    Volttest configurations.
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+    Volt test configurations.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
-# (c) 2017 Wibowo Arindrarto <w.arindrarto@lumc.nl>
+# (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>

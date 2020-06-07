@@ -6,7 +6,7 @@
     Main entry point for command line invocation.
 
 """
-# (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+# (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 import shutil
 from contextlib import suppress
 from pathlib import Path

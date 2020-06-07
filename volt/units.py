@@ -6,7 +6,7 @@
     Unit parsing and creation.
 
 """
-# (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+# (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 import re
 from datetime import datetime
 from pathlib import Path

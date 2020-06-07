@@ -3,7 +3,7 @@
     Tests for volt
     ~~~~~~~~~~~~~~
 
-    :copyright: (c) 2012-2016 Wibowo Arindrarto <bow@bow.web.id>
+    :copyright: (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
     :license: BSD
 
 """

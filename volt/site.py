@@ -6,7 +6,7 @@
     Site-level functions and classes.
 
 """
-# (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+# (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 import os
 from itertools import chain
 from pathlib import Path

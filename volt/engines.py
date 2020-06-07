@@ -6,7 +6,7 @@
     Engine-related classses and functions.
 
 """
-# (c) 2012-2017 Wibowo Arindrarto <bow@bow.web.id>
+# (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 import abc
 import os
 from pathlib import Path

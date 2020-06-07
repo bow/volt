@@ -6,7 +6,7 @@
     Custom exceptions.
 
 """
-# (c) 2012-2020 Wibowo Arindrarto <bow@bow.web.id>
+# (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 from typing import Optional, TextIO
 
