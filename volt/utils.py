@@ -12,7 +12,7 @@ import importlib.util as iutil
 import sys
 from os import path
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, Template
@@ -168,27 +168,3 @@ def load_template(env: Environment, name: str) -> Template:
         ) from e
 
     return template
-
-
-def lazyproperty(func: Callable) -> Callable:
-    """Decorator for lazy property loading.
-
-    This decorator adds a dictionary called ``_cached`` to the instance
-    that owns the class it decorates.
-
-    :param callable func: The instance method to decorate.
-
-    """
-    attr_name = func.__name__
-
-    @property  # type: ignore
-    def cached(self):  # type: ignore
-        if not hasattr(self, '_cached'):
-            setattr(self, '_cached', {})
-        try:
-            return self._cached[attr_name]
-        except KeyError:
-            result = self._cached[attr_name] = func(self)
-            return result
-
-    return cached

@@ -17,7 +17,6 @@ import click
 from . import __version__
 from . import exceptions as exc
 from .config import CONFIG_FNAME, SiteConfig
-from .site import Site
 from .utils import find_dir_containing, get_tz
 
 
@@ -58,7 +57,7 @@ class Session:
 
         """
         name = pwd.name if (not name and pwd is not None) else name
-        pwd = cwd if pwd is None else cwd.joinpath(pwd)
+        pwd = cwd if pwd is None else (cwd / pwd).resolve()
         try:
             pwd.mkdir(parents=True, exist_ok=True)
         except OSError as e:
@@ -73,22 +72,31 @@ class Session:
         tz = get_tz(timezone)
 
         # Bootstrap directories.
-        bootstrap_conf = SiteConfig(cwd, pwd, timezone=tz)
+        bootstrap_conf = SiteConfig(cwd=cwd, pwd=pwd, timezone=tz)
+        bootstrap_path_attrs = [
+            "src_contents_path",
+            "src_scaffold_path",
+            "src_theme_path",
+        ]
         try:
-            for dk in ("contents_src", "templates_src", "assets_src"):
-                bootstrap_conf[dk].mkdir(parents=True, exist_ok=True)
+            for attr in bootstrap_path_attrs:
+                getattr(bootstrap_conf, attr).mkdir(parents=True, exist_ok=True)
         except OSError as e:
             raise exc.VoltCliError(e.strerror) from e
 
         # Create initial YAML config file.
         init_conf = f"""# Volt configuration file.
-site:
-  name: {name or ''}
-  url: {url or ''}
-  timezone: {tz.name}
+
+name: "{name or ''}"
+url: "{url or ''}"
+description: ""
+author: ""
+language: ""
+timezone: "{tz.name}"
 """
 
-        pwd.joinpath(config_fname).write_text(init_conf)
+        # Create initial YAML config file.
+        (pwd / config_fname).write_text(init_conf)
 
         return None
 
@@ -98,7 +106,7 @@ site:
         start_lookup_dir: Optional[Path] = None,
         clean: bool = True,
     ) -> None:
-        """Build the static site.
+        """Build the site.
 
         This function may overwrite and/or remove any preexisting files
         and or directories.
@@ -115,14 +123,15 @@ site:
         if pwd is None:
             raise exc.VoltCliError("project directory not found")
 
-        site_config = SiteConfig.from_yaml(cwd, pwd, CONFIG_FNAME)
+        site_config = SiteConfig.from_yaml(
+            cwd,
+            pwd.resolve(),
+            CONFIG_FNAME,
+        )
         with suppress(FileNotFoundError):
             if clean:
                 # TODO: wipe and write only the necessary ones
                 shutil.rmtree(str(site_config["site_dest"]))
-
-        site = Site(site_config)
-        site.build()
 
         return None
 
@@ -160,9 +169,9 @@ def main(ctx: click.Context, log_level: str) -> None:
     required=False,
     default="",
     help=(
-        "Name of the Volt site. If given, the value will be set in the created"
-        " config file. Default: empty string or the value of `project_dir`,"
-        " when available."
+        "Name of the static site. If given, the value will be set in the"
+        " created config file. Default: empty string or the value of"
+        " `project_dir`, when available."
     )
 )
 @click.option(
@@ -172,7 +181,7 @@ def main(ctx: click.Context, log_level: str) -> None:
     required=False,
     default="",
     help=(
-        "URL of the Volt site. If given, the value will be set in the created"
+        "URL of the site. If given, the value will be set in the created"
         " config file. Default: empty string."
     )
 )
@@ -206,7 +215,7 @@ def init(
     timezone: Optional[str],
     force: bool,
 ) -> None:
-    """Initialize a new project.
+    """Initialize a new site project.
 
     Project initialization consists of:
 
@@ -219,8 +228,14 @@ def init(
     initialization in the current directory.
 
     """
-    pwd = Path(project_dir) if project_dir is not None else project_dir
-    Session.do_init(Path.cwd(), pwd, name, url, timezone, force)
+    Session.do_init(
+        Path.cwd(),
+        Path(project_dir) if project_dir is not None else None,
+        name,
+        url,
+        timezone,
+        force,
+    )
     # TODO: add message for successful init
 
 
@@ -246,7 +261,7 @@ def init(
 )
 @click.pass_context
 def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
-    """Build the static site.
+    """Build static site.
 
     This command generates the static site in the site destination directory
     (default: `site`).
