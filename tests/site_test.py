@@ -17,11 +17,7 @@ from volt.resource import Target
 class MockTarget(Target):
 
     def __init__(self, dest=None) -> None:
-        self._dest = Path("site/out.html") if dest is None else Path(dest)
-
-    @property
-    def dest(self) -> Path:
-        return self._dest
+        self.dest = Path("site/out.html") if dest is None else Path(dest)
 
     def write(self) -> None:
         return None
