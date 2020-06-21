@@ -14,12 +14,13 @@ from pathlib import Path
 from typing import Any, Dict, Optional, cast
 
 import yaml
+from jinja2 import Environment, FileSystemLoader
 from pendulum.tz.timezone import Timezone
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from . import exceptions as exc
-from .utils import calc_relpath, get_tz
+from .utils import get_tz
 
 __all__ = ["CONFIG_FNAME", "SiteConfig"]
 
@@ -41,6 +42,7 @@ class SiteConfig(UserDict):
         cwd: Path,
         pwd: Path,
         user_conf: RawConfig,
+        **kwargs: Any,
     ) -> "SiteConfig":
         """Create an instance from the given user-supplied config.
 
@@ -60,7 +62,7 @@ class SiteConfig(UserDict):
         tz = get_tz(user_conf.get("timezone", None))
         user_conf["timezone"] = tz
 
-        return cls(cwd=cwd, pwd=pwd, user_conf=user_conf)
+        return cls(cwd=cwd, pwd=pwd, user_conf=user_conf, **kwargs)
 
     @classmethod
     def from_yaml(
@@ -68,6 +70,7 @@ class SiteConfig(UserDict):
         cwd: Path,
         pwd: Path,
         yaml_fname: str = CONFIG_FNAME,
+        **kwargs: Any,
     ) -> "SiteConfig":
         """Create a site configuration from a Volt YAML file.
 
@@ -90,7 +93,12 @@ class SiteConfig(UserDict):
                     f"could not parse config: {e.args[0]}"
                 ) from e
 
-        return cls.from_raw_config(cwd=cwd, pwd=pwd, user_conf=user_conf)
+        return cls.from_raw_config(
+            cwd=cwd,
+            pwd=pwd,
+            user_conf=user_conf,
+            **kwargs,
+        )
 
     def __init__(
         self,
@@ -103,6 +111,7 @@ class SiteConfig(UserDict):
         theme_dirname: str = "theme",
         timezone: Optional[Timezone] = None,
         user_conf: Optional[dict] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize a site-level configuration.
 
@@ -113,7 +122,7 @@ class SiteConfig(UserDict):
         :param timezone: Timezone for default timestamp interpretation.
 
         """
-        super().__init__(user_conf)
+        super().__init__(user_conf, **kwargs)
         self._pwd = pwd
         self._cwd = cwd
         self._src_path = pwd / src_dirname
@@ -125,12 +134,12 @@ class SiteConfig(UserDict):
     @cached_property
     def pwd(self) -> Path:
         """Path to the project directory."""
-        self._pwd
+        return self._pwd
 
     @cached_property
     def cwd(self) -> Path:
         """Path to the invocation directory."""
-        self._cwd
+        return self._cwd
 
     @cached_property
     def src_path(self) -> Path:
@@ -141,12 +150,6 @@ class SiteConfig(UserDict):
     def out_path(self) -> Path:
         """Path to the site output directory."""
         return self._out_path
-
-    @cached_property
-    def out_relpath(self) -> Path:
-        """Path to the site output directory relative to the invocation
-        directory."""
-        return calc_relpath(self._out_path, self.cwd)
 
     @cached_property
     def src_contents_path(self) -> Path:
@@ -162,3 +165,17 @@ class SiteConfig(UserDict):
     def src_theme_path(self) -> Path:
         """Path to the site source theme."""
         return self._src_theme_path
+
+    @cached_property
+    def src_theme_scaffold_path(self) -> Path:
+        """Path to the site source theme."""
+        return self.src_theme_path / "scaffold"
+
+    @cached_property
+    def template_env(self) -> Environment:
+        """Theme template environment."""
+        return Environment(  # nosec
+            loader=FileSystemLoader(self.src_theme_path),
+            auto_reload=False,
+            enable_async=True,
+        )

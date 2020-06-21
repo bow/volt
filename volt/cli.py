@@ -7,16 +7,16 @@
 
 """
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
-import shutil
-from contextlib import suppress
 from pathlib import Path
 from typing import Optional
 
 import click
+import pendulum
 
 from . import __version__
 from . import exceptions as exc
 from .config import CONFIG_FNAME, SiteConfig
+from .site import Site
 from .utils import find_dir_containing, get_tz
 
 
@@ -124,14 +124,13 @@ timezone: "{tz.name}"
             raise exc.VoltCliError("project directory not found")
 
         site_config = SiteConfig.from_yaml(
-            cwd,
-            pwd.resolve(),
-            CONFIG_FNAME,
+            cwd=cwd,
+            pwd=pwd.resolve(),
+            yaml_fname=CONFIG_FNAME,
+            build_time=pendulum.now(),
         )
-        with suppress(FileNotFoundError):
-            if clean:
-                # TODO: wipe and write only the necessary ones
-                shutil.rmtree(str(site_config["site_dest"]))
+        site = Site(config=site_config)
+        site.build(clean=clean)
 
         return None
 
