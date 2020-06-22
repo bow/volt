@@ -64,7 +64,7 @@ class Target(abc.ABC):
     dest: Path
 
     @abc.abstractmethod
-    def write(self) -> None:
+    def write(self, parent_dir: Path) -> None:
         raise NotImplementedError()
 
 
@@ -79,10 +79,10 @@ class PageTarget(Target):
     # Filesystem path to the resulting file.
     dest: Path
 
-    def write(self) -> None:
+    def write(self, parent_dir: Path) -> None:
         """Write the text content to the destination."""
         try:
-            self.dest.write_text(self.content)
+            (parent_dir / self.dest).write_text(self.content)
         except OSError as e:
             raise exc.VoltResourceError(
                 f"could not write target {str(self.dest)!r}: {e.strerror}"
@@ -100,10 +100,10 @@ class CopyTarget(Target):
     # Filesystem path to the destination.
     dest: Path
 
-    def write(self) -> None:
+    def write(self, parent_dir: Path) -> None:
         """Copy the source to the destination."""
         str_src = str(self.src)
-        str_dest = str(self.dest)
+        str_dest = str(parent_dir / self.dest)
         do_copy = (
             not self.dest.exists()
             or not filecmp.cmp(str_src, str_dest, shallow=False)

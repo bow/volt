@@ -66,7 +66,7 @@ class SiteNode:
 
         return iter(children.values())
 
-    def create(self) -> None:
+    def create(self, parent_dir: Path) -> None:
         """Write the node to the filesystem.
 
         If the node represents a directory, the directory and its parents will
@@ -75,10 +75,10 @@ class SiteNode:
 
         """
         if self.target is None:
-            self.path.mkdir(parents=True, exist_ok=True)
+            (parent_dir / self.path).mkdir(parents=True, exist_ok=True)
             return None
 
-        self.target.write()
+        self.target.write(parent_dir=parent_dir)
         return None
 
     def add_child(self, key: str, target: Optional[Target] = None) -> None:
@@ -118,8 +118,7 @@ class SitePlan:
     def __init__(self, out_relpath: Path) -> None:
         """Initialize a site plan.
 
-        :param out_relpath: Relative path to the site destination directory
-            from the current working directory.
+        :param out_relpath: Relative path to site destination directory.
 
         """
         self.out_relpath = out_relpath
@@ -200,14 +199,15 @@ class SitePlan:
             else:
                 nodes.extend(children)
 
-    def write_nodes(self) -> None:
-        """Write the site nodes according to the plan."""
+    def write_nodes(self, parent_dir: Path) -> None:
+        """Write the site nodes according to the plan under the given parent
+        directory."""
 
         for dn in self.dnodes():
-            dn.create()
+            dn.create(parent_dir=parent_dir)
 
         for fn in self.fnodes():
-            fn.create()
+            fn.create(parent_dir=parent_dir)
 
         return None
 
@@ -297,8 +297,8 @@ class Site:
     def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
 
-        cwd = self.config.cwd
         out_path = self.config.out_path
+        out_name = out_path.name
 
         with tempfile.TemporaryDirectory(
             prefix=BUILD_DIR_PREFIX
@@ -306,22 +306,17 @@ class Site:
 
             build_path = Path(tmp_dir_name)
 
-            plan = SitePlan(
-                out_relpath=calc_relpath(
-                    target=build_path,
-                    ref=cwd,
-                )
-            )
+            plan = SitePlan(Path(out_name))
             self.gather_theme_assets(plan)
             self.gather_scaffold_targets(plan)
             self.create_page_targets(plan)
 
-            plan.write_nodes()
+            plan.write_nodes(build_path)
 
             if clean:
                 with suppress(FileNotFoundError):
                     shutil.rmtree(out_path)
 
-            shutil.copytree(src=build_path, dst=out_path)
+            shutil.copytree(src=build_path / out_name, dst=out_path)
 
         return None

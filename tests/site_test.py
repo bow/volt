@@ -19,7 +19,7 @@ class MockTarget(Target):
     def __init__(self, dest=None) -> None:
         self.dest = Path("site/out.html") if dest is None else Path(dest)
 
-    def write(self) -> None:
+    def write(self, parent_dir: Path) -> None:
         return None
 
 
