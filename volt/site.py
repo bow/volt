@@ -115,12 +115,9 @@ class SitePlan:
 
     """
 
-    def __init__(self, out_relpath: Path) -> None:
-        """Initialize a site plan.
-
-        :param out_relpath: Relative path to site destination directory.
-
-        """
+    def __init__(self) -> None:
+        """Initialize a site plan."""
+        out_relpath = Path()
         self.out_relpath = out_relpath
         self._root = SiteNode(out_relpath)
         self._root_path_len = len(out_relpath.parts)
@@ -293,26 +290,22 @@ class Site:
     def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
 
-        out_path = self.config.out_path
-        out_name = out_path.name
-
         with tempfile.TemporaryDirectory(
             prefix=BUILD_DIR_PREFIX
         ) as tmp_dir_name:
 
-            build_path = Path(tmp_dir_name)
-
-            plan = SitePlan(Path(out_name))
+            plan = SitePlan()
             self.gather_theme_assets(plan)
             self.gather_scaffold_targets(plan)
             self.create_page_targets(plan)
 
-            plan.write_nodes(build_path)
+            build_path = Path(tmp_dir_name)
+            plan.write_nodes(parent_dir=build_path)
 
+            out_path = self.config.out_path
             if clean:
                 with suppress(FileNotFoundError):
                     shutil.rmtree(out_path)
-
-            shutil.copytree(src=build_path / out_name, dst=out_path)
+            shutil.copytree(src=build_path, dst=out_path)
 
         return None

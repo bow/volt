@@ -100,7 +100,7 @@ def test_site_node_add_children_existing_key():
     ),
 ])
 def test_site_plan_ok(targets, dpaths, fpaths):
-    sp = site.SitePlan(Path("site"))
+    sp = site.SitePlan()
     for target in targets:
         res = sp.add_target(MockTarget(target))
         assert res is None
@@ -118,7 +118,7 @@ def test_site_plan_ok(targets, dpaths, fpaths):
      "path of target item 'site/a/b' conflicts with 'site/a'"),
 ])
 def test_site_plan_fail(target1, target2, exp_msg):
-    sp = site.SitePlan(Path("site"))
+    sp = site.SitePlan()
     sp.add_target(MockTarget(target1))
     with pytest.raises(ValueError, match=exp_msg):
         sp.add_target(MockTarget(target2))
