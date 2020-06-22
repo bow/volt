@@ -13,6 +13,7 @@ import filecmp
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Tuple
 
 import yaml
 from jinja2 import Template
@@ -60,8 +61,8 @@ class Target(abc.ABC):
 
     """A single file created in the site output directory."""
 
-    # Filesystem path to the resulting file.
-    dest: Path
+    # Path parts / tokens to the target.
+    path_parts: Tuple[str, ...]
 
     @abc.abstractmethod
     def write(self, parent_dir: Path) -> None:
@@ -76,16 +77,17 @@ class PageTarget(Target):
     # Raw HTML text content.
     content: str
 
-    # Filesystem path to the resulting file.
-    dest: Path
+    # Path parts / tokens to the target.
+    path_parts: Tuple[str, ...]
 
     def write(self, parent_dir: Path) -> None:
         """Write the text content to the destination."""
         try:
-            (parent_dir / self.dest).write_text(self.content)
+            (parent_dir.joinpath(*self.path_parts)).write_text(self.content)
         except OSError as e:
             raise exc.VoltResourceError(
-                f"could not write target {str(self.dest)!r}: {e.strerror}"
+                "could not write target"
+                f" {'/'.join(self.path_parts)!r}: {e.strerror}"
             )
 
 
@@ -97,15 +99,16 @@ class CopyTarget(Target):
     # Filesystem path to the source.
     src: Path
 
-    # Filesystem path to the destination.
-    dest: Path
+    # Path parts / tokens to the target.
+    path_parts: Tuple[str, ...]
 
     def write(self, parent_dir: Path) -> None:
         """Copy the source to the destination."""
         str_src = str(self.src)
-        str_dest = str(parent_dir / self.dest)
+        path_dest = parent_dir.joinpath(*self.path_parts)
+        str_dest = str(path_dest)
         do_copy = (
-            not self.dest.exists()
+            not path_dest.exists()
             or not filecmp.cmp(str_src, str_dest, shallow=False)
         )
 
@@ -185,13 +188,11 @@ class MarkdownContent(Content):
     def to_target(
         self,
         template: Template,
-        dest: Path,
+        path_parts: Tuple[str, ...],
     ) -> PageTarget:
         """Create a :class:`PageTarget` instance from the instance.
 
         :param template: Jinja2 template to use.
-        :param dest: Where the created :class:`PageTarget` instance will be
-            written.`
 
         """
         rendered = template.render(
@@ -200,4 +201,4 @@ class MarkdownContent(Content):
             site=self.site_config,
             theme=self.site_config.get("theme", {}).get("settings", {}),
         )
-        return PageTarget(content=rendered, dest=dest)
+        return PageTarget(content=rendered, path_parts=path_parts)

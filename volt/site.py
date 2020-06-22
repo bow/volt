@@ -140,22 +140,18 @@ class SitePlan:
               existing one
 
         """
-        # Ensure target dest is relative (to working directory!)
-        if target.dest.is_absolute():
-            raise ValueError("target is not a relative path")
-
         # Ensure target dest starts with project site_dest
         prefix_len = self._root_path_len
-        if target.dest.parts[:prefix_len] != self._root.path.parts:
+        if target.path_parts[:prefix_len] != self._root.path.parts:
             raise ValueError(
                 "target destination does not start with project site"
                 " destination"
             )
 
-        rem_len = len(target.dest.parts) - prefix_len
+        rem_len = len(target.path_parts) - prefix_len
         cur = self._root
 
-        for idx, p in enumerate(target.dest.parts[prefix_len:], start=1):
+        for idx, p in enumerate(target.path_parts[prefix_len:], start=1):
             try:
                 if idx < rem_len:
                     cur.add_child(p)
@@ -245,7 +241,7 @@ class Site:
                 plan.add_target(
                     CopyTarget(
                         src=Path(de.path),
-                        dest=plan.out_relpath.joinpath(*dtoks)
+                        path_parts=(*plan.out_relpath.parts, *dtoks)
                     )
                 )
 
@@ -288,7 +284,7 @@ class Site:
         for content in contents:
             target = content.to_target(
                 template=template,
-                dest=(plan.out_relpath / f"{content.src.stem}.html")
+                path_parts=(*plan.out_relpath.parts, f"{content.src.stem}.html")
             )
             plan.add_target(target)
 

@@ -17,7 +17,9 @@ from volt.resource import Target
 class MockTarget(Target):
 
     def __init__(self, dest=None) -> None:
-        self.dest = Path("site/out.html") if dest is None else Path(dest)
+        self.path_parts = (
+            Path("site/out.html") if dest is None else Path(dest)
+        ).parts
 
     def write(self, parent_dir: Path) -> None:
         return None
