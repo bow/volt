@@ -19,14 +19,10 @@ from pendulum.tz.timezone import Timezone
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
-from . import exceptions as exc
+from . import constants, exceptions as exc
 from .utils import get_tz
 
-__all__ = ["CONFIG_FNAME", "SiteConfig"]
-
-
-# Default config file name.
-CONFIG_FNAME = "volt.yaml"
+__all__ = ["SiteConfig"]
 
 # Type aliases.
 RawConfig = Dict[str, Any]
@@ -69,7 +65,7 @@ class SiteConfig(UserDict):
         cls,
         cwd: Path,
         pwd: Path,
-        yaml_fname: str = CONFIG_FNAME,
+        yaml_fname: str = constants.CONFIG_FNAME,
         **kwargs: Any,
     ) -> "SiteConfig":
         """Create a site configuration from a Volt YAML file.
@@ -104,11 +100,11 @@ class SiteConfig(UserDict):
         self,
         cwd: Path,
         pwd: Path,
-        src_dirname: str = "src",
-        out_dirname: str = "dist",
-        contents_dirname: str = "contents",
-        scaffold_dirname: str = "scaffold",
-        theme_dirname: str = "theme",
+        src_dirname: str = constants.SITE_SRC_DIRNAME,
+        out_dirname: str = constants.SITE_OUT_DIRNAME,
+        contents_dirname: str = constants.SITE_CONTENTS_DIRNAME,
+        scaffold_dirname: str = constants.SITE_SCAFFOLD_DIRNAME,
+        theme_dirname: str = constants.SITE_THEME_DIRNAME,
         timezone: Optional[Timezone] = None,
         user_conf: Optional[dict] = None,
         **kwargs: Any,

@@ -16,16 +16,12 @@ from functools import cached_property
 from pathlib import Path
 from typing import Dict, Generator, Iterator, Optional, cast
 
+from . import constants
 from .config import SiteConfig
 from .resource import CopyTarget, MarkdownContent, Target
 from .utils import calc_relpath, load_template
 
 __all__ = ["Site", "SiteNode", "SitePlan"]
-
-
-BUILD_DIR_PREFIX = "volt-build-"
-CONTENTS_EXT = ".md"
-PAGE_TEMPLATE_NAME = "page.html.j2"
 
 
 class SiteNode:
@@ -263,8 +259,8 @@ class Site:
     def create_page_targets(
         self,
         plan: SitePlan,
-        page_template_name: str = PAGE_TEMPLATE_NAME,
-        ext: str = CONTENTS_EXT,
+        page_template_name: str = constants.PAGE_TEMPLATE_FNAME,
+        ext: str = constants.CONTENTS_EXT,
     ) -> None:
         """Create :class:`PageTarget` instances to the site plan."""
 
@@ -291,7 +287,7 @@ class Site:
         """Build the static site in the destination directory."""
 
         with tempfile.TemporaryDirectory(
-            prefix=BUILD_DIR_PREFIX
+            prefix=constants.BUILD_DIR_PREFIX
         ) as tmp_dir_name:
 
             plan = SitePlan()

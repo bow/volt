@@ -14,8 +14,8 @@ import click
 import pendulum
 
 from . import __version__
-from . import exceptions as exc
-from .config import CONFIG_FNAME, SiteConfig
+from . import constants, exceptions as exc
+from .config import SiteConfig
 from .site import Site
 from .utils import find_dir_containing, get_tz
 
@@ -32,7 +32,7 @@ class Session:
         url: Optional[str],
         timezone: Optional[str],
         force: bool,
-        config_fname: str = CONFIG_FNAME,
+        config_fname: str = constants.CONFIG_FNAME,
     ) -> None:
         """Initialize a new project.
 
@@ -119,14 +119,14 @@ timezone: "{tz.name}"
             to building, or not.
 
         """
-        pwd = find_dir_containing(CONFIG_FNAME, start_lookup_dir)
+        pwd = find_dir_containing(constants.CONFIG_FNAME, start_lookup_dir)
         if pwd is None:
             raise exc.VoltCliError("project directory not found")
 
         site_config = SiteConfig.from_yaml(
             cwd=cwd,
             pwd=pwd.resolve(),
-            yaml_fname=CONFIG_FNAME,
+            yaml_fname=constants.CONFIG_FNAME,
             build_time=pendulum.now(),
         )
         site = Site(config=site_config)

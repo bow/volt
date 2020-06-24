@@ -20,13 +20,11 @@ from jinja2 import Template
 from markdown2 import Markdown
 from yaml import SafeLoader
 
-from . import exceptions as exc
+from . import constants, exceptions as exc
 from .config import SiteConfig
 
 __all__ = ["MarkdownContent"]
 
-
-FRONT_MATTER_SEP = "---\n"
 
 MD = Markdown(
     extras={
@@ -156,7 +154,7 @@ class MarkdownContent(Content):
         cls,
         src: Path,
         site_config: SiteConfig,
-        fm_sep: str = FRONT_MATTER_SEP,
+        fm_sep: str = constants.FRONT_MATTER_SEP,
     ) -> "MarkdownContent":
         """Create an instance from a file.
 
