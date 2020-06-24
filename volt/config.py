@@ -19,7 +19,8 @@ from pendulum.tz.timezone import Timezone
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
-from . import constants, exceptions as exc
+from . import constants
+from . import exceptions as exc
 from .utils import get_tz
 
 __all__ = ["SiteConfig"]

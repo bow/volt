@@ -20,7 +20,8 @@ from jinja2 import Template
 from markdown2 import Markdown
 from yaml import SafeLoader
 
-from . import constants, exceptions as exc
+from . import constants
+from . import exceptions as exc
 from .config import SiteConfig
 
 __all__ = ["MarkdownContent"]
