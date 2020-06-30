@@ -126,7 +126,7 @@ class SiteConfig(UserDict):
         self._out_path = pwd / out_dirname
         self._src_contents_path = self._src_path / contents_dirname
         self._src_scaffold_path = self._src_path / scaffold_dirname
-        self._src_theme_path = self._src_path / theme_dirname
+        self._theme_path = self._src_path / theme_dirname
 
     @cached_property
     def pwd(self) -> Path:
@@ -159,20 +159,20 @@ class SiteConfig(UserDict):
         return self._src_scaffold_path
 
     @cached_property
-    def src_theme_path(self) -> Path:
+    def theme_path(self) -> Path:
         """Path to the site source theme."""
-        return self._src_theme_path
+        return self._theme_path
 
     @cached_property
-    def src_theme_scaffold_path(self) -> Path:
-        """Path to the site source theme."""
-        return self.src_theme_path / "scaffold"
+    def theme_scaffold_path(self) -> Path:
+        """Path to the site source theme scaffold."""
+        return self.theme_path / "scaffold"
 
     @cached_property
     def template_env(self) -> Environment:
         """Theme template environment."""
         return Environment(  # nosec
-            loader=FileSystemLoader(self.src_theme_path),
+            loader=FileSystemLoader(self.theme_path),
             auto_reload=False,
             enable_async=True,
         )

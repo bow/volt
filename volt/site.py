@@ -245,7 +245,7 @@ class Site:
         the theme assets directory to the site plan."""
         return self._gather_copy_targets(
             plan=plan,
-            targets_dir=self.config.src_theme_scaffold_path,
+            targets_dir=self.config.theme_scaffold_path,
         )
 
     def gather_scaffold_targets(self, plan: SitePlan) -> None:
