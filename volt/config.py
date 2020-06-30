@@ -14,14 +14,14 @@ from pathlib import Path
 from typing import Any, Dict, Optional, cast
 
 import yaml
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, Template
 from pendulum.tz.timezone import Timezone
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from . import constants
 from . import exceptions as exc
-from .utils import get_tz
+from .utils import get_tz, load_template
 
 __all__ = ["SiteConfig"]
 
@@ -176,3 +176,7 @@ class SiteConfig(UserDict):
             auto_reload=False,
             enable_async=True,
         )
+
+    def load_template(self, name: str) -> Template:
+        """Load a template with the given name."""
+        return load_template(self.template_env, name)

@@ -19,7 +19,7 @@ from typing import Dict, Generator, Iterator, Optional, cast
 from . import constants
 from .config import SiteConfig
 from .resource import CopyTarget, MarkdownContent, Target
-from .utils import calc_relpath, load_template
+from .utils import calc_relpath
 
 __all__ = ["Site", "SiteNode", "SitePlan"]
 
@@ -273,7 +273,7 @@ class Site:
             for fp in config.src_contents_path.glob(f"*{ext}")
         ]
 
-        template = load_template(config.template_env, page_template_name)
+        template = config.load_template(page_template_name)
         for content in contents:
             target = content.to_target(
                 template=template,
