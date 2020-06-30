@@ -273,8 +273,15 @@ class Site:
             for fp in config.src_contents_path.glob(f"*{ext}")
         ]
 
-        template = config.load_template(page_template_name)
+        default_template = config.load_theme_template()
         for content in contents:
+            template_key = content.meta.get("template", None)
+            template = (
+                config.load_theme_template(template_key)
+                if template_key is not None else
+                default_template
+            )
+
             target = content.to_target(
                 template=template,
                 path_parts=(*plan.out_relpath.parts, f"{content.src.stem}.html")

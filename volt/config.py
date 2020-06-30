@@ -177,6 +177,32 @@ class SiteConfig(UserDict):
             enable_async=True,
         )
 
+    @cached_property
+    def theme_config(self) -> Dict[str, Any]:
+        fp = self.theme_path / constants.THEME_SETTINGS_FNAME
+        with fp.open("r") as src:
+            return cast(Dict[str, Any], yaml.safe_load(src))
+
     def load_template(self, name: str) -> Template:
         """Load a template with the given name."""
         return load_template(self.template_env, name)
+
+    def load_theme_template(
+        self,
+        key: Optional[str] = None,
+    ) -> Template:
+        """Load a theme template with the given key."""
+
+        key = key or constants.DEFAULT_TEMPLATE_KEY
+        theme_templates = self.theme_config["templates"]
+
+        try:
+            template_name = theme_templates[key]
+        except KeyError as e:
+            raise exc.VoltResourceError(
+                f"could not find template {key!r} in theme settings"
+            ) from e
+
+        template = self.load_template(template_name)
+
+        return template

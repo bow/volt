@@ -14,6 +14,9 @@ BUILD_DIR_PREFIX = "volt-build-"
 # Default config file name.
 CONFIG_FNAME = "volt.yaml"
 
+# Key of the default template in theme.
+DEFAULT_TEMPLATE_KEY = "page"
+
 # Extension for text contents.
 CONTENTS_EXT = ".md"
 
@@ -37,3 +40,6 @@ SITE_SRC_DIRNAME = "src"
 
 # Site theme directory name.
 SITE_THEME_DIRNAME = "theme"
+
+# Theme base settings file name.
+THEME_SETTINGS_FNAME = "theme.yaml"
