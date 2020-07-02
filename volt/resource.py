@@ -195,7 +195,7 @@ class MarkdownContent(Content):
 
         """
         rendered = template.render(
-            **self.meta,
+            meta=self.meta,
             content=MD.convert(self.content),
             site=self.site_config,
             theme=self.site_config.get("theme", {}).get("settings", {}),
