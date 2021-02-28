@@ -265,12 +265,14 @@ class Site:
         """Create :class:`PageTarget` instances to the site plan."""
 
         config = self.config
+        src_contents_path = config.src_contents_path
+
         contents = [
             MarkdownContent.from_path(
                 src=fp,
                 site_config=config,
             )
-            for fp in config.src_contents_path.glob(f"*{ext}")
+            for fp in src_contents_path.rglob(f"*{ext}")
         ]
 
         default_template = config.load_theme_template()
@@ -284,7 +286,11 @@ class Site:
 
             target = content.to_target(
                 template=template,
-                path_parts=(*plan.out_relpath.parts, f"{content.src.stem}.html")
+                path_parts=(
+                    *plan.out_relpath.parts,
+                    *(content.src.parent.parts[len(src_contents_path.parts):]),
+                    f"{content.src.stem}.html",
+                )
             )
             plan.add_target(target)
 
