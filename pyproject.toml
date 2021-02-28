@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "volt"
-version = "1.0.0"
+version = "0.0.0"  # Placeholder version.
 description = "Versatile static website generator"
 authors = ["Wibowo Arindrarto <contact@arindrarto.dev>"]
 readme = "README.rst"
@@ -31,6 +31,12 @@ include = [
 [tool.poetry.scripts]
 volt = "volt.cli:main"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+pattern = "^v?(?P<base>\\d+\\.\\d+\\.\\d+)"
+
 [tool.poetry.dependencies]
 python = "^3.9"
 click = "^7.1.2"
@@ -54,5 +60,5 @@ radon = "^4.1.0"
 tox = "^3.15.1"
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["poetry>=1.1.4", "poetry-dynamic-versioning"]
 build-backend = "poetry.masonry.api"
