@@ -8,6 +8,7 @@
 .cache
 .eggs
 coverage.xml
+dist/
 __pycache__/
 htmlcov/
 
