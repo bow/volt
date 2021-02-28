@@ -10,21 +10,21 @@ env:
 
 matrix:
   include:
-    - name: "Tests - Python 3.8"
-      python: 3.8
-      env: TOX_ENV=py38
-    - name: "Security - Python 3.8"
-      python: 3.8
+    - name: "Tests - Python 3.9"
+      python: 3.9
+      env: TOX_ENV=py39
+    - name: "Security - Python 3.9"
+      python: 3.9
       env: TOX_ENV=security
-    - name: "Style - Python 3.8"
-      python: 3.8
+    - name: "Style - Python 3.9"
+      python: 3.9
       env: TOX_ENV=style
-    - name: "Types - Python 3.8"
-      python: 3.8
+    - name: "Types - Python 3.9"
+      python: 3.9
       env: TOX_ENV=types
 
 before_install:
-  - pip install poetry tox==3.15.1
+  - pip install poetry tox==3.22.0
 
 install:
   - poetry install -v
