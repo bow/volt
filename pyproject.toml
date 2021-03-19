@@ -34,7 +34,7 @@ volt = "volt.cli:main"
 [tool.poetry.dependencies]
 python = "^3.8"
 click = "^7.1.2"
-jinja2 = "^2.11.2"
+jinja2 = "^2.11.3"
 pygments = "^2.6.1"
 pyyaml = "5.3.1"
 pendulum = "^2.1.0"
