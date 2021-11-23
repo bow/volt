@@ -25,6 +25,31 @@ endif
 all: help
 
 
+.PHONY: conf-dev
+conf-dev:  ## Configure a local development setup.
+	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
+		printf "Configuring a local dev environment using pyenv ...\n" >&2 \
+			&& pyenv install -s "$(PYTHON_VERSION)" \
+			&& pyenv virtualenv -f "$(PYTHON_VERSION)" "$(ENV_NAME)" \
+			&& printf "%s\n%s" "$(ENV_NAME)" "$(PYTHON_VERSION)" > .python-version \
+			&& source "$(shell pyenv root)/versions/$(ENV_NAME)/bin/activate" \
+			&& pip install --upgrade pip && pyenv rehash \
+			&& pip install $(PIP_DEPS) && pyenv rehash \
+			&& poetry config experimental.new-installer false \
+			&& poetry config virtualenvs.in-project true \
+			&& poetry install && pyenv rehash \
+			&& pre-commit install && pyenv rehash \
+			&& printf "Done.\n" >&2; \
+	else \
+		printf "Configuring a local dev environment ...\n" >&2 \
+			&& pip install $(PIP_DEPS) && pyenv rehash \
+			&& poetry config experimental.new-installer false \
+			&& poetry config virtualenvs.in-project true \
+			&& poetry install && pyenv rehash \
+			&& pre-commit install && pyenv rehash \
+			&& printf "Done.\n" >&2; \
+	fi
+
 .PHONY: help
 help:  ## Show this help.
 	@($(GREP_EXE) --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
