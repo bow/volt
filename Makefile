@@ -3,7 +3,7 @@
 PROJECT_DIR := $(CURDIR)
 APP_NAME := volt
 # Latest version of supported Python.
-PYTHON_VERSION := 3.9.5
+PYTHON_VERSION := 3.10.0
 # Name of virtualenv for development.
 ENV_NAME ?= $(APP_NAME)-dev
 # Non-pyproject.toml dependencies.
