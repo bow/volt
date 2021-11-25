@@ -7,7 +7,7 @@ PYTHON_VERSION := 3.10.0
 # Name of virtualenv for development.
 ENV_NAME ?= $(APP_NAME)-dev
 # Non-pyproject.toml dependencies.
-PIP_DEPS := poetry pre-commit tox
+PIP_DEPS := poetry poetry-dynamic-versioning pre-commit tox
 ## Toggle for dev setup with pyenv.
 WITH_PYENV ?= 1
 
