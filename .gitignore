@@ -7,10 +7,11 @@
 .tox
 .cache
 .eggs
-coverage.xml
 dist/
 __pycache__/
 htmlcov/
+venv/
+.venv
 
 # pyenv #
 .python-version
@@ -18,10 +19,12 @@ htmlcov/
 # temp files #
 *.swp
 *.swo
+.idea/
 
 # others #
 .todo
 .env
+.envrc
 .DS_STORE
 Thumbs.db
 sandbox/
