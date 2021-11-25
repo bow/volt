@@ -25,6 +25,11 @@ endif
 all: help
 
 
+.PHONY: clean
+clean:  ## Remove built artifacts.
+	rm -rf .coverage.xml dist/
+
+
 .PHONY: conf-dev
 conf-dev:  ## Configure a local development setup.
 	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
@@ -50,8 +55,19 @@ conf-dev:  ## Configure a local development setup.
 			&& printf "Done.\n" >&2; \
 	fi
 
+
 .PHONY: help
 help:  ## Show this help.
 	@($(GREP_EXE) --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
 		&& printf "\033[33m%s dev console\033[0m\n" "$(APP_NAME)" >&2 \
 		&& $(GREP_EXE) -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%10s\033[0m · %s\n", $$1, $$2}' >&2
+
+
+.PHONY: test
+test:  ## Run the test suite.
+	tox -qe py310
+
+
+.PHONY: lint
+lint:  ## Lint the code.
+	tox -qe types,style,security

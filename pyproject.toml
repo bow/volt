@@ -58,7 +58,6 @@ pytest-cov = "^2.11.1"
 pytest-flake8 = "^1.0.7"
 pytest-sugar = "^0.9.4"
 radon = "^4.1.0"
-tox = "^3.22.0"
 flake8-polyfill = "^1.0.2"
 
 [build-system]
