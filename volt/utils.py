@@ -19,6 +19,7 @@ from jinja2 import Environment, Template
 from pendulum.tz import local_timezone
 from pendulum.tz.timezone import Timezone
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
+from thefuzz import process
 
 from . import exceptions as exc
 
@@ -133,13 +134,11 @@ def calc_relpath(target: Path, ref: Path) -> Path:
     ref = ref.expanduser()
     target = target.expanduser()
     if not ref.is_absolute() or not target.is_absolute():
-        raise ValueError(
-            "could not compute relative paths of non-absolute input paths"
-        )
+        raise ValueError("could not compute relative paths of non-absolute input paths")
 
     common = Path(path.commonpath([ref, target]))
-    ref_uniq = ref.parts[len(common.parts):]
-    target_uniq = target.parts[len(common.parts):]
+    ref_uniq = ref.parts[len(common.parts) :]
+    target_uniq = target.parts[len(common.parts) :]
 
     rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
 
@@ -168,3 +167,24 @@ def load_template(env: Environment, name: str) -> Template:
         ) from e
 
     return template
+
+
+def get_fuzzy_match(
+    query: str,
+    ext: str,
+    cutoff: int = 50,
+    *dirs: Path,
+) -> Optional[str]:
+    """Return a fuzzy-matched path to a file in one of the given directories"""
+
+    fp_map = {}
+    for d in dirs:
+        fp_map.update({p: f"{p.relative_to(d)}" for p in d.rglob(f"*{ext}")})
+
+    _, _, match_fp = process.extractOne(query, fp_map, score_cutoff=cutoff) or (
+        None,
+        None,
+        None,
+    )
+
+    return match_fp

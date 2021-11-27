@@ -86,9 +86,7 @@ class SiteConfig(UserDict):
                 user_conf = cast(Dict[str, Any], yaml.safe_load(src))
             except (ParserError, ScannerError) as e:
                 # TODO: display traceback depending on log level
-                raise exc.VoltConfigError(
-                    f"could not parse config: {e.args[0]}"
-                ) from e
+                raise exc.VoltConfigError(f"could not parse config: {e.args[0]}") from e
 
         return cls.from_raw_config(
             cwd=cwd,
@@ -106,6 +104,7 @@ class SiteConfig(UserDict):
         contents_dirname: str = constants.SITE_CONTENTS_DIRNAME,
         scaffold_dirname: str = constants.SITE_SCAFFOLD_DIRNAME,
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
+        draft_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         timezone: Optional[Timezone] = None,
         user_conf: Optional[dict] = None,
         **kwargs: Any,
@@ -125,6 +124,7 @@ class SiteConfig(UserDict):
         self._src_path = pwd / src_dirname
         self._out_path = pwd / out_dirname
         self._src_contents_path = self._src_path / contents_dirname
+        self._src_drafts_path = self._src_path / draft_dirname
         self._src_scaffold_path = self._src_path / scaffold_dirname
         self._theme_path = self._src_path / theme_dirname
 
@@ -152,6 +152,11 @@ class SiteConfig(UserDict):
     def src_contents_path(self) -> Path:
         """Path to the site source contents."""
         return self._src_contents_path
+
+    @cached_property
+    def src_drafts_path(self) -> Path:
+        """Path to the site contents drafts."""
+        return self._src_drafts_path
 
     @cached_property
     def src_scaffold_path(self) -> Path:

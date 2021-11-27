@@ -17,7 +17,7 @@ from . import __version__, constants
 from . import exceptions as exc
 from .config import SiteConfig
 from .site import Site
-from .utils import find_dir_containing, get_tz
+from .utils import find_dir_containing, get_fuzzy_match, get_tz
 
 
 class Session:
@@ -134,6 +134,36 @@ timezone: "{tz.name}"
 
         return None
 
+    @staticmethod
+    def do_edit(
+        cwd: Path,
+        query: str,
+        start_lookup_dir: Optional[Path] = None,
+        new: bool = False,
+    ) -> None:
+        """Edit a content source for editing"""
+        pwd = find_dir_containing(constants.CONFIG_FNAME, start_lookup_dir)
+        if pwd is None:
+            raise exc.VoltCliError("project directory not found")
+
+        site_config = SiteConfig.from_yaml(cwd=cwd, pwd=pwd.resolve())
+        contents_dir = site_config.src_contents_path
+        drafts_dir = site_config.src_drafts_path
+
+        if new:
+            new_fp = (drafts_dir / query).with_suffix(constants.CONTENTS_EXT)
+            new_fp.parent.mkdir(parents=True, exist_ok=True)
+            click.edit(filename=f"{new_fp}")
+            return None
+
+        match_fp = get_fuzzy_match(
+            query, constants.CONTENTS_EXT, 50, contents_dir, drafts_dir
+        )
+        if match_fp is not None:
+            click.edit(filename=f"{match_fp}")
+
+        raise exc.VoltCliError(f"Found no matching content file for {query!r}")
+
 
 @click.group()
 @click.version_option(__version__)
@@ -171,7 +201,7 @@ def main(ctx: click.Context, log_level: str) -> None:
         "Name of the static site. If given, the value will be set in the"
         " created config file. Default: empty string or the value of"
         " `project_dir`, when available."
-    )
+    ),
 )
 @click.option(
     "-u",
@@ -182,7 +212,7 @@ def main(ctx: click.Context, log_level: str) -> None:
     help=(
         "URL of the site. If given, the value will be set in the created"
         " config file. Default: empty string."
-    )
+    ),
 )
 @click.option(
     "-z",
@@ -193,7 +223,7 @@ def main(ctx: click.Context, log_level: str) -> None:
     help=(
         "Geographical timezone name for interpreting timestamps. Default:"
         " system timezone."
-    )
+    ),
 )
 @click.option(
     "-f",
@@ -203,7 +233,7 @@ def main(ctx: click.Context, log_level: str) -> None:
         "If set, volt may overwrite any files and/or directories in the init"
         " directory. Otherwise, init will fail if any files and/or directories"
         " exist in the target directory."
-    )
+    ),
 )
 @click.pass_context
 def init(
@@ -256,7 +286,7 @@ def init(
     help=(
         "If set, the target site directory will be removed prior to site"
         " building. Default: set."
-    )
+    ),
 )
 @click.pass_context
 def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
@@ -274,4 +304,43 @@ def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
         Path.cwd(),
         Path(project_dir) if project_dir is not None else None,
         clean,
+    )
+
+
+@main.command()
+@click.argument("name", type=str, required=True)
+@click.argument(
+    "project_dir",
+    type=click.Path(
+        exists=True,
+        dir_okay=True,
+        file_okay=False,
+        readable=True,
+        writable=True,
+    ),
+    required=False,
+)
+@click.option(
+    "-n",
+    "--new",
+    is_flag=True,
+    default=False,
+    help=(
+        "If set, a new file will be created in the drafts directory if"
+        " no match can be found. Default: unset."
+    ),
+)
+@click.pass_context
+def edit(
+    ctx: click.Context,
+    name: str,
+    project_dir: Optional[str],
+    new: bool,
+) -> None:
+    """Open a content source for editing."""
+    Session.do_edit(
+        Path.cwd(),
+        name,
+        Path(project_dir) if project_dir is not None else None,
+        new,
     )

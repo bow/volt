@@ -29,6 +29,9 @@ PAGE_TEMPLATE_FNAME = "page.html.j2"
 # Site contents directory name.
 SITE_CONTENTS_DIRNAME = "contents"
 
+# Site draft contents directory name.
+SITE_DRAFTS_DIRNAME = "drafts"
+
 # Site output directory name.
 SITE_OUT_DIRNAME = "dist"
 
