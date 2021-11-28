@@ -138,7 +138,7 @@ timezone: "{tz.name}"
         cwd: Path,
         query: str,
         start_lookup_dir: Optional[Path] = None,
-        new: bool = False,
+        create: bool = False,
     ) -> None:
         """Edit a content source for editing"""
         site_config = SiteConfig.from_project_yaml(
@@ -151,7 +151,7 @@ timezone: "{tz.name}"
         contents_dir = site_config.src_contents_path
         drafts_dir = site_config.src_drafts_path
 
-        if new:
+        if create:
             new_fp = (drafts_dir / query).with_suffix(constants.CONTENTS_EXT)
             new_fp.parent.mkdir(parents=True, exist_ok=True)
             click.edit(filename=f"{new_fp}")
@@ -349,8 +349,8 @@ def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
     required=False,
 )
 @click.option(
-    "-n",
-    "--new",
+    "-c",
+    "--create",
     is_flag=True,
     default=False,
     help=(
@@ -363,12 +363,12 @@ def edit(
     ctx: click.Context,
     name: str,
     project_dir: Optional[str],
-    new: bool,
+    create: bool,
 ) -> None:
     """Open a content source for editing."""
     Session.do_edit(
         Path.cwd(),
         name,
         Path(project_dir) if project_dir is not None else None,
-        new,
+        create,
     )
