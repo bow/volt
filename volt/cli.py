@@ -76,7 +76,7 @@ class Session:
         bootstrap_path_attrs = [
             "src_contents_path",
             "src_scaffold_path",
-            "src_theme_path",
+            "theme_path",
         ]
         try:
             for attr in bootstrap_path_attrs:
