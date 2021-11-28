@@ -161,6 +161,7 @@ timezone: "{tz.name}"
         )
         if match_fp is not None:
             click.edit(filename=f"{match_fp}")
+            return None
 
         raise exc.VoltCliError(f"Found no matching content file for {query!r}")
 
