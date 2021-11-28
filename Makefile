@@ -7,7 +7,7 @@ PYTHON_VERSION := 3.10.0
 # Name of virtualenv for development.
 ENV_NAME ?= $(APP_NAME)-dev
 # Non-pyproject.toml dependencies.
-PIP_DEPS := poetry poetry-dynamic-versioning pre-commit tox
+PIP_DEPS := poetry poetry-dynamic-versioning pre-commit
 ## Toggle for dev setup with pyenv.
 WITH_PYENV ?= 1
 
@@ -65,9 +65,13 @@ help:  ## Show this help.
 
 .PHONY: test
 test:  ## Run the test suite.
-	tox -qe py310
+	poetry run py.test --cov=volt --cov-config=.coveragerc --cov-report=term-missing --cov-report=xml:.coverage.xml volt tests
 
 
 .PHONY: lint
 lint:  ## Lint the code.
-	tox -qe types,style,security
+	poetry run mypy volt tests
+	poetry run flake8 --statistics volt tests
+	poetry run isort --check-only --recursive volt tests \
+		&& poetry run radon cc --total-average --show-closures --show-complexity --min C volt \
+		&& poetry run bandit -r volt
