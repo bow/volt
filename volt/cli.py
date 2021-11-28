@@ -167,7 +167,32 @@ timezone: "{tz.name}"
         raise exc.VoltResourceError(f"found no matching content file for {query!r}")
 
 
-@click.group()
+# Taken from:
+# https://click.palletsprojects.com/en/8.0.x/advanced/#command-aliases
+class AliasedGroup(click.Group):
+    def get_command(self, ctx: click.Context, cmd_name: str) -> Optional[click.Command]:
+        rv = click.Group.get_command(self, ctx, cmd_name)
+        if rv is not None:
+            return rv
+
+        matches = [x for x in self.list_commands(ctx) if x.startswith(cmd_name)]
+        if not matches:
+            return None
+        elif len(matches) == 1:
+            return click.Group.get_command(self, ctx, matches[0])
+
+        ctx.fail(f"too many matches: {', '.join(sorted(matches))}")
+
+    def resolve_command(
+        self,
+        ctx: click.Context,
+        args: list[str],
+    ) -> tuple[Optional[str], Optional[click.Command], list[str]]:
+        _, cmd, args = super().resolve_command(ctx, args)
+        return cmd.name if cmd is not None else None, cmd, args
+
+
+@click.group(cls=AliasedGroup)
 @click.version_option(__version__)
 @click.option(
     "-l",
