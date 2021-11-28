@@ -137,8 +137,9 @@ def calc_relpath(target: Path, ref: Path) -> Path:
         raise ValueError("could not compute relative paths of non-absolute input paths")
 
     common = Path(path.commonpath([ref, target]))
-    ref_uniq = ref.parts[len(common.parts) :]
-    target_uniq = target.parts[len(common.parts) :]
+    common_len = len(common.parts)
+    ref_uniq = ref.parts[common_len:]
+    target_uniq = target.parts[common_len:]
 
     rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
 

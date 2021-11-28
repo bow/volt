@@ -8,7 +8,7 @@
 """
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
-from typing import Optional, TextIO
+from typing import IO, Any, Optional
 
 from click import ClickException, echo, style
 from click._compat import get_text_stderr
@@ -31,12 +31,11 @@ class VoltCliError(VoltError, ClickException):
 
     """Exceptions displayed as error messages to users."""
 
-    def show(self, file: Optional[TextIO] = None) -> None:
+    def show(self, file: Optional[IO[Any]] = None) -> None:
         if file is None:
             file = get_text_stderr()
         echo(
-            f"{style(' Error ', bg='red')}"
-            f" {self.format_message()}",
+            f"{style(' Error ', bg='red')}" f" {self.format_message()}",
             file=file,
         )
 
