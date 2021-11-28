@@ -139,6 +139,7 @@ timezone: "{tz.name}"
         query: str,
         start_lookup_dir: Optional[Path] = None,
         create: bool = False,
+        title: Optional[str] = None,
     ) -> None:
         """Edit a content source for editing"""
         site_config = SiteConfig.from_project_yaml(
@@ -154,7 +155,22 @@ timezone: "{tz.name}"
         if create:
             new_fp = (drafts_dir / query).with_suffix(constants.CONTENTS_EXT)
             new_fp.parent.mkdir(parents=True, exist_ok=True)
-            click.edit(filename=f"{new_fp}")
+            if new_fp.exists():
+                click.edit(filename=f"{new_fp}")
+                return None
+
+            contents = click.edit(
+                text=f"""---
+title: {title or query}
+---
+""",
+                extension=constants.CONTENTS_EXT,
+                require_save=False,
+            )
+            if contents:
+                echo_info(f"created new draft at {str(new_fp.relative_to(cwd))!r}")
+                new_fp.write_text(contents)
+
             return None
 
         match_fp = get_fuzzy_match(
@@ -358,12 +374,23 @@ def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
         " no match can be found. Default: unset."
     ),
 )
+@click.option(
+    "-t",
+    "--title",
+    type=str,
+    default=None,
+    help=(
+        "The title attribute of the content file, if a new file is created."
+        " If '--create' is unset, this flag is ignored."
+    ),
+)
 @click.pass_context
 def edit(
     ctx: click.Context,
     name: str,
     project_dir: Optional[str],
     create: bool,
+    title: str,
 ) -> None:
     """Open a content source for editing."""
     Session.do_edit(
@@ -371,4 +398,5 @@ def edit(
         name,
         Path(project_dir) if project_dir is not None else None,
         create,
+        title,
     )
