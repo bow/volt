@@ -21,7 +21,7 @@ from yaml.scanner import ScannerError
 
 from . import constants
 from . import exceptions as exc
-from .utils import get_tz, load_template
+from .utils import find_dir_containing, get_tz, load_template
 
 __all__ = ["SiteConfig"]
 
@@ -32,6 +32,39 @@ RawConfig = Dict[str, Any]
 class SiteConfig(UserDict):
 
     """Container for site-level configuration values."""
+
+    @classmethod
+    def from_project_yaml(
+        cls,
+        cwd: Path,
+        start_lookup_dir: Optional[Path] = None,
+        yaml_fname: str = constants.CONFIG_FNAME,
+        **kwargs: Any,
+    ) -> Optional["SiteConfig"]:
+        """Create an instance from within a project directory.
+
+        This methods performs an upwards traversal from within the current
+        directory to look for a YAML config file and loads it.
+
+        :param cwd: Path to invocation directory.
+        :param start_lookup_dir: Path to the directory from which project
+            directory lookup should start. If set to ``None``, the lookup will
+            start from the current directory.
+        :param yaml_fname: Name of YAML file containing the configuration
+            values.
+
+        """
+        start_lookup_dir = start_lookup_dir or cwd
+        pwd = find_dir_containing(yaml_fname, start_lookup_dir)
+        if pwd is None:
+            return None
+
+        return cls.from_yaml(
+            cwd=cwd,
+            pwd=pwd.resolve(),
+            yaml_fname=yaml_fname,
+            **kwargs,
+        )
 
     @classmethod
     def from_raw_config(

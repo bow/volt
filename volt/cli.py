@@ -17,7 +17,7 @@ from . import __version__, constants
 from . import exceptions as exc
 from .config import SiteConfig
 from .site import Site
-from .utils import find_dir_containing, get_fuzzy_match, get_tz
+from .utils import echo_info, get_fuzzy_match, get_tz
 
 
 class Session:
@@ -33,7 +33,7 @@ class Session:
         timezone: Optional[str],
         force: bool,
         config_fname: str = constants.CONFIG_FNAME,
-    ) -> None:
+    ) -> Path:
         """Initialize a new project.
 
         This function may overwrite any preexisting files and or directories
@@ -98,7 +98,7 @@ timezone: "{tz.name}"
         # Create initial YAML config file.
         (pwd / config_fname).write_text(init_conf)
 
-        return None
+        return pwd
 
     @staticmethod
     def do_build(
@@ -119,16 +119,14 @@ timezone: "{tz.name}"
             to building, or not.
 
         """
-        pwd = find_dir_containing(constants.CONFIG_FNAME, start_lookup_dir)
-        if pwd is None:
-            raise exc.VoltCliError("project directory not found")
-
-        site_config = SiteConfig.from_yaml(
-            cwd=cwd,
-            pwd=pwd.resolve(),
-            yaml_fname=constants.CONFIG_FNAME,
+        site_config = SiteConfig.from_project_yaml(
+            cwd,
+            start_lookup_dir=start_lookup_dir,
             build_time=pendulum.now(),
         )
+        if site_config is None:
+            raise exc.VoltCliError("project directory not found")
+
         site = Site(config=site_config)
         site.build(clean=clean)
 
@@ -142,11 +140,13 @@ timezone: "{tz.name}"
         new: bool = False,
     ) -> None:
         """Edit a content source for editing"""
-        pwd = find_dir_containing(constants.CONFIG_FNAME, start_lookup_dir)
-        if pwd is None:
+        site_config = SiteConfig.from_project_yaml(
+            cwd,
+            start_lookup_dir=start_lookup_dir,
+        )
+        if site_config is None:
             raise exc.VoltCliError("project directory not found")
 
-        site_config = SiteConfig.from_yaml(cwd=cwd, pwd=pwd.resolve())
         contents_dir = site_config.src_contents_path
         drafts_dir = site_config.src_drafts_path
 
@@ -258,7 +258,7 @@ def init(
     initialization in the current directory.
 
     """
-    Session.do_init(
+    pwd = Session.do_init(
         Path.cwd(),
         Path(project_dir) if project_dir is not None else None,
         name,
@@ -266,7 +266,7 @@ def init(
         timezone,
         force,
     )
-    # TODO: add message for successful init
+    echo_info(f"project initialized at {pwd}")
 
 
 @main.command()
