@@ -71,7 +71,6 @@ test:  ## Run the test suite.
 .PHONY: lint
 lint:  ## Lint the code.
 	poetry run mypy volt tests
-	poetry run flake8 --statistics volt tests
-	poetry run isort --check-only --recursive volt tests \
+	poetry run flake8 --statistics volt tests \
 		&& poetry run radon cc --total-average --show-closures --show-complexity --min C volt \
 		&& poetry run bandit -r volt
