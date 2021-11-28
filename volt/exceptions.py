@@ -10,8 +10,7 @@
 
 from typing import IO, Any, Optional
 
-from click import ClickException, echo, style
-from click._compat import get_text_stderr
+from click import ClickException
 
 __all__ = [
     "VoltCliError",
