@@ -75,6 +75,7 @@ class Session:
         bootstrap_conf = SiteConfig(cwd=cwd, pwd=pwd, timezone=tz)
         bootstrap_path_attrs = [
             "src_contents_path",
+            "src_drafts_path",
             "src_scaffold_path",
             "theme_path",
         ]
