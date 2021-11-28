@@ -12,9 +12,11 @@ import importlib.util as iutil
 import sys
 from os import path
 from pathlib import Path
-from typing import Any, Optional
+from typing import IO, Any, Optional
 
 import jinja2.exceptions as j2exc
+from click import echo, style
+from click._compat import get_text_stderr
 from jinja2 import Environment, Template
 from pendulum.tz import local_timezone
 from pendulum.tz.timezone import Timezone
@@ -22,6 +24,23 @@ from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from thefuzz import process
 
 from . import exceptions as exc
+
+
+def echo_fmt(msg: str, style: str, file: Optional[IO[Any]] = None) -> None:
+    """Show a formatted message"""
+    if file is None:
+        file = get_text_stderr()
+    echo(f"{style}" f" {msg}", file=file)
+
+
+def echo_info(msg: str, file: Optional[IO[Any]] = None) -> None:
+    """Show a formatted info message."""
+    echo_fmt(msg, style(" INF ", bg="cyan"), file)
+
+
+def echo_err(msg: str, file: Optional[IO[Any]] = None) -> None:
+    """Show a formatted error message."""
+    echo_fmt(msg, style(" ERR ", bg="red"), file)
 
 
 def get_tz(tzname: Optional[str] = None) -> Timezone:

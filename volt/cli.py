@@ -163,7 +163,7 @@ timezone: "{tz.name}"
             click.edit(filename=f"{match_fp}")
             return None
 
-        raise exc.VoltCliError(f"Found no matching content file for {query!r}")
+        raise exc.VoltResourceError(f"found no matching content file for {query!r}")
 
 
 @click.group()

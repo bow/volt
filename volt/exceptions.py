@@ -32,12 +32,9 @@ class VoltCliError(VoltError, ClickException):
     """Exceptions displayed as error messages to users."""
 
     def show(self, file: Optional[IO[Any]] = None) -> None:
-        if file is None:
-            file = get_text_stderr()
-        echo(
-            f"{style(' Error ', bg='red')}" f" {self.format_message()}",
-            file=file,
-        )
+        from .utils import echo_err
+
+        echo_err(self.format_message(), file)
 
 
 class VoltConfigError(VoltCliError):
