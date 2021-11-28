@@ -126,7 +126,7 @@ timezone: "{tz.name}"
             build_time=pendulum.now(),
         )
         if site_config is None:
-            raise exc.VoltCliError("project directory not found")
+            raise exc.VoltCliError("could not resolve project directory")
 
         site = Site(config=site_config)
         site.build(clean=clean)
@@ -147,7 +147,7 @@ timezone: "{tz.name}"
             start_lookup_dir=start_lookup_dir,
         )
         if site_config is None:
-            raise exc.VoltCliError("project directory not found")
+            raise exc.VoltCliError("could not resolve project directory")
 
         contents_dir = site_config.src_contents_path
         drafts_dir = site_config.src_drafts_path
