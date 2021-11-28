@@ -106,7 +106,7 @@ timezone: "{tz.name}"
         cwd: Path,
         start_lookup_dir: Optional[Path] = None,
         clean: bool = True,
-    ) -> None:
+    ) -> Site:
         """Build the site.
 
         This function may overwrite and/or remove any preexisting files
@@ -131,7 +131,7 @@ timezone: "{tz.name}"
         site = Site(config=site_config)
         site.build(clean=clean)
 
-        return None
+        return site
 
     @staticmethod
     def do_edit(
@@ -302,11 +302,12 @@ def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
     directory is specified, no repeated lookups will be performed.
 
     """
-    Session.do_build(
+    site = Session.do_build(
         Path.cwd(),
         Path(project_dir) if project_dir is not None else None,
         clean,
     )
+    echo_info(f"completed build for {site.config['name']!r}")
 
 
 @main.command()
