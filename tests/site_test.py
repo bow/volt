@@ -15,11 +15,8 @@ from volt.resource import Target
 
 
 class MockTarget(Target):
-
     def __init__(self, dest=None) -> None:
-        self.path_parts = (
-            Path("site/out.html") if dest is None else Path(dest)
-        ).parts
+        self.path_parts = (Path("site/out.html") if dest is None else Path(dest)).parts
 
     def write(self, parent_dir: Path) -> None:
         return None
@@ -76,29 +73,32 @@ def test_site_node_add_children_existing_key():
     assert list(iter(sn))[0].target == c1
 
 
-@pytest.mark.parametrize("targets, dpaths, fpaths", [
-    ([], [], []),
-    (
-        ["site/a", "site/b", "site/c"],
-        ["site"],
-        ["site/a", "site/b", "site/c"],
-    ),
-    (
-        ["site/a/aa", "site/a/ab", "site/b"],
-        ["site/a"],
-        ["site/a/aa", "site/a/ab", "site/b"],
-    ),
-    (
-        ["site/a/aa", "site/a/ab", "site/b/ab", "site/b/bb/bbb"],
-        ["site/a", "site/b/bb"],
-        ["site/a/aa", "site/a/ab", "site/b/ab", "site/b/bb/bbb"],
-    ),
-    (
-        ["site/a/aa", "site/b/bb", "site/c/cc"],
-        ["site/c", "site/b", "site/a"],
-        ["site/a/aa", "site/b/bb", "site/c/cc"],
-    ),
-])
+@pytest.mark.parametrize(
+    "targets, dpaths, fpaths",
+    [
+        ([], [], []),
+        (
+            ["site/a", "site/b", "site/c"],
+            ["site"],
+            ["site/a", "site/b", "site/c"],
+        ),
+        (
+            ["site/a/aa", "site/a/ab", "site/b"],
+            ["site/a"],
+            ["site/a/aa", "site/a/ab", "site/b"],
+        ),
+        (
+            ["site/a/aa", "site/a/ab", "site/b/ab", "site/b/bb/bbb"],
+            ["site/a", "site/b/bb"],
+            ["site/a/aa", "site/a/ab", "site/b/ab", "site/b/bb/bbb"],
+        ),
+        (
+            ["site/a/aa", "site/b/bb", "site/c/cc"],
+            ["site/c", "site/b", "site/a"],
+            ["site/a/aa", "site/b/bb", "site/c/cc"],
+        ),
+    ],
+)
 def test_site_plan_ok(targets, dpaths, fpaths):
     sp = site.SitePlan()
     for target in targets:
@@ -113,10 +113,16 @@ def test_site_plan_ok(targets, dpaths, fpaths):
     )
 
 
-@pytest.mark.parametrize("target1, target2, exp_msg", [
-    ("site/a", "site/a/b",
-     "path of target item 'site/a/b' conflicts with 'site/a'"),
-])
+@pytest.mark.parametrize(
+    "target1, target2, exp_msg",
+    [
+        (
+            "site/a",
+            "site/a/b",
+            "path of target item 'site/a/b' conflicts with 'site/a'",
+        ),
+    ],
+)
 def test_site_plan_fail(target1, target2, exp_msg):
     sp = site.SitePlan()
     sp.add_target(MockTarget(target1))

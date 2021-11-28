@@ -85,8 +85,7 @@ class PageTarget(Target):
             (parent_dir.joinpath(*self.path_parts)).write_text(self.content)
         except OSError as e:
             raise exc.VoltResourceError(
-                "could not write target"
-                f" {'/'.join(self.path_parts)!r}: {e.strerror}"
+                "could not write target" f" {'/'.join(self.path_parts)!r}: {e.strerror}"
             )
 
 
@@ -106,9 +105,8 @@ class CopyTarget(Target):
         str_src = str(self.src)
         path_dest = parent_dir.joinpath(*self.path_parts)
         str_dest = str(path_dest)
-        do_copy = (
-            not path_dest.exists()
-            or not filecmp.cmp(str_src, str_dest, shallow=False)
+        do_copy = not path_dest.exists() or not filecmp.cmp(
+            str_src, str_dest, shallow=False
         )
 
         if do_copy:
@@ -167,11 +165,7 @@ class MarkdownContent(Content):
         raw_text = src.read_text()
         *top, raw_content = raw_text.split(fm_sep, 2)
         raw_fm = [item for item in top if item]
-        fm = (
-            {}
-            if not raw_fm else
-            yaml.load(raw_fm[0].strip(), Loader=SafeLoader)
-        )
+        fm = {} if not raw_fm else yaml.load(raw_fm[0].strip(), Loader=SafeLoader)
 
         return cls(
             src=src,

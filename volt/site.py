@@ -137,8 +137,7 @@ class SitePlan:
         prefix_len = self._root_path_len
         if target.path_parts[:prefix_len] != self._root.path.parts:
             raise ValueError(
-                "target destination does not start with project site"
-                " destination"
+                "target destination does not start with project site" " destination"
             )
 
         rem_len = len(target.path_parts) - prefix_len
@@ -233,8 +232,7 @@ class Site:
                 dtoks = Path(de.path).parts[src_rel_len:]
                 plan.add_target(
                     CopyTarget(
-                        src=Path(de.path),
-                        path_parts=(*plan.out_relpath.parts, *dtoks)
+                        src=Path(de.path), path_parts=(*plan.out_relpath.parts, *dtoks)
                     )
                 )
 
@@ -280,17 +278,18 @@ class Site:
             template_key = content.meta.get("template", None)
             template = (
                 config.load_theme_template(template_key)
-                if template_key is not None else
-                default_template
+                if template_key is not None
+                else default_template
             )
 
+            contents_parts_len = len(src_contents_path.parts)
             target = content.to_target(
                 template=template,
                 path_parts=(
                     *plan.out_relpath.parts,
-                    *(content.src.parent.parts[len(src_contents_path.parts):]),
+                    *(content.src.parent.parts[contents_parts_len:]),
                     f"{content.src.stem}.html",
-                )
+                ),
             )
             plan.add_target(target)
 
