@@ -106,6 +106,7 @@ timezone: "{tz.name}"
         cwd: Path,
         start_lookup_dir: Optional[Path] = None,
         clean: bool = True,
+        with_drafts: bool = False,
     ) -> Site:
         """Build the site.
 
@@ -129,7 +130,7 @@ timezone: "{tz.name}"
             raise exc.VoltCliError("could not resolve project directory")
 
         site = Site(config=site_config)
-        site.build(clean=clean)
+        site.build(clean=clean, with_drafts=with_drafts)
 
         return site
 
@@ -324,6 +325,13 @@ def init(
     required=False,
 )
 @click.option(
+    "-d",
+    "--with-drafts",
+    is_flag=True,
+    default=False,
+    help="If set, include the drafts directory as a content source. Default: unset.",
+)
+@click.option(
     "--clean/--no-clean",
     default=True,
     help=(
@@ -332,7 +340,12 @@ def init(
     ),
 )
 @click.pass_context
-def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
+def build(
+    ctx: click.Context,
+    project_dir: Optional[str],
+    with_drafts: bool,
+    clean: bool,
+) -> None:
     """Build static site.
 
     This command generates the static site in the site destination directory
@@ -347,6 +360,7 @@ def build(ctx: click.Context, project_dir: Optional[str], clean: bool) -> None:
         Path.cwd(),
         Path(project_dir) if project_dir is not None else None,
         clean,
+        with_drafts,
     )
     echo_info(f"completed build for {site.config['name']!r}")
 

@@ -18,6 +18,7 @@ from typing import Dict, Generator, Iterator, Optional, cast
 
 from . import constants
 from .config import SiteConfig
+from .exceptions import VoltResourceError
 from .resource import CopyTarget, MarkdownContent, Target
 from .utils import calc_relpath
 
@@ -118,11 +119,11 @@ class SitePlan:
         self._root = SiteNode(out_relpath)
         self._root_path_len = len(out_relpath.parts)
 
-    def add_target(self, target: Target) -> None:
+    def add_target(self, target: Target, src_path: Optional[Path] = None) -> None:
         """Add a target to the plan.
 
-        :param target: A target to be created in the site
-            output directory.
+        :param target: A target to be created in the site output directory.
+        :param src_path: The source file of the target, if applicable.
 
         :raises ValueError:
             * when the given target's destination path is not a path relative to
@@ -137,7 +138,7 @@ class SitePlan:
         prefix_len = self._root_path_len
         if target.path_parts[:prefix_len] != self._root.path.parts:
             raise ValueError(
-                "target destination does not start with project site" " destination"
+                "target destination does not start with project site destination"
             )
 
         rem_len = len(target.path_parts) - prefix_len
@@ -149,6 +150,16 @@ class SitePlan:
                     cur.add_child(p)
                     cur = cast(Dict[str, SiteNode], cur.children)[p]
                 else:
+                    if p in cur:
+                        raise ValueError(
+                            f"target path {('/'.join(target.path_parts))!r}"
+                            + (
+                                f" from source {str(src_path)!r}"
+                                if src_path is not None
+                                else ""
+                            )
+                            + " already added to the site plan"
+                        )
                     cur.add_child(p, target)
             except TypeError:
                 raise ValueError(
@@ -257,45 +268,58 @@ class Site:
     def create_page_targets(
         self,
         plan: SitePlan,
+        with_drafts: bool = False,
         page_template_name: str = constants.PAGE_TEMPLATE_FNAME,
         ext: str = constants.CONTENTS_EXT,
     ) -> None:
         """Create :class:`PageTarget` instances to the site plan."""
 
         config = self.config
-        src_contents_path = config.src_contents_path
 
-        contents = [
-            MarkdownContent.from_path(
-                src=fp,
-                site_config=config,
-            )
-            for fp in src_contents_path.rglob(f"*{ext}")
-        ]
+        def create(src_dir: Path) -> None:
+            contents = [
+                MarkdownContent.from_path(
+                    src=fp,
+                    site_config=config,
+                )
+                for fp in src_dir.rglob(f"*{ext}")
+            ]
 
-        default_template = config.load_theme_template()
-        for content in contents:
-            template_key = content.meta.get("template", None)
-            template = (
-                config.load_theme_template(template_key)
-                if template_key is not None
-                else default_template
-            )
+            default_template = config.load_theme_template()
+            for content in contents:
+                template_key = content.meta.get("template", None)
+                template = (
+                    config.load_theme_template(template_key)
+                    if template_key is not None
+                    else default_template
+                )
 
-            contents_parts_len = len(src_contents_path.parts)
-            target = content.to_target(
-                template=template,
-                path_parts=(
-                    *plan.out_relpath.parts,
-                    *(content.src.parent.parts[contents_parts_len:]),
-                    f"{content.src.stem}.html",
-                ),
-            )
-            plan.add_target(target)
+                contents_parts_len = len(src_dir.parts)
+                target = content.to_target(
+                    template=template,
+                    path_parts=(
+                        *plan.out_relpath.parts,
+                        *(content.src.parent.parts[contents_parts_len:]),
+                        f"{content.src.stem}.html",
+                    ),
+                )
+                try:
+                    plan.add_target(
+                        target,
+                        src_path=content.src.relative_to(config.pwd),
+                    )
+                except ValueError as e:
+                    raise VoltResourceError(f"{e}") from e
+
+            return None
+
+        create(config.src_contents_path)
+        if with_drafts:
+            create(config.src_drafts_path)
 
         return None
 
-    def build(self, clean: bool = True) -> None:
+    def build(self, clean: bool = True, with_drafts: bool = False) -> None:
         """Build the static site in the destination directory."""
 
         with tempfile.TemporaryDirectory(
@@ -305,7 +329,7 @@ class Site:
             plan = SitePlan()
             self.gather_theme_assets(plan)
             self.gather_scaffold_targets(plan)
-            self.create_page_targets(plan)
+            self.create_page_targets(plan, with_drafts)
 
             build_path = Path(tmp_dir_name)
             plan.write_nodes(parent_dir=build_path)
