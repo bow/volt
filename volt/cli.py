@@ -121,15 +121,15 @@ timezone: "{tz.name}"
             to building, or not.
 
         """
-        site_config = SiteConfig.from_project_yaml(
+        sc = SiteConfig.from_project_yaml(
             cwd,
             start_lookup_dir=start_lookup_dir,
             build_time=pendulum.now(),
         )
-        if site_config is None:
-            raise exc.VoltCliError("could not resolve project directory")
+        if sc is None:
+            raise exc.VOLT_NO_PROJECT_ERR
 
-        site = Site(config=site_config)
+        site = Site(config=sc)
         site.build(clean=clean, with_drafts=with_drafts)
 
         return site
@@ -143,15 +143,11 @@ timezone: "{tz.name}"
         title: Optional[str] = None,
     ) -> None:
         """Edit a content source for editing"""
-        site_config = SiteConfig.from_project_yaml(
-            cwd,
-            start_lookup_dir=start_lookup_dir,
-        )
-        if site_config is None:
-            raise exc.VoltCliError("could not resolve project directory")
+        if (sc := SiteConfig.from_project_yaml(cwd, start_lookup_dir)) is None:
+            raise exc.VOLT_NO_PROJECT_ERR
 
-        contents_dir = site_config.src_contents_path
-        drafts_dir = site_config.src_drafts_path
+        contents_dir = sc.src_contents_path
+        drafts_dir = sc.src_drafts_path
 
         if create:
             new_fp = (drafts_dir / query).with_suffix(constants.CONTENTS_EXT)

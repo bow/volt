@@ -52,3 +52,6 @@ class VoltTimezoneError(VoltConfigError):
 
     def __init__(self, tzname: str) -> None:
         super().__init__(f"timezone {tzname!r} is invalid")
+
+
+VOLT_NO_PROJECT_ERR = VoltCliError("not in a volt project")
