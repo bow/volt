@@ -8,7 +8,7 @@
 """
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 import click
 import pendulum
@@ -103,8 +103,7 @@ timezone: "{tz.name}"
 
     @staticmethod
     def do_build(
-        cwd: Path,
-        start_lookup_dir: Optional[Path] = None,
+        sc: SiteConfig,
         clean: bool = True,
         with_drafts: bool = False,
     ) -> Site:
@@ -113,22 +112,11 @@ timezone: "{tz.name}"
         This function may overwrite and/or remove any preexisting files
         and or directories.
 
-        :param cwd: Path to the directory from which the command was invoked.
-        :param start_lookup_dir: Path to the directory from which project
-            directory lookup should start. If set to ``None``, the lookup will
-            start from the current directory.
+        :param site_config: Site configuration.
         :param clean: Whether to remove the entire site output directory prior
             to building, or not.
 
         """
-        sc = SiteConfig.from_project_yaml(
-            cwd,
-            start_lookup_dir=start_lookup_dir,
-            build_time=pendulum.now(),
-        )
-        if sc is None:
-            raise exc.VOLT_NO_PROJECT_ERR
-
         site = Site(config=sc)
         site.build(clean=clean, with_drafts=with_drafts)
 
@@ -136,15 +124,12 @@ timezone: "{tz.name}"
 
     @staticmethod
     def do_edit(
-        cwd: Path,
+        sc: SiteConfig,
         query: str,
-        start_lookup_dir: Optional[Path] = None,
         create: bool = False,
         title: Optional[str] = None,
     ) -> None:
         """Edit a content source for editing"""
-        if (sc := SiteConfig.from_project_yaml(cwd, start_lookup_dir)) is None:
-            raise exc.VOLT_NO_PROJECT_ERR
 
         contents_dir = sc.src_contents_path
         drafts_dir = sc.src_drafts_path
@@ -165,7 +150,7 @@ title: {title or query}
                 require_save=False,
             )
             if contents:
-                echo_info(f"created new draft at {str(new_fp.relative_to(cwd))!r}")
+                echo_info(f"created new draft at {str(new_fp.relative_to(sc.cwd))!r}")
                 new_fp.write_text(contents)
 
             return None
@@ -208,6 +193,19 @@ class AliasedGroup(click.Group):
 @click.group(cls=AliasedGroup)
 @click.version_option(__version__)
 @click.option(
+    "-D",
+    "--project-dir",
+    type=click.Path(
+        dir_okay=True,
+        file_okay=False,
+        readable=True,
+        writable=True,
+        resolve_path=True,
+    ),
+    default=None,
+    help="Path to project directory. Default: current.",
+)
+@click.option(
     "-l",
     "--log-level",
     type=click.Choice(["debug", "info", "warning", "error", "critical"]),
@@ -215,22 +213,20 @@ class AliasedGroup(click.Group):
     help="Logging level. Default: 'info'.",
 )
 @click.pass_context
-def main(ctx: click.Context, log_level: str) -> None:
+def main(ctx: click.Context, project_dir: Optional[str], log_level: str) -> None:
     """A versatile static website generator"""
     ctx.params["log_level"] = log_level
 
+    project_path = Path(project_dir) if project_dir is not None else None
+    ctx.params["project_path"] = project_path
+
+    sc: Optional[SiteConfig] = None
+    if ctx.invoked_subcommand != "init":
+        sc = SiteConfig.from_project_yaml(Path.cwd(), project_path)
+    ctx.params["site_config"] = sc
+
 
 @main.command()
-@click.argument(
-    "project_dir",
-    type=click.Path(
-        exists=False,
-        dir_okay=True,
-        readable=True,
-        resolve_path=True,
-    ),
-    required=False,
-)
 @click.option(
     "-n",
     "--name",
@@ -278,7 +274,6 @@ def main(ctx: click.Context, log_level: str) -> None:
 @click.pass_context
 def init(
     ctx: click.Context,
-    project_dir: Optional[str],
     name: Optional[str],
     url: Optional[str],
     timezone: Optional[str],
@@ -297,9 +292,10 @@ def init(
     initialization in the current directory.
 
     """
+    params = cast(click.Context, ctx.parent).params
     pwd = Session.do_init(
         Path.cwd(),
-        Path(project_dir) if project_dir is not None else None,
+        params["project_path"],
         name,
         url,
         timezone,
@@ -309,17 +305,6 @@ def init(
 
 
 @main.command()
-@click.argument(
-    "project_dir",
-    type=click.Path(
-        exists=True,
-        dir_okay=True,
-        file_okay=False,
-        readable=True,
-        writable=True,
-    ),
-    required=False,
-)
 @click.option(
     "-d",
     "--with-drafts",
@@ -338,7 +323,6 @@ def init(
 @click.pass_context
 def build(
     ctx: click.Context,
-    project_dir: Optional[str],
     with_drafts: bool,
     clean: bool,
 ) -> None:
@@ -352,28 +336,19 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    site = Session.do_build(
-        Path.cwd(),
-        Path(project_dir) if project_dir is not None else None,
-        clean,
-        with_drafts,
-    )
+    params = cast(click.Context, ctx.parent).params
+    sc = params.get("site_config", None)
+    if sc is None:
+        raise exc.VOLT_NO_PROJECT_ERR
+
+    sc["build_time"] = pendulum.now()
+    site = Session.do_build(sc, clean, with_drafts)
+
     echo_info(f"completed build for {site.config['name']!r}")
 
 
 @main.command()
 @click.argument("name", type=str, required=True)
-@click.argument(
-    "project_dir",
-    type=click.Path(
-        exists=True,
-        dir_okay=True,
-        file_okay=False,
-        readable=True,
-        writable=True,
-    ),
-    required=False,
-)
 @click.option(
     "-c",
     "--create",
@@ -398,15 +373,13 @@ def build(
 def edit(
     ctx: click.Context,
     name: str,
-    project_dir: Optional[str],
     create: bool,
     title: str,
 ) -> None:
     """Open a content source for editing."""
-    Session.do_edit(
-        Path.cwd(),
-        name,
-        Path(project_dir) if project_dir is not None else None,
-        create,
-        title,
-    )
+    params = cast(click.Context, ctx.parent).params
+    sc = params.get("site_config", None)
+    if sc is None:
+        raise exc.VOLT_NO_PROJECT_ERR
+
+    Session.do_edit(sc, name, create, title)
