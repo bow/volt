@@ -35,7 +35,7 @@ def echo_fmt(msg: str, style: str, file: Optional[IO[Any]] = None) -> None:
 
 def echo_info(msg: str, file: Optional[IO[Any]] = None) -> None:
     """Show a formatted info message."""
-    echo_fmt(msg, style(" INF ", bg="cyan"), file)
+    echo_fmt(msg, style(" INF ", bg="blue"), file)
 
 
 def echo_err(msg: str, file: Optional[IO[Any]] = None) -> None:
