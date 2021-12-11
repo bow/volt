@@ -86,8 +86,8 @@ class Session:
             raise exc.VoltCliError(e.strerror) from e
 
         # Create initial YAML config file.
-        init_conf = f"""# Volt configuration file.
-
+        init_conf = f"""---
+# Volt configuration file.
 name: "{name or ''}"
 url: "{url or ''}"
 description: ""
