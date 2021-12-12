@@ -23,9 +23,6 @@ CONTENTS_EXT = ".md"
 # Separator string for text content front matter.
 FRONT_MATTER_SEP = "---\n"
 
-# File name for theme pages.
-PAGE_TEMPLATE_FNAME = "page.html.j2"
-
 # Site contents directory name.
 SITE_CONTENTS_DIRNAME = "contents"
 
