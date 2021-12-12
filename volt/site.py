@@ -269,7 +269,6 @@ class Site:
         self,
         plan: SitePlan,
         with_drafts: bool = False,
-        page_template_name: str = constants.PAGE_TEMPLATE_FNAME,
         ext: str = constants.CONTENTS_EXT,
     ) -> None:
         """Create :class:`PageTarget` instances to the site plan."""
@@ -277,29 +276,18 @@ class Site:
         config = self.config
 
         def create(src_dir: Path) -> None:
-            contents = [
-                MarkdownContent.from_path(
-                    src=fp,
-                    site_config=config,
-                )
-                for fp in src_dir.rglob(f"*{ext}")
-            ]
+            template = config.load_theme_template()
+            num_src_parts = len(src_dir.parts)
 
-            default_template = config.load_theme_template()
-            for content in contents:
-                template_key = content.meta.get("template", None)
-                template = (
-                    config.load_theme_template(template_key)
-                    if template_key is not None
-                    else default_template
-                )
-
-                contents_parts_len = len(src_dir.parts)
+            for content in [
+                MarkdownContent.from_path(src=fp, site_config=config)
+                for fp in src_dir.glob(f"*{ext}")
+            ]:
                 target = content.to_target(
                     template=template,
                     path_parts=(
                         *plan.out_relpath.parts,
-                        *(content.src.parent.parts[contents_parts_len:]),
+                        *(content.src.parent.parts[num_src_parts:]),
                         f"{content.src.stem}.html",
                     ),
                 )

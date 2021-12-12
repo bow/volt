@@ -227,11 +227,10 @@ class SiteConfig(UserDict):
 
     def load_theme_template(
         self,
-        key: Optional[str] = None,
+        key: str = constants.DEFAULT_TEMPLATE_KEY,
     ) -> Template:
         """Load a theme template with the given key."""
 
-        key = key or constants.DEFAULT_TEMPLATE_KEY
         theme_templates = self.theme_config["templates"]
 
         try:
