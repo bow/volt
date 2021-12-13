@@ -161,6 +161,9 @@ class SiteConfig(UserDict):
         self._src_scaffold_path = self._src_path / scaffold_dirname
         self._theme_path = self._src_path / theme_dirname
 
+        # Hard-coded config defaults.
+        self["slug_replacements"] = (("I/O", "io"),)
+
     @cached_property
     def pwd(self) -> Path:
         """Path to the project directory."""
@@ -205,6 +208,10 @@ class SiteConfig(UserDict):
     def theme_scaffold_path(self) -> Path:
         """Path to the site source theme scaffold."""
         return self.theme_path / "scaffold"
+
+    @cached_property
+    def num_common_parts(self) -> int:
+        return len(self.src_path.parts) + 1
 
     @cached_property
     def template_env(self) -> Environment:

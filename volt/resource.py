@@ -12,12 +12,14 @@ import abc
 import filecmp
 import shutil
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import Tuple
 
 import yaml
 from jinja2 import Template
 from markdown2 import Markdown
+from slugify import slugify
 from yaml import SafeLoader
 
 from . import constants
@@ -178,10 +180,24 @@ class MarkdownContent(Content):
             site_config=site_config,
         )
 
+    @cached_property
+    def path_parts(self) -> tuple[str, ...]:
+        slug_reps = self.site_config.get("slug_replacements", [])
+        num_common_parts = self.site_config.num_common_parts
+        fn = (
+            self.meta["page"]
+            if self.meta.get("page") is not None
+            else f"{slugify(self.meta['title'], replacements=slug_reps)}.html"
+        )
+        return (*(self.src.parent.parts[num_common_parts:]), fn)
+
+    @cached_property
+    def rel_url(self) -> str:
+        return f"/{'/'.join(self.path_parts)}"
+
     def to_target(
         self,
         template: Template,
-        path_parts: Tuple[str, ...],
     ) -> PageTarget:
         """Create a :class:`PageTarget` instance from the instance.
 
@@ -194,4 +210,4 @@ class MarkdownContent(Content):
             site=self.site_config,
             theme=self.site_config.get("theme", {}).get("settings", {}),
         )
-        return PageTarget(content=rendered, path_parts=path_parts)
+        return PageTarget(content=rendered, path_parts=self.path_parts)

@@ -241,11 +241,7 @@ class Site:
                 entries.extend(os.scandir(de))
             else:
                 dtoks = Path(de.path).parts[src_rel_len:]
-                plan.add_target(
-                    CopyTarget(
-                        src=Path(de.path), path_parts=(*plan.out_relpath.parts, *dtoks)
-                    )
-                )
+                plan.add_target(CopyTarget(src=Path(de.path), path_parts=dtoks))
 
         return None
 
@@ -277,25 +273,14 @@ class Site:
 
         def create(src_dir: Path) -> None:
             template = config.load_theme_template()
-            num_src_parts = len(src_dir.parts)
 
             for content in [
                 MarkdownContent.from_path(src=fp, site_config=config)
                 for fp in src_dir.glob(f"*{ext}")
             ]:
-                target = content.to_target(
-                    template=template,
-                    path_parts=(
-                        *plan.out_relpath.parts,
-                        *(content.src.parent.parts[num_src_parts:]),
-                        f"{content.src.stem}.html",
-                    ),
-                )
+                target = content.to_target(template)
                 try:
-                    plan.add_target(
-                        target,
-                        src_path=content.src.relative_to(config.pwd),
-                    )
+                    plan.add_target(target, content.src.relative_to(config.pwd))
                 except ValueError as e:
                     raise VoltResourceError(f"{e}") from e
 
