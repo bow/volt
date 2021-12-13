@@ -7,6 +7,8 @@
 
 """
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
+
+from http.server import ThreadingHTTPServer
 from pathlib import Path
 from typing import Optional, cast
 
@@ -16,6 +18,7 @@ import pendulum
 from . import __version__, constants
 from . import exceptions as exc
 from .config import SiteConfig
+from .server import make_server
 from .site import Site
 from .utils import echo_info, get_fuzzy_match, get_tz
 
@@ -163,6 +166,13 @@ title: {title or query}
             return None
 
         raise exc.VoltResourceError(f"found no matching content file for {query!r}")
+
+    @staticmethod
+    def do_serve(sc: SiteConfig, host: str, port: int) -> None:
+
+        echo_info(f"dev server listening at http://{host}:{port}")
+        serve = make_server(sc, host, port)
+        serve()
 
 
 # Taken from:
@@ -383,3 +393,17 @@ def edit(
         raise exc.VOLT_NO_PROJECT_ERR
 
     Session.do_edit(sc, name, create, title)
+
+
+@main.command()
+@click.option("-h", "--host", type=str, default="127.0.0.1", help="Server host.")
+@click.option("-p", "--port", type=int, default=5050, help="Server port.")
+@click.pass_context
+def serve(ctx: click.Context, host: str, port: int) -> None:
+    """Run the development server"""
+    params = cast(click.Context, ctx.parent).params
+    sc = params.get("site_config", None)
+    if sc is None:
+        raise exc.VOLT_NO_PROJECT_ERR
+
+    Session.do_serve(sc, host, port)
