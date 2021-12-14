@@ -185,7 +185,10 @@ title: {title or query}
         if build:
 
             def builder() -> None:
+                nonlocal sc
                 echo_info("detected source change -- rebuilding")
+                # TODO: Only reload config on config file change.
+                sc = sc.reload()
                 Session.do_build(sc, build_clean, build_with_drafts)
                 return None
 

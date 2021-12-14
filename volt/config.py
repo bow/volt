@@ -114,7 +114,8 @@ class SiteConfig(UserDict):
         :raises ~exc.VoltConfigError: when validation fails.
 
         """
-        with (pwd / yaml_fname).open() as src:
+        yaml_fp = pwd / yaml_fname
+        with yaml_fp.open() as src:
             try:
                 user_conf = cast(Dict[str, Any], yaml.safe_load(src))
             except (ParserError, ScannerError) as e:
@@ -125,6 +126,7 @@ class SiteConfig(UserDict):
             cwd=cwd,
             pwd=pwd,
             user_conf=user_conf,
+            yaml_fp=yaml_fp,
             **kwargs,
         )
 
@@ -139,6 +141,7 @@ class SiteConfig(UserDict):
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         draft_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         timezone: Optional[Timezone] = None,
+        yaml_fp: Optional[Path] = None,
         user_conf: Optional[dict] = None,
         **kwargs: Any,
     ) -> None:
@@ -160,6 +163,7 @@ class SiteConfig(UserDict):
         self._src_drafts_path = self._src_path / draft_dirname
         self._src_scaffold_path = self._src_path / scaffold_dirname
         self._theme_path = self._src_path / theme_dirname
+        self._yaml_fp = yaml_fp
 
         # Hard-coded config defaults.
         self["slug_replacements"] = (("I/O", "io"),)
@@ -224,7 +228,7 @@ class SiteConfig(UserDict):
         """Theme template environment."""
         return Environment(  # nosec
             loader=FileSystemLoader(self.theme_path),
-            auto_reload=False,
+            auto_reload=True,
             enable_async=True,
         )
 
@@ -256,3 +260,9 @@ class SiteConfig(UserDict):
         template = self.load_template(template_name)
 
         return template
+
+    def reload(self) -> "SiteConfig":
+        """Reloads a YAML config."""
+        if self._yaml_fp is None:
+            raise exc.VoltResourceError("could not reload non-YAML config")
+        return self.__class__.from_yaml(cwd=self.cwd, pwd=self.pwd)
