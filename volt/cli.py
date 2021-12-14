@@ -120,9 +120,11 @@ timezone: "{tz.name}"
             to building, or not.
 
         """
+        start_time = time.monotonic()
         sc["build_time"] = pendulum.now()
         site = Site(config=sc)
         site.build(clean=clean, with_drafts=with_drafts)
+        echo_info(f"build completed in {(time.monotonic() - start_time):.2f}ms")
 
         return site
 
@@ -178,26 +180,21 @@ title: {title or query}
         build_clean: bool,
     ) -> None:
 
-        echo_info(f"dev server listening at http://{host}:{port}")
         serve = make_server(sc, host, port)
 
         if build:
 
             def builder() -> None:
                 echo_info("detected source change -- rebuilding")
-                start_time = time.monotonic()
-
                 Session.do_build(sc, build_clean, build_with_drafts)
-
-                duration = time.monotonic() - start_time
-                echo_info(f"completed build in {duration:.2f}ms")
-
                 return None
 
             with Rebuilder(sc, builder):
-                echo_info("rebuilder listening for source changes")
+                echo_info("starting dev server with rebuilder")
+                Session.do_build(sc, build_clean, build_with_drafts)
                 serve()
         else:
+            echo_info("starting dev server")
             serve()
 
 
@@ -377,9 +374,7 @@ def build(
     if sc is None:
         raise exc.VOLT_NO_PROJECT_ERR
 
-    site = Session.do_build(sc, clean, with_drafts)
-
-    echo_info(f"completed build for {site.config['name']!r}")
+    Session.do_build(sc, clean, with_drafts)
 
 
 @main.command()

@@ -22,7 +22,7 @@ from watchdog.events import RegexMatchingEventHandler
 
 from . import __version__
 from .config import SiteConfig
-from .utils import echo_fmt
+from .utils import echo_fmt, echo_info
 
 
 def make_server(sc: SiteConfig, host: str, port: int) -> Callable[[], None]:
@@ -66,6 +66,7 @@ def make_server(sc: SiteConfig, host: str, port: int) -> Callable[[], None]:
 
     def serve() -> None:
         httpd = ThreadingHTTPServer((host, port), HTTPRequestHandler)
+        echo_info(f"dev server listening at http://{host}:{port}")
         httpd.serve_forever()
 
     return serve
