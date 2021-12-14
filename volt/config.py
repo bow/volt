@@ -166,13 +166,19 @@ class SiteConfig(UserDict):
 
     @cached_property
     def pwd(self) -> Path:
-        """Path to the project directory."""
+        """Path to the project root directory."""
         return self._pwd
 
     @cached_property
     def cwd(self) -> Path:
         """Path to the invocation directory."""
         return self._cwd
+
+    @cached_property
+    def rel_pwd(self) -> Path:
+        """Path to the project directory, relative from invocation directory."""
+        rel = self.cwd.relative_to(self.pwd)
+        return Path("/".join(("..",) * len(rel.parts)))
 
     @cached_property
     def src_path(self) -> Path:

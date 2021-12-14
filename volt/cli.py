@@ -8,7 +8,7 @@
 """
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
-from http.server import ThreadingHTTPServer
+import time
 from pathlib import Path
 from typing import Optional, cast
 
@@ -18,7 +18,7 @@ import pendulum
 from . import __version__, constants
 from . import exceptions as exc
 from .config import SiteConfig
-from .server import make_server
+from .server import Rebuilder, make_server
 from .site import Site
 from .utils import echo_info, get_fuzzy_match, get_tz
 
@@ -120,6 +120,7 @@ timezone: "{tz.name}"
             to building, or not.
 
         """
+        sc["build_time"] = pendulum.now()
         site = Site(config=sc)
         site.build(clean=clean, with_drafts=with_drafts)
 
@@ -168,11 +169,36 @@ title: {title or query}
         raise exc.VoltResourceError(f"found no matching content file for {query!r}")
 
     @staticmethod
-    def do_serve(sc: SiteConfig, host: str, port: int) -> None:
+    def do_serve(
+        sc: SiteConfig,
+        host: str,
+        port: int,
+        build: bool,
+        build_with_drafts: bool,
+        build_clean: bool,
+    ) -> None:
 
         echo_info(f"dev server listening at http://{host}:{port}")
         serve = make_server(sc, host, port)
-        serve()
+
+        if build:
+
+            def builder() -> None:
+                echo_info("detected source change -- rebuilding")
+                start_time = time.monotonic()
+
+                Session.do_build(sc, build_clean, build_with_drafts)
+
+                duration = time.monotonic() - start_time
+                echo_info(f"completed build in {duration:.2f}ms")
+
+                return None
+
+            with Rebuilder(sc, builder):
+                echo_info("rebuilder listening for source changes")
+                serve()
+        else:
+            serve()
 
 
 # Taken from:
@@ -351,7 +377,6 @@ def build(
     if sc is None:
         raise exc.VOLT_NO_PROJECT_ERR
 
-    sc["build_time"] = pendulum.now()
     site = Session.do_build(sc, clean, with_drafts)
 
     echo_info(f"completed build for {site.config['name']!r}")
@@ -398,12 +423,41 @@ def edit(
 @main.command()
 @click.option("-h", "--host", type=str, default="127.0.0.1", help="Server host.")
 @click.option("-p", "--port", type=int, default=5050, help="Server port.")
+@click.option(
+    "--build/--no-build",
+    default=True,
+    help="If set, rebuild site when source files are changed. Default: set.",
+)
+@click.option(
+    "--build-with-drafts",
+    is_flag=True,
+    default=False,
+    help=(
+        "If set, include the drafts directory as a content source when building."
+        " Default: unset."
+    ),
+)
+@click.option(
+    "--build-clean",
+    default=True,
+    help=(
+        "If set, the target site directory will be removed prior to site"
+        " building. Default: set."
+    ),
+)
 @click.pass_context
-def serve(ctx: click.Context, host: str, port: int) -> None:
+def serve(
+    ctx: click.Context,
+    host: str,
+    port: int,
+    build: bool,
+    build_with_drafts: bool,
+    build_clean: bool,
+) -> None:
     """Run the development server"""
     params = cast(click.Context, ctx.parent).params
     sc = params.get("site_config", None)
     if sc is None:
         raise exc.VOLT_NO_PROJECT_ERR
 
-    Session.do_serve(sc, host, port)
+    Session.do_serve(sc, host, port, build, build_with_drafts, build_clean)

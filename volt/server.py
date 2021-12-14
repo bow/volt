@@ -8,12 +8,17 @@
 """
 # (c) 2012-2021 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import queue
+import threading
+from contextlib import suppress
 from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Callable, cast
+from typing import Any, Callable, Optional, cast
 
 from click import style
+from watchdog.observers import Observer
+from watchdog.events import RegexMatchingEventHandler
 
 from . import __version__
 from .config import SiteConfig
@@ -64,3 +69,75 @@ def make_server(sc: SiteConfig, host: str, port: int) -> Callable[[], None]:
         httpd.serve_forever()
 
     return serve
+
+
+class SyncQueue(queue.Queue):
+
+    """A queue of size=1 that drops events sent to it while it processes tasks"""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        kwargs["maxsize"] = 1
+        super().__init__(*args, **kwargs)
+        self._putlock = threading.Lock()
+
+    def put(
+        self,
+        item: Any,
+        block: bool = True,
+        timeout: Optional[float] = None,
+    ) -> None:
+
+        if not self._putlock.acquire(blocking=False):
+            return
+
+        if self.unfinished_tasks > 0:
+            self._putlock.release()
+            return
+
+        with suppress(queue.Full):
+            super().put(item, False, timeout=None)
+
+        self._putlock.release()
+
+
+class BuildObserver(Observer):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__()
+        self._event_queue = SyncQueue()
+
+
+class BuildHandler(RegexMatchingEventHandler):
+    def __init__(self, sc: SiteConfig, build_func: Callable) -> None:
+
+        prefix = f"{sc.rel_pwd}".replace(".", r"\.")
+        regexes = [
+            f"^{prefix + '/src'}.+$",
+            f"^{prefix + '/volt.yaml'}$",
+        ]
+        ignore_regexes = [
+            f"^{prefix + '/dist'}.+$",
+        ]
+        super().__init__(regexes, ignore_regexes, case_sensitive=True)
+        self.site_config = sc
+        self._build = build_func
+
+    def on_any_event(self, event: Any) -> None:
+        self._build()
+        return None
+
+
+class Rebuilder:
+    def __init__(self, sc: SiteConfig, build_func: Callable) -> None:
+        self._observer = BuildObserver()
+        self._observer.schedule(
+            BuildHandler(sc, build_func),
+            sc.rel_pwd,
+            recursive=True,
+        )
+
+    def __enter__(self):  # type: ignore
+        return self._observer.start()
+
+    def __exit__(self, typ, value, traceback):  # type: ignore
+        self._observer.stop()
+        self._observer.join()

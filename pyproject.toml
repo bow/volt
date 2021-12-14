@@ -48,6 +48,7 @@ marshmallow = "^3.6.1"
 markdown2 = "^2.4.1"
 thefuzz = {extras = ["speedup"], version = "^0.19.0"}
 python-slugify = "^5.0.2"
+watchdog = "^2.1.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
