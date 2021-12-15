@@ -20,7 +20,7 @@ from . import exceptions as exc
 from .config import SiteConfig
 from .server import Rebuilder, make_server
 from .site import Site
-from .utils import echo_info, get_fuzzy_match, get_tz
+from .utils import echo_err, echo_info, get_fuzzy_match, get_tz
 
 
 class Session:
@@ -186,18 +186,26 @@ title: {title or query}
 
             def builder() -> None:
                 nonlocal sc
-                echo_info("detected source change -- rebuilding")
-                # TODO: Only reload config on config file change.
-                sc = sc.reload()
-                Session.do_build(sc, build_clean, build_with_drafts)
+                try:
+                    # TODO: Only reload config post-init, on config file change.
+                    sc = sc.reload()
+                    Session.do_build(sc, build_clean, build_with_drafts)
+                except click.ClickException as e:
+                    e.show()
+                    echo_err("new build failed -- keeping current build")
+                    return None
                 return None
 
-            with Rebuilder(sc, builder):
+            def rebuilder() -> None:
+                echo_info("detected source change -- rebuilding")
+                builder()
+                return None
+
+            with Rebuilder(sc, rebuilder):
                 echo_info("starting dev server with rebuilder")
-                Session.do_build(sc, build_clean, build_with_drafts)
+                builder()
                 serve()
         else:
-            echo_info("starting dev server")
             serve()
 
 
