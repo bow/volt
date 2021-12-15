@@ -184,12 +184,12 @@ class MarkdownContent(Content):
     def path_parts(self) -> tuple[str, ...]:
         slug_reps = self.site_config.get("slug_replacements", [])
         num_common_parts = self.site_config.num_common_parts
-        fn = (
-            self.meta["page"]
+        parts = (
+            [part for part in self.meta["page"].split("/") if part]
             if self.meta.get("page") is not None
-            else f"{slugify(self.meta['title'], replacements=slug_reps)}.html"
+            else [f"{slugify(self.meta['title'], replacements=slug_reps)}.html"]
         )
-        return (*(self.src.parent.parts[num_common_parts:]), fn)
+        return (*(self.src.parent.parts[num_common_parts:]), *parts)
 
     @cached_property
     def rel_url(self) -> str:
