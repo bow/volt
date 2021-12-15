@@ -134,14 +134,12 @@ timezone: "{tz.name}"
         query: str,
         create: bool = False,
         title: Optional[str] = None,
+        pub: bool = False,
     ) -> None:
-        """Edit a content source for editing"""
-
-        contents_dir = sc.src_contents_path
-        drafts_dir = sc.src_drafts_path
+        """Open a draft file in an editor."""
 
         if create:
-            new_fp = (drafts_dir / query).with_suffix(constants.CONTENTS_EXT)
+            new_fp = (sc.src_drafts_path / query).with_suffix(constants.CONTENTS_EXT)
             new_fp.parent.mkdir(parents=True, exist_ok=True)
             if new_fp.exists():
                 click.edit(filename=f"{new_fp}")
@@ -161,14 +159,16 @@ title: {title or query}
 
             return None
 
-        match_fp = get_fuzzy_match(
-            query, constants.CONTENTS_EXT, 50, contents_dir, drafts_dir
-        )
+        lookup_dirs = [sc.src_drafts_path]
+        if pub:
+            lookup_dirs.append(sc.src_contents_path)
+
+        match_fp = get_fuzzy_match(query, constants.CONTENTS_EXT, 50, *lookup_dirs)
         if match_fp is not None:
             click.edit(filename=f"{match_fp}")
             return None
 
-        raise exc.VoltResourceError(f"found no matching content file for {query!r}")
+        raise exc.VoltResourceError(f"found no matching file for {query!r}")
 
     @staticmethod
     def do_serve(
@@ -387,10 +387,7 @@ def build(
     "--create",
     is_flag=True,
     default=False,
-    help=(
-        "If set, a new file will be created in the drafts directory if"
-        " no match can be found. Default: unset."
-    ),
+    help="If set, create a new file if no match can be found. Default: unset.",
 )
 @click.option(
     "-t",
@@ -402,20 +399,26 @@ def build(
         " If '--create' is unset, this flag is ignored."
     ),
 )
+@click.option(
+    "--pub/--no-pub",
+    default=False,
+    help="If set, also look for matches in the 'pub' directory.",
+)
 @click.pass_context
 def edit(
     ctx: click.Context,
     name: str,
     create: bool,
     title: str,
+    pub: bool,
 ) -> None:
-    """Open a content source for editing."""
+    """Open a draft file in an editor."""
     params = cast(click.Context, ctx.parent).params
     sc = params.get("site_config", None)
     if sc is None:
         raise exc.VOLT_NO_PROJECT_ERR
 
-    Session.do_edit(sc, name, create, title)
+    Session.do_edit(sc, name, create, title, pub)
 
 
 @main.command()
