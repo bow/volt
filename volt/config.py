@@ -136,7 +136,7 @@ class SiteConfig(UserDict):
         pwd: Path,
         src_dirname: str = constants.SITE_SRC_DIRNAME,
         out_dirname: str = constants.SITE_OUT_DIRNAME,
-        contents_dirname: str = constants.SITE_CONTENTS_DIRNAME,
+        pub_dirname: str = constants.SITE_PUB_DIRNAME,
         scaffold_dirname: str = constants.SITE_SCAFFOLD_DIRNAME,
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         draft_dirname: str = constants.SITE_DRAFTS_DIRNAME,
@@ -159,7 +159,7 @@ class SiteConfig(UserDict):
         self._cwd = cwd
         self._src_path = pwd / src_dirname
         self._out_path = pwd / out_dirname
-        self._src_contents_path = self._src_path / contents_dirname
+        self._src_pub_path = self._src_path / pub_dirname
         self._src_drafts_path = self._src_path / draft_dirname
         self._src_scaffold_path = self._src_path / scaffold_dirname
         self._theme_path = self._src_path / theme_dirname
@@ -195,13 +195,13 @@ class SiteConfig(UserDict):
         return self._out_path
 
     @cached_property
-    def src_contents_path(self) -> Path:
-        """Path to the site source contents."""
-        return self._src_contents_path
+    def src_pub_path(self) -> Path:
+        """Path to the site published contents."""
+        return self._src_pub_path
 
     @cached_property
     def src_drafts_path(self) -> Path:
-        """Path to the site contents drafts."""
+        """Path to the site draft contents."""
         return self._src_drafts_path
 
     @cached_property

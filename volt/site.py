@@ -286,7 +286,7 @@ class Site:
 
             return None
 
-        create(config.src_contents_path)
+        create(config.src_pub_path)
         if with_drafts:
             create(config.src_drafts_path)
 

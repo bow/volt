@@ -77,7 +77,7 @@ class Session:
         # Bootstrap directories.
         bootstrap_conf = SiteConfig(cwd=cwd, pwd=pwd, timezone=tz)
         bootstrap_path_attrs = [
-            "src_contents_path",
+            "src_pub_path",
             "src_drafts_path",
             "src_scaffold_path",
             "theme_path",
@@ -161,7 +161,7 @@ title: {title or query}
 
         lookup_dirs = [sc.src_drafts_path]
         if pub:
-            lookup_dirs.append(sc.src_contents_path)
+            lookup_dirs.append(sc.src_pub_path)
 
         match_fp = get_fuzzy_match(query, constants.CONTENTS_EXT, 50, *lookup_dirs)
         if match_fp is not None:

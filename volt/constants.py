@@ -23,8 +23,8 @@ CONTENTS_EXT = ".md"
 # Separator string for text content front matter.
 FRONT_MATTER_SEP = "---\n"
 
-# Site contents directory name.
-SITE_CONTENTS_DIRNAME = "contents"
+# Site published contents directory name.
+SITE_PUB_DIRNAME = "pub"
 
 # Site draft contents directory name.
 SITE_DRAFTS_DIRNAME = "drafts"
