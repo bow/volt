@@ -184,8 +184,12 @@ title: {title or query}
 
         if build:
 
+            rebuild_count = 0
+
             def builder() -> None:
-                nonlocal sc
+                nonlocal sc, rebuild_count
+                if rebuild_count > 0:
+                    echo_info("detected source change -- rebuilding")
                 try:
                     # TODO: Only reload config post-init, on config file change.
                     sc = sc.reload()
@@ -194,14 +198,11 @@ title: {title or query}
                     e.show()
                     echo_err("new build failed -- keeping current build")
                     return None
+                finally:
+                    rebuild_count += 1
                 return None
 
-            def rebuilder() -> None:
-                echo_info("detected source change -- rebuilding")
-                builder()
-                return None
-
-            with Rebuilder(sc, rebuilder):
+            with Rebuilder(sc, builder):
                 echo_info("starting dev server with rebuilder")
                 builder()
                 serve()
