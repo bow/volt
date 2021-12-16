@@ -20,7 +20,7 @@ from click import style
 from watchdog.observers import Observer
 from watchdog.events import RegexMatchingEventHandler
 
-from . import __version__
+from . import __version__, constants
 from .config import SiteConfig
 from .utils import echo_fmt, echo_info
 
@@ -112,11 +112,11 @@ class BuildHandler(RegexMatchingEventHandler):
 
         prefix = f"{sc.rel_pwd}".replace(".", r"\.")
         regexes = [
-            f"^{prefix + '/src'}.+$",
-            f"^{prefix + '/volt.yaml'}$",
+            f"^{prefix + '/' + constants.SITE_SRC_DIRNAME + '/'}.+$",
+            f"^{prefix + '/' + constants.CONFIG_FNAME}$",
         ]
         ignore_regexes = [
-            f"^{prefix + '/dist'}.+$",
+            f"^{prefix + '/' + constants.SITE_OUT_DIRNAME + '/'}.+$",
         ]
         super().__init__(regexes, ignore_regexes, case_sensitive=True)
         self.site_config = sc
