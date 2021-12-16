@@ -103,7 +103,7 @@ class SyncQueue(queue.Queue):
 
 class BuildObserver(Observer):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self._event_queue = SyncQueue()
 
 
