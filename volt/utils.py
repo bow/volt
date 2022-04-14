@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    volt.utils
-    ~~~~~~~~~~
-
-    General utility functions.
-
-"""
+"""General utility functions."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import importlib.util as iutil

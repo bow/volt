@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    volt.site
-    ~~~~~~~~~
-
-    Site-level functions and classes.
-
-"""
+"""Site-level functions and classes."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import os

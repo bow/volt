@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    Tests for volt.utils
-    ~~~~~~~~~~~~~~~~~~~~
-
-"""
+"""Tests for volt.utils."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 from pathlib import Path
 

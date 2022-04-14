@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
 """
-    volt
-    ~~~~
-
     A versatile static website generator.
 
     :copyright: (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>

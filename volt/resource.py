@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    volt.resource
-    ~~~~~~~~~~~~~
-
-    Site resource.
-
-"""
+"""Site resource."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import abc

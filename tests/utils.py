@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    Volt test utilities.
-    ~~~~~~~~~~~~~~~~~~~~
-
-"""
+"""Volt test utilities."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 

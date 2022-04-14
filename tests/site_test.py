@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    Tests for volt.site
-    ~~~~~~~~~~~~~~~~~~~
-
-"""
+"""Tests for volt.site."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 from pathlib import Path

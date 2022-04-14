@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    volt.constants
-    ~~~~~~~~~~~~~~
-
-    Constant values.
-
-"""
+"""Constant values."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 # Prefix for build directory names.

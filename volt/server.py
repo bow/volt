@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    volt.server
-    ~~~~~~~~~~~
-
-    Development server.
-
-"""
+"""Development server."""
 # (c) 2012-2021 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import queue

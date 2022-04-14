@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    volt.exceptions
-    ~~~~~~~~~~~~~~~
-
-    Custom exceptions.
-
-"""
+"""Custom exceptions."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 from typing import IO, Any, Optional

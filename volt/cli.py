@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    volt.cli
-    ~~~~~~~~
-
-    Main entry point for command line invocation.
-
-"""
+"""Main entry point for command line invocation."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import time
