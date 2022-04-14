@@ -30,8 +30,15 @@ clean:  ## Remove built artifacts.
 	rm -rf .coverage.xml dist/
 
 
-.PHONY: conf-dev
-conf-dev:  ## Configure a local development setup.
+.PHONY: help
+help:  ## Show this help.
+	@($(GREP_EXE) --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
+		&& printf "\033[33m%s dev console\033[0m\n" "$(APP_NAME)" >&2 \
+		&& $(GREP_EXE) -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%10s\033[0m · %s\n", $$1, $$2}' >&2
+
+
+.PHONY: install-dev
+install-dev:  ## Configure a local development setup.
 	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
 		printf "Configuring a local dev environment using pyenv ...\n" >&2 \
 			&& pyenv install -s "$(PYTHON_VERSION)" \
@@ -46,7 +53,7 @@ conf-dev:  ## Configure a local development setup.
 			&& pre-commit install && pyenv rehash \
 			&& printf "Done.\n" >&2; \
 	else \
-		printf "Configuring a local dev environment ...\n" >&2 \
+		printf "Configuring a local, bare dev environment ...\n" >&2 \
 			&& pip install $(PIP_DEPS) && pyenv rehash \
 			&& poetry config experimental.new-installer false \
 			&& poetry config virtualenvs.in-project true \
@@ -56,21 +63,30 @@ conf-dev:  ## Configure a local development setup.
 	fi
 
 
-.PHONY: help
-help:  ## Show this help.
-	@($(GREP_EXE) --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
-		&& printf "\033[33m%s dev console\033[0m\n" "$(APP_NAME)" >&2 \
-		&& $(GREP_EXE) -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%10s\033[0m · %s\n", $$1, $$2}' >&2
+.PHONY: lint
+lint:  lint-types lint-style lint-metrics -lint-sec  ## Lint the code.
+
+
+.PHONY: lint-types
+lint-types:  ## Lint the type hints.
+	poetry run mypy volt tests
+
+
+.PHONY: lint-style
+lint-style:  ## Lint style conventions.
+	poetry run flake8 --statistics volt tests && poetry run black -t py310 --check .
+
+
+.PHONY: lint-metrics
+lint-metrics:  ## Lint various metrics.
+	poetry run radon cc --total-average --show-closures --show-complexity --min C volt
+
+
+.PHONY: lint-sec
+lint-sec:  ## Lint security.
+	poetry run bandit -r volt
 
 
 .PHONY: test
 test:  ## Run the test suite.
 	poetry run py.test --cov=volt --cov-config=.coveragerc --cov-report=term-missing --cov-report=xml:.coverage.xml volt tests
-
-
-.PHONY: lint
-lint:  ## Lint the code.
-	poetry run mypy volt tests
-	poetry run flake8 --statistics volt tests \
-		&& poetry run radon cc --total-average --show-closures --show-complexity --min C volt \
-		&& poetry run bandit -r volt
