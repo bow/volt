@@ -429,16 +429,15 @@ def edit(
     help="If set, rebuild site when source files are changed. Default: set.",
 )
 @click.option(
-    "--build-with-drafts",
-    is_flag=True,
-    default=False,
+    "--drafts/--no-drafts",
+    default=True,
     help=(
         "If set, include the drafts directory as a content source when building."
-        " Default: unset."
+        " Default: set."
     ),
 )
 @click.option(
-    "--build-clean",
+    "--clean/--no-clean",
     default=True,
     help=(
         "If set, the target site directory will be removed prior to site"
@@ -451,8 +450,8 @@ def serve(
     host: str,
     port: int,
     build: bool,
-    build_with_drafts: bool,
-    build_clean: bool,
+    drafts: bool,
+    clean: bool,
 ) -> None:
     """Run the development server"""
     params = cast(click.Context, ctx.parent).params
@@ -460,4 +459,4 @@ def serve(
     if sc is None:
         raise exc.VOLT_NO_PROJECT_ERR
 
-    Session.do_serve(sc, host, port, build, build_with_drafts, build_clean)
+    Session.do_serve(sc, host, port, build, drafts, clean)
