@@ -362,7 +362,7 @@ def build(
     """Build static site.
 
     This command generates the static site in the site destination directory
-    (default: `site`).
+    (default: `dist`).
 
     If no project directory is specified, this command will start lookup of the
     project directory from the current directory upwards. If a project
