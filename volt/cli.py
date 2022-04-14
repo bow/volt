@@ -13,7 +13,7 @@ from . import exceptions as exc
 from .config import SiteConfig
 from .server import Rebuilder, make_server
 from .site import Site
-from .utils import echo_err, echo_info, get_fuzzy_match, get_tz
+from .utils import echo_err, echo_info, get_fuzzy_match, get_tz, infer_front_matter
 
 
 class Session:
@@ -139,10 +139,7 @@ timezone: "{tz.name}"
                 return None
 
             contents = click.edit(
-                text=f"""---
-title: {title or query}
----
-""",
+                text=infer_front_matter(query, title),
                 extension=constants.CONTENTS_EXT,
                 require_save=False,
             )

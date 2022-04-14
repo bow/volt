@@ -16,7 +16,7 @@ from pendulum.tz.timezone import Timezone
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from thefuzz import process
 
-from . import exceptions as exc
+from . import constants, exceptions as exc
 
 
 def echo_fmt(msg: str, style: str = "", file: Optional[IO[Any]] = None) -> None:
@@ -201,3 +201,22 @@ def get_fuzzy_match(
     )
 
     return match_fp
+
+
+def infer_front_matter(query: str, title: Optional[str]) -> str:
+    fm = {}
+    default_title = Path(query).stem
+
+    title = " ".join([tok.capitalize() for tok in (title or default_title).split("-")])
+    fm["title"] = title
+
+    *section, _ = query.rsplit("/", 1)
+    ns = len(section)
+    if ns == 1:
+        fm["section"] = section[0]
+    elif ns > 1:
+        raise ValueError(f"unexpected query pattern: {query!r}")
+
+    strv = "\n".join([f"{k}: {v}" for k, v in fm.items()])
+
+    return f"""---\n{strv}\n---"""
