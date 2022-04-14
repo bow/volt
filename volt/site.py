@@ -6,8 +6,10 @@ import shutil
 import tempfile
 from contextlib import suppress
 from functools import cached_property
+from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
-from typing import Dict, Generator, Iterator, Optional, cast
+from typing import cast, Dict, Generator, Iterator, Optional, cast
+
 
 from . import constants
 from .config import SiteConfig
@@ -238,6 +240,25 @@ class Site:
 
         return None
 
+    def _run_engine(self, plan: SitePlan, fp: Path, with_drafts: bool) -> None:
+        """Run a given engine defined in the given path"""
+
+        cfg = self.config
+        mod_name = f"volt.ext.engines.{fp.stem}"
+        spec = spec_from_file_location(mod_name, fp)
+        mod = module_from_spec(spec)
+        spec.loader.exec_module(mod)  # type: ignore
+
+        eng = mod.Engine(cfg, with_drafts)  # type: ignore
+
+        for target, src_path in eng.create_targets():
+            try:
+                plan.add_target(target, src_path)
+            except ValueError as e:
+                raise VoltResourceError(f"{e}") from e
+
+        return None
+
     def gather_static_targets(self, plan: SitePlan) -> None:
         """Create :class:`CopyTarget` instances representing targets copied from
         the site and theme static directories to the site plan."""
@@ -247,13 +268,13 @@ class Site:
 
         return None
 
-    def create_page_targets(
+    def render_simple_targets(
         self,
         plan: SitePlan,
         with_drafts: bool = False,
         ext: str = constants.CONTENTS_EXT,
     ) -> None:
-        """Create :class:`PageTarget` instances to the site plan."""
+        """Create :class:`PageTarget` instances and add them to the site plan."""
 
         config = self.config
 
@@ -278,6 +299,18 @@ class Site:
 
         return None
 
+    def run_engines(self, plan: SitePlan, with_drafts: bool = False) -> None:
+        """Run user-defined engines and add the created targets to the site plan."""
+
+        cfg = self.config
+        engines = cfg.get("theme", {}).get("settings", {}).get("engines", [])
+
+        for entry in engines:
+            mod_fp = cfg.pwd / entry["module"]
+            self._run_engine(plan, mod_fp, with_drafts)
+
+        return None
+
     def build(self, clean: bool = True, with_drafts: bool = False) -> None:
         """Build the static site in the destination directory."""
 
@@ -287,7 +320,8 @@ class Site:
 
             plan = SitePlan()
             self.gather_static_targets(plan)
-            self.create_page_targets(plan, with_drafts)
+            self.render_simple_targets(plan, with_drafts)
+            self.run_engines(plan, with_drafts)
 
             build_path = Path(tmp_dir_name)
             plan.write_nodes(parent_dir=build_path)
