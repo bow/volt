@@ -201,6 +201,5 @@ class MarkdownContent(Content):
             meta=self.meta,
             content=MD.convert(self.content),
             site=self.site_config,
-            theme=self.site_config.get("theme", {}).get("settings", {}),
         )
         return PageTarget(content=rendered, path_parts=self.path_parts)

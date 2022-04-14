@@ -303,7 +303,7 @@ class Site:
         """Run user-defined engines and add the created targets to the site plan."""
 
         cfg = self.config
-        engines = cfg.get("theme", {}).get("settings", {}).get("engines", [])
+        engines = cfg.get("theme", {}).get("engines", [])
 
         for entry in engines:
             mod_fp = cfg.pwd / entry["module"]
