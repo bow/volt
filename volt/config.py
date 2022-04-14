@@ -132,6 +132,7 @@ class SiteConfig(UserDict):
         pub_dirname: str = constants.SITE_PUB_DIRNAME,
         static_dirname: str = constants.SITE_STATIC_DIRNAME,
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
+        template_dirname: str = constants.SITE_THEME_TEMPLATES_DIRNAME,
         draft_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         timezone: Optional[Timezone] = None,
         yaml_fp: Optional[Path] = None,
@@ -156,6 +157,7 @@ class SiteConfig(UserDict):
         self._src_drafts_path = self._src_path / draft_dirname
         self._src_static_path = self._src_path / static_dirname
         self._theme_path = self._src_path / theme_dirname
+        self._theme_template_path = self._theme_path / template_dirname
         self._yaml_fp = yaml_fp
 
         # Hard-coded config defaults.
@@ -213,6 +215,11 @@ class SiteConfig(UserDict):
         return self.theme_path / "static"
 
     @cached_property
+    def theme_template_path(self) -> Path:
+        """Path to the theme template directory."""
+        return self._theme_template_path
+
+    @cached_property
     def num_common_parts(self) -> int:
         return len(self.src_path.parts) + 1
 
@@ -220,7 +227,7 @@ class SiteConfig(UserDict):
     def template_env(self) -> Environment:
         """Theme template environment."""
         return Environment(  # nosec
-            loader=FileSystemLoader(self.theme_path),
+            loader=FileSystemLoader(self.theme_template_path),
             auto_reload=True,
             enable_async=True,
         )

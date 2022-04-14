@@ -34,5 +34,8 @@ SITE_SRC_DIRNAME = "src"
 # Site theme directory name.
 SITE_THEME_DIRNAME = "theme"
 
+# Theme templates directory name.
+SITE_THEME_TEMPLATES_DIRNAME = "templates"
+
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"
