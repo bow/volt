@@ -5,6 +5,7 @@ import abc
 import filecmp
 import shutil
 from dataclasses import dataclass
+from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
 from typing import Tuple
@@ -167,6 +168,7 @@ class MarkdownContent(Content):
             meta={
                 "labels": {},
                 "title": None,
+                "pub_time": dt.now(),
                 **fm,
             },
             content=raw_content,
