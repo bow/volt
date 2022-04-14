@@ -72,7 +72,7 @@ class Session:
         bootstrap_path_attrs = [
             "src_pub_path",
             "src_drafts_path",
-            "src_scaffold_path",
+            "src_static_path",
             "theme_path",
         ]
         try:

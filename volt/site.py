@@ -243,15 +243,15 @@ class Site:
         the theme assets directory to the site plan."""
         return self._gather_copy_targets(
             plan=plan,
-            targets_dir=self.config.theme_scaffold_path,
+            targets_dir=self.config.theme_static_path,
         )
 
-    def gather_scaffold_targets(self, plan: SitePlan) -> None:
+    def gather_static_targets(self, plan: SitePlan) -> None:
         """Create :class:`CopyTarget` instances representing targets copied from
-        the scaffold directory to the site plan."""
+        the static directory to the site plan."""
         return self._gather_copy_targets(
             plan=plan,
-            targets_dir=self.config.src_scaffold_path,
+            targets_dir=self.config.src_static_path,
         )
 
     def create_page_targets(
@@ -294,7 +294,7 @@ class Site:
 
             plan = SitePlan()
             self.gather_theme_assets(plan)
-            self.gather_scaffold_targets(plan)
+            self.gather_static_targets(plan)
             self.create_page_targets(plan, with_drafts)
 
             build_path = Path(tmp_dir_name)

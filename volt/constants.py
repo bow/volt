@@ -25,8 +25,8 @@ SITE_DRAFTS_DIRNAME = "drafts"
 # Site output directory name.
 SITE_OUT_DIRNAME = "dist"
 
-# Site scaffold directory name.
-SITE_SCAFFOLD_DIRNAME = "scaffold"
+# Site static directory name.
+SITE_STATIC_DIRNAME = "static"
 
 # Site source directory name.
 SITE_SRC_DIRNAME = "src"

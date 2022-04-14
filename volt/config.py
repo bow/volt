@@ -130,7 +130,7 @@ class SiteConfig(UserDict):
         src_dirname: str = constants.SITE_SRC_DIRNAME,
         out_dirname: str = constants.SITE_OUT_DIRNAME,
         pub_dirname: str = constants.SITE_PUB_DIRNAME,
-        scaffold_dirname: str = constants.SITE_SCAFFOLD_DIRNAME,
+        static_dirname: str = constants.SITE_STATIC_DIRNAME,
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         draft_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         timezone: Optional[Timezone] = None,
@@ -154,7 +154,7 @@ class SiteConfig(UserDict):
         self._out_path = pwd / out_dirname
         self._src_pub_path = self._src_path / pub_dirname
         self._src_drafts_path = self._src_path / draft_dirname
-        self._src_scaffold_path = self._src_path / scaffold_dirname
+        self._src_static_path = self._src_path / static_dirname
         self._theme_path = self._src_path / theme_dirname
         self._yaml_fp = yaml_fp
 
@@ -198,9 +198,9 @@ class SiteConfig(UserDict):
         return self._src_drafts_path
 
     @cached_property
-    def src_scaffold_path(self) -> Path:
-        """Path to the site source scaffold."""
-        return self._src_scaffold_path
+    def src_static_path(self) -> Path:
+        """Path to the site source static files."""
+        return self._src_static_path
 
     @cached_property
     def theme_path(self) -> Path:
@@ -208,9 +208,9 @@ class SiteConfig(UserDict):
         return self._theme_path
 
     @cached_property
-    def theme_scaffold_path(self) -> Path:
-        """Path to the site source theme scaffold."""
-        return self.theme_path / "scaffold"
+    def theme_static_path(self) -> Path:
+        """Path to the site source theme static files."""
+        return self.theme_path / "static"
 
     @cached_property
     def num_common_parts(self) -> int:
