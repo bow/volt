@@ -341,9 +341,7 @@ def init(
 
 @main.command()
 @click.option(
-    "-d",
-    "--with-drafts",
-    is_flag=True,
+    "--drafts/--no-drafts",
     default=False,
     help="If set, include the drafts directory as a content source. Default: unset.",
 )
@@ -358,7 +356,7 @@ def init(
 @click.pass_context
 def build(
     ctx: click.Context,
-    with_drafts: bool,
+    drafts: bool,
     clean: bool,
 ) -> None:
     """Build static site.
@@ -376,7 +374,7 @@ def build(
     if sc is None:
         raise exc.VOLT_NO_PROJECT_ERR
 
-    Session.do_build(sc, clean, with_drafts)
+    Session.do_build(sc, clean, drafts)
 
 
 @main.command()
