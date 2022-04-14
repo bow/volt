@@ -238,21 +238,14 @@ class Site:
 
         return None
 
-    def gather_theme_assets(self, plan: SitePlan) -> None:
-        """Add :class:`CopyTarget` instances representing targets copied from
-        the theme assets directory to the site plan."""
-        return self._gather_copy_targets(
-            plan=plan,
-            targets_dir=self.config.theme_static_path,
-        )
-
     def gather_static_targets(self, plan: SitePlan) -> None:
         """Create :class:`CopyTarget` instances representing targets copied from
-        the static directory to the site plan."""
-        return self._gather_copy_targets(
-            plan=plan,
-            targets_dir=self.config.src_static_path,
-        )
+        the site and theme static directories to the site plan."""
+        cfg = self.config
+        for static_path in (cfg.src_static_path, cfg.theme_static_path):
+            self._gather_copy_targets(plan=plan, targets_dir=static_path)
+
+        return None
 
     def create_page_targets(
         self,
@@ -293,7 +286,6 @@ class Site:
         ) as tmp_dir_name:
 
             plan = SitePlan()
-            self.gather_theme_assets(plan)
             self.gather_static_targets(plan)
             self.create_page_targets(plan, with_drafts)
 
