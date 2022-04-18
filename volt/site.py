@@ -8,7 +8,7 @@ from contextlib import suppress
 from functools import cached_property
 from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
-from typing import cast, Dict, Generator, Iterator, Optional, cast
+from typing import Dict, Generator, Iterator, Optional, cast
 
 
 from . import constants
