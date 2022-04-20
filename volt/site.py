@@ -14,7 +14,7 @@ from typing import Dict, Generator, Iterator, Optional, cast
 from . import constants
 from .config import SiteConfig
 from .exceptions import VoltResourceError
-from .resource import CopyTarget, MarkdownContent, Target
+from .resource import CopyTarget, Target
 from .utils import calc_relpath
 
 __all__ = ["Site", "SiteNode", "SitePlan"]
@@ -268,37 +268,6 @@ class Site:
 
         return None
 
-    def render_simple_targets(
-        self,
-        plan: SitePlan,
-        with_drafts: bool = False,
-        ext: str = constants.CONTENTS_EXT,
-    ) -> None:
-        """Create :class:`PageTarget` instances and add them to the site plan."""
-
-        config = self.config
-
-        def create(src_dir: Path) -> None:
-            template = config.load_theme_template()
-
-            for content in [
-                MarkdownContent.from_path(src=fp, site_config=config)
-                for fp in src_dir.glob(f"*{ext}")
-            ]:
-                target = content.to_target(template)
-                try:
-                    plan.add_target(target)
-                except ValueError as e:
-                    raise VoltResourceError(f"{e}") from e
-
-            return None
-
-        create(config.src_pub_path)
-        if with_drafts:
-            create(config.src_drafts_path)
-
-        return None
-
     def run_engines(self, plan: SitePlan, with_drafts: bool = False) -> None:
         """Run user-defined engines and add the created targets to the site plan."""
 
@@ -320,7 +289,6 @@ class Site:
 
             plan = SitePlan()
             self.gather_static_targets(plan)
-            self.render_simple_targets(plan, with_drafts)
             self.run_engines(plan, with_drafts)
 
             build_path = Path(tmp_dir_name)
