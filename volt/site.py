@@ -114,7 +114,7 @@ class SitePlan:
         self._root = SiteNode(out_relpath)
         self._root_path_len = len(out_relpath.parts)
 
-    def add_target(self, target: Target, src_path: Optional[Path] = None) -> None:
+    def add_target(self, target: Target) -> None:
         """Add a target to the plan.
 
         :param target: A target to be created in the site output directory.
@@ -149,8 +149,8 @@ class SitePlan:
                         raise ValueError(
                             f"target path {('/'.join(target.path_parts))!r}"
                             + (
-                                f" from source {str(src_path)!r}"
-                                if src_path is not None
+                                f" from source {str(target.src_path)!r}"
+                                if target.src_path is not None
                                 else ""
                             )
                             + " already added to the site plan"
@@ -251,9 +251,9 @@ class Site:
 
         eng = mod.Engine(cfg, with_drafts)  # type: ignore
 
-        for target, src_path in eng.create_targets():
+        for target in eng.create_targets():
             try:
-                plan.add_target(target, src_path)
+                plan.add_target(target)
             except ValueError as e:
                 raise VoltResourceError(f"{e}") from e
 
@@ -287,7 +287,7 @@ class Site:
             ]:
                 target = content.to_target(template)
                 try:
-                    plan.add_target(target, content.src.relative_to(config.pwd))
+                    plan.add_target(target)
                 except ValueError as e:
                     raise VoltResourceError(f"{e}") from e
 

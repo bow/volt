@@ -4,11 +4,11 @@
 import abc
 import filecmp
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 import yaml
 from jinja2 import Template
@@ -59,6 +59,9 @@ class Target(abc.ABC):
     # Path parts / tokens to the target.
     path_parts: Tuple[str, ...]
 
+    # Filesystem path to the source of this target.
+    src_path: Optional[Path] = field(default=None)
+
     @abc.abstractmethod
     def write(self, parent_dir: Path) -> None:
         raise NotImplementedError()
@@ -74,6 +77,9 @@ class PageTarget(Target):
 
     # Path parts / tokens to the target.
     path_parts: Tuple[str, ...]
+
+    # Filesystem path to the source of this target.
+    src_path: Optional[Path] = field(default=None)
 
     def write(self, parent_dir: Path) -> None:
         """Write the text content to the destination."""
@@ -204,4 +210,8 @@ class MarkdownContent(Content):
             content=MD.convert(self.content),
             site=self.site_config,
         )
-        return PageTarget(content=rendered, path_parts=self.path_parts)
+        return PageTarget(
+            src_path=self.src.relative_to(self.site_config.pwd),
+            content=rendered,
+            path_parts=self.path_parts,
+        )
