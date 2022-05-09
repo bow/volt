@@ -32,9 +32,15 @@ clean:  ## Remove built artifacts.
 
 .PHONY: help
 help:  ## Show this help.
+	$(eval PADLEN=$(shell $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+		| cut -d':' -f1 \
+		| awk '{cur = length($$0); lengths[cur] = lengths[cur] $$0 ORS; max=(cur > max ? cur : max)} END {printf "%s", max}' \
+		|| (true && echo 0)))
 	@($(GREP_EXE) --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
 		&& printf "\033[33m⋄ %s dev console\033[0m\n" "$(APP_NAME)" >&2 \
-		&& $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m→ \033[36m%-13s\033[0m \033[33m· \033[0m%s\n", $$1, $$2}'
+		&& $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+			| sort \
+			| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m» \033[36m%*-s\033[0m \033[33m· \033[0m%s\n", $(PADLEN), $$1, $$2}'
 
 
 .PHONY: install-dev
