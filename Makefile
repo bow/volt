@@ -1,12 +1,25 @@
-# Makefile for common development tasks.
+# Common development tasks.
 
+# Cross-platform adjustments.
+SYS := $(shell uname 2> /dev/null)
+ifeq ($(SYS),Linux)
+GREP_EXE := grep
+DATE_EXE := date
+else ifeq ($(SYS),Darwin)
+GREP_EXE := ggrep
+DATE_EXE := gdate
+else
+$(error Unsupported development platform)
+endif
+
+# Application name.
 APP_NAME := volt
 
 # Latest version of supported Python.
 PYTHON_VERSION := 3.10.4
 
 # Name of virtualenv for development.
-ENV_NAME ?= $(APP_NAME)-dev
+VENV_NAME ?= $(APP_NAME)-dev
 
 # Non-pyproject.toml dependencies.
 PIP_DEPS := poetry poetry-dynamic-versioning pre-commit
@@ -14,24 +27,14 @@ PIP_DEPS := poetry poetry-dynamic-versioning pre-commit
 ## Toggle for dev setup with pyenv.
 WITH_PYENV ?= 1
 
-# Cross-platform adjustments.
-SYS := $(shell uname 2> /dev/null)
-ifeq ($(SYS),Linux)
-GREP_EXE := grep
-else ifeq ($(SYS),Darwin)
-GREP_EXE := ggrep
-else
-$(error Unsupported development platform)
-endif
-
-# Docker image name.
+# Various build info.
 GIT_TAG    := $(shell git describe --tags --always --dirty 2> /dev/null || echo "untagged")
 GIT_COMMIT := $(shell git rev-parse --quiet --verify HEAD || echo "?")
-GIT_DIRTY  := $(shell test -n "`git status --porcelain`" && echo "-dirty" || true)
-BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
-IMG_NAME   := ghcr.io/bow/$(APP_NAME)
-
+GIT_DIRTY  := $(shell test -n "$(shell git status --porcelain)" && echo "-dirty" || true)
+BUILD_TIME := $(shell $(DATE_EXE) -u '+%Y-%m-%dT%H:%M:%SZ')
 IS_RELEASE := $(shell ((echo "${GIT_TAG}" | $(GREP_EXE) -qE "^v?[0-9]+\.[0-9]+\.[0-9]+$$") && echo '1') || true)
+
+IMG_NAME   := ghcr.io/bow/$(APP_NAME)
 ifeq ($(IS_RELEASE),1)
 IMG_TAG    := $(GIT_TAG)
 else
@@ -77,9 +80,9 @@ install-dev:  ## Configure a local development setup.
 	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
 		printf "Configuring a local dev environment using pyenv ...\n" >&2 \
 			&& pyenv install -s "$(PYTHON_VERSION)" \
-			&& pyenv virtualenv -f "$(PYTHON_VERSION)" "$(ENV_NAME)" \
-			&& printf "%s\n%s" "$(ENV_NAME)" "$(PYTHON_VERSION)" > .python-version \
-			&& source "$(shell pyenv root)/versions/$(ENV_NAME)/bin/activate" \
+			&& pyenv virtualenv -f "$(PYTHON_VERSION)" "$(VENV_NAME)" \
+			&& printf "%s\n%s" "$(VENV_NAME)" "$(PYTHON_VERSION)" > .python-version \
+			&& source "$(shell pyenv root)/versions/$(VENV_NAME)/bin/activate" \
 			&& pip install --upgrade pip && pyenv rehash \
 			&& pip install $(PIP_DEPS) && pyenv rehash \
 			&& poetry config experimental.new-installer false \
