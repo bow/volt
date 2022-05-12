@@ -303,8 +303,8 @@ class Site:
             # from inside the container.
             if self.config.in_docker:
                 for dp, _, fnames in os.walk(out_path):
-                    os.chmod(dp, 0o777)
+                    os.chmod(dp, 0o777)  # nosec: B103
                     for fn in fnames:
-                        os.chmod(os.path.join(dp, fn), 0o666)
+                        os.chmod(os.path.join(dp, fn), 0o666)  # nosec: B103
 
         return None

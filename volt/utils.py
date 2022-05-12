@@ -16,7 +16,7 @@ from pendulum.tz.timezone import Timezone
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from thefuzz import process
 
-from . import constants, exceptions as exc
+from . import exceptions as exc
 
 
 def echo_fmt(msg: str, style: str = "", file: Optional[IO[Any]] = None) -> None:
