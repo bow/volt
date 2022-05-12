@@ -299,5 +299,12 @@ class Site:
                 with suppress(FileNotFoundError):
                     shutil.rmtree(out_path)
             shutil.copytree(src=build_path, dst=out_path)
+            # chmod if inside container to ensure host can use it as if not generated
+            # from inside the container.
+            if self.config.in_docker:
+                for dp, _, fnames in os.walk(out_path):
+                    os.chmod(dp, 0o777)
+                    for fn in fnames:
+                        os.chmod(os.path.join(dp, fn), 0o666)
 
         return None

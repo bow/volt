@@ -1,6 +1,7 @@
 """Configuration handling."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import os
 from collections import UserDict
 from functools import cached_property
 from pathlib import Path
@@ -237,6 +238,10 @@ class SiteConfig(UserDict):
         fp = self.theme_path / constants.THEME_SETTINGS_FNAME
         with fp.open("r") as src:
             return cast(Dict[str, Any], yaml.safe_load(src))
+
+    @cached_property
+    def in_docker(self) -> bool:
+        return os.path.exists("/.dockerenv")
 
     def load_template(self, name: str) -> Template:
         """Load a template with the given name."""
