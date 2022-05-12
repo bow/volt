@@ -1,13 +1,16 @@
 # Makefile for common development tasks.
 
-PROJECT_DIR := $(CURDIR)
 APP_NAME := volt
+
 # Latest version of supported Python.
-PYTHON_VERSION := 3.10.0
+PYTHON_VERSION := 3.10.4
+
 # Name of virtualenv for development.
 ENV_NAME ?= $(APP_NAME)-dev
+
 # Non-pyproject.toml dependencies.
 PIP_DEPS := poetry poetry-dynamic-versioning pre-commit
+
 ## Toggle for dev setup with pyenv.
 WITH_PYENV ?= 1
 
@@ -21,13 +24,34 @@ else
 $(error Unsupported development platform)
 endif
 
+# Docker image name.
+GIT_TAG    := $(shell git describe --tags --always --dirty 2> /dev/null || echo "untagged")
+GIT_COMMIT := $(shell git rev-parse --quiet --verify HEAD || echo "?")
+GIT_DIRTY  := $(shell test -n "`git status --porcelain`" && echo "-dirty" || true)
+BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+IMG_NAME   := ghcr.io/bow/$(APP_NAME)
+
+IS_RELEASE := $(shell ((echo "${GIT_TAG}" | $(GREP_EXE) -qE "^v?[0-9]+\.[0-9]+\.[0-9]+$$") && echo '1') || true)
+ifeq ($(IS_RELEASE),1)
+IMG_TAG    := $(GIT_TAG)
+else
+IMG_TAG    := latest
+endif
+
+## Rules ##
 
 all: help
 
 
+.PHONY: build
+build:  ## Build wheel and source dist.
+	poetry build
+	twine check dist/*
+
+
 .PHONY: clean
-clean:  ## Remove built artifacts.
-	rm -rf .coverage.xml dist/
+clean:  ## Remove build artifacts, including built Docker images.
+	rm -rf build/ dist/ && (docker rmi $(IMG_NAME) 2> /dev/null || true)
 
 
 .PHONY: help
@@ -39,8 +63,13 @@ help:  ## Show this help.
 	@($(GREP_EXE) --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
 		&& printf "\033[36m◉ %s dev console\033[0m\n" "$(APP_NAME)" >&2 \
 		&& $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-			| sort \
-			| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m» \033[33m%*-s\033[0m \033[36m· \033[0m%s\n", $(PADLEN), $$1, $$2}'
+			| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m» \033[33m%*-s\033[0m \033[36m· \033[0m%s\n", $(PADLEN), $$1, $$2}' \
+			| sort
+
+
+.PHONY: img
+img:  ## Build and tag the Docker container.
+	docker build --build-arg REVISION=$(GIT_COMMIT)$(GIT_DIRTY) --build-arg BUILD_TIME=$(BUILD_TIME) --tag $(IMG_NAME):$(IMG_TAG) .
 
 
 .PHONY: install-dev
@@ -70,7 +99,7 @@ install-dev:  ## Configure a local development setup.
 
 
 .PHONY: lint
-lint:  lint-types lint-style lint-metrics -lint-sec  ## Lint the code.
+lint:  lint-types lint-style lint-metrics lint-sec  ## Lint the code.
 
 
 .PHONY: lint-types
