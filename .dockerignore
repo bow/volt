@@ -1,0 +1,29 @@
+# Unit test / coverage reports
+**/*.coverage
+**/*.tox
+htmlcov
+
+# Misc
+**/*.egg
+**/*.egg-info
+dist
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+**/__pycache__
+**/tests/
+**/.pytest_cache
+**/.mypy_cache
+**/build/static/
+**/sandbox/
+**/htmlcov
+.python-version
+.cache
+**/*.sif
+**/*.simg
