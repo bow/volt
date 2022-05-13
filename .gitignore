@@ -4,6 +4,7 @@
 *.egg-info
 .coverage
 .coverage.*
+.junit.xml
 .tox
 .cache
 .eggs

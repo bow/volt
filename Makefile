@@ -127,4 +127,4 @@ lint-sec:  ## Lint security.
 
 .PHONY: test
 test:  ## Run the test suite.
-	poetry run py.test --cov=volt --cov-config=.coveragerc --cov-report=term-missing --cov-report=xml:.coverage.xml volt tests
+	poetry run py.test --junitxml=.junit.xml --cov=volt --cov-config=.coveragerc --cov-report=term-missing --cov-report=xml:.coverage.xml volt tests
