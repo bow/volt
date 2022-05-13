@@ -15,48 +15,8 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Install Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-
-      - name: Setup poetry cache
-        uses: actions/cache@v3
-        id: cache-poetry
-        with:
-          path: ~/.virtualenvs
-          # yamllint disable-line rule:line-length
-          key: ${{runner.os}}-${{ env.pythonLocation }}-${{ matrix.python-version }}-v3-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Install and configure dependencies
-        run: |
-          pip install poetry poetry-dynamic-versioning
-          poetry config virtualenvs.in-project false
-          poetry config virtualenvs.path ~/.virtualenvs
-
-      - name: Install package
-        run: poetry install
-        if: steps.cache-poetry.outputs.cache-hit != 'true'
-
-      - name: Lint style
-        run: make lint-style
-
-      - name: Lint types
-        run: make lint-types
-
-      - name: Lint security
-        run: make lint-sec
-
-      - name: Lint other metrics
-        run: make lint-metrics
-
   test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -96,7 +56,52 @@ jobs:
           coverageLocations: |
             ${{ github.workspace }}/.coverage.xml:cobertura
 
-  publish-image:
+  lint:
+    name: Lint ${{ matrix.lint.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lint:
+          - name: style
+            rule: lint-style
+          - name: types
+            rule: lint-types
+          - name: security
+            rule: lint-sec
+          - name: other metrics
+            rule: lint-metrics
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - name: Setup poetry cache
+        uses: actions/cache@v3
+        id: cache-poetry
+        with:
+          path: ~/.virtualenvs
+          # yamllint disable-line rule:line-length
+          key: ${{runner.os}}-${{ env.pythonLocation }}-${{ matrix.lint.rule }}-v3-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install and configure dependencies
+        run: |
+          pip install poetry poetry-dynamic-versioning
+          poetry config virtualenvs.in-project false
+          poetry config virtualenvs.path ~/.virtualenvs
+
+      - name: Install package
+        run: poetry install
+        if: steps.cache-poetry.outputs.cache-hit != 'true'
+
+      - name: Lint ${{ matrix.lint.name }}
+        run: make ${{ matrix.lint.rule }}
+
+  pub-image:
+    name: Publish Docker image
     runs-on: ubuntu-latest
     needs: [lint, test]
     steps:
