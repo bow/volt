@@ -102,11 +102,11 @@ install-dev:  ## Configure a local development setup.
 			&& printf "Done.\n" >&2; \
 	else \
 		printf "Configuring a local, bare dev environment ...\n" >&2 \
-			&& pip install $(PIP_DEPS) && pyenv rehash \
+			&& pip install $(PIP_DEPS) \
 			&& poetry config experimental.new-installer false \
 			&& poetry config settings.virtualenvs.create false \
-			&& poetry install && pyenv rehash \
-			&& pre-commit install && pyenv rehash \
+			&& poetry install \
+			&& pre-commit install \
 			&& printf "Done.\n" >&2; \
 	fi
 
