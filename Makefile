@@ -41,6 +41,8 @@ else
 IMG_TAG    := latest
 endif
 
+WHEEL_DEPS_DIR ?= $(CURDIR)/wheels/deps
+
 ## Rules ##
 
 all: help
@@ -50,6 +52,14 @@ all: help
 build:  ## Build wheel and source dist.
 	poetry build
 	twine check dist/*
+
+.PHONY: build-deps
+build-deps: | $(WHEEL_DEPS_DIR)  ## Build wheels of dependencies.
+	poetry export --without-hashes -f requirements.txt -o /dev/stdout | \
+		pip wheel -r /dev/stdin --wheel-dir=$(WHEEL_DEPS_DIR)
+
+$(WHEEL_DEPS_DIR):
+	mkdir -p $@
 
 
 .PHONY: clean
@@ -86,7 +96,7 @@ install-dev:  ## Configure a local development setup.
 			&& pip install --upgrade pip && pyenv rehash \
 			&& pip install $(PIP_DEPS) && pyenv rehash \
 			&& poetry config experimental.new-installer false \
-			&& poetry config virtualenvs.in-project true \
+			&& poetry config settings.virtualenvs.create false \
 			&& poetry install && pyenv rehash \
 			&& pre-commit install && pyenv rehash \
 			&& printf "Done.\n" >&2; \
@@ -94,7 +104,7 @@ install-dev:  ## Configure a local development setup.
 		printf "Configuring a local, bare dev environment ...\n" >&2 \
 			&& pip install $(PIP_DEPS) && pyenv rehash \
 			&& poetry config experimental.new-installer false \
-			&& poetry config virtualenvs.in-project true \
+			&& poetry config settings.virtualenvs.create false \
 			&& poetry install && pyenv rehash \
 			&& pre-commit install && pyenv rehash \
 			&& printf "Done.\n" >&2; \

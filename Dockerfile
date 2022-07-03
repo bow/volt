@@ -4,17 +4,14 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 
 WORKDIR /src
 
-RUN apk add --update --no-cache build-base~=0 make~=4 git~=2 libffi-dev~=3 py3-pip~=20 \
-    && pip --no-cache-dir install poetry==1.1.13 poetry-dynamic-versioning==0.16.0
+RUN apk add --update --no-cache build-base~=0 make~=4 git~=2 libffi-dev~=3 py3-pip~=20
 
 COPY .git /src/.git
 
 RUN git checkout -- . \
-    && mkdir -p /wheels/deps/ \
-    && poetry export --without-hashes -f requirements.txt -o /tmp/requirements.txt \
-    && poetry build -f wheel \
-    && mv dist/*.whl /wheels/ \
-    && pip wheel -r /tmp/requirements.txt --wheel-dir=/wheels/deps/
+    && make install-dev \
+    && WHEEL_DEPS_DIR=/wheels/deps make build build-deps \
+    && mv dist/*.whl /wheels/
 
 # --- #
 
