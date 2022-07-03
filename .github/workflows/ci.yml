@@ -64,19 +64,21 @@ jobs:
             ${{ github.workspace }}/.coverage.xml:cobertura
 
   lint:
-    name: Lint ${{ matrix.lint.name }}
+    name: ${{ matrix.lint.name }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         lint:
-          - name: style
+          - name: Lint style
             rule: lint-style
-          - name: types
+          - name: Lint types
             rule: lint-types
-          - name: security
-            rule: lint-sec
-          - name: other metrics
+          - name: Lint other metrics
             rule: lint-metrics
+          - name: Scan AST security
+            rule: scan-security-ast
+          - name: Scan dependencies
+            rule: scan-security-deps
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -104,7 +106,7 @@ jobs:
         run: poetry install
         if: steps.cache-poetry.outputs.cache-hit != 'true'
 
-      - name: Lint ${{ matrix.lint.name }}
+      - name: ${{ matrix.lint.name }}
         run: make ${{ matrix.lint.rule }}
 
   pub-image:

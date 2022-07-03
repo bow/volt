@@ -112,7 +112,7 @@ install-dev:  ## Configure a local development setup.
 
 
 .PHONY: lint
-lint:  lint-types lint-style lint-metrics lint-sec  ## Lint the code.
+lint:  lint-types lint-style lint-metrics  ## Lint the code.
 
 
 .PHONY: lint-types
@@ -130,9 +130,18 @@ lint-metrics:  ## Lint various metrics.
 	poetry run radon cc --total-average --show-closures --show-complexity --min C volt
 
 
-.PHONY: lint-sec
-lint-sec:  ## Lint security.
-	poetry run bandit -r volt
+.PHONY: scan-security
+scan-security: scan-security-ast scan-security-deps  ## Perform all security analyses.
+
+
+.PHONY: scan-security-ast
+scan-security-ast:  ## Perform static security analysis on the AST.
+	poetry run bandit -r crimson
+
+
+.PHONY: scan-security-deps
+scan-security-deps:  ## Scan dependencies for reported vulnerabilities.
+	poetry export --without-hashes -f requirements.txt -o /dev/stdout | poetry run safety check --full-report --stdin
 
 
 .PHONY: test
