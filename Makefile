@@ -67,6 +67,11 @@ clean:  ## Remove build artifacts, including built Docker images.
 	rm -rf build/ dist/ && (docker rmi $(IMG_NAME) 2> /dev/null || true)
 
 
+.PHONY: clean-venv
+clean-venv:  ## Remove the created pyenv virtualenv.
+	pyenv virtualenv-delete -f $(VENV_NAME) && rm -f .python-version
+
+
 .PHONY: help
 help:  ## Show this help.
 	$(eval PADLEN=$(shell $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
