@@ -14,7 +14,7 @@ from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from . import constants
-from . import exceptions as exc
+from . import exceptions as excs
 from .utils import find_dir_containing, get_tz, load_template
 
 __all__ = ["SiteConfig"]
@@ -114,7 +114,9 @@ class SiteConfig(UserDict):
                 user_conf = cast(Dict[str, Any], yaml.safe_load(src))
             except (ParserError, ScannerError) as e:
                 # TODO: display traceback depending on log level
-                raise exc.VoltConfigError(f"could not parse config: {e.args[0]}") from e
+                raise excs.VoltConfigError(
+                    f"could not parse config: {e.args[0]}"
+                ) from e
 
         return cls.from_raw_config(
             cwd=cwd,
@@ -258,7 +260,7 @@ class SiteConfig(UserDict):
         try:
             template_name = theme_templates[key]
         except KeyError as e:
-            raise exc.VoltResourceError(
+            raise excs.VoltResourceError(
                 f"could not find template {key!r} in theme settings"
             ) from e
 
@@ -269,5 +271,5 @@ class SiteConfig(UserDict):
     def reload(self) -> "SiteConfig":
         """Reloads a YAML config."""
         if self._yaml_fp is None:
-            raise exc.VoltResourceError("could not reload non-YAML config")
+            raise excs.VoltResourceError("could not reload non-YAML config")
         return self.__class__.from_yaml(cwd=self.cwd, pwd=self.pwd)

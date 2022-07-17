@@ -9,7 +9,7 @@ import click
 import pendulum
 
 from . import __version__, constants
-from . import exceptions as exc
+from . import exceptions as excs
 from .config import SiteConfig
 from .server import Rebuilder, make_server
 from .site import Site
@@ -57,10 +57,10 @@ class Session:
         try:
             pwd.mkdir(parents=True, exist_ok=True)
         except OSError as e:
-            raise exc.VoltCliError(e.strerror) from e
+            raise excs.VoltCliError(e.strerror) from e
 
         if not force and any(True for _ in pwd.iterdir()):
-            raise exc.VoltCliError(
+            raise excs.VoltCliError(
                 "target project directory is not empty -- use the `-f` flag to"
                 " force init in nonempty directories"
             )
@@ -79,7 +79,7 @@ class Session:
             for attr in bootstrap_path_attrs:
                 getattr(bootstrap_conf, attr).mkdir(parents=True, exist_ok=True)
         except OSError as e:
-            raise exc.VoltCliError(e.strerror) from e
+            raise excs.VoltCliError(e.strerror) from e
 
         # Create initial YAML config file.
         init_conf = f"""---
@@ -158,7 +158,7 @@ timezone: "{tz.name}"
             click.edit(filename=f"{match_fp}")
             return None
 
-        raise exc.VoltResourceError(f"found no matching file for {query!r}")
+        raise excs.VoltResourceError(f"found no matching file for {query!r}")
 
     @staticmethod
     def do_serve(
@@ -372,7 +372,7 @@ def build(
     params = cast(click.Context, ctx.parent).params
     sc = params.get("site_config", None)
     if sc is None:
-        raise exc.VOLT_NO_PROJECT_ERR
+        raise excs.VOLT_NO_PROJECT_ERR
 
     Session.do_build(sc, clean, drafts)
 
@@ -413,7 +413,7 @@ def edit(
     params = cast(click.Context, ctx.parent).params
     sc = params.get("site_config", None)
     if sc is None:
-        raise exc.VOLT_NO_PROJECT_ERR
+        raise excs.VOLT_NO_PROJECT_ERR
 
     Session.do_edit(sc, name, create, title, pub)
 
@@ -455,6 +455,6 @@ def serve(
     params = cast(click.Context, ctx.parent).params
     sc = params.get("site_config", None)
     if sc is None:
-        raise exc.VOLT_NO_PROJECT_ERR
+        raise excs.VOLT_NO_PROJECT_ERR
 
     Session.do_serve(sc, host, port, build, drafts, clean)

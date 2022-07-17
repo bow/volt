@@ -17,7 +17,7 @@ from slugify import slugify
 from yaml import SafeLoader
 
 from . import constants
-from . import exceptions as exc
+from . import exceptions as excs
 from .config import SiteConfig
 
 __all__ = ["MarkdownContent"]
@@ -86,7 +86,7 @@ class PageTarget(Target):
         try:
             (parent_dir.joinpath(*self.path_parts)).write_text(self.content)
         except OSError as e:
-            raise exc.VoltResourceError(
+            raise excs.VoltResourceError(
                 "could not write target" f" {'/'.join(self.path_parts)!r}: {e.strerror}"
             )
 
@@ -115,7 +115,7 @@ class CopyTarget(Target):
             try:
                 shutil.copy2(str_src, str_dest)
             except OSError as e:
-                raise exc.VoltResourceError(
+                raise excs.VoltResourceError(
                     f"could not copy {str_src!r} to {str_dest!r}: {e.strerror}"
                 )
 

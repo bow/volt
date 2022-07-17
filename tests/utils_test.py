@@ -6,7 +6,7 @@ import pytest
 from pendulum.tz import local_timezone
 from pendulum.tz.timezone import Timezone
 
-from volt import exceptions as exc
+from volt import exceptions as excs
 from volt.utils import calc_relpath, get_tz, import_mod_attr
 
 
@@ -52,7 +52,7 @@ def test_import_mod_attr_ok_custom(istr, mod_toks, tmpdir):
 
 def test_import_mod_attr_fail_invalid_target():
     with pytest.raises(
-        exc.VoltResourceError,
+        excs.VoltResourceError,
         match="invalid module attribute import target: 'os'",
     ):
         import_mod_attr("os")
@@ -67,7 +67,7 @@ def test_import_mod_attr_fail_from_file(tmpdir, mod_toks, suffix):
         target = mod_path.joinpath("custom.py")
         target.write_text("class Test:\n\tval = 1")
         with pytest.raises(
-            exc.VoltResourceError,
+            excs.VoltResourceError,
             match="import from file is not yet supported",
         ):
             import_mod_attr(str(target) + suffix)
@@ -76,7 +76,7 @@ def test_import_mod_attr_fail_from_file(tmpdir, mod_toks, suffix):
 def test_import_mod_attr_fail_nonexistent(tmpdir, mod_toks):
     with tmpdir.as_cwd():
         with pytest.raises(
-            exc.VoltResourceError, match="failed to import 'foo.bar.baz.custom'"
+            excs.VoltResourceError, match="failed to import 'foo.bar.baz.custom'"
         ):
             import_mod_attr("foo.bar.baz.custom:Test")
 
@@ -89,7 +89,7 @@ def test_import_mod_attr_fail_attribute_missing(tmpdir, mod_toks):
         target = mod_path.joinpath("custom.py")
         target.write_text("class Test:\n\tval = 1")
         msg = "module 'foo.bar.baz.custom' does not contain attribute 'Bzzt'"
-        with pytest.raises(exc.VoltResourceError, match=msg):
+        with pytest.raises(excs.VoltResourceError, match=msg):
             import_mod_attr("foo.bar.baz.custom.Bzzt")
 
 
@@ -106,7 +106,7 @@ def test_get_tz_ok(tzname, exp_tz):
 
 
 def test_get_tz_fail():
-    with pytest.raises(exc.VoltTimezoneError, match="timezone 'bzzt' is invalid"):
+    with pytest.raises(excs.VoltTimezoneError, match="timezone 'bzzt' is invalid"):
         get_tz("bzzt")
 
 

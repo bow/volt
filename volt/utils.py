@@ -16,7 +16,7 @@ from pendulum.tz.timezone import Timezone
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from thefuzz import process
 
-from . import exceptions as exc
+from . import exceptions as excs
 
 
 def echo_fmt(msg: str, style: str = "", file: Optional[IO[Any]] = None) -> None:
@@ -54,7 +54,7 @@ def get_tz(tzname: Optional[str] = None) -> Timezone:
     try:
         return Timezone(tzname)
     except (AttributeError, ValueError, InvalidTimezone) as e:
-        raise exc.VoltTimezoneError(tzname) from e
+        raise excs.VoltTimezoneError(tzname) from e
 
 
 def import_mod_attr(target: str) -> Any:
@@ -74,12 +74,12 @@ def import_mod_attr(target: str) -> Any:
     try:
         mod_name, cls_name = target.replace(":", ".").rsplit(".", 1)
     except ValueError as e:
-        raise exc.VoltResourceError(
+        raise excs.VoltResourceError(
             f"invalid module attribute import target: {target!r}"
         ) from e
 
     if path.isfile(mod_name):
-        raise exc.VoltResourceError("import from file is not yet supported")
+        raise excs.VoltResourceError("import from file is not yet supported")
 
     sys.path = [""] + sys.path if not sys.path[0] == "" else sys.path
 
@@ -90,7 +90,7 @@ def import_mod_attr(target: str) -> Any:
         if spec is None:
             raise ModuleNotFoundError(f"No module named {mod_name}")
     except (ModuleNotFoundError, ValueError) as e:
-        raise exc.VoltResourceError(f"failed to import {mod_name!r}") from e
+        raise excs.VoltResourceError(f"failed to import {mod_name!r}") from e
 
     mod = iutil.module_from_spec(spec)
     spec.loader.exec_module(mod)  # type: ignore
@@ -98,7 +98,7 @@ def import_mod_attr(target: str) -> Any:
     try:
         return getattr(mod, cls_name)
     except AttributeError:
-        raise exc.VoltResourceError(
+        raise excs.VoltResourceError(
             f"module {mod_name!r} does not contain attribute {cls_name!r}"
         )
 
@@ -173,9 +173,9 @@ def load_template(env: Environment, name: str) -> Template:
     try:
         template = env.get_template(name)
     except j2exc.TemplateNotFound as e:
-        raise exc.VoltResourceError(f"could not find template {name!r}") from e
+        raise excs.VoltResourceError(f"could not find template {name!r}") from e
     except j2exc.TemplateSyntaxError as e:
-        raise exc.VoltResourceError(
+        raise excs.VoltResourceError(
             f"template {name!r} has syntax errors: {e.message}"
         ) from e
 
