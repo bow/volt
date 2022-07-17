@@ -97,7 +97,7 @@ install-dev:  ## Configure a local development setup.
 			&& pyenv install -s "$(PYTHON_VERSION)" \
 			&& pyenv virtualenv -f "$(PYTHON_VERSION)" "$(VENV_NAME)" \
 			&& printf "%s\n%s" "$(VENV_NAME)" "$(PYTHON_VERSION)" > .python-version \
-			&& source "$(shell pyenv root)/versions/$(VENV_NAME)/bin/activate" \
+			&& . "$(shell pyenv root)/versions/$(VENV_NAME)/bin/activate" \
 			&& pip install --upgrade pip && pyenv rehash \
 			&& pip install $(PIP_DEPS) && pyenv rehash \
 			&& poetry config experimental.new-installer false \
