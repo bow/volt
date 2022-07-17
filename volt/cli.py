@@ -119,7 +119,11 @@ timezone: "{tz.name}"
         sc["build_time"] = pendulum.now()
         site = Site(config=sc)
         site.build(clean=clean, with_drafts=with_drafts)
-        echo_info(f"build completed in {(time.monotonic() - start_time):.2f}ms")
+        echo_info(
+            f"build"
+            f"{'' if not with_drafts else ' with drafts'}"
+            f" completed in {(time.monotonic() - start_time):.2f}ms"
+        )
 
         return site
 
@@ -195,7 +199,11 @@ timezone: "{tz.name}"
                 return None
 
             with Rebuilder(sc, builder):
-                echo_info("starting dev server with rebuilder")
+                echo_info(
+                    f"starting dev server"
+                    f"{'' if not build_with_drafts else ' in drafts mode'}"
+                    " with rebuilder"
+                )
                 builder()
                 serve()
         else:
