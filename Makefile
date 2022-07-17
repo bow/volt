@@ -72,6 +72,11 @@ clean-venv:  ## Remove the created pyenv virtualenv.
 	pyenv virtualenv-delete -f $(VENV_NAME) && rm -f .python-version
 
 
+.PHONY: fmt
+fmt:  ## Apply Black.
+	poetry run black -t py310 .
+
+
 .PHONY: help
 help:  ## Show this help.
 	$(eval PADLEN=$(shell $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
