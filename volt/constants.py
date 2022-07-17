@@ -37,5 +37,8 @@ SITE_THEME_DIRNAME = "theme"
 # Theme templates directory name.
 SITE_THEME_TEMPLATES_DIRNAME = "templates"
 
+# CLI extension filename.
+SITE_XC_SCRIPT_FNAME = "xc.py"
+
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"

@@ -1,9 +1,11 @@
 """Main entry point for command line invocation."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import importlib.util as iutil
 import time
 from pathlib import Path
-from typing import Optional, cast
+from types import ModuleType
+from typing import Any, Optional, cast
 
 import click
 import pendulum
@@ -458,3 +460,51 @@ def serve(
         raise excs.VOLT_NO_PROJECT_ERR
 
     Session.do_serve(sc, host, port, build, drafts, clean)
+
+
+class ExtensionGroup(click.Group):
+    @classmethod
+    def import_xc(
+        cls,
+        sc: SiteConfig,
+        mod_name: str = "volt.ext.command",
+    ) -> Optional[ModuleType]:
+        """Import the custom, user-defined subcommands."""
+        if (fp := sc.xc_script_path) is None:
+            return None
+
+        spec = iutil.spec_from_file_location(mod_name, fp)
+        mod = iutil.module_from_spec(spec)
+        spec.loader.exec_module(mod)  # type: ignore
+
+        return mod
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        params = cast(click.Context, ctx.parent).params
+        sc = params["site_config"]
+
+        if (mod := self.import_xc(sc)) is None:
+            return []
+
+        rv = [
+            name
+            for attr in dir(mod)
+            if (
+                isinstance(v := getattr(mod, attr, None), click.Command)
+                and (name := v.name) is not None
+            )
+        ]
+        rv.sort()
+
+        return rv
+
+    def get_command(self, ctx: click.Context, name: str) -> Any:
+        params = cast(click.Context, ctx.parent).params
+        sc = params["site_config"]
+        self.import_xc(sc)
+        return self.commands.get(name)
+
+
+@main.command(cls=ExtensionGroup)
+def xc() -> None:
+    """Execute custom subcommands"""
