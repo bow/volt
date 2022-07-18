@@ -461,7 +461,7 @@ def serve(
     drafts: bool,
     clean: bool,
 ) -> None:
-    """Run the development server"""
+    """Run the development server."""
     params = cast(click.Context, ctx.parent).params
     sc = params.get("site_config", None)
     if sc is None:
