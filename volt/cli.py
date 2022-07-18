@@ -472,13 +472,13 @@ def serve(
 
 class ExtensionGroup(click.Group):
     @classmethod
-    def import_xc(
+    def import_xcmd(
         cls,
         sc: SiteConfig,
         mod_name: str = "volt.ext.command",
     ) -> Optional[ModuleType]:
         """Import the custom, user-defined subcommands."""
-        if (fp := sc.xc_script_path) is None:
+        if (fp := sc.xcmd_script_path) is None:
             return None
 
         spec = iutil.spec_from_file_location(mod_name, fp)
@@ -491,7 +491,7 @@ class ExtensionGroup(click.Group):
         params = cast(click.Context, ctx.parent).params
         sc = params["site_config"]
 
-        if (mod := self.import_xc(sc)) is None:
+        if (mod := self.import_xcmd(sc)) is None:
             return []
 
         rv = [
@@ -509,15 +509,15 @@ class ExtensionGroup(click.Group):
     def get_command(self, ctx: click.Context, name: str) -> Any:
         params = cast(click.Context, ctx.parent).params
         sc = params["site_config"]
-        self.import_xc(sc)
+        self.import_xcmd(sc)
         return self.commands.get(name)
 
 
 @main.command(cls=ExtensionGroup)
-def xc() -> None:
+def xcmd() -> None:
     """Execute custom subcommands.
 
     Custom subcommands are Click-decorated functions
-    defined in a `volt_xc.py` file in your project.
+    defined in a `volt_xcmd.py` file in your project.
 
     """

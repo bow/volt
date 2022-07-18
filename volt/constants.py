@@ -38,7 +38,7 @@ SITE_THEME_DIRNAME = "theme"
 SITE_THEME_TEMPLATES_DIRNAME = "templates"
 
 # CLI extension filename.
-SITE_XC_SCRIPT_FNAME = "xc.py"
+SITE_XCMD_SCRIPT_FNAME = "volt_xcmd.py"
 
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"

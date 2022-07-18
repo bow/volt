@@ -137,7 +137,7 @@ class SiteConfig(UserDict):
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         template_dirname: str = constants.SITE_THEME_TEMPLATES_DIRNAME,
         draft_dirname: str = constants.SITE_DRAFTS_DIRNAME,
-        xc_script_fname: str = constants.SITE_XC_SCRIPT_FNAME,
+        xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
         timezone: Optional[Timezone] = None,
         yaml_fp: Optional[Path] = None,
         user_conf: Optional[dict] = None,
@@ -162,7 +162,7 @@ class SiteConfig(UserDict):
         self._src_static_path = self._src_path / static_dirname
         self._theme_path = self._src_path / theme_dirname
         self._theme_template_path = self._theme_path / template_dirname
-        self._xc_script_path = self._pwd / xc_script_fname
+        self._xcmd_script_path = self._pwd / xcmd_script_fname
         self._yaml_fp = yaml_fp
 
         # Hard-coded config defaults.
@@ -244,9 +244,9 @@ class SiteConfig(UserDict):
             return cast(Dict[str, Any], yaml.safe_load(src))
 
     @cached_property
-    def xc_script_path(self) -> Optional[Path]:
+    def xcmd_script_path(self) -> Optional[Path]:
         """Path to a custom CLI extension, if present."""
-        fp = self._xc_script_path
+        fp = self._xcmd_script_path
         if fp.exists():
             return fp
         return None
