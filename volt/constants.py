@@ -10,6 +10,9 @@ CONFIG_FNAME = "volt.yaml"
 # Key of the default template in theme.
 DEFAULT_TEMPLATE_KEY = "page"
 
+# Name of the default engine expected in a theme.
+DEFAULT_ENGINE_CLASS_NAME = "Engine"
+
 # Extension for text contents.
 CONTENTS_EXT = ".md"
 

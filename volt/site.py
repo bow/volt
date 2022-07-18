@@ -240,16 +240,20 @@ class Site:
 
         return None
 
-    def _run_engine(self, plan: SitePlan, fp: Path, with_drafts: bool) -> None:
+    def _run_engine(
+        self, plan: SitePlan, fp: Path, cls_name: str, with_drafts: bool
+    ) -> None:
         """Run a given engine defined in the given path"""
 
         cfg = self.config
-        mod_name = f"volt.ext.engines.{fp.stem}"
+        # TODO: Replace this with a pattern less prone to name collision
+        mod_name = f"volt.ext.theme.engines.{fp.stem}"
         spec = spec_from_file_location(mod_name, fp)
         mod = module_from_spec(spec)
         spec.loader.exec_module(mod)  # type: ignore
 
-        eng = mod.Engine(cfg, with_drafts)  # type: ignore
+        eng_cls = getattr(mod, cls_name, None)
+        eng = eng_cls(cfg, with_drafts)
 
         for target in eng.create_targets():
             try:
@@ -275,8 +279,13 @@ class Site:
         engines = cfg.get("theme", {}).get("engines", [])
 
         for entry in engines:
-            mod_fp = cfg.pwd / entry["module"]
-            self._run_engine(plan, mod_fp, with_drafts)
+            if (cls_loc := entry.get("class", None)) is None:
+                continue
+            try:
+                cls_fn, cls_name = cls_loc.rsplit(":", 1)
+            except ValueError:
+                cls_fn, cls_name = cls_loc, constants.DEFAULT_ENGINE_CLASS_NAME
+            self._run_engine(plan, cfg.pwd / cls_fn, cls_name, with_drafts)
 
         return None
 
