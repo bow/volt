@@ -515,4 +515,9 @@ class ExtensionGroup(click.Group):
 
 @main.command(cls=ExtensionGroup)
 def xc() -> None:
-    """Execute custom subcommands"""
+    """Execute custom subcommands.
+
+    Custom subcommands are Click-decorated functions
+    defined in a `volt_xc.py` file in your project.
+
+    """
