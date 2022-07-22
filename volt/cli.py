@@ -489,7 +489,7 @@ class ExtensionGroup(click.Group):
 
         mod = import_file(fp, mod_name)
 
-        return cast(ModuleType, mod)
+        return mod
 
     def list_commands(self, ctx: click.Context) -> list[str]:
         params = cast(click.Context, ctx.parent).params
