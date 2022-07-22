@@ -3,8 +3,9 @@
 
 import importlib.util as iutil
 import sys
-from os import path
+from os import path, PathLike
 from pathlib import Path
+from types import ModuleType
 from typing import IO, Any, Optional
 
 import jinja2.exceptions as j2exc
@@ -55,6 +56,20 @@ def get_tz(tzname: Optional[str] = None) -> Timezone:
         return Timezone(tzname)
     except (AttributeError, ValueError, InvalidTimezone) as e:
         raise excs.VoltTimezoneError(tzname) from e
+
+
+def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:
+    """Import the given file as the given module name"""
+
+    spec = iutil.spec_from_file_location(mod_name, fp)
+    if spec is None:
+        raise excs.VoltResourceError("not an importable file: {fp}")
+
+    mod = iutil.module_from_spec(spec)
+
+    spec.loader.exec_module(mod)  # type: ignore
+
+    return mod
 
 
 def import_mod_attr(target: str) -> Any:

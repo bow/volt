@@ -6,7 +6,6 @@ import shutil
 import tempfile
 from contextlib import suppress
 from functools import cached_property
-from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from typing import Dict, Generator, Iterator, Optional, cast
 
@@ -15,7 +14,7 @@ from . import constants
 from .config import SiteConfig
 from .exceptions import VoltResourceError
 from .resource import CopyTarget, Target
-from .utils import calc_relpath
+from .utils import calc_relpath, import_file
 
 __all__ = ["Site", "SiteNode", "SitePlan"]
 
@@ -247,10 +246,7 @@ class Site:
 
         cfg = self.config
         # TODO: Replace this with a pattern less prone to name collision
-        mod_name = f"volt.ext.theme.engines.{fp.stem}"
-        spec = spec_from_file_location(mod_name, fp)
-        mod = module_from_spec(spec)
-        spec.loader.exec_module(mod)  # type: ignore
+        mod = import_file(fp, f"volt.ext.theme.engines.{fp.stem}")
 
         eng_cls = getattr(mod, cls_name, None)
         eng = eng_cls(cfg, with_drafts)

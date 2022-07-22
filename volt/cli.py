@@ -1,11 +1,11 @@
 """Main entry point for command line invocation."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
-import importlib.util as iutil
 import time
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, cast
+from utils import import_file
 
 import click
 import pendulum
@@ -481,11 +481,9 @@ class ExtensionGroup(click.Group):
         if (fp := sc.xcmd_script_path) is None:
             return None
 
-        spec = iutil.spec_from_file_location(mod_name, fp)
-        mod = iutil.module_from_spec(spec)
-        spec.loader.exec_module(mod)  # type: ignore
+        mod = import_file(fp, mod_name)
 
-        return mod
+        return cast(ModuleType, mod)
 
     def list_commands(self, ctx: click.Context) -> list[str]:
         params = cast(click.Context, ctx.parent).params
