@@ -5,7 +5,6 @@ import time
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, cast
-from utils import import_file
 
 import click
 import pendulum
@@ -15,7 +14,14 @@ from . import exceptions as excs
 from .config import SiteConfig
 from .server import Rebuilder, make_server
 from .site import Site
-from .utils import echo_err, echo_info, get_fuzzy_match, get_tz, infer_front_matter
+from .utils import (
+    echo_err,
+    echo_info,
+    get_fuzzy_match,
+    get_tz,
+    infer_front_matter,
+    import_file,
+)
 
 
 class Session:
