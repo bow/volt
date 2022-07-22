@@ -2,7 +2,6 @@
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import importlib.util as iutil
-import sys
 from os import path, PathLike
 from pathlib import Path
 from types import ModuleType
@@ -70,52 +69,6 @@ def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:
     spec.loader.exec_module(mod)  # type: ignore
 
     return mod
-
-
-def import_mod_attr(target: str) -> Any:
-    """Import the attribute of a module given its string path.
-
-    For example, specifying ``pathlib.Path`` will execute
-    ``from pathlib import Path``` statement.
-
-    :param target: The target object to import.
-
-    :returns: The object indicated by the input.
-
-    :raises ~volt.exceptions.VoltResourceError: when the target could not be
-        imported
-
-    """
-    try:
-        mod_name, cls_name = target.replace(":", ".").rsplit(".", 1)
-    except ValueError as e:
-        raise excs.VoltResourceError(
-            f"invalid module attribute import target: {target!r}"
-        ) from e
-
-    if path.isfile(mod_name):
-        raise excs.VoltResourceError("import from file is not yet supported")
-
-    sys.path = [""] + sys.path if not sys.path[0] == "" else sys.path
-
-    try:
-        spec = iutil.find_spec(mod_name)
-        # Spec can be None if mod_name could not be found, so we raise the
-        # exception manually.
-        if spec is None:
-            raise ModuleNotFoundError(f"No module named {mod_name}")
-    except (ModuleNotFoundError, ValueError) as e:
-        raise excs.VoltResourceError(f"failed to import {mod_name!r}") from e
-
-    mod = iutil.module_from_spec(spec)
-    spec.loader.exec_module(mod)  # type: ignore
-
-    try:
-        return getattr(mod, cls_name)
-    except AttributeError:
-        raise excs.VoltResourceError(
-            f"module {mod_name!r} does not contain attribute {cls_name!r}"
-        )
 
 
 def find_dir_containing(
