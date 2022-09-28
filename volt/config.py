@@ -136,7 +136,7 @@ class SiteConfig(UserDict):
         static_dirname: str = constants.SITE_STATIC_DIRNAME,
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         template_dirname: str = constants.SITE_THEME_TEMPLATES_DIRNAME,
-        draft_dirname: str = constants.SITE_DRAFTS_DIRNAME,
+        drafts_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
         timezone: Optional[Timezone] = None,
         yaml_fp: Optional[Path] = None,
@@ -158,7 +158,7 @@ class SiteConfig(UserDict):
         self._src_path = pwd / src_dirname
         self._out_path = pwd / out_dirname
         self._src_pub_path = self._src_path / pub_dirname
-        self._src_drafts_path = self._src_path / draft_dirname
+        self._src_drafts_path = self._src_path / drafts_dirname
         self._src_static_path = self._src_path / static_dirname
         self._theme_path = self._src_path / theme_dirname
         self._theme_template_path = self._theme_path / template_dirname
