@@ -522,6 +522,6 @@ def xcmd() -> None:
     """Execute custom subcommands.
 
     Custom subcommands are Click-decorated functions
-    defined in a `volt_xcmd.py` file in your project.
+    defined in an `ext/cmd.py` file in your project.
 
     """

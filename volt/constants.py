@@ -25,6 +25,9 @@ SITE_PUB_DIRNAME = "pub"
 # Site draft contents directory name.
 SITE_DRAFTS_DIRNAME = "drafts"
 
+# Site directory name for extension code.
+SITE_EXT_DIRNAME = "ext"
+
 # Site output directory name.
 SITE_OUT_DIRNAME = "dist"
 
@@ -41,7 +44,7 @@ SITE_THEME_DIRNAME = "theme"
 SITE_THEME_TEMPLATES_DIRNAME = "templates"
 
 # CLI extension filename.
-SITE_XCMD_SCRIPT_FNAME = "volt_xcmd.py"
+SITE_XCMD_SCRIPT_FNAME = "cmd.py"
 
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"

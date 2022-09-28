@@ -137,6 +137,7 @@ class SiteConfig(UserDict):
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         template_dirname: str = constants.SITE_THEME_TEMPLATES_DIRNAME,
         drafts_dirname: str = constants.SITE_DRAFTS_DIRNAME,
+        ext_dirname: str = constants.SITE_EXT_DIRNAME,
         xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
         timezone: Optional[Timezone] = None,
         yaml_fp: Optional[Path] = None,
@@ -158,11 +159,12 @@ class SiteConfig(UserDict):
         self._src_path = pwd / src_dirname
         self._out_path = pwd / out_dirname
         self._src_pub_path = self._src_path / pub_dirname
+        self._src_ext_path = self._src_path / ext_dirname
         self._src_drafts_path = self._src_path / drafts_dirname
         self._src_static_path = self._src_path / static_dirname
         self._theme_path = self._src_path / theme_dirname
         self._theme_template_path = self._theme_path / template_dirname
-        self._xcmd_script_path = self._pwd / xcmd_script_fname
+        self._xcmd_script_path = self._src_ext_path / xcmd_script_fname
         self._yaml_fp = yaml_fp
 
         # Hard-coded config defaults.
