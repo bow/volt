@@ -167,9 +167,6 @@ class SiteConfig(UserDict):
         self._xcmd_script_path = self._src_ext_path / xcmd_script_fname
         self._yaml_fp = yaml_fp
 
-        # Hard-coded config defaults.
-        self["slug_replacements"] = (("I/O", "io"),)
-
     @cached_property
     def pwd(self) -> Path:
         """Path to the project root directory."""
