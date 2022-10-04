@@ -239,9 +239,7 @@ class Site:
 
         return None
 
-    def _run_engine(
-        self, plan: SitePlan, fp: Path, cls_name: str, with_drafts: bool
-    ) -> None:
+    def _run_engine(self, plan: SitePlan, fp: Path, cls_name: str) -> None:
         """Run a given engine defined in the given path"""
 
         cfg = self.config
@@ -249,7 +247,7 @@ class Site:
         mod = import_file(fp, f"volt.ext.theme.engines.{fp.stem}")
 
         eng_cls = getattr(mod, cls_name, None)
-        eng = eng_cls(cfg, with_drafts)
+        eng = eng_cls(cfg)
 
         for target in eng.create_targets():
             try:
@@ -268,7 +266,7 @@ class Site:
 
         return None
 
-    def run_engines(self, plan: SitePlan, with_drafts: bool = False) -> None:
+    def run_engines(self, plan: SitePlan) -> None:
         """Run user-defined engines and add the created targets to the site plan."""
 
         cfg = self.config
@@ -281,11 +279,11 @@ class Site:
                 cls_fn, cls_name = cls_loc.rsplit(":", 1)
             except ValueError:
                 cls_fn, cls_name = cls_loc, constants.DEFAULT_ENGINE_CLASS_NAME
-            self._run_engine(plan, cfg.pwd / cls_fn, cls_name, with_drafts)
+            self._run_engine(plan, cfg.pwd / cls_fn, cls_name)
 
         return None
 
-    def build(self, clean: bool = True, with_drafts: bool = False) -> None:
+    def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
 
         with tempfile.TemporaryDirectory(
@@ -294,7 +292,7 @@ class Site:
 
             plan = SitePlan()
             self.gather_static_targets(plan)
-            self.run_engines(plan, with_drafts)
+            self.run_engines(plan)
 
             build_path = Path(tmp_dir_name)
             plan.write_nodes(parent_dir=build_path)

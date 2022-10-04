@@ -153,6 +153,7 @@ class SiteConfig(UserDict):
         :param timezone: Timezone for default timestamp interpretation.
 
         """
+        self._with_drafts: bool = (user_conf or {}).pop("with_drafts", False)
         super().__init__(user_conf, **kwargs)
         self._pwd = pwd
         self._cwd = cwd
@@ -249,6 +250,11 @@ class SiteConfig(UserDict):
         if fp.exists():
             return fp
         return None
+
+    @cached_property
+    def with_drafts(self) -> bool:
+        """Whether to publish draft contents or not."""
+        return self._with_drafts
 
     @cached_property
     def in_docker(self) -> bool:

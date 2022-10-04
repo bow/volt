@@ -121,10 +121,13 @@ timezone: "{tz.name}"
             to building, or not.
 
         """
+        sc._with_drafts = with_drafts
+
         start_time = time.monotonic()
         sc["build_time"] = pendulum.now()
+
         site = Site(config=sc)
-        site.build(clean=clean, with_drafts=with_drafts)
+        site.build(clean=clean)
         echo_info(
             f"build"
             f"{'' if not with_drafts else ' with drafts'}"
