@@ -132,7 +132,7 @@ class SiteConfig(UserDict):
         pwd: Path,
         src_dirname: str = constants.SITE_SRC_DIRNAME,
         out_dirname: str = constants.SITE_OUT_DIRNAME,
-        pub_dirname: str = constants.SITE_PUB_DIRNAME,
+        contents_dirname: str = constants.SITE_CONTENTS_DIRNAME,
         static_dirname: str = constants.SITE_STATIC_DIRNAME,
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         template_dirname: str = constants.SITE_THEME_TEMPLATES_DIRNAME,
@@ -158,7 +158,7 @@ class SiteConfig(UserDict):
         self._cwd = cwd
         self._src_path = pwd / src_dirname
         self._out_path = pwd / out_dirname
-        self._src_pub_path = self._src_path / pub_dirname
+        self._src_contents_path = self._src_path / contents_dirname
         self._src_ext_path = self._src_path / ext_dirname
         self._src_drafts_path = self._src_path / drafts_dirname
         self._src_static_path = self._src_path / static_dirname
@@ -194,9 +194,9 @@ class SiteConfig(UserDict):
         return self._out_path
 
     @cached_property
-    def src_pub_path(self) -> Path:
-        """Path to the site published contents."""
-        return self._src_pub_path
+    def src_contents_path(self) -> Path:
+        """Path to the site contents."""
+        return self._src_contents_path
 
     @cached_property
     def src_drafts_path(self) -> Path:

@@ -139,7 +139,7 @@ timezone: "{tz.name}"
         query: str,
         create: bool = False,
         title: Optional[str] = None,
-        pub: bool = False,
+        drafts: bool = False,
     ) -> None:
         """Open a draft file in an editor."""
 
@@ -162,8 +162,8 @@ timezone: "{tz.name}"
             return None
 
         lookup_dirs = [sc.src_drafts_path]
-        if pub:
-            lookup_dirs.append(sc.src_pub_path)
+        if not drafts:
+            lookup_dirs.append(sc.src_contents_path)
 
         match_fp = get_fuzzy_match(query, constants.CONTENTS_EXT, 50, *lookup_dirs)
         if match_fp is not None:
@@ -413,9 +413,9 @@ def build(
     ),
 )
 @click.option(
-    "--pub/--no-pub",
-    default=False,
-    help="If set, also look for matches in the 'pub' directory.",
+    "--drafts/--no-drafts",
+    default=True,
+    help="If set, also look for matches in drafts directories.",
 )
 @click.pass_context
 def edit(
@@ -423,7 +423,7 @@ def edit(
     name: str,
     create: bool,
     title: str,
-    pub: bool,
+    drafts: bool,
 ) -> None:
     """Open a draft file in an editor."""
     params = cast(click.Context, ctx.parent).params
@@ -431,7 +431,7 @@ def edit(
     if sc is None:
         raise excs.VOLT_NO_PROJECT_ERR
 
-    Session.do_edit(sc, name, create, title, pub)
+    Session.do_edit(sc, name, create, title, drafts)
 
 
 @main.command()
