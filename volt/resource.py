@@ -4,6 +4,7 @@
 import abc
 import filecmp
 import shutil
+from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime as dt
 from functools import cached_property
@@ -147,6 +148,9 @@ class MarkdownContent(Content):
     # Markdown text of the content, without any metadata.
     content: str
 
+    # Whether the content is draft or not.
+    is_draft: bool
+
     # Site configuration.
     site_config: SiteConfig
 
@@ -155,12 +159,15 @@ class MarkdownContent(Content):
         cls,
         src: Path,
         site_config: SiteConfig,
+        meta: Optional[dict] = None,
+        is_draft: bool = False,
         fm_sep: str = constants.FRONT_MATTER_SEP,
     ) -> "MarkdownContent":
         """Create an instance from a file.
 
         :param src: Path to the source file.
         :param site_config: Site configuration.
+        :param meta: Optional metadata to inject.
         :param fm_sep: String for separating the markdown front matter.
 
         ."""
@@ -175,8 +182,11 @@ class MarkdownContent(Content):
                 "labels": {},
                 "title": None,
                 "pub_time": dt.now(),
+                "is_draft": is_draft,
                 **fm,
+                **(meta or {}),
             },
+            is_draft=is_draft,
             content=raw_content,
             site_config=site_config,
         )
@@ -190,7 +200,13 @@ class MarkdownContent(Content):
             if self.meta.get("page") is not None
             else [f"{slugify(self.meta['title'], replacements=slug_reps)}.html"]
         )
-        return (*(self.src.parent.parts[num_common_parts:]), *parts)
+        ps = [*(self.src.parent.parts[num_common_parts:]), *parts]
+        if self.is_draft:
+            with suppress(IndexError):
+                # NOTE: This assumes that the `drafts` folder is located at the same
+                #       level as non-draft files.
+                del ps[-2]
+        return tuple(ps)
 
     @cached_property
     def rel_url(self) -> str:

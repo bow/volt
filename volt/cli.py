@@ -1,6 +1,7 @@
 """Main entry point for command line invocation."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import os
 import time
 from pathlib import Path
 from types import ModuleType
@@ -140,14 +141,15 @@ timezone: "{tz.name}"
     def do_edit(
         sc: SiteConfig,
         query: str,
-        create: bool = False,
+        create: Optional[str] = None,
         title: Optional[str] = None,
         drafts: bool = False,
     ) -> None:
         """Open a draft file in an editor."""
 
-        if create:
-            new_fp = (sc.src_drafts_path / query).with_suffix(constants.CONTENTS_EXT)
+        if create is not None:
+            fn = Path(sc.src_drafts_dirname) / create / query
+            new_fp = fn.with_suffix(constants.CONTENTS_EXT)
             new_fp.parent.mkdir(parents=True, exist_ok=True)
             if new_fp.exists():
                 click.edit(filename=f"{new_fp}")
@@ -164,9 +166,19 @@ timezone: "{tz.name}"
 
             return None
 
-        lookup_dirs = [sc.src_drafts_path]
-        if not drafts:
-            lookup_dirs.append(sc.src_contents_path)
+        todo_dirs = [sc.src_contents_path]
+        lookup_dirs: list[Path] = []
+        while todo_dirs:
+            cur_dir = todo_dirs.pop()
+            lookup_dirs.append(cur_dir)
+            todo_dirs.extend(
+                [
+                    p
+                    for entry in os.scandir(cur_dir)
+                    if entry.is_dir()
+                    and (p := Path(entry.path)).name != sc.src_drafts_dirname
+                ]
+            )
 
         match_fp = get_fuzzy_match(query, constants.CONTENTS_EXT, 50, *lookup_dirs)
         if match_fp is not None:
@@ -401,9 +413,12 @@ def build(
 @click.option(
     "-c",
     "--create",
-    is_flag=True,
-    default=False,
-    help="If set, create a new file if no match can be found. Default: unset.",
+    type=str,
+    default=None,
+    help=(
+        "If set, create a new file in the given section's drafts directory"
+        " instead of attempting to edit an existing file. Default: unset."
+    ),
 )
 @click.option(
     "-t",
@@ -424,7 +439,7 @@ def build(
 def edit(
     ctx: click.Context,
     name: str,
-    create: bool,
+    create: Optional[str],
     title: str,
     drafts: bool,
 ) -> None:

@@ -161,7 +161,7 @@ class SiteConfig(UserDict):
         self._out_path = pwd / out_dirname
         self._src_contents_path = self._src_path / contents_dirname
         self._src_ext_path = self._src_path / ext_dirname
-        self._src_drafts_path = self._src_path / drafts_dirname
+        self._src_drafts_dirname = drafts_dirname
         self._src_static_path = self._src_path / static_dirname
         self._theme_path = self._src_path / theme_dirname
         self._theme_template_path = self._theme_path / template_dirname
@@ -200,9 +200,9 @@ class SiteConfig(UserDict):
         return self._src_contents_path
 
     @cached_property
-    def src_drafts_path(self) -> Path:
-        """Path to the site draft contents."""
-        return self._src_drafts_path
+    def src_drafts_dirname(self) -> str:
+        """Name of the drafts directory."""
+        return self._src_drafts_dirname
 
     @cached_property
     def src_static_path(self) -> Path:

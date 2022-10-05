@@ -23,7 +23,7 @@ FRONT_MATTER_SEP = "---\n"
 SITE_CONTENTS_DIRNAME = "contents"
 
 # Site draft contents directory name.
-SITE_DRAFTS_DIRNAME = "drafts"
+SITE_DRAFTS_DIRNAME = ".drafts"
 
 # Site directory name for extension code.
 SITE_EXT_DIRNAME = "ext"
