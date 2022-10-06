@@ -239,7 +239,9 @@ class Site:
 
         return None
 
-    def _run_engine(self, plan: SitePlan, fp: Path, cls_name: str) -> None:
+    def _run_engine(
+        self, plan: SitePlan, fp: Path, cls_name: str, options: dict
+    ) -> None:
         """Run a given engine defined in the given path"""
 
         cfg = self.config
@@ -247,7 +249,7 @@ class Site:
         mod = import_file(fp, f"volt.ext.theme.engines.{fp.stem}")
 
         eng_cls = getattr(mod, cls_name, None)
-        eng = eng_cls(cfg)
+        eng = eng_cls(cfg, **options)
 
         for target in eng.create_targets():
             try:
@@ -279,7 +281,7 @@ class Site:
                 cls_fn, cls_name = cls_loc.rsplit(":", 1)
             except ValueError:
                 cls_fn, cls_name = cls_loc, constants.DEFAULT_ENGINE_CLASS_NAME
-            self._run_engine(plan, cfg.pwd / cls_fn, cls_name)
+            self._run_engine(plan, cfg.pwd / cls_fn, cls_name, entry.get("options", {}))
 
         return None
 
