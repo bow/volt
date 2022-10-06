@@ -41,7 +41,7 @@ def make_server(sc: SiteConfig, host: str, port: int) -> Callable[[], None]:
             else:
                 code = style(code, fg="green", bold=True)
 
-            echo_fmt(fmt % (code, method, path))
+            echo_fmt(fmt % (code, method, path), capitalize=False)
 
         def log_request(
             self,

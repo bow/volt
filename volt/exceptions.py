@@ -26,7 +26,7 @@ class VoltCliError(VoltError, ClickException):
     def show(self, file: Optional[IO[Any]] = None) -> None:
         from .utils import echo_err
 
-        echo_err(self.format_message(), file)
+        echo_err(self.format_message(), file=file)
 
 
 class VoltConfigError(VoltCliError):
