@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import yaml
 from jinja2 import Template
@@ -69,12 +69,12 @@ class Target(abc.ABC):
 
 
 @dataclass(frozen=True)
-class PageTarget(Target):
+class RenderTarget(Target):
 
     """A single HTML page target."""
 
-    # Raw HTML text content.
-    content: str
+    # Callable for generating page content.
+    renderer: Callable
 
     # Path parts / tokens to the target.
     path_parts: Tuple[str, ...]
@@ -84,8 +84,9 @@ class PageTarget(Target):
 
     def write(self, parent_dir: Path) -> None:
         """Write the text content to the destination."""
+        content = self.renderer()
         try:
-            (parent_dir.joinpath(*self.path_parts)).write_text(self.content)
+            (parent_dir.joinpath(*self.path_parts)).write_text(content)
         except OSError as e:
             raise excs.VoltResourceError(
                 "could not write target" f" {'/'.join(self.path_parts)!r}: {e.strerror}"
@@ -154,10 +155,14 @@ class MarkdownContent(Content):
     # Site configuration.
     site_config: SiteConfig
 
+    # Jinja2 template used for rendering content.
+    template: Template
+
     @classmethod
     def from_path(
         cls,
         src: Path,
+        template: Template,
         site_config: SiteConfig,
         meta: Optional[dict] = None,
         is_draft: bool = False,
@@ -167,6 +172,7 @@ class MarkdownContent(Content):
 
         :param src: Path to the source file.
         :param site_config: Site configuration.
+        :param template: Jinja2 template used for rendering the content.
         :param meta: Optional metadata to inject.
         :param fm_sep: String for separating the markdown front matter.
 
@@ -177,7 +183,9 @@ class MarkdownContent(Content):
         fm = {} if not raw_fm else yaml.load(raw_fm[0].strip(), Loader=SafeLoader)
 
         return cls(
+            content=raw_content,
             src=src,
+            template=template,
             meta={
                 "labels": {},
                 "title": None,
@@ -186,9 +194,8 @@ class MarkdownContent(Content):
                 **fm,
                 **(meta or {}),
             },
-            is_draft=is_draft,
-            content=raw_content,
             site_config=site_config,
+            is_draft=is_draft,
         )
 
     @cached_property
@@ -212,22 +219,19 @@ class MarkdownContent(Content):
     def rel_url(self) -> str:
         return f"/{'/'.join(self.path_parts)}"
 
-    def to_target(
-        self,
-        template: Template,
-    ) -> PageTarget:
-        """Create a :class:`PageTarget` instance from the instance.
+    def to_target(self) -> RenderTarget:
+        """Create a :class:`PageTarget` instance."""
 
-        :param template: Jinja2 template to use.
+        def render(**kwargs: Any) -> str:
+            return self.template.render(
+                meta=self.meta,
+                content=MD.convert(self.content),
+                site=self.site_config,
+                **kwargs,
+            )
 
-        """
-        rendered = template.render(
-            meta=self.meta,
-            content=MD.convert(self.content),
-            site=self.site_config,
-        )
-        return PageTarget(
+        return RenderTarget(
             src_path=self.src.relative_to(self.site_config.pwd),
-            content=rendered,
             path_parts=self.path_parts,
+            renderer=render,
         )
