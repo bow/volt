@@ -7,9 +7,8 @@ import shutil
 from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime as dt
-from functools import cached_property
 from pathlib import Path
-from typing import Any, Callable, Optional, Tuple
+from typing import Optional, Tuple
 
 import yaml
 from jinja2 import Template
@@ -21,7 +20,7 @@ from . import constants
 from . import exceptions as excs
 from .config import SiteConfig
 
-__all__ = ["MarkdownContent"]
+__all__ = ["CopyTarget", "MarkdownSource", "TemplateTarget"]
 
 
 MD = Markdown(
@@ -60,28 +59,34 @@ class Target(abc.ABC):
     # Path parts / tokens to the target.
     path_parts: Tuple[str, ...]
 
+    # Source of the target.
+    src: Optional[Path]
+
     @abc.abstractmethod
     def write(self, parent_dir: Path) -> None:
         raise NotImplementedError()
 
 
 @dataclass(frozen=True)
-class RenderTarget(Target):
+class TemplateTarget(Target):
 
-    """A single HTML page target."""
+    """A target created by rendering from a template."""
 
-    # Callable for generating page content.
-    renderer: Callable
+    # Jinja2 template to use.
+    template: Template
+
+    # Render arguments.
+    render_kwargs: dict
 
     # Path parts / tokens to the target.
     path_parts: Tuple[str, ...]
 
-    # Filesystem path to the source of this target.
-    src_path: Optional[Path] = field(default=None)
+    # Source of the target.
+    src: Optional[Path] = field(default=None)
 
     def write(self, parent_dir: Path) -> None:
-        """Write the text content to the destination."""
-        content = self.renderer()
+        """Render the template and write it to the destination."""
+        content = self.template.render(**self.render_kwargs)
         try:
             (parent_dir.joinpath(*self.path_parts)).write_text(content)
         except OSError as e:
@@ -121,7 +126,7 @@ class CopyTarget(Target):
         return None
 
 
-class Content(abc.ABC):
+class Source(abc.ABC):
 
     """A source for the site content."""
 
@@ -132,8 +137,8 @@ class Content(abc.ABC):
     meta: dict
 
 
-@dataclass(eq=False, frozen=True)
-class MarkdownContent(Content):
+@dataclass(eq=False)
+class MarkdownSource(Source):
 
     """A markdown source of the site content."""
 
@@ -164,7 +169,7 @@ class MarkdownContent(Content):
         meta: Optional[dict] = None,
         is_draft: bool = False,
         fm_sep: str = constants.FRONT_MATTER_SEP,
-    ) -> "MarkdownContent":
+    ) -> "MarkdownSource":
         """Create an instance from a file.
 
         :param src: Path to the source file.
@@ -195,7 +200,7 @@ class MarkdownContent(Content):
             is_draft=is_draft,
         )
 
-    @cached_property
+    @property
     def path_parts(self) -> tuple[str, ...]:
         slug_reps = self.site_config.get("slug_replacements", [])
         num_common_parts = self.site_config.num_common_parts
@@ -212,23 +217,23 @@ class MarkdownContent(Content):
                 del ps[-2]
         return tuple(ps)
 
-    @cached_property
+    @property
     def rel_url(self) -> str:
         return f"/{'/'.join(self.path_parts)}"
 
-    def to_target(self) -> RenderTarget:
-        """Create a :class:`PageTarget` instance."""
+    @property
+    def target(self) -> TemplateTarget:
+        """Create a :class:`TemplateTarget` instance."""
 
-        def render(**kwargs: Any) -> str:
-            return self.template.render(
-                meta=self.meta,
-                content=MD.convert(self.content),
-                site=self.site_config,
-                **kwargs,
-            )
+        render_kwargs = {
+            "meta": self.meta,
+            "content": MD.convert(self.content),
+            "site": self.site_config,
+        }
 
-        return RenderTarget(
-            src_path=self.src.relative_to(self.site_config.pwd),
+        return TemplateTarget(
+            template=self.template,
+            render_kwargs=render_kwargs,
             path_parts=self.path_parts,
-            renderer=render,
+            src=self.src.relative_to(self.site_config.pwd),
         )

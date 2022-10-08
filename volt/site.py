@@ -7,7 +7,7 @@ import tempfile
 from contextlib import suppress
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Generator, Iterator, Optional, cast
+from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
 
 from . import constants
@@ -148,8 +148,8 @@ class SitePlan:
                         raise ValueError(
                             f"target path {('/'.join(target.path_parts))!r}"
                             + (
-                                f" from source {str(target.src_path)!r}"
-                                if target.src_path is not None
+                                f" from source {str(target.src)!r}"
+                                if target.src is not None
                                 else ""
                             )
                             + " already added to the site plan"
@@ -254,7 +254,7 @@ class Site:
 
         eng = eng_cls(cfg, **options)
 
-        for target in eng.create_targets():
+        for target in cast(Sequence[Target], eng.create_targets()):
             try:
                 plan.add_target(target)
             except ValueError as e:
