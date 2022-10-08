@@ -6,6 +6,7 @@ import shutil
 import tempfile
 from contextlib import suppress
 from functools import cached_property
+from itertools import chain
 from pathlib import Path
 from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
@@ -217,17 +218,14 @@ class Site:
         """
         self.config = config
 
-    def _gather_copy_targets(
-        self,
-        plan: SitePlan,
-        targets_dir: Path,
-    ) -> None:
+    def _gather_copy_targets(self, targets_dir: Path) -> Sequence[CopyTarget]:
         """Add files from the given targets directory into the site plan."""
 
         config = self.config
         src_relpath = calc_relpath(targets_dir, config.cwd)
         src_rel_len = len(src_relpath.parts)
 
+        targets: list[CopyTarget] = []
         entries = list(os.scandir(src_relpath))
         while entries:
             de = entries.pop()
@@ -235,13 +233,11 @@ class Site:
                 entries.extend(os.scandir(de))
             else:
                 dtoks = Path(de.path).parts[src_rel_len:]
-                plan.add_target(CopyTarget(src=Path(de.path), path_parts=dtoks))
+                targets.append(CopyTarget(src=Path(de.path), path_parts=dtoks))
 
-        return None
+        return targets
 
-    def _run_engine(
-        self, plan: SitePlan, fp: Path, cls_name: str, options: dict
-    ) -> None:
+    def _run_engine(self, fp: Path, cls_name: str, options: dict) -> Sequence[Target]:
         """Run a given engine defined in the given path"""
 
         cfg = self.config
@@ -250,32 +246,31 @@ class Site:
 
         eng_cls = getattr(mod, cls_name, None)
         if eng_cls is None:
-            return None
+            return []
 
         eng = eng_cls(cfg, **options)
+        targets = cast(Sequence[Target], eng.create_targets())
 
-        for target in cast(Sequence[Target], eng.create_targets()):
-            try:
-                plan.add_target(target)
-            except ValueError as e:
-                raise VoltResourceError(f"{e}") from e
+        return targets
 
-        return None
-
-    def gather_static_targets(self, plan: SitePlan) -> None:
+    def gather_static_targets(self) -> list[CopyTarget]:
         """Create :class:`CopyTarget` instances representing targets copied from
-        the site and theme static directories to the site plan."""
+        the site and theme static directories."""
         cfg = self.config
+
+        targets: list[CopyTarget] = []
         for static_path in (cfg.src_static_path, cfg.theme_static_path):
-            self._gather_copy_targets(plan=plan, targets_dir=static_path)
+            targets.extend(self._gather_copy_targets(targets_dir=static_path))
 
-        return None
+        return targets
 
-    def run_engines(self, plan: SitePlan) -> None:
-        """Run user-defined engines and add the created targets to the site plan."""
+    def generate_engine_targets(self) -> list[Target]:
+        """Run user-defined engines and generate their targets."""
 
         cfg = self.config
         engines = cfg.get("theme", {}).get("engines", [])
+
+        targets: list[Target] = []
 
         for entry in engines:
             if (cls_loc := entry.get("class", None)) is None:
@@ -284,9 +279,11 @@ class Site:
                 cls_fn, cls_name = cls_loc.rsplit(":", 1)
             except ValueError:
                 cls_fn, cls_name = cls_loc, constants.DEFAULT_ENGINE_CLASS_NAME
-            self._run_engine(plan, cfg.pwd / cls_fn, cls_name, entry.get("options", {}))
 
-        return None
+            cls_fp = cfg.pwd / cls_fn
+            targets.extend(self._run_engine(cls_fp, cls_name, entry.get("options", {})))
+
+        return targets
 
     def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
@@ -296,8 +293,13 @@ class Site:
         ) as tmp_dir_name:
 
             plan = SitePlan()
-            self.gather_static_targets(plan)
-            self.run_engines(plan)
+            for target in chain(
+                self.gather_static_targets(), self.generate_engine_targets()
+            ):
+                try:
+                    plan.add_target(target)
+                except ValueError as e:
+                    raise VoltResourceError(f"{e}") from e
 
             build_path = Path(tmp_dir_name)
             plan.write_nodes(parent_dir=build_path)
