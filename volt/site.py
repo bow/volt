@@ -249,6 +249,9 @@ class Site:
         mod = import_file(fp, f"volt.ext.theme.engines.{fp.stem}")
 
         eng_cls = getattr(mod, cls_name, None)
+        if eng_cls is None:
+            return None
+
         eng = eng_cls(cfg, **options)
 
         for target in eng.create_targets():
