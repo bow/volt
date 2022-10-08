@@ -60,9 +60,6 @@ class Target(abc.ABC):
     # Path parts / tokens to the target.
     path_parts: Tuple[str, ...]
 
-    # Filesystem path to the source of this target.
-    src_path: Optional[Path] = field(default=None)
-
     @abc.abstractmethod
     def write(self, parent_dir: Path) -> None:
         raise NotImplementedError()
