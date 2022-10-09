@@ -5,6 +5,15 @@
     :license: BSD
 
 """
+from .config import SiteConfig  # noqa: F401
+from .resource import (  # noqa: F401
+    Engine,
+    MarkdownSource,
+    Target,
+    TemplateTarget,
+    CopyTarget,
+)
+
 NAME = "volt"
 
 __author__ = "Wibowo Arindrarto"

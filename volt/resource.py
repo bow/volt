@@ -20,8 +20,6 @@ from . import constants
 from . import exceptions as excs
 from .config import SiteConfig
 
-__all__ = ["CopyTarget", "MarkdownSource", "TemplateTarget"]
-
 
 MD = Markdown(
     extras={
