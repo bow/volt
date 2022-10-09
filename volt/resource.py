@@ -7,8 +7,9 @@ import shutil
 from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime as dt
+from functools import cached_property
 from pathlib import Path
-from typing import Any, Optional, Sequence, Tuple
+from typing import cast, Any, Optional, Sequence, Tuple
 
 import yaml
 from jinja2 import Template
@@ -135,7 +136,7 @@ class Source(abc.ABC):
     meta: dict
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, frozen=True)
 class MarkdownSource(Source):
 
     """A markdown source of the site content."""
@@ -219,13 +220,17 @@ class MarkdownSource(Source):
     def rel_url(self) -> str:
         return f"/{'/'.join(self.path_parts)}"
 
+    @cached_property
+    def html(self) -> str:
+        return cast(str, MD.convert(self.content))
+
     @property
     def target(self) -> TemplateTarget:
         """Create a :class:`TemplateTarget` instance."""
 
         render_kwargs = {
             "meta": self.meta,
-            "content": MD.convert(self.content),
+            "content": self.html,
             "site": self.site_config,
         }
 
