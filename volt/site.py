@@ -280,7 +280,7 @@ class Site:
             except ValueError:
                 cls_fn, cls_name = cls_loc, constants.DEFAULT_ENGINE_CLASS_NAME
 
-            cls_fp = cfg.pwd / cls_fn
+            cls_fp = cfg.theme_engines_path / cls_fn
             targets.extend(self._run_engine(cls_fp, cls_name, entry.get("options", {})))
 
         return targets

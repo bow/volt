@@ -220,6 +220,11 @@ class SiteConfig(UserDict):
         return self.theme_path / "static"
 
     @cached_property
+    def theme_engines_path(self) -> Path:
+        """Path to the theme engines directory."""
+        return self.theme_path / "engines"
+
+    @cached_property
     def theme_template_path(self) -> Path:
         """Path to the theme template directory."""
         return self._theme_template_path
