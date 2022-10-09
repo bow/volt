@@ -8,7 +8,7 @@ from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime as dt
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Optional, Sequence, Tuple
 
 import yaml
 from jinja2 import Template
@@ -237,3 +237,16 @@ class MarkdownSource(Source):
             path_parts=self.path_parts,
             src=self.src.relative_to(self.site_config.pwd),
         )
+
+
+class Engine(abc.ABC):
+
+    """Engine creates site targets."""
+
+    def __init__(self, config: SiteConfig, *args: Any, **kwargs: Any) -> None:
+        self.config = config
+        self.options = kwargs.pop("options", {})
+
+    @abc.abstractmethod
+    def create_targets(self) -> Sequence[Target]:
+        raise NotImplementedError()

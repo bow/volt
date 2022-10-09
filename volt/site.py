@@ -14,7 +14,7 @@ from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 from . import constants
 from .config import SiteConfig
 from .exceptions import VoltResourceError
-from .resource import CopyTarget, Target
+from .resource import CopyTarget, Engine, Target
 from .utils import calc_relpath, import_file
 
 __all__ = ["Site", "SiteNode", "SitePlan"]
@@ -248,8 +248,8 @@ class Site:
         if eng_cls is None:
             return []
 
-        eng = eng_cls(cfg, **options)
-        targets = cast(Sequence[Target], eng.create_targets())
+        eng = cast(Engine, eng_cls(cfg, options=options))
+        targets = eng.create_targets()
 
         return targets
 
