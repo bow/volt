@@ -951,6 +951,22 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-python-slugify"
+version = "6.1.0"
+description = "Typing stubs for python-slugify"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-pyyaml"
+version = "6.0.12"
+description = "Typing stubs for PyYAML"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.3.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -1005,7 +1021,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "08af4ad15b0d4fa726fa08d56f49eb53f036be3dcd3d0bf1a4f620e45e53fefa"
+content-hash = "4134502d17c048d4c5d2ffdf849c65ae4e8db3a03ed6f9547323353eb994c4ea"
 
 [metadata.files]
 atomicwrites = []
@@ -1400,6 +1416,8 @@ typed-ast = [
     {file = "typed_ast-1.4.3-cp39-cp39-win_amd64.whl", hash = "sha256:9c6d1a54552b5330bc657b7ef0eae25d00ba7ffe85d9ea8ae6540d2197a3788c"},
     {file = "typed_ast-1.4.3.tar.gz", hash = "sha256:fb1bbeac803adea29cedd70781399c99138358c26d05fcbd23c13016b7f5ec65"},
 ]
+types-python-slugify = []
+types-pyyaml = []
 typing-extensions = []
 urllib3 = []
 watchdog = []
