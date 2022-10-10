@@ -13,7 +13,7 @@ from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
 from . import constants
 from .config import SiteConfig
-from .exceptions import VoltResourceError
+from .exceptions import VoltConfigError, VoltResourceError
 from .resource import CopyTarget, Engine, Target
 from .utils import calc_relpath, import_file
 
@@ -278,7 +278,7 @@ class Site:
             try:
                 cls_fn, cls_name = cls_loc.rsplit(":", 1)
             except ValueError:
-                cls_fn, cls_name = cls_loc, constants.DEFAULT_ENGINE_CLASS_NAME
+                raise VoltConfigError("invalid engine class specifier: {cls_loc!r}")
 
             cls_fp = cfg.theme_engines_path / cls_fn
             targets.extend(self._run_engine(cls_fp, cls_name, entry.get("options", {})))

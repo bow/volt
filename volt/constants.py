@@ -7,9 +7,6 @@ BUILD_DIR_PREFIX = "volt-build-"
 # Default config file name.
 CONFIG_FNAME = "volt.yaml"
 
-# Name of the default engine expected in a theme.
-DEFAULT_ENGINE_CLASS_NAME = "Engine"
-
 # Extension for text contents.
 CONTENTS_EXT = ".md"
 
