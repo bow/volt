@@ -105,7 +105,15 @@ class BuildHandler(RegexMatchingEventHandler):
 
         prefix = f"{sc.rel_pwd}".replace(".", r"\.")
         regexes = [
-            f"^{prefix + '/' + constants.SITE_SRC_DIRNAME + '/'}.+$",
+            *[
+                f"^{prefix + '/' + dirname + '/'}.+$"
+                for dirname in (
+                    constants.SITE_EXT_DIRNAME,
+                    constants.SITE_SOURCES_DIRNAME,
+                    constants.SITE_STATIC_DIRNAME,
+                    constants.SITE_THEME_DIRNAME,
+                )
+            ],
             f"^{prefix + '/' + constants.CONFIG_FNAME}$",
         ]
         ignore_regexes = [

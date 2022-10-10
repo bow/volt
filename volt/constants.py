@@ -7,29 +7,29 @@ BUILD_DIR_PREFIX = "volt-build-"
 # Default config file name.
 CONFIG_FNAME = "volt.yaml"
 
-# Extension for text contents.
-CONTENTS_EXT = ".md"
-
 # Separator string for text content front matter.
 FRONT_MATTER_SEP = "---\n"
 
-# Site contents directory name.
-SITE_CONTENTS_DIRNAME = "contents"
+# Extension for Markdown source files.
+MARKDOWN_EXT = ".md"
+
+# Site source directory name.
+SITE_SOURCES_DIRNAME = "source"
 
 # Site draft contents directory name.
 SITE_DRAFTS_DIRNAME = ".drafts"
 
 # Site directory name for extension code.
-SITE_EXT_DIRNAME = "ext"
+SITE_EXT_DIRNAME = "extension"
 
 # Site output directory name.
-SITE_OUT_DIRNAME = "dist"
+SITE_OUT_DIRNAME = "target"
 
 # Site static directory name.
 SITE_STATIC_DIRNAME = "static"
 
-# Site source directory name.
-SITE_SRC_DIRNAME = "src"
+# Site project directory name.
+SITE_PROJECT_DIRNAME = ""
 
 # Site theme directory name.
 SITE_THEME_DIRNAME = "theme"

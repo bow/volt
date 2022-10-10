@@ -130,9 +130,9 @@ class SiteConfig(UserDict):
         self,
         cwd: Path,
         pwd: Path,
-        src_dirname: str = constants.SITE_SRC_DIRNAME,
+        project_dirname: str = constants.SITE_PROJECT_DIRNAME,
         out_dirname: str = constants.SITE_OUT_DIRNAME,
-        contents_dirname: str = constants.SITE_CONTENTS_DIRNAME,
+        sources_dirname: str = constants.SITE_SOURCES_DIRNAME,
         static_dirname: str = constants.SITE_STATIC_DIRNAME,
         theme_dirname: str = constants.SITE_THEME_DIRNAME,
         template_dirname: str = constants.SITE_THEME_TEMPLATES_DIRNAME,
@@ -157,15 +157,15 @@ class SiteConfig(UserDict):
         super().__init__(user_conf, **kwargs)
         self._pwd = pwd
         self._cwd = cwd
-        self._src_path = pwd / src_dirname
+        self._project_path = pwd / project_dirname
         self._out_path = pwd / out_dirname
-        self._src_contents_path = self._src_path / contents_dirname
-        self._src_ext_path = self._src_path / ext_dirname
-        self._src_drafts_dirname = drafts_dirname
-        self._src_static_path = self._src_path / static_dirname
-        self._theme_path = self._src_path / theme_dirname
+        self._sources_path = self._project_path / sources_dirname
+        self._ext_path = self._project_path / ext_dirname
+        self._drafts_dirname = drafts_dirname
+        self._static_path = self._project_path / static_dirname
+        self._theme_path = self._project_path / theme_dirname
         self._theme_template_path = self._theme_path / template_dirname
-        self._xcmd_script_path = self._src_ext_path / xcmd_script_fname
+        self._xcmd_script_path = self._ext_path / xcmd_script_fname
         self._yaml_fp = yaml_fp
 
     @cached_property
@@ -185,9 +185,9 @@ class SiteConfig(UserDict):
         return Path("/".join(("..",) * len(rel.parts)))
 
     @cached_property
-    def src_path(self) -> Path:
+    def project_path(self) -> Path:
         """Path to the site source directory."""
-        return self._src_path
+        return self._project_path
 
     @cached_property
     def out_path(self) -> Path:
@@ -195,19 +195,19 @@ class SiteConfig(UserDict):
         return self._out_path
 
     @cached_property
-    def src_contents_path(self) -> Path:
-        """Path to the site contents."""
-        return self._src_contents_path
+    def sources_path(self) -> Path:
+        """Path to the site source contents."""
+        return self._sources_path
 
     @cached_property
-    def src_drafts_dirname(self) -> str:
+    def drafts_dirname(self) -> str:
         """Name of the drafts directory."""
-        return self._src_drafts_dirname
+        return self._drafts_dirname
 
     @cached_property
-    def src_static_path(self) -> Path:
+    def static_path(self) -> Path:
         """Path to the site source static files."""
-        return self._src_static_path
+        return self._static_path
 
     @cached_property
     def theme_path(self) -> Path:
@@ -231,7 +231,7 @@ class SiteConfig(UserDict):
 
     @cached_property
     def num_common_parts(self) -> int:
-        return len(self.src_path.parts) + 1
+        return len(self.project_path.parts) + 1
 
     @cached_property
     def template_env(self) -> Environment:

@@ -259,7 +259,7 @@ class Site:
         cfg = self.config
 
         targets: list[CopyTarget] = []
-        for static_path in (cfg.src_static_path, cfg.theme_static_path):
+        for static_path in (cfg.static_path, cfg.theme_static_path):
             targets.extend(self._gather_copy_targets(targets_dir=static_path))
 
         return targets

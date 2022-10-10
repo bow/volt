@@ -79,9 +79,8 @@ class Session:
         # Bootstrap directories.
         bootstrap_conf = SiteConfig(cwd=cwd, pwd=pwd, timezone=tz)
         bootstrap_path_attrs = [
-            "src_pub_path",
-            "src_drafts_path",
-            "src_static_path",
+            "sources_path",
+            "static_path",
             "theme_path",
         ]
         try:
@@ -148,8 +147,8 @@ timezone: "{tz.name}"
         """Open a draft file in an editor."""
 
         if create is not None:
-            fn = Path(sc.src_drafts_dirname) / create / query
-            new_fp = fn.with_suffix(constants.CONTENTS_EXT)
+            fn = Path(sc.drafts_dirname) / create / query
+            new_fp = fn.with_suffix(constants.MARKDOWN_EXT)
             new_fp.parent.mkdir(parents=True, exist_ok=True)
             if new_fp.exists():
                 click.edit(filename=f"{new_fp}")
@@ -157,7 +156,7 @@ timezone: "{tz.name}"
 
             contents = click.edit(
                 text=infer_front_matter(query, title),
-                extension=constants.CONTENTS_EXT,
+                extension=constants.MARKDOWN_EXT,
                 require_save=False,
             )
             if contents:
@@ -166,7 +165,7 @@ timezone: "{tz.name}"
 
             return None
 
-        todo_dirs = [sc.src_contents_path]
+        todo_dirs = [sc.sources_path]
         lookup_dirs: list[Path] = []
         while todo_dirs:
             cur_dir = todo_dirs.pop()
@@ -176,11 +175,11 @@ timezone: "{tz.name}"
                     p
                     for entry in os.scandir(cur_dir)
                     if entry.is_dir()
-                    and (p := Path(entry.path)).name != sc.src_drafts_dirname
+                    and (p := Path(entry.path)).name != sc.drafts_dirname
                 ]
             )
 
-        match_fp = get_fuzzy_match(query, constants.CONTENTS_EXT, 50, *lookup_dirs)
+        match_fp = get_fuzzy_match(query, constants.MARKDOWN_EXT, 50, *lookup_dirs)
         if match_fp is not None:
             click.edit(filename=f"{match_fp}")
             return None
