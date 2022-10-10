@@ -170,14 +170,13 @@ timezone: "{tz.name}"
         while todo_dirs:
             cur_dir = todo_dirs.pop()
             lookup_dirs.append(cur_dir)
-            todo_dirs.extend(
-                [
-                    p
-                    for entry in os.scandir(cur_dir)
-                    if entry.is_dir()
-                    and (p := Path(entry.path)).name != sc.drafts_dirname
-                ]
-            )
+            for entry in os.scandir(cur_dir):
+                if not entry.is_dir():
+                    continue
+                p = Path(entry.path)
+                if not drafts and p.name == sc.drafts_dirname:
+                    continue
+                todo_dirs.append(p)
 
         match_fp = get_fuzzy_match(query, constants.MARKDOWN_EXT, 50, *lookup_dirs)
         if match_fp is not None:
