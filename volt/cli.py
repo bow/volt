@@ -1,7 +1,6 @@
 """Main entry point for command line invocation."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
-import os
 import time
 from pathlib import Path
 from types import ModuleType
