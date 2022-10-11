@@ -168,7 +168,7 @@ def get_fuzzy_match(
 
     fp_map = {}
     for d in dirs:
-        fp_map.update({p: f"{p.relative_to(d)}" for p in d.rglob(f"*{ext}")})
+        fp_map.update({p: f"{p.relative_to(d)}" for p in d.glob(f"*{ext}")})
 
     _, _, match_fp = process.extractOne(query, fp_map, score_cutoff=cutoff) or (
         None,

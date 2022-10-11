@@ -142,7 +142,7 @@ timezone: "{tz.name}"
         query: str,
         create: Optional[str] = None,
         title: Optional[str] = None,
-        drafts: bool = False,
+        lookup_drafts: bool = False,
     ) -> None:
         """Open a draft file in an editor."""
 
@@ -169,7 +169,7 @@ timezone: "{tz.name}"
             query=query,
             ext=constants.MARKDOWN_EXT,
             start_dir=sc.sources_path,
-            ignore_dirname=sc.drafts_dirname if drafts else None,
+            ignore_dirname=None if lookup_drafts else sc.drafts_dirname,
         )
         if match_fp is not None:
             click.edit(filename=f"{match_fp}")
