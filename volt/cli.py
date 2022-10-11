@@ -165,20 +165,12 @@ timezone: "{tz.name}"
 
             return None
 
-        todo_dirs = [sc.sources_path]
-        lookup_dirs: list[Path] = []
-        while todo_dirs:
-            cur_dir = todo_dirs.pop()
-            lookup_dirs.append(cur_dir)
-            for entry in os.scandir(cur_dir):
-                if not entry.is_dir():
-                    continue
-                p = Path(entry.path)
-                if not drafts and p.name == sc.drafts_dirname:
-                    continue
-                todo_dirs.append(p)
-
-        match_fp = get_fuzzy_match(query, constants.MARKDOWN_EXT, 50, *lookup_dirs)
+        match_fp = get_fuzzy_match(
+            query=query,
+            ext=constants.MARKDOWN_EXT,
+            start_dir=sc.sources_path,
+            ignore_dirname=sc.drafts_dirname if drafts else None,
+        )
         if match_fp is not None:
             click.edit(filename=f"{match_fp}")
             return None

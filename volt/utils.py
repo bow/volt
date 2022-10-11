@@ -2,7 +2,7 @@
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import importlib.util as iutil
-from os import path, PathLike
+from os import path, scandir, PathLike
 from pathlib import Path
 from types import ModuleType
 from typing import IO, Any, Optional
@@ -158,10 +158,13 @@ def load_template(env: Environment, name: str) -> Template:
 def get_fuzzy_match(
     query: str,
     ext: str,
+    start_dir: Path,
+    ignore_dirname: Optional[str] = None,
     cutoff: int = 50,
-    *dirs: Path,
 ) -> Optional[str]:
     """Return a fuzzy-matched path to a file in one of the given directories"""
+
+    dirs = walk_dirs(start_dir=start_dir, ignore_dirname=ignore_dirname)
 
     fp_map = {}
     for d in dirs:
@@ -174,6 +177,26 @@ def get_fuzzy_match(
     )
 
     return match_fp
+
+
+def walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Path]:
+    """Return the input directory and all its children directories"""
+
+    todo_dirs = [start_dir]
+    dirs: list[Path] = []
+
+    while todo_dirs:
+        cur_dir = todo_dirs.pop()
+        dirs.append(cur_dir)
+        for entry in scandir(cur_dir):
+            if not entry.is_dir():
+                continue
+            p = Path(entry.path)
+            if ignore_dirname is not None and p.name == ignore_dirname:
+                continue
+            todo_dirs.append(p)
+
+    return dirs
 
 
 def infer_front_matter(query: str, title: Optional[str]) -> str:
