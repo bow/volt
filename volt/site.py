@@ -14,7 +14,8 @@ from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 from . import constants
 from .config import SiteConfig
 from .exceptions import VoltConfigError, VoltResourceError
-from .resource import CopyTarget, Engine, Target
+from .engines import Engine
+from .targets import CopyTarget, Target
 from .utils import calc_relpath, import_file
 
 __all__ = ["Site", "SiteNode", "SitePlan"]

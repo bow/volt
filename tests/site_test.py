@@ -5,8 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from volt import site
-from volt.resource import Target
+from volt import site, Target
 
 
 class MockTarget(Target):

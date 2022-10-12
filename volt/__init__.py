@@ -6,13 +6,9 @@
 
 """
 from .config import SiteConfig  # noqa: F401
-from .resource import (  # noqa: F401
-    Engine,
-    MarkdownSource,
-    Target,
-    TemplateTarget,
-    CopyTarget,
-)
+from .engines import Engine  # noqa: F401
+from .sources import MarkdownSource  # noqa: F401
+from .targets import Target, TemplateTarget, CopyTarget  # noqa: F401
 
 NAME = "volt"
 
