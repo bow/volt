@@ -238,7 +238,13 @@ class Site:
 
         return targets
 
-    def _run_engine(self, fp: Path, cls_name: str, options: dict) -> Sequence[Target]:
+    def _run_engine(
+        self,
+        fp: Path,
+        cls_name: str,
+        source_dirname: str,
+        options: dict,
+    ) -> Sequence[Target]:
         """Run a given engine defined in the given path"""
 
         cfg = self.config
@@ -249,7 +255,7 @@ class Site:
         if eng_cls is None:
             return []
 
-        eng = cast(Engine, eng_cls(cfg, options=options))
+        eng = cast(Engine, eng_cls(cfg, source_dirname=source_dirname, options=options))
         targets = eng.create_targets()
 
         return targets
@@ -282,7 +288,14 @@ class Site:
                 raise VoltConfigError("invalid engine class specifier: {cls_loc!r}")
 
             cls_fp = cfg.theme_engines_path / cls_fn
-            targets.extend(self._run_engine(cls_fp, cls_name, entry.get("options", {})))
+            targets.extend(
+                self._run_engine(
+                    cls_fp,
+                    cls_name,
+                    source_dirname=entry.get("source_dirname", ""),
+                    options=entry.get("options", {}),
+                ),
+            )
 
         return targets
 
