@@ -7,6 +7,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Any, Dict, Optional, cast
 
+import jinja2.exceptions as j2exc
 import yaml
 from jinja2 import Environment, FileSystemLoader, Template
 from pendulum.tz.timezone import Timezone
@@ -15,7 +16,7 @@ from yaml.scanner import ScannerError
 
 from . import constants
 from . import exceptions as excs
-from .utils import find_dir_containing, get_tz, load_template
+from .utils import find_dir_containing, get_tz
 
 __all__ = ["SiteConfig"]
 
@@ -267,7 +268,16 @@ class SiteConfig(UserDict):
 
     def load_template(self, name: str) -> Template:
         """Load a template with the given name."""
-        return load_template(self.template_env, name)
+        try:
+            template = self.template_env.get_template(name)
+        except j2exc.TemplateNotFound as e:
+            raise excs.VoltResourceError(f"could not find template {name!r}") from e
+        except j2exc.TemplateSyntaxError as e:
+            raise excs.VoltResourceError(
+                f"template {name!r} has syntax errors: {e.message}"
+            ) from e
+
+        return template
 
     def load_theme_template(self, key: str) -> Template:
         """Load a theme template with the given key."""

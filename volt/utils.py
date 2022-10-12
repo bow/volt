@@ -7,10 +7,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import IO, Any, Optional
 
-import jinja2.exceptions as j2exc
 from click import echo, style
 from click._compat import get_text_stderr
-from jinja2 import Environment, Template
 from pendulum.tz import local_timezone
 from pendulum.tz.timezone import Timezone
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
@@ -129,30 +127,6 @@ def calc_relpath(target: Path, ref: Path) -> Path:
     rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
 
     return Path(*rel_parts)
-
-
-def load_template(env: Environment, name: str) -> Template:
-    """Load a template from the given environment.
-
-    :param env: Jinja2 template environment.
-    :param name: Template name to load.
-
-    :returns: A Jinja2 template.
-
-    :raises `~volt.exceptions.VoltResourceError`: when the template does not
-        exist or it could not be instantiated.
-
-    """
-    try:
-        template = env.get_template(name)
-    except j2exc.TemplateNotFound as e:
-        raise excs.VoltResourceError(f"could not find template {name!r}") from e
-    except j2exc.TemplateSyntaxError as e:
-        raise excs.VoltResourceError(
-            f"template {name!r} has syntax errors: {e.message}"
-        ) from e
-
-    return template
 
 
 def get_fuzzy_match(
