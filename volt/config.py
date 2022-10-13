@@ -258,6 +258,11 @@ class SiteConfig(UserDict):
         return None
 
     @cached_property
+    def url(self) -> str:
+        """Base URL of the generated site."""
+        return self.get("url", "")
+
+    @cached_property
     def with_drafts(self) -> bool:
         """Whether to publish draft contents or not."""
         return self._with_drafts

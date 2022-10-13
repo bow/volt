@@ -8,6 +8,7 @@ from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
 from typing import cast, Optional
+from urllib.parse import urljoin
 
 import yaml
 from jinja2 import Template
@@ -139,6 +140,10 @@ class MarkdownSource(Source):
                 #       level as non-draft files.
                 del ps[-2]
         return tuple(ps)
+
+    @property
+    def abs_url(self) -> str:
+        return urljoin(self.site_config.url, self.rel_url)
 
     @property
     def rel_url(self) -> str:
