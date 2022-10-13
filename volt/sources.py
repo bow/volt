@@ -127,9 +127,10 @@ class MarkdownSource(Source):
     def path_parts(self) -> tuple[str, ...]:
         slug_reps = self.site_config.get("slug_replacements", [])
         num_common_parts = self.site_config.num_common_parts
+        url_key = "url"
         parts = (
-            [part for part in self.meta["page"].split("/") if part]
-            if self.meta.get("page") is not None
+            [part for part in self.meta[url_key].split("/") if part]
+            if self.meta.get(url_key) is not None
             else [f"{slugify(self.meta['title'], replacements=slug_reps)}.html"]
         )
         ps = [*(self.src.parent.parts[num_common_parts:]), *parts]
