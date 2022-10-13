@@ -13,10 +13,10 @@ from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
 from . import constants
 from .config import SiteConfig
-from .exceptions import VoltConfigError, VoltResourceError
-from .engines import Engine
+from .exceptions import VoltResourceError
+from .engines import Engine, EngineSpec
 from .targets import CopyTarget, Target
-from .utils import calc_relpath, import_file
+from .utils import calc_relpath
 
 __all__ = ["Site", "SiteNode", "SitePlan"]
 
@@ -238,27 +238,26 @@ class Site:
 
         return targets
 
-    def _run_engine(
-        self,
-        fp: Path,
-        cls_name: str,
-        source_dirname: str,
-        options: dict,
-    ) -> Sequence[Target]:
-        """Run a given engine defined in the given path"""
+    def _load_engines(self) -> list[Engine]:
 
-        cfg = self.config
-        # TODO: Replace this with a pattern less prone to name collision
-        mod = import_file(fp, f"volt.ext.theme.engines.{fp.stem}")
+        # TODO: Add MarkdownEngine if no engines are specified.
+        engine_configs = self.config.get("theme", {}).get("engines", [])
 
-        eng_cls = getattr(mod, cls_name, None)
-        if eng_cls is None:
-            return []
+        engines = [
+            spec.load()
+            for spec in (
+                EngineSpec(
+                    config=self.config,
+                    source=entry.get("source", ""),
+                    options=entry.get("options", {}),
+                    module=entry.get("module", None),
+                    file=entry.get("file", None),
+                )
+                for entry in engine_configs
+            )
+        ]
 
-        eng = cast(Engine, eng_cls(cfg, source_dirname=source_dirname, options=options))
-        targets = eng.create_targets()
-
-        return targets
+        return engines
 
     def gather_static_targets(self) -> list[CopyTarget]:
         """Create :class:`CopyTarget` instances representing targets copied from
@@ -274,28 +273,11 @@ class Site:
     def generate_engine_targets(self) -> list[Target]:
         """Run user-defined engines and generate their targets."""
 
-        cfg = self.config
-        engines = cfg.get("theme", {}).get("engines", [])
-
-        targets: list[Target] = []
-
-        for entry in engines:
-            if (cls_loc := entry.get("class", None)) is None:
-                continue
-            try:
-                cls_fn, cls_name = cls_loc.rsplit(":", 1)
-            except ValueError:
-                raise VoltConfigError("invalid engine class specifier: {cls_loc!r}")
-
-            cls_fp = cfg.theme_engines_path / cls_fn
-            targets.extend(
-                self._run_engine(
-                    cls_fp,
-                    cls_name,
-                    source_dirname=entry.get("source_dirname", ""),
-                    options=entry.get("options", {}),
-                ),
-            )
+        targets = [
+            target
+            for engine in self._load_engines()
+            for target in engine.create_targets()
+        ]
 
         return targets
 
