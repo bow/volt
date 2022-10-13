@@ -154,8 +154,12 @@ class SiteConfig(UserDict):
         :param timezone: Timezone for default timestamp interpretation.
 
         """
-        self._with_drafts: bool = (user_conf or {}).pop("with_drafts", False)
+        uc = user_conf or {}
+        self._with_drafts: bool = uc.pop("with_drafts", False)
+        self._name: str = uc.pop("name", "")
+        self._url: str = uc.pop("url", "")
         super().__init__(user_conf, **kwargs)
+
         self._pwd = pwd
         self._cwd = cwd
         self._project_path = pwd / project_dirname
@@ -168,6 +172,16 @@ class SiteConfig(UserDict):
         self._theme_template_path = self._theme_path / template_dirname
         self._xcmd_script_path = self._ext_path / xcmd_script_fname
         self._yaml_fp = yaml_fp
+
+    @cached_property
+    def name(self) -> str:
+        """Name of the site."""
+        return self._name
+
+    @cached_property
+    def url(self) -> str:
+        """URL of the site."""
+        return self._url
 
     @cached_property
     def pwd(self) -> Path:
@@ -256,11 +270,6 @@ class SiteConfig(UserDict):
         if fp.exists():
             return fp
         return None
-
-    @cached_property
-    def url(self) -> str:
-        """Base URL of the generated site."""
-        return self.get("url", "")
 
     @cached_property
     def with_drafts(self) -> bool:
