@@ -112,6 +112,7 @@ class MarkdownSource(Source):
             content=raw_content,
             src=src,
             template=template,
+            # TODO: Validate minimal front matter metadata.
             meta={
                 "labels": {},
                 "title": None,
@@ -131,7 +132,7 @@ class MarkdownSource(Source):
         parts = (
             [part for part in self.meta[url_key].split("/") if part]
             if self.meta.get(url_key) is not None
-            else [f"{slugify(self.meta['title'], replacements=slug_reps)}.html"]
+            else [f"{slugify(self.title, replacements=slug_reps)}.html"]
         )
         ps = [*(self.src.parent.parts[num_common_parts:]), *parts]
         if self.is_draft:
@@ -140,6 +141,10 @@ class MarkdownSource(Source):
                 #       level as non-draft files.
                 del ps[-2]
         return tuple(ps)
+
+    @property
+    def title(self) -> str:
+        return cast(str, self.meta["title"])
 
     @property
     def abs_url(self) -> str:
