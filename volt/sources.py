@@ -10,9 +10,11 @@ from pathlib import Path
 from typing import cast, Optional
 from urllib.parse import urljoin
 
+import pendulum
 import yaml
 from jinja2 import Template
 from markdown2 import Markdown
+from pendulum.datetime import DateTime
 from slugify import slugify
 from yaml import SafeLoader
 
@@ -154,9 +156,18 @@ class MarkdownSource(Source):
     def rel_url(self) -> str:
         return f"/{'/'.join(self.path_parts)}"
 
-    @property
-    def pub_time(self) -> Optional[dt]:
-        return self.meta.get("pub_time", None)
+    @cached_property
+    def pub_time(self) -> Optional[DateTime]:
+        value = self.meta.get("pub_time", None)
+        if value is None:
+            return value
+        if isinstance(value, str):
+            rv = pendulum.parse(value, tz=self.site_config.timezone)
+            if isinstance(rv, DateTime):
+                return rv
+        if isinstance(value, dt):
+            return pendulum.instance(value, self.site_config.timezone)
+        # TODO: Add proper error for other types.
 
     @cached_property
     def html(self) -> str:

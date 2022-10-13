@@ -171,6 +171,7 @@ class SiteConfig(UserDict):
         self._theme_path = self._project_path / theme_dirname
         self._theme_template_path = self._theme_path / template_dirname
         self._xcmd_script_path = self._ext_path / xcmd_script_fname
+        self._timezone: Optional[Timezone] = timezone
         self._yaml_fp = yaml_fp
 
     @cached_property
@@ -275,6 +276,10 @@ class SiteConfig(UserDict):
     def with_drafts(self) -> bool:
         """Whether to publish draft contents or not."""
         return self._with_drafts
+
+    @property
+    def timezone(self) -> Optional[Timezone]:
+        return self._timezone
 
     @cached_property
     def in_docker(self) -> bool:
