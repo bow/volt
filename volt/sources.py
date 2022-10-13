@@ -19,6 +19,7 @@ from slugify import slugify
 from yaml import SafeLoader
 
 from . import constants
+from .exceptions import VoltResourceError
 from .config import SiteConfig
 from .targets import TemplateTarget
 
@@ -159,15 +160,19 @@ class MarkdownSource(Source):
     @cached_property
     def pub_time(self) -> Optional[DateTime]:
         value = self.meta.get("pub_time", None)
+        exc = VoltResourceError(
+            f"value {value!r} in {str(self.src)!r} is not a valid datetime"
+        )
         if value is None:
             return value
         if isinstance(value, str):
             rv = pendulum.parse(value, tz=self.site_config.timezone)
             if isinstance(rv, DateTime):
                 return rv
+            raise exc
         if isinstance(value, dt):
             return pendulum.instance(value, self.site_config.timezone)
-        # TODO: Add proper error for other types.
+        raise exc
 
     @cached_property
     def html(self) -> str:
