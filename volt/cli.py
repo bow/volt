@@ -130,7 +130,7 @@ timezone: "{tz.name}"
         echo_info(
             f"build"
             f"{'' if not with_drafts else ' with drafts'}"
-            f" completed in {(time.monotonic() - start_time):.2f}ms"
+            f" completed in {(time.monotonic() - start_time):.2f}s"
         )
 
         return site
