@@ -66,7 +66,7 @@ def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:
 
     spec = iutil.spec_from_file_location(mod_name, fp)
     if spec is None:
-        raise excs.VoltResourceError("not an importable file: {fp}")
+        raise excs.VoltResourceError(f"not an importable file: {fp}")
 
     mod = iutil.module_from_spec(spec)
 
