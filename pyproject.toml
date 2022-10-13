@@ -54,7 +54,7 @@ python-Levenshtein = "0.12.1"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
 bandit = "^1.6.2"
-flake8 = "^3.8.4"
+flake8 = "^5.0.4"
 mypy = "^0.812"
 mypy-extensions = "^0.4.3"
 pytest-cov = "^2.11.1"
