@@ -47,4 +47,9 @@ class VoltTimezoneError(VoltConfigError):
         super().__init__(f"timezone {tzname!r} is invalid")
 
 
+class VoltMissingTemplateError(VoltResourceError):
+
+    """Raised for errors when loading templates."""
+
+
 VOLT_NO_PROJECT_ERR = VoltCliError("not in a volt project")

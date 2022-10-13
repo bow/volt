@@ -271,7 +271,9 @@ class SiteConfig(UserDict):
         try:
             template = self.template_env.get_template(name)
         except j2exc.TemplateNotFound as e:
-            raise excs.VoltResourceError(f"could not find template {name!r}") from e
+            raise excs.VoltMissingTemplateError(
+                f"could not find template {name!r}"
+            ) from e
         except j2exc.TemplateSyntaxError as e:
             raise excs.VoltResourceError(
                 f"template {name!r} has syntax errors: {e.message}"

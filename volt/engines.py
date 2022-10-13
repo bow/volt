@@ -8,8 +8,12 @@ from importlib import import_module
 from pathlib import Path
 from typing import cast, Any, Optional, Sequence, Type
 
+from jinja2 import Template
+
 from . import exceptions as excs
 from .config import SiteConfig
+from .constants import MARKDOWN_EXT
+from .sources import MarkdownSource
 from .targets import Target
 from .utils import import_file
 
@@ -123,3 +127,40 @@ class EngineSpec:
         except ValueError:
             raise excs.VoltConfigError(f"invalid engine class specifier: {spec!r}")
         return cls_loc, cls_name
+
+
+class MarkdownEngine(Engine):
+
+    """Engine that creates HTML targets from Markdown sources."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        template_name = self.options.pop("template_name", "page")
+        try:
+            self.template = self.config.load_theme_template(template_name)
+        except excs.VoltMissingTemplateError:
+            default_fp = Path(__file__).parent / "defaults" / f"{template_name}.html.j2"
+            self.template = Template(default_fp.read_text())
+
+    def create_targets(self) -> Sequence[Target]:
+
+        config = self.config
+        get_sources = self.get_sources
+
+        fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
+
+        targets = [
+            MarkdownSource.from_path(
+                src=fp,
+                template=self.template,
+                site_config=config,
+                is_draft=is_draft,
+            ).target
+            for fp, is_draft in fps
+        ]
+
+        return targets
+
+    def get_sources(self, drafts: bool = False) -> list[tuple[Path, bool]]:
+        eff_dir = self.source_dir if not drafts else self.source_drafts_dir
+        return [(p, drafts) for p in eff_dir.glob(f"*{MARKDOWN_EXT}")]

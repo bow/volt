@@ -14,7 +14,7 @@ from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 from . import constants
 from .config import SiteConfig
 from .exceptions import VoltResourceError
-from .engines import Engine, EngineSpec
+from .engines import Engine, EngineSpec, MarkdownEngine
 from .targets import CopyTarget, Target
 from .utils import calc_relpath
 
@@ -240,8 +240,11 @@ class Site:
 
     def _load_engines(self) -> list[Engine]:
 
-        # TODO: Add MarkdownEngine if no engines are specified.
-        engine_configs = self.config.get("theme", {}).get("engines", [])
+        engine_configs: Optional[list[dict]] = self.config.get("theme", {}).get(
+            "engines", None
+        )
+        if engine_configs is None:
+            return [MarkdownEngine(config=self.config, source_dirname="")]
 
         engines = [
             spec.load()
