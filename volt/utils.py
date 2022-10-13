@@ -26,7 +26,8 @@ def echo_fmt(
     """Show a formatted message"""
     if file is None:
         file = get_text_stderr()
-    echo(f"{style} {msg.capitalize() if capitalize else msg}", file=file)
+    msg = msg[0].upper() + msg[1:] if capitalize else msg
+    echo(f"{style} {msg}", file=file)
 
 
 def echo_info(msg: str, **kwargs: Any) -> None:
