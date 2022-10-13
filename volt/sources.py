@@ -114,7 +114,6 @@ class MarkdownSource(Source):
             meta={
                 "labels": {},
                 "title": None,
-                "pub_time": dt.now(),
                 "is_draft": is_draft,
                 **fm,
                 **(meta or {}),
@@ -144,6 +143,10 @@ class MarkdownSource(Source):
     @property
     def rel_url(self) -> str:
         return f"/{'/'.join(self.path_parts)}"
+
+    @property
+    def pub_time(self) -> Optional[dt]:
+        return self.meta.get("pub_time", None)
 
     @cached_property
     def html(self) -> str:
