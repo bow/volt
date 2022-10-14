@@ -2,6 +2,7 @@
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import time
+import traceback
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, cast
@@ -203,6 +204,11 @@ timezone: "{tz.name}"
                 except click.ClickException as e:
                     e.show()
                     echo_err("new build failed -- keeping current build")
+                    return None
+                except Exception as e:
+                    echo_err("new build failed -- keeping current build")
+                    tb = traceback.format_exception(type(e), e, e.__traceback__)
+                    echo_err("".join(tb))
                     return None
                 finally:
                     rebuild_count += 1
