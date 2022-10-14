@@ -4,7 +4,6 @@
 import os
 import shutil
 import tempfile
-from contextlib import suppress
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
@@ -305,8 +304,7 @@ class Site:
 
             out_path = self.config.out_path
             if clean:
-                with suppress(FileNotFoundError):
-                    shutil.rmtree(out_path)
+                shutil.rmtree(out_path, ignore_errors=True)
             shutil.copytree(src=build_path, dst=out_path)
             # chmod if inside container to ensure host can use it as if not generated
             # from inside the container.
