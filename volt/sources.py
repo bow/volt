@@ -129,15 +129,14 @@ class MarkdownSource(Source):
 
     @property
     def path_parts(self) -> tuple[str, ...]:
-        slug_reps = self.site_config.get("slug_replacements", [])
-        num_common_parts = self.site_config.num_common_parts
+        config = self.site_config
         url_key = "url"
         parts = (
             [part for part in self.meta[url_key].split("/") if part]
             if self.meta.get(url_key) is not None
-            else [f"{slugify(self.title, replacements=slug_reps)}.html"]
+            else [f"{slugify(self.title, replacements=config.slug_replacements)}.html"]
         )
-        ps = [*(self.src.parent.parts[num_common_parts:]), *parts]
+        ps = [*(self.src.parent.parts[config.num_common_parts :]), *parts]
         if self.is_draft:
             with suppress(IndexError):
                 # NOTE: This assumes that the `drafts` folder is located at the same

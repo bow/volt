@@ -4,8 +4,15 @@
 # Prefix for build directory names.
 BUILD_DIR_PREFIX = "volt-build-"
 
-# Default config file name.
+# Config file name.
 CONFIG_FNAME = "volt.yaml"
+
+# Default slug replacements.
+DEFAULT_SLUG_REPLACEMENTS = {
+    ("I/O", "io"),
+    ("'", ""),
+    ('"', ""),
+}
 
 # Separator string for text content front matter.
 FRONT_MATTER_SEP = "---\n"

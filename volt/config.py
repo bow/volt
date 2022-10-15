@@ -5,7 +5,7 @@ import os
 from collections import UserDict
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Dict, Optional, cast
+from typing import cast, Any, Dict, Iterable, Optional
 
 import jinja2.exceptions as j2exc
 import yaml
@@ -158,6 +158,9 @@ class SiteConfig(UserDict):
         self._with_drafts: bool = uc.pop("with_drafts", False)
         self._name: str = uc.pop("name", "")
         self._url: str = uc.pop("url", "")
+        self._slug_replacements: Iterable[Iterable[str]] = (
+            uc.pop("slug_replacements", None) or constants.DEFAULT_SLUG_REPLACEMENTS
+        )
         super().__init__(user_conf, **kwargs)
 
         self._pwd = pwd
@@ -183,6 +186,11 @@ class SiteConfig(UserDict):
     def url(self) -> str:
         """URL of the site."""
         return self._url
+
+    @cached_property
+    def slug_replacements(self) -> Iterable[Iterable[str]]:
+        """Slug replacements rules."""
+        return self._slug_replacements
 
     @cached_property
     def pwd(self) -> Path:
