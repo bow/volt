@@ -10,13 +10,12 @@ from typing import cast, Any, Dict, Iterable, Optional
 import jinja2.exceptions as j2exc
 import yaml
 from jinja2 import Environment, FileSystemLoader, Template
-from pendulum.tz.timezone import Timezone
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from . import constants
 from . import exceptions as excs
-from .utils import find_dir_containing, get_tz
+from .utils import find_dir_containing
 
 __all__ = ["SiteConfig"]
 
@@ -62,34 +61,6 @@ class SiteConfig(UserDict):
         )
 
     @classmethod
-    def from_raw_config(
-        cls,
-        cwd: Path,
-        pwd: Path,
-        user_conf: RawConfig,
-        **kwargs: Any,
-    ) -> "SiteConfig":
-        """Create an instance from the given user-supplied config.
-
-        :param cwd: Path to invocation directory.
-        :param pwd: Path to project directory.
-        :param user_conf: Raw user config.
-
-        :returns: The site config.
-
-        :raises ~volt.exceptions.VoltTimezoneError: when the config timezone
-            name is invalid.
-        :raises ~volt.exceptions.VoltConfigError: when any other
-            configuration-related error occurs.
-
-        """
-        # Get timezone from config or system.
-        tz = get_tz(user_conf.get("timezone", None))
-        user_conf["timezone"] = tz
-
-        return cls(cwd=cwd, pwd=pwd, user_conf=user_conf, **kwargs)
-
-    @classmethod
     def from_yaml(
         cls,
         cwd: Path,
@@ -119,7 +90,7 @@ class SiteConfig(UserDict):
                     f"could not parse config: {e.args[0]}"
                 ) from e
 
-        return cls.from_raw_config(
+        return cls(
             cwd=cwd,
             pwd=pwd,
             user_conf=user_conf,
@@ -140,7 +111,6 @@ class SiteConfig(UserDict):
         drafts_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         ext_dirname: str = constants.SITE_EXT_DIRNAME,
         xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
-        timezone: Optional[Timezone] = None,
         yaml_fp: Optional[Path] = None,
         user_conf: Optional[dict] = None,
         **kwargs: Any,
@@ -151,7 +121,6 @@ class SiteConfig(UserDict):
         :param pwd: Path to the project directory.
         :param src_dirname: Base directory name for site source.
         :param out_dirname: Base directory name for site output.
-        :param timezone: Timezone for default timestamp interpretation.
 
         """
         uc = user_conf or {}
@@ -174,7 +143,6 @@ class SiteConfig(UserDict):
         self._theme_path = self._project_path / theme_dirname
         self._theme_template_path = self._theme_path / template_dirname
         self._xcmd_script_path = self._ext_path / xcmd_script_fname
-        self._timezone: Optional[Timezone] = timezone
         self._yaml_fp = yaml_fp
 
     @cached_property
@@ -284,10 +252,6 @@ class SiteConfig(UserDict):
     def with_drafts(self) -> bool:
         """Whether to publish draft contents or not."""
         return self._with_drafts
-
-    @property
-    def timezone(self) -> Optional[Timezone]:
-        return self._timezone
 
     @cached_property
     def in_docker(self) -> bool:

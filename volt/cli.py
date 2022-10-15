@@ -19,7 +19,6 @@ from .utils import (
     echo_err,
     echo_info,
     get_fuzzy_match,
-    get_tz,
     infer_front_matter,
     import_file,
 )
@@ -35,7 +34,6 @@ class Session:
         pwd: Optional[Path],
         name: Optional[str],
         url: Optional[str],
-        timezone: Optional[str],
         force: bool,
         config_fname: str = constants.CONFIG_FNAME,
     ) -> Path:
@@ -50,8 +48,6 @@ class Session:
             config file.
         :param url: URL of the static site, to be put inside the generated
             config file.
-        :param timezone: Geographical timezone name for timestamp-related
-            values, to be put inside the generated config file.
         :param force: Whether to force project creation in nonempty directories
             or not.
         :param config_name: Name of the config file to generate.
@@ -74,10 +70,8 @@ class Session:
                 " force init in nonempty directories"
             )
 
-        tz = get_tz(timezone)
-
         # Bootstrap directories.
-        bootstrap_conf = SiteConfig(cwd=cwd, pwd=pwd, timezone=tz)
+        bootstrap_conf = SiteConfig(cwd=cwd, pwd=pwd)
         bootstrap_path_attrs = [
             "sources_path",
             "static_path",
@@ -97,7 +91,6 @@ url: "{url or ''}"
 description: ""
 author: ""
 language: ""
-timezone: "{tz.name}"
 """
 
         # Create initial YAML config file.
@@ -312,17 +305,6 @@ def main(ctx: click.Context, project_dir: Optional[str], log_level: str) -> None
     ),
 )
 @click.option(
-    "-z",
-    "--timezone",
-    type=str,
-    required=False,
-    default=None,
-    help=(
-        "Geographical timezone name for interpreting timestamps. Default:"
-        " system timezone."
-    ),
-)
-@click.option(
     "-f",
     "--force",
     is_flag=True,
@@ -337,7 +319,6 @@ def init(
     ctx: click.Context,
     name: Optional[str],
     url: Optional[str],
-    timezone: Optional[str],
     force: bool,
 ) -> None:
     """Initialize a new site project.
@@ -359,7 +340,6 @@ def init(
         params["project_path"],
         name,
         url,
-        timezone,
         force,
     )
     echo_info(f"project initialized at {pwd}")

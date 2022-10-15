@@ -165,12 +165,12 @@ class MarkdownSource(Source):
         if value is None:
             return value
         if isinstance(value, str):
-            rv = pendulum.parse(value, tz=self.site_config.timezone)
+            rv = pendulum.parse(value)
             if isinstance(rv, DateTime):
                 return rv
             raise exc
         if isinstance(value, dt):
-            return pendulum.instance(value, self.site_config.timezone)
+            return pendulum.instance(value)
         raise exc
 
     @cached_property

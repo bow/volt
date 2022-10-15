@@ -9,9 +9,6 @@ from typing import IO, Any, Optional
 
 from click import echo, style
 from click._compat import get_text_stderr
-from pendulum.tz import local_timezone
-from pendulum.tz.timezone import Timezone
-from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 from thefuzz import process
 
 from . import exceptions as excs
@@ -38,27 +35,6 @@ def echo_info(msg: str, **kwargs: Any) -> None:
 def echo_err(msg: str, **kwargs: Any) -> None:
     """Show a formatted error message."""
     echo_fmt(msg, style(" ERR ", bg="red", bold=True), **kwargs)
-
-
-def get_tz(tzname: Optional[str] = None) -> Timezone:
-    """Retrieve the timezone object with the given name.
-
-    If no timezone name is given, the system default will be used.
-
-    :param tzname: Name of the timezone to retrieve.
-
-    :returns: The timezone object.
-
-    :raises ~volt.exceptions.VoltTimezoneError: when the given timezone string
-        could not be converted to a timezone object.
-
-    """
-    if tzname is None:
-        return local_timezone()
-    try:
-        return Timezone(tzname)
-    except (AttributeError, ValueError, InvalidTimezone) as e:
-        raise excs.VoltTimezoneError(tzname) from e
 
 
 def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:

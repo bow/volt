@@ -10,7 +10,6 @@ __all__ = [
     "VoltConfigError",
     "VoltError",
     "VoltResourceError",
-    "VoltTimezoneError",
 ]
 
 
@@ -37,14 +36,6 @@ class VoltConfigError(VoltCliError):
 class VoltResourceError(VoltConfigError):
 
     """Raised for errors when loading resources."""
-
-
-class VoltTimezoneError(VoltConfigError):
-
-    """Raised for timezone object creation errors."""
-
-    def __init__(self, tzname: str) -> None:
-        super().__init__(f"timezone {tzname!r} is invalid")
 
 
 class VoltMissingTemplateError(VoltResourceError):

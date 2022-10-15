@@ -3,11 +3,9 @@
 from pathlib import Path
 
 import pytest
-from pendulum.tz import local_timezone
-from pendulum.tz.timezone import Timezone
 
 from volt import exceptions as excs
-from volt.utils import calc_relpath, get_tz, import_file
+from volt.utils import calc_relpath, import_file
 
 
 def test_import_file_ok(tmpdir):
@@ -31,23 +29,6 @@ def test_import_file_err_not_importable(tmpdir):
 
         with pytest.raises(excs.VoltResourceError, match="not an importable file:"):
             import_file(mod_fp, "volt.test.custom")
-
-
-@pytest.mark.parametrize(
-    "tzname, exp_tz",
-    [
-        (None, local_timezone()),
-        ("Asia/Jakarta", Timezone("Asia/Jakarta")),
-    ],
-)
-def test_get_tz_ok(tzname, exp_tz):
-    obs_tz = get_tz(tzname)
-    assert exp_tz.name == obs_tz.name
-
-
-def test_get_tz_fail():
-    with pytest.raises(excs.VoltTimezoneError, match="timezone 'bzzt' is invalid"):
-        get_tz("bzzt")
 
 
 @pytest.mark.parametrize(
