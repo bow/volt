@@ -15,6 +15,7 @@ from .config import SiteConfig
 from .constants import MARKDOWN_EXT
 from .sources import MarkdownSource
 from .targets import Target
+from .theme import Theme
 from .utils import import_file
 
 
@@ -24,24 +25,27 @@ class Engine(abc.ABC):
 
     def __init__(
         self,
-        config: SiteConfig,
+        site_config: SiteConfig,
+        theme: Theme,
         source_dirname: str = "",
+        options: Optional[dict] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
+        self.site_config = site_config
+        self.theme = theme
         self.source_dirname = source_dirname
-        self.config = config
-        self.options = kwargs.pop("options", {})
+        self.options = options or {}
 
     @property
     def source_dir(self) -> Path:
         """Path to the root source directory for this engine."""
-        return self.config.sources_path / self.source_dirname
+        return self.site_config.sources_path / self.source_dirname
 
     @property
     def source_drafts_dir(self) -> Path:
         """Path to the source drafts directory for this engine."""
-        return self.source_dir / self.config.drafts_dirname
+        return self.source_dir / self.site_config.drafts_dirname
 
     @abc.abstractmethod
     def create_targets(self) -> Sequence[Target]:
@@ -55,7 +59,9 @@ class EngineSpec:
 
     engine: Type[Engine] = field(init=False)
 
-    config: SiteConfig
+    site_config: SiteConfig
+
+    theme: Theme
 
     source: str
 
@@ -73,10 +79,10 @@ class EngineSpec:
         match (module, file):
 
             case (m, None) if isinstance(m, str):
-                self.engine = self._load_engine_module(self.config, m)
+                self.engine = self._load_engine_module(m)
 
             case (None, f) if isinstance(f, str):
-                self.engine = self._load_engine_file(self.config, f)
+                self.engine = self._load_engine_file(self.theme, f)
 
             case (None, None):
                 msg = "one of 'module' or 'file' must be a valid string value"
@@ -88,10 +94,13 @@ class EngineSpec:
 
     def load(self) -> Engine:
         return self.engine(
-            self.config, source_dirname=self.source, options=self.options
+            site_config=self.site_config,
+            theme=self.theme,
+            source_dirname=self.source,
+            options=self.options,
         )
 
-    def _load_engine_module(self, config: SiteConfig, mod_spec: str) -> Type[Engine]:
+    def _load_engine_module(self, mod_spec: str) -> Type[Engine]:
         mod_name, cls_name = self._parse_class_spec(mod_spec)
 
         try:
@@ -106,10 +115,10 @@ class EngineSpec:
                 f"engine {cls_name!r} not found in module {mod_name!r}"
             ) from e
 
-    def _load_engine_file(self, config: SiteConfig, file_spec: str) -> Type[Engine]:
+    def _load_engine_file(self, theme: Theme, file_spec: str) -> Type[Engine]:
         fn, cls_name = self._parse_class_spec(file_spec)
 
-        fp = Path(fn) if os.path.isabs(fn) else config.theme_engines_path / fn
+        fp = Path(fn) if os.path.isabs(fn) else theme.path / fn
         mod_name = f"volt.ext.theme.engines.{'.'.join(fp.parts[1:])}"
         mod = import_file(fp, mod_name)
 
@@ -137,14 +146,14 @@ class MarkdownEngine(Engine):
         super().__init__(*args, **kwargs)
         template_name = self.options.pop("template_name", "page")
         try:
-            self.template = self.config.load_theme_template(template_name)
+            self.template = self.theme.load_template(template_name)
         except excs.VoltMissingTemplateError:
             default_fp = Path(__file__).parent / "defaults" / f"{template_name}.html.j2"
             self.template = Template(default_fp.read_text())
 
     def create_targets(self) -> Sequence[Target]:
 
-        config = self.config
+        config = self.site_config
         get_sources = self.get_sources
 
         fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])

@@ -3,6 +3,7 @@
 
 import abc
 import filecmp
+import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Optional, Tuple
 from jinja2 import Template
 
 from . import exceptions as excs
+from .utils import calc_relpath
 
 
 class Target(abc.ABC):
@@ -85,3 +87,22 @@ class CopyTarget(Target):
                 )
 
         return None
+
+
+def collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
+    """Gather files from the given start directory recursively as copy targets."""
+
+    src_relpath = calc_relpath(start_dir, invocation_dir)
+    src_rel_len = len(src_relpath.parts)
+
+    targets: list[CopyTarget] = []
+    entries = list(os.scandir(src_relpath))
+    while entries:
+        de = entries.pop()
+        if de.is_dir():
+            entries.extend(os.scandir(de))
+        else:
+            dtoks = Path(de.path).parts[src_rel_len:]
+            targets.append(CopyTarget(src=Path(de.path), path_parts=dtoks))
+
+    return targets

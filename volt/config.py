@@ -7,9 +7,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import cast, Any, Dict, Iterable, Optional
 
-import jinja2.exceptions as j2exc
 import yaml
-from jinja2 import Environment, FileSystemLoader, Template
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
@@ -105,9 +103,8 @@ class SiteConfig(UserDict):
         project_dirname: str = constants.SITE_PROJECT_DIRNAME,
         out_dirname: str = constants.SITE_OUT_DIRNAME,
         sources_dirname: str = constants.SITE_SOURCES_DIRNAME,
+        themes_dirname: str = constants.SITE_THEMES_DIRNAME,
         static_dirname: str = constants.SITE_STATIC_DIRNAME,
-        theme_dirname: str = constants.SITE_THEME_DIRNAME,
-        template_dirname: str = constants.SITE_THEME_TEMPLATES_DIRNAME,
         drafts_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         ext_dirname: str = constants.SITE_EXT_DIRNAME,
         xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
@@ -130,6 +127,7 @@ class SiteConfig(UserDict):
         self._slug_replacements: Iterable[Iterable[str]] = (
             uc.pop("slug_replacements", None) or constants.DEFAULT_SLUG_REPLACEMENTS
         )
+        self._theme_config: Optional[dict] = uc.pop("theme", None) or None
         super().__init__(user_conf, **kwargs)
 
         self._pwd = pwd
@@ -137,11 +135,10 @@ class SiteConfig(UserDict):
         self._project_path = pwd / project_dirname
         self._out_path = pwd / out_dirname
         self._sources_path = self._project_path / sources_dirname
+        self._themes_path = self._project_path / themes_dirname
         self._ext_path = self._project_path / ext_dirname
         self._drafts_dirname = drafts_dirname
         self._static_path = self._project_path / static_dirname
-        self._theme_path = self._project_path / theme_dirname
-        self._theme_template_path = self._theme_path / template_dirname
         self._xcmd_script_path = self._ext_path / xcmd_script_fname
         self._yaml_fp = yaml_fp
 
@@ -154,6 +151,11 @@ class SiteConfig(UserDict):
     def url(self) -> str:
         """URL of the site."""
         return self._url
+
+    @cached_property
+    def theme(self) -> Optional[dict]:
+        """Theme configurations."""
+        return self._theme_config
 
     @cached_property
     def slug_replacements(self) -> Iterable[Iterable[str]]:
@@ -192,6 +194,11 @@ class SiteConfig(UserDict):
         return self._sources_path
 
     @cached_property
+    def themes_path(self) -> Path:
+        """Path to the site themes directory."""
+        return self._themes_path
+
+    @cached_property
     def drafts_dirname(self) -> str:
         """Name of the drafts directory."""
         return self._drafts_dirname
@@ -202,43 +209,8 @@ class SiteConfig(UserDict):
         return self._static_path
 
     @cached_property
-    def theme_path(self) -> Path:
-        """Path to the site source theme."""
-        return self._theme_path
-
-    @cached_property
-    def theme_static_path(self) -> Path:
-        """Path to the site source theme static files."""
-        return self.theme_path / "static"
-
-    @cached_property
-    def theme_engines_path(self) -> Path:
-        """Path to the theme engines directory."""
-        return self.theme_path / "engines"
-
-    @cached_property
-    def theme_template_path(self) -> Path:
-        """Path to the theme template directory."""
-        return self._theme_template_path
-
-    @cached_property
     def num_common_parts(self) -> int:
         return len(self.project_path.parts) + 1
-
-    @cached_property
-    def template_env(self) -> Environment:
-        """Theme template environment."""
-        return Environment(  # nosec
-            loader=FileSystemLoader(self.theme_template_path),
-            auto_reload=True,
-            enable_async=True,
-        )
-
-    @cached_property
-    def theme_config(self) -> Dict[str, Any]:
-        fp = self.theme_path / constants.THEME_SETTINGS_FNAME
-        with fp.open("r") as src:
-            return cast(Dict[str, Any], yaml.safe_load(src))
 
     @cached_property
     def xcmd_script_path(self) -> Optional[Path]:
@@ -256,37 +228,6 @@ class SiteConfig(UserDict):
     @cached_property
     def in_docker(self) -> bool:
         return os.path.exists("/.dockerenv")
-
-    def load_template(self, name: str) -> Template:
-        """Load a template with the given name."""
-        try:
-            template = self.template_env.get_template(name)
-        except j2exc.TemplateNotFound as e:
-            raise excs.VoltMissingTemplateError(
-                f"could not find template {name!r}"
-            ) from e
-        except j2exc.TemplateSyntaxError as e:
-            raise excs.VoltResourceError(
-                f"template {name!r} has syntax errors: {e.message}"
-            ) from e
-
-        return template
-
-    def load_theme_template(self, key: str) -> Template:
-        """Load a theme template with the given key."""
-
-        theme_templates = self.theme_config["templates"]
-
-        try:
-            template_name = theme_templates[key]
-        except KeyError as e:
-            raise excs.VoltResourceError(
-                f"could not find template {key!r} in theme settings"
-            ) from e
-
-        template = self.load_template(template_name)
-
-        return template
 
     def reload(self) -> "SiteConfig":
         """Reloads a YAML config."""

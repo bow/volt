@@ -111,7 +111,7 @@ class BuildHandler(RegexMatchingEventHandler):
                     constants.SITE_EXT_DIRNAME,
                     constants.SITE_SOURCES_DIRNAME,
                     constants.SITE_STATIC_DIRNAME,
-                    constants.SITE_THEME_DIRNAME,
+                    constants.SITE_THEMES_DIRNAME,
                 )
             ],
             f"^{prefix + '/' + constants.CONFIG_FNAME}$",

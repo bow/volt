@@ -5,17 +5,16 @@ import os
 import shutil
 import tempfile
 from functools import cached_property
-from itertools import chain
 from pathlib import Path
-from typing import Dict, Generator, Iterator, Optional, Sequence, cast
+from typing import Dict, Generator, Iterable, Iterator, Optional, cast
 
 
 from . import constants
 from .config import SiteConfig
+from .engines import MarkdownEngine
 from .exceptions import VoltResourceError
-from .engines import Engine, EngineSpec, MarkdownEngine
-from .targets import CopyTarget, Target
-from .utils import calc_relpath
+from .targets import collect_copy_targets, Target
+from .theme import Theme
 
 __all__ = ["Site", "SiteNode", "SitePlan"]
 
@@ -217,68 +216,21 @@ class Site:
 
         """
         self.config = config
+        self.theme = Theme.from_site_config(config)
 
-    def _gather_copy_targets(self, targets_dir: Path) -> Sequence[CopyTarget]:
-        """Add files from the given targets directory into the site plan."""
-
-        config = self.config
-        src_relpath = calc_relpath(targets_dir, config.cwd)
-        src_rel_len = len(src_relpath.parts)
-
-        targets: list[CopyTarget] = []
-        entries = list(os.scandir(src_relpath))
-        while entries:
-            de = entries.pop()
-            if de.is_dir():
-                entries.extend(os.scandir(de))
-            else:
-                dtoks = Path(de.path).parts[src_rel_len:]
-                targets.append(CopyTarget(src=Path(de.path), path_parts=dtoks))
-
-        return targets
-
-    def _load_engines(self) -> list[Engine]:
-
-        engine_configs: Optional[list[dict]] = self.config.get("theme", {}).get(
-            "engines", None
+    def collect_targets(self) -> Iterable[Target]:
+        static_targets = self.theme.collect_static_targets() + collect_copy_targets(
+            self.config.static_path, self.config.cwd
         )
-        if engine_configs is None:
-            return [MarkdownEngine(config=self.config, source_dirname="")]
 
-        engines = [
-            spec.load()
-            for spec in (
-                EngineSpec(
-                    config=self.config,
-                    source=entry.get("source", ""),
-                    options=entry.get("options", {}),
-                    module=entry.get("module", None),
-                    file=entry.get("file", None),
-                )
-                for entry in engine_configs
-            )
-        ]
+        engines = (
+            engs
+            if (engs := self.theme.load_engines()) is not None
+            else [MarkdownEngine(config=self.config, source_dirname="")]
+        )
 
-        return engines
-
-    def gather_static_targets(self) -> list[CopyTarget]:
-        """Create :class:`CopyTarget` instances representing targets copied from
-        the site and theme static directories."""
-        cfg = self.config
-
-        targets: list[CopyTarget] = []
-        for static_path in (cfg.static_path, cfg.theme_static_path):
-            targets.extend(self._gather_copy_targets(targets_dir=static_path))
-
-        return targets
-
-    def generate_engine_targets(self) -> list[Target]:
-        """Run user-defined engines and generate their targets."""
-
-        targets = [
-            target
-            for engine in self._load_engines()
-            for target in engine.create_targets()
+        targets = static_targets + [
+            target for engine in engines for target in engine.create_targets()
         ]
 
         return targets
@@ -291,9 +243,7 @@ class Site:
         ) as tmp_dir_name:
 
             plan = SitePlan()
-            for target in chain(
-                self.gather_static_targets(), self.generate_engine_targets()
-            ):
+            for target in self.collect_targets():
                 try:
                     plan.add_target(target)
                 except ValueError as e:
