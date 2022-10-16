@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html{% if site.language %} lang="{{ site.language }}"{% endif %}>
+<html{% if config.language %} lang="{{ config.language }}"{% endif %}>
   <head>
     <meta charset="utf-8">
-    {%- if site.description %}
-    <meta name="description" content="{{ site.description }}">
+    {%- if config.description %}
+    <meta name="description" content="{{ config.description }}">
     {%- endif %}
-    {%- if site.author %}
-    <meta name="author" content="{{ site.author }}">
+    {%- if config.author %}
+    <meta name="author" content="{{ config.author }}">
     {%- endif %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {%- if site.language %}
-    <meta http-equiv="content-language" content="{{ site.language }}">
+    {%- if config.language %}
+    <meta http-equiv="content-language" content="{{ config.language }}">
     {%- endif %}
-    <title>{{ (meta.page_title | default(meta.title)) | default(site.name) }}</title>
+    <title>{{ (meta.page_title | default(meta.title)) | default(config.name) }}</title>
   </head>
   <body>
     <main>

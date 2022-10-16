@@ -30,13 +30,13 @@ class Theme:
         if (theme_name := theme_config.get("name", None)) is None:
             raise excs.VoltConfigError("missing theme name")
 
-        theme_opts = theme_config.get("options", None) or {}
+        theme_opts = theme_config.get("opts", None) or {}
 
-        return cls(name=theme_name, options=theme_opts, site_config=site_config)
+        return cls(name=theme_name, opts=theme_opts, site_config=site_config)
 
-    def __init__(self, name: str, options: dict, site_config: SiteConfig) -> None:
+    def __init__(self, name: str, opts: dict, site_config: SiteConfig) -> None:
         self.name = name
-        self.options = options
+        self.opts = opts
         self.site_config = site_config
 
         theme_path = site_config.themes_path / self.name
@@ -90,7 +90,7 @@ class Theme:
         from .engines import EngineSpec
 
         site_config = self.site_config
-        engine_configs: Optional[list[dict]] = self.options.get(
+        engine_configs: Optional[list[dict]] = self.opts.get(
             "engines", self.defaults.get("engines", None)
         )
 
@@ -104,7 +104,7 @@ class Theme:
                     site_config=site_config,
                     theme=self,
                     source=entry.get("source", ""),
-                    options=entry.get("options", {}),
+                    opts=entry.get("opts", {}),
                     module=entry.get("module", None),
                     file=entry.get("file", None),
                 )

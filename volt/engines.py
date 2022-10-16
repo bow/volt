@@ -28,14 +28,14 @@ class Engine(abc.ABC):
         site_config: SiteConfig,
         theme: Theme,
         source_dirname: str = "",
-        options: Optional[dict] = None,
+        opts: Optional[dict] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         self.site_config = site_config
         self.theme = theme
         self.source_dirname = source_dirname
-        self.options = options or {}
+        self.opts = opts or {}
 
     @property
     def source_dir(self) -> Path:
@@ -65,7 +65,7 @@ class EngineSpec:
 
     source: str
 
-    options: dict
+    opts: dict
 
     module: InitVar[Optional[str]]
 
@@ -97,7 +97,7 @@ class EngineSpec:
             site_config=self.site_config,
             theme=self.theme,
             source_dirname=self.source,
-            options=self.options,
+            opts=self.opts,
         )
 
     def _load_engine_module(self, mod_spec: str) -> Type[Engine]:
@@ -144,7 +144,7 @@ class MarkdownEngine(Engine):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        template_name = self.options.pop("template_name", "page")
+        template_name = self.opts.pop("template_name", "page")
         try:
             self.template = self.theme.load_template(template_name)
         except excs.VoltMissingTemplateError:

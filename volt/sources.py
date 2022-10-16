@@ -184,7 +184,7 @@ class MarkdownSource(Source):
         render_kwargs = {
             "meta": self.meta,
             "content": self.html,
-            "site": self.site_config,
+            "config": self.site_config,
         }
 
         return TemplateTarget(
