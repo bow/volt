@@ -127,7 +127,7 @@ class MarkdownSource(Source):
             is_draft=is_draft,
         )
 
-    @property
+    @cached_property
     def url(self) -> str:
         config = self.site_config
         url_key = "url"
