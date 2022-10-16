@@ -130,15 +130,15 @@ class SitePlan:
         """
         # Ensure target dest starts with project site_dest
         prefix_len = self._root_path_len
-        if target.path_parts[:prefix_len] != self._root.path.parts:
+        if target.url_parts[:prefix_len] != self._root.path.parts:
             raise ValueError(
                 "target destination does not start with project site destination"
             )
 
-        rem_len = len(target.path_parts) - prefix_len
+        rem_len = len(target.url_parts) - prefix_len
         cur = self._root
 
-        for idx, p in enumerate(target.path_parts[prefix_len:], start=1):
+        for idx, p in enumerate(target.url_parts[prefix_len:], start=1):
             try:
                 if idx < rem_len:
                     cur.add_child(p)
@@ -146,7 +146,7 @@ class SitePlan:
                 else:
                     if p in cur:
                         raise ValueError(
-                            f"target path {('/'.join(target.path_parts))!r}"
+                            f"target path {('/'.join(target.url_parts))!r}"
                             + (
                                 f" from source {str(target.src)!r}"
                                 if target.src is not None

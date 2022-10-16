@@ -10,7 +10,7 @@ from volt import site, Target
 
 class MockTarget(Target):
     def __init__(self, dest=None) -> None:
-        self.path_parts = (Path("site/out.html") if dest is None else Path(dest)).parts
+        self.url = dest if dest is not None else "site/out.html"
 
     def write(self, parent_dir: Path) -> None:
         return None

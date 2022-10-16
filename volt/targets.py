@@ -3,6 +3,7 @@
 
 import abc
 import filecmp
+from functools import cached_property
 import os
 import shutil
 from dataclasses import dataclass, field
@@ -19,11 +20,15 @@ class Target(abc.ABC):
 
     """A single file created in the site output directory."""
 
-    # Path parts / tokens to the target.
-    path_parts: Tuple[str, ...]
+    # Relative URL of the target.
+    url: str
 
     # Source of the target.
     src: Optional[Path]
+
+    @cached_property
+    def url_parts(self) -> tuple[str, ...]:
+        return tuple([part for part in self.url.split("/") if part])
 
     @abc.abstractmethod
     def write(self, parent_dir: Path) -> None:
@@ -35,14 +40,14 @@ class TemplateTarget(Target):
 
     """A target created by rendering from a template."""
 
+    # URL of the target.
+    url: str
+
     # Jinja2 template to use.
     template: Template
 
     # Render arguments.
     render_kwargs: dict
-
-    # Path parts / tokens to the target.
-    path_parts: Tuple[str, ...]
 
     # Source of the target.
     src: Optional[Path] = field(default=None)
@@ -51,10 +56,10 @@ class TemplateTarget(Target):
         """Render the template and write it to the destination."""
         content = self.template.render(**self.render_kwargs)
         try:
-            (parent_dir.joinpath(*self.path_parts)).write_text(content)
+            (parent_dir.joinpath(*self.url_parts)).write_text(content)
         except OSError as e:
             raise excs.VoltResourceError(
-                "could not write target" f" {'/'.join(self.path_parts)!r}: {e.strerror}"
+                "could not write target" f" {'/'.join(self.url_parts)!r}: {e.strerror}"
             )
 
 
@@ -67,12 +72,12 @@ class CopyTarget(Target):
     src: Path
 
     # Path parts / tokens to the target.
-    path_parts: Tuple[str, ...]
+    url_parts: Tuple[str, ...]
 
     def write(self, parent_dir: Path) -> None:
         """Copy the source to the destination."""
         str_src = str(self.src)
-        path_dest = parent_dir.joinpath(*self.path_parts)
+        path_dest = parent_dir.joinpath(*self.url_parts)
         str_dest = str(path_dest)
         do_copy = not path_dest.exists() or not filecmp.cmp(
             str_src, str_dest, shallow=False
@@ -103,6 +108,6 @@ def collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarg
             entries.extend(os.scandir(de))
         else:
             dtoks = Path(de.path).parts[src_rel_len:]
-            targets.append(CopyTarget(src=Path(de.path), path_parts=dtoks))
+            targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
 
     return targets

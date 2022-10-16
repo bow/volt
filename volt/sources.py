@@ -128,7 +128,7 @@ class MarkdownSource(Source):
         )
 
     @property
-    def path_parts(self) -> tuple[str, ...]:
+    def url(self) -> str:
         config = self.site_config
         url_key = "url"
         parts = (
@@ -142,19 +142,16 @@ class MarkdownSource(Source):
                 # NOTE: This assumes that the `drafts` folder is located at the same
                 #       level as non-draft files.
                 del ps[-2]
-        return tuple(ps)
+
+        return f"/{'/'.join(ps)}"
+
+    @property
+    def abs_url(self) -> str:
+        return urljoin(self.site_config.url, self.url)
 
     @property
     def title(self) -> str:
         return cast(str, self.meta["title"])
-
-    @property
-    def abs_url(self) -> str:
-        return urljoin(self.site_config.url, self.rel_url)
-
-    @property
-    def rel_url(self) -> str:
-        return f"/{'/'.join(self.path_parts)}"
 
     @cached_property
     def pub_time(self) -> Optional[DateTime]:
@@ -188,8 +185,8 @@ class MarkdownSource(Source):
         }
 
         return TemplateTarget(
+            url=self.url,
             template=self.template,
             render_kwargs=render_kwargs,
-            path_parts=self.path_parts,
             src=self.src.relative_to(self.site_config.pwd),
         )
