@@ -129,8 +129,7 @@ def build(
     site = Site(config=sc)
     site.build(clean=clean)
     echo_info(
-        f"build"
-        f"{'' if not with_drafts else ' with drafts'}"
+        f"{'draft ' if with_drafts else ''}build"
         f" completed in {(time.monotonic() - start_time):.2f}s"
     )
 
@@ -216,15 +215,12 @@ def serve(
                 tb = traceback.format_exception(type(e), e, e.__traceback__)
                 echo_err("".join(tb))
                 return None
-            finally:
-                rebuild_count += 1
             return None
 
         with Rebuilder(sc, builder):
             echo_info(
                 f"starting dev server"
                 f"{'' if not build_with_drafts else ' in drafts mode'}"
-                " with rebuilder"
             )
             builder()
             serve()
