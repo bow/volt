@@ -29,7 +29,7 @@ class Session:
     """Commands for a single CLI session."""
 
     @staticmethod
-    def do_init(
+    def do_new(
         cwd: Path,
         pwd: Optional[Path],
         name: Optional[str],
@@ -37,7 +37,7 @@ class Session:
         force: bool,
         config_fname: str = constants.CONFIG_FNAME,
     ) -> Path:
-        """Initialize a new project.
+        """Create a new project.
 
         This function may overwrite any preexisting files and or directories
         in the target working directory.
@@ -67,7 +67,7 @@ class Session:
         if not force and any(True for _ in pwd.iterdir()):
             raise excs.VoltCliError(
                 f"project directory {pwd} contains files -- use the `-f`"
-                " flag to force init in nonempty directories"
+                " flag to force creation in nonempty directories"
             )
 
         # Bootstrap directories.
@@ -83,7 +83,7 @@ class Session:
                 raise excs.VoltCliError(e.strerror) from e
 
         # Create initial YAML config file.
-        init_conf = f"""---
+        new_conf = f"""---
 # Volt configuration file.
 name: "{name or ''}"
 url: "{url or ''}"
@@ -93,7 +93,7 @@ language: ""
 """
 
         # Create initial YAML config file.
-        (pwd / config_fname).write_text(init_conf)
+        (pwd / config_fname).write_text(new_conf)
 
         return pwd
 
@@ -274,7 +274,7 @@ def main(ctx: click.Context, project_dir: Optional[str], log_level: str) -> None
     ctx.params["project_path"] = project_path
 
     sc: Optional[SiteConfig] = None
-    if ctx.invoked_subcommand != "init":
+    if ctx.invoked_subcommand != new.name:
         sc = SiteConfig.from_project_yaml(Path.cwd(), project_path)
     ctx.params["site_config"] = sc
 
@@ -308,21 +308,21 @@ def main(ctx: click.Context, project_dir: Optional[str], log_level: str) -> None
     "--force",
     is_flag=True,
     help=(
-        "If set, volt may overwrite any files and/or directories in the init"
-        " directory. Otherwise, init will fail if any files and/or directories"
+        "If set, volt may overwrite any files and/or directories in the project"
+        " directory. Otherwise, the command will fail if any files and/or directories"
         " exist in the target directory."
     ),
 )
 @click.pass_context
-def init(
+def new(
     ctx: click.Context,
     name: Optional[str],
     url: Optional[str],
     force: bool,
 ) -> None:
-    """Initialize a new site project.
+    """Start a new project.
 
-    Project initialization consists of:
+    A new project creation consists of:
 
         1. Creating the project directory and directories for contents,
            templates, and assets, inside the project directory.
@@ -330,18 +330,18 @@ def init(
         2. Creating the configuration file.
 
     If no project directory is specified, this command defaults to
-    initialization in the current directory.
+    project creation in the current directory.
 
     """
     params = cast(click.Context, ctx.parent).params
-    pwd = Session.do_init(
+    pwd = Session.do_new(
         Path.cwd(),
         params["project_path"],
         name,
         url,
         force,
     )
-    echo_info(f"project initialized at {pwd}")
+    echo_info(f"project created at {pwd}")
 
 
 @main.command()
