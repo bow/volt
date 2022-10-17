@@ -273,9 +273,12 @@ def main(ctx: click.Context, project_dir: Optional[str], log_level: str) -> None
     project_path = Path(project_dir) if project_dir is not None else None
     ctx.params["project_path"] = project_path
 
+    invoc_path = Path.cwd()
+    ctx.params["invoc_path"] = invoc_path
+
     sc: Optional[SiteConfig] = None
     if ctx.invoked_subcommand != new.name:
-        sc = SiteConfig.from_project_dir(Path.cwd(), project_path)
+        sc = SiteConfig.from_project_dir(invoc_path, project_path)
     ctx.params["site_config"] = sc
 
 
@@ -335,7 +338,7 @@ def new(
     """
     params = cast(click.Context, ctx.parent).params
     pwd = Session.do_new(
-        Path.cwd(),
+        params["invoc_path"],
         params["project_path"],
         name,
         url,
