@@ -21,6 +21,7 @@ from .utils import (
     echo_info,
     get_fuzzy_match,
     infer_front_matter,
+    infer_lang,
     import_file,
 )
 
@@ -37,6 +38,7 @@ class Session:
         name: str,
         url: str,
         description: str,
+        language: Optional[str],
         force: bool,
         config_fname: str = constants.CONFIG_FNAME,
     ) -> Path:
@@ -53,6 +55,9 @@ class Session:
         :param url: URL of the static site, to be put inside the generated config file.
         :param description: Description of the site, to be put inside the generated
             config file.
+        :param description: Language of the site, to be put inside the generated
+            config file. If set to ``None``, the value will be inferred from the system
+            locale.
         :param force: Whether to force project creation in nonempty directories or not.
         :param config_name: Name of the config file to generate.
 
@@ -98,7 +103,7 @@ name: "{name}"
 url: "{url}"
 description: "{description}"
 author: ""
-language: ""
+language: "{language or (infer_lang() or '')}"
 """
 
         # Create initial YAML config file.
@@ -326,6 +331,15 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     ),
 )
 @click.option(
+    "--lang",
+    type=str,
+    default=None,
+    help=(
+        "Site language. If given, the value will be set in the created config file."
+        " Default: inferred from system locale."
+    ),
+)
+@click.option(
     "-f",
     "--force",
     is_flag=True,
@@ -342,6 +356,7 @@ def new(
     name: str,
     url: str,
     desc: str,
+    lang: Optional[str],
     force: bool,
 ) -> None:
     """Start a new project.
@@ -361,6 +376,7 @@ def new(
         name=name,
         url=url,
         description=desc,
+        language=lang,
         force=force,
     )
     echo_info(f"project created at {pwd}")

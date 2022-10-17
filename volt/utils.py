@@ -2,6 +2,7 @@
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import importlib.util as iutil
+from locale import getlocale
 from os import path, scandir, PathLike
 from pathlib import Path
 from types import ModuleType
@@ -144,6 +145,17 @@ def walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Pat
             todo_dirs.append(p)
 
     return dirs
+
+
+def infer_lang() -> Optional[str]:
+    lang_code, _ = getlocale()
+    if lang_code is None:
+        return None
+    try:
+        lang, _ = lang_code.split("_", 1)
+    except ValueError:
+        return None
+    return lang
 
 
 def infer_front_matter(query: str, title: Optional[str]) -> str:
