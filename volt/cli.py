@@ -36,6 +36,7 @@ class Session:
         pwd: Path,
         name: str,
         url: str,
+        description: str,
         force: bool,
         config_fname: str = constants.CONFIG_FNAME,
     ) -> Path:
@@ -50,6 +51,8 @@ class Session:
         :param name: Name of the static site, to be put inside the generated config
             file.
         :param url: URL of the static site, to be put inside the generated config file.
+        :param description: Description of the site, to be put inside the generated
+            config file.
         :param force: Whether to force project creation in nonempty directories or not.
         :param config_name: Name of the config file to generate.
 
@@ -93,7 +96,7 @@ class Session:
 # Volt configuration file.
 name: "{name}"
 url: "{url}"
-description: ""
+description: "{description}"
 author: ""
 language: ""
 """
@@ -313,6 +316,16 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     ),
 )
 @click.option(
+    "-d",
+    "--desc",
+    type=str,
+    default="",
+    help=(
+        "Site description. If given, the value will be set in the created config file."
+        " Default: empty string."
+    ),
+)
+@click.option(
     "-f",
     "--force",
     is_flag=True,
@@ -328,6 +341,7 @@ def new(
     path: Optional[str],
     name: str,
     url: str,
+    desc: str,
     force: bool,
 ) -> None:
     """Start a new project.
@@ -346,6 +360,7 @@ def new(
         pwd=params["project_path"],
         name=name,
         url=url,
+        description=desc,
         force=force,
     )
     echo_info(f"project created at {pwd}")
