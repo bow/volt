@@ -26,7 +26,7 @@ class SiteConfig(UserDict):
     """Container for site-level configuration values."""
 
     @classmethod
-    def from_project_yaml(
+    def from_project_dir(
         cls,
         cwd: Path,
         start_lookup_dir: Optional[Path] = None,

@@ -275,7 +275,7 @@ def main(ctx: click.Context, project_dir: Optional[str], log_level: str) -> None
 
     sc: Optional[SiteConfig] = None
     if ctx.invoked_subcommand != new.name:
-        sc = SiteConfig.from_project_yaml(Path.cwd(), project_path)
+        sc = SiteConfig.from_project_dir(Path.cwd(), project_path)
     ctx.params["site_config"] = sc
 
 
