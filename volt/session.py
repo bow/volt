@@ -196,12 +196,8 @@ def serve(
 
     if do_build:
 
-        rebuild_count = 0
-
         def builder() -> None:
-            nonlocal sc, rebuild_count
-            if rebuild_count > 0:
-                echo_info("detected source change -- rebuilding")
+            nonlocal sc
             try:
                 # TODO: Only reload config post-init, on config file change.
                 sc = sc.reload()

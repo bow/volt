@@ -10,8 +10,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable, Optional, cast
 
 from click import style
+from watchdog import events
 from watchdog.observers import Observer
-from watchdog.events import RegexMatchingEventHandler
 
 from . import __version__, constants
 from .config import SiteConfig
@@ -100,7 +100,7 @@ class BuildObserver(Observer):
         self._event_queue = SyncQueue()
 
 
-class BuildHandler(RegexMatchingEventHandler):
+class BuildHandler(events.RegexMatchingEventHandler):
     def __init__(self, sc: SiteConfig, build_func: Callable) -> None:
 
         prefix = f"{sc.rel_pwd}".replace(".", r"\.")
@@ -124,6 +124,38 @@ class BuildHandler(RegexMatchingEventHandler):
         self._build = build_func
 
     def on_any_event(self, event: Any) -> None:
+
+        msg = ""
+        match type(event):
+
+            case events.FileCreatedEvent:
+                msg = f"file created: {event.src_path}"
+
+            case events.FileModifiedEvent:
+                msg = f"file modified: {event.src_path}"
+
+            case events.FileDeletedEvent:
+                msg = f"file deleted: {event.src_path}"
+
+            case events.FileMovedEvent:
+                msg = f"file moved: {event.src_path} to {event.dest_path}"
+
+            case events.DirCreatedEvent:
+                msg = f"directory created: {event.src_path}"
+
+            case events.DirModifiedEvent:
+                msg = f"directory modified: {event.src_path}"
+
+            case events.DirDeletedEvent:
+                msg = f"directory deleted: {event.src_path}"
+
+            case events.DirMovedEvent:
+                msg = f"directory moved: {event.src_path} to {event.dest_path}"
+
+            case _:
+                msg = "unknown change detected"
+
+        echo_info(f"{msg} -- rebuilding")
         self._build()
         return None
 
