@@ -66,8 +66,8 @@ class Session:
 
         if not force and any(True for _ in pwd.iterdir()):
             raise excs.VoltCliError(
-                "target project directory is not empty -- use the `-f` flag to"
-                " force init in nonempty directories"
+                f"project directory {pwd} contains files -- use the `-f`"
+                " flag to force init in nonempty directories"
             )
 
         # Bootstrap directories.
