@@ -4,12 +4,12 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 
 WORKDIR /src
 
-RUN apk add --update --no-cache build-base~=0 make~=4 git~=2 libffi-dev~=3 py3-pip~=22
+RUN apk add --update --no-cache build-base~=0 make~=4 git~=2 libffi-dev~=3 py3-pip~=22 \
+    && pip --no-cache-dir install poetry==1.2.2 poetry-dynamic-versioning==0.19.0 twine==4.0.1
 
 COPY .git /src/.git
 
 RUN git checkout -- . \
-    && pip install poetry poetry-dynamic-versioning pre-commit twine \
     && WHEEL_DEPS_DIR=/wheels/deps make build build-deps \
     && mv dist/*.whl /wheels/
 
