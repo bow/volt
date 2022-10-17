@@ -71,17 +71,16 @@ class Session:
             )
 
         # Bootstrap directories.
-        bootstrap_conf = SiteConfig(cwd=cwd, pwd=pwd)
-        bootstrap_path_attrs = [
-            "sources_path",
-            "static_path",
-            "theme_path",
-        ]
-        try:
-            for attr in bootstrap_path_attrs:
-                getattr(bootstrap_conf, attr).mkdir(parents=True, exist_ok=True)
-        except OSError as e:
-            raise excs.VoltCliError(e.strerror) from e
+        config = SiteConfig(cwd=cwd, pwd=pwd)
+        for dp in (
+            config.sources_path,
+            config.static_path,
+            config.themes_path,
+        ):
+            try:
+                dp.mkdir(parents=True, exist_ok=True)
+            except OSError as e:
+                raise excs.VoltCliError(e.strerror) from e
 
         # Create initial YAML config file.
         init_conf = f"""---
