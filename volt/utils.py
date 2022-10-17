@@ -51,10 +51,7 @@ def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:
     return mod
 
 
-def find_dir_containing(
-    fname: str,
-    start: Optional[Path] = None,
-) -> Optional[Path]:
+def find_dir_containing(fname: str, start: Path) -> Optional[Path]:
     """Find the directory containing the filename.
 
     Directory lookup is performed from the given start directory up until the
@@ -62,14 +59,13 @@ def find_dir_containing(
     from the current directory.
 
     :param fname: The filename that should be present in the directory.
-    :param start: The path from which lookup starts. If set to ``None``, lookup
-        starts from the current directory.
+    :param start: The path from which lookup starts.
 
     :returns: The path to the directory that contains the filename or None if
         no such path can be found.
 
     """
-    pwd = Path.cwd() if start is None else Path(start).expanduser().resolve()
+    pwd = Path(start).expanduser().resolve()
 
     while pwd != pwd.parent:
         if pwd.joinpath(fname).exists():
