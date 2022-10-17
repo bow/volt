@@ -26,7 +26,7 @@ LABEL org.opencontainers.image.created="${BUILD_TIME}"
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 
-WORKDIR /runtime
+WORKDIR /app
 COPY --from=builder /wheels /wheels
 
 RUN apk add --update --no-cache py3-pip~=22 \
