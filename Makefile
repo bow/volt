@@ -55,7 +55,7 @@ build:  ## Build wheel and source dist.
 
 .PHONY: build-deps
 build-deps: | $(WHEEL_DEPS_DIR)  ## Build wheels of dependencies.
-	poetry export --without-hashes -f requirements.txt -o /dev/stdout | \
+	poetry export --without dev --without-hashes -f requirements.txt -o /dev/stdout | \
 		pip wheel -r /dev/stdin --wheel-dir=$(WHEEL_DEPS_DIR)
 
 $(WHEEL_DEPS_DIR):
