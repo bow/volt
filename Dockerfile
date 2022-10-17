@@ -9,7 +9,7 @@ RUN apk add --update --no-cache build-base~=0 make~=4 git~=2 libffi-dev~=3 py3-p
 COPY .git /src/.git
 
 RUN git checkout -- . \
-    && make install-dev \
+    && pip install poetry poetry-dynamic-versioning pre-commit twine \
     && WHEEL_DEPS_DIR=/wheels/deps make build build-deps \
     && mv dist/*.whl /wheels/
 
