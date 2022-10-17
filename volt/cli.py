@@ -186,14 +186,20 @@ language: "{language or (infer_lang() or '')}"
     @staticmethod
     def do_serve(
         sc: SiteConfig,
-        host: str,
+        host: Optional[str],
         port: int,
         build: bool,
         build_with_drafts: bool,
         build_clean: bool,
     ) -> None:
 
-        serve = make_server(sc, host, port)
+        eff_host = "127.0.0.1"
+        if host is not None:
+            eff_host = host
+        elif sc.in_docker:
+            eff_host = "0.0.0.0"
+
+        serve = make_server(sc, eff_host, port)
 
         if build:
 
@@ -465,7 +471,13 @@ def edit(
 
 
 @main.command()
-@click.option("-h", "--host", type=str, default="127.0.0.1", help="Server host.")
+@click.option(
+    "-h",
+    "--host",
+    type=str,
+    default=None,
+    help="Server host.",
+)
 @click.option("-p", "--port", type=int, default=5050, help="Server port.")
 @click.option(
     "--build/--no-build",
@@ -491,7 +503,7 @@ def edit(
 @click.pass_context
 def serve(
     ctx: click.Context,
-    host: str,
+    host: Optional[str],
     port: int,
     build: bool,
     drafts: bool,
