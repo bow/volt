@@ -29,7 +29,7 @@ class SiteConfig(UserDict):
     def from_project_dir(
         cls,
         cwd: Path,
-        start_lookup_dir: Optional[Path] = None,
+        start_lookup_dir: Path,
         yaml_fname: str = constants.CONFIG_FNAME,
         **kwargs: Any,
     ) -> Optional["SiteConfig"]:
@@ -46,7 +46,6 @@ class SiteConfig(UserDict):
             values.
 
         """
-        start_lookup_dir = start_lookup_dir or cwd
         pwd = find_dir_containing(yaml_fname, start_lookup_dir)
         if pwd is None:
             return None

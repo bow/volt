@@ -254,8 +254,9 @@ class AliasedGroup(click.Group):
         readable=True,
         writable=True,
         resolve_path=True,
+        path_type=Path,
     ),
-    default=None,
+    default=".",
     help="Path to project directory. Default: current.",
 )
 @click.option(
@@ -266,19 +267,17 @@ class AliasedGroup(click.Group):
     help="Logging level. Default: 'info'.",
 )
 @click.pass_context
-def main(ctx: click.Context, project_dir: Optional[str], log_level: str) -> None:
+def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     """A versatile static website generator"""
     ctx.params["log_level"] = log_level
-
-    project_path = Path(project_dir) if project_dir is not None else None
-    ctx.params["project_path"] = project_path
+    ctx.params["project_path"] = project_dir
 
     invoc_path = Path.cwd()
     ctx.params["invoc_path"] = invoc_path
 
     sc: Optional[SiteConfig] = None
     if ctx.invoked_subcommand != new.name:
-        sc = SiteConfig.from_project_dir(invoc_path, project_path)
+        sc = SiteConfig.from_project_dir(invoc_path, project_dir)
     ctx.params["site_config"] = sc
 
 
