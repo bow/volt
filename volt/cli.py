@@ -1,6 +1,7 @@
 """Main entry point for command line invocation."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import os
 import time
 import traceback
 from pathlib import Path
@@ -30,10 +31,11 @@ class Session:
 
     @staticmethod
     def do_new(
+        dirname: Optional[str],
         cwd: Path,
-        pwd: Optional[Path],
-        name: Optional[str],
-        url: Optional[str],
+        pwd: Path,
+        name: str,
+        url: str,
         force: bool,
         config_fname: str = constants.CONFIG_FNAME,
     ) -> Path:
@@ -42,14 +44,13 @@ class Session:
         This function may overwrite any preexisting files and or directories
         in the target working directory.
 
+        :param dirname: Name of the directory in which the project is created.
         :param cwd: Path to the invocation directory.
-        :param pwd: Path to the project directory to be created.
-        :param name: Name of the static site, to be put inside the generated
-            config file.
-        :param url: URL of the static site, to be put inside the generated
-            config file.
-        :param force: Whether to force project creation in nonempty directories
-            or not.
+        :param pwd: Path to the parent directory in which ``dirname`` is created.
+        :param name: Name of the static site, to be put inside the generated config
+            file.
+        :param url: URL of the static site, to be put inside the generated config file.
+        :param force: Whether to force project creation in nonempty directories or not.
         :param config_name: Name of the config file to generate.
 
         :raises ~volt.exceptions.VoltCliError:
@@ -57,8 +58,13 @@ class Session:
             * when any directory creation fails.
 
         """
-        name = pwd.name if (not name and pwd is not None) else name
-        pwd = cwd if pwd is None else (cwd / pwd).resolve()
+        pwd = (
+            pwd.resolve() / (dirname or ".")
+            if dirname is not None and not os.path.isabs(dirname)
+            else Path(dirname or ".")
+        )
+        if not name and dirname is not None:
+            name = pwd.name
         try:
             pwd.mkdir(parents=True, exist_ok=True)
         except OSError as e:
@@ -66,8 +72,8 @@ class Session:
 
         if not force and any(True for _ in pwd.iterdir()):
             raise excs.VoltCliError(
-                f"project directory {pwd} contains files -- use the `-f`"
-                " flag to force creation in nonempty directories"
+                f"project directory {pwd} contains files -- use the `-f` flag to"
+                " force creation in nonempty directories"
             )
 
         # Bootstrap directories.
@@ -85,8 +91,8 @@ class Session:
         # Create initial YAML config file.
         new_conf = f"""---
 # Volt configuration file.
-name: "{name or ''}"
-url: "{url or ''}"
+name: "{name}"
+url: "{url}"
 description: ""
 author: ""
 language: ""
@@ -282,6 +288,7 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
 
 
 @main.command()
+@click.argument("path", type=str, required=False, default=None)
 @click.option(
     "-n",
     "--name",
@@ -289,9 +296,9 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     required=False,
     default="",
     help=(
-        "Name of the static site. If given, the value will be set in the"
-        " created config file. Default: empty string or the value of"
-        " `project_dir`, when available."
+        "Name of the static site. If given, the value will be set in the created"
+        " config file. Default: empty string or the base name of the project"
+        " path, when it is specified."
     ),
 )
 @click.option(
@@ -301,8 +308,8 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     required=False,
     default="",
     help=(
-        "URL of the site. If given, the value will be set in the created"
-        " config file. Default: empty string."
+        "URL of the site. If given, the value will be set in the created config file."
+        " Default: empty string."
     ),
 )
 @click.option(
@@ -310,38 +317,36 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     "--force",
     is_flag=True,
     help=(
-        "If set, volt may overwrite any files and/or directories in the project"
-        " directory. Otherwise, the command will fail if any files and/or directories"
-        " exist in the target directory."
+        "If set, volt may overwrite files and/or directories in the project directory."
+        " Otherwise, the command will fail if any files and/or directories exist in"
+        " the target directory."
     ),
 )
 @click.pass_context
 def new(
     ctx: click.Context,
-    name: Optional[str],
-    url: Optional[str],
+    path: Optional[str],
+    name: str,
+    url: str,
     force: bool,
 ) -> None:
     """Start a new project.
 
-    A new project creation consists of:
+    This command creates a new project at the given path, optionally setting some
+    configuration values.
 
-        1. Creating the project directory and directories for contents,
-           templates, and assets, inside the project directory.
-
-        2. Creating the configuration file.
-
-    If no project directory is specified, this command defaults to
-    project creation in the current directory.
+    If no path is specified, this command defaults to project creation in the current
+    directory.
 
     """
     params = cast(click.Context, ctx.parent).params
     pwd = Session.do_new(
-        params["invoc_path"],
-        params["project_path"],
-        name,
-        url,
-        force,
+        dirname=path,
+        cwd=params["invoc_path"],
+        pwd=params["project_path"],
+        name=name,
+        url=url,
+        force=force,
     )
     echo_info(f"project created at {pwd}")
 
