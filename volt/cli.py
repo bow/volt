@@ -20,6 +20,7 @@ from .utils import (
     echo_err,
     echo_info,
     get_fuzzy_match,
+    infer_author,
     infer_front_matter,
     infer_lang,
     import_file,
@@ -37,6 +38,7 @@ class Session:
         pwd: Path,
         name: str,
         url: str,
+        author: Optional[str],
         description: str,
         language: Optional[str],
         force: bool,
@@ -102,7 +104,7 @@ class Session:
 name: "{name}"
 url: "{url}"
 description: "{description}"
-author: ""
+author: "{author or (infer_author() or '')}"
 language: "{language or (infer_lang() or '')}"
 """
 
@@ -327,6 +329,16 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     ),
 )
 @click.option(
+    "-a",
+    "--author",
+    type=str,
+    default=None,
+    help=(
+        "Site author. If given, the value will be set in the created config file."
+        " Default: inferred from git config, if available."
+    ),
+)
+@click.option(
     "-d",
     "--desc",
     type=str,
@@ -361,6 +373,7 @@ def new(
     path: Optional[str],
     name: str,
     url: str,
+    author: Optional[str],
     desc: str,
     lang: Optional[str],
     force: bool,
@@ -381,6 +394,7 @@ def new(
         pwd=params["project_path"],
         name=name,
         url=url,
+        author=author,
         description=desc,
         language=lang,
         force=force,

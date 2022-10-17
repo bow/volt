@@ -1,10 +1,12 @@
 """General utility functions."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import subprocess as sp
 import importlib.util as iutil
 from locale import getlocale
 from os import path, scandir, PathLike
 from pathlib import Path
+from shutil import which
 from types import ModuleType
 from typing import IO, Any, Optional
 
@@ -156,6 +158,20 @@ def infer_lang() -> Optional[str]:
     except ValueError:
         return None
     return lang
+
+
+def infer_author(stdout_encoding: str = "utf-8") -> Optional[str]:
+    git_exe = "git"
+    if which(git_exe) is None:
+        return None
+
+    proc = sp.run([git_exe, "config", "--get", "user.name"], capture_output=True)
+    if proc.returncode != 0:
+        return None
+
+    author = proc.stdout.strip().decode(stdout_encoding) or None
+
+    return author
 
 
 def infer_front_matter(query: str, title: Optional[str]) -> str:
