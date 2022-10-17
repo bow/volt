@@ -16,7 +16,7 @@ endif
 APP_NAME := volt
 
 # Latest version of supported Python.
-PYTHON_VERSION := 3.10.4
+PYTHON_VERSION := 3.10.7
 
 # Name of virtualenv for development.
 VENV_NAME ?= $(APP_NAME)-dev

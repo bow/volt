@@ -51,7 +51,7 @@ python-slugify = "^5.0.2"
 watchdog = "^2.1.6"
 python-Levenshtein = "0.12.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
 bandit = "^1.6.2"
 flake8 = "^5.0.4"

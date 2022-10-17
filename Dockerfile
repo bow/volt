@@ -1,4 +1,4 @@
-FROM python:3.10.4-alpine AS builder
+FROM python:3.10.7-alpine AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 
@@ -15,7 +15,7 @@ RUN git checkout -- . \
 
 # --- #
 
-FROM python:3.10.4-alpine
+FROM python:3.10.7-alpine
 
 ARG REVISION
 ARG BUILD_TIME
