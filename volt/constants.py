@@ -48,7 +48,7 @@ SITE_THEME_TEMPLATES_DIRNAME = "templates"
 SITE_THEME_ENGINES_DIRNAME = "engines"
 
 # CLI extension filename.
-SITE_XCMD_SCRIPT_FNAME = "cmd.py"
+SITE_XCMD_SCRIPT_FNAME = "cli.py"
 
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"
