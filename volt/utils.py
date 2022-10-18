@@ -68,12 +68,12 @@ def find_dir_containing(fname: str, start: Path) -> Optional[Path]:
         no such path can be found.
 
     """
-    pwd = Path(start).expanduser().resolve()
+    cur = Path(start).expanduser().resolve()
 
-    while pwd != pwd.parent:
-        if pwd.joinpath(fname).exists():
-            return pwd
-        pwd = pwd.parent
+    while cur != cur.parent:
+        if cur.joinpath(fname).exists():
+            return cur
+        cur = cur.parent
 
     return None
 

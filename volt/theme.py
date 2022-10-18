@@ -39,37 +39,37 @@ class Theme:
         self.opts = opts
         self.site_config = site_config
 
-        theme_path = site_config.themes_path / self.name
-        if not theme_path.exists():
+        theme_dir = site_config.themes_dir / self.name
+        if not theme_dir.exists():
             raise excs.VoltConfigError(
-                f"theme {self.name!r} not found in {site_config.themes_path}"
+                f"theme {self.name!r} not found in {site_config.themes_dir}"
             )
 
-        self.path = theme_path
+        self.path = theme_dir
 
     @cached_property
-    def static_path(self) -> Path:
+    def static_dir(self) -> Path:
         """Path to the site source theme static files."""
         return self.path / constants.SITE_STATIC_DIRNAME
 
     @cached_property
-    def engines_path(self) -> Path:
+    def engines_dir(self) -> Path:
         """Path to the theme engines directory."""
         return self.path / constants.SITE_THEME_ENGINES_DIRNAME
 
     @cached_property
-    def config_path(self) -> Path:
+    def config_dir(self) -> Path:
         """Path to theme default configurations."""
         return self.path / constants.THEME_SETTINGS_FNAME
 
     @cached_property
     def defaults(self) -> dict:
         """Default theme configurations."""
-        with self.config_path.open("r") as src:
+        with self.config_dir.open("r") as src:
             return cast(dict, yaml.safe_load(src))
 
     @cached_property
-    def template_path(self) -> Path:
+    def templates_dir(self) -> Path:
         """Path to the theme template directory."""
         return self.path / constants.SITE_THEME_TEMPLATES_DIRNAME
 
@@ -77,13 +77,13 @@ class Theme:
     def template_env(self) -> Environment:
         """Theme template environment."""
         return Environment(  # nosec
-            loader=FileSystemLoader(self.template_path),
+            loader=FileSystemLoader(self.templates_dir),
             auto_reload=True,
             enable_async=True,
         )
 
     def collect_static_targets(self) -> list[CopyTarget]:
-        return collect_copy_targets(self.static_path, self.site_config.cwd)
+        return collect_copy_targets(self.static_dir, self.site_config.invoc_dir)
 
     def load_engines(self) -> Optional[list["Engine"]]:
 

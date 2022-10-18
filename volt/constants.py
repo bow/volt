@@ -27,10 +27,10 @@ SITE_SOURCES_DIRNAME = "source"
 SITE_DRAFTS_DIRNAME = ".drafts"
 
 # Site directory name for extension code.
-SITE_EXT_DIRNAME = "extension"
+SITE_EXTENSION_DIRNAME = "extension"
 
 # Site output directory name.
-SITE_OUT_DIRNAME = "target"
+SITE_TARGET_DIRNAME = "target"
 
 # Site static directory name.
 SITE_STATIC_DIRNAME = "static"

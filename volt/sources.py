@@ -188,5 +188,5 @@ class MarkdownSource(Source):
             url=self.url,
             template=self.template,
             render_kwargs=render_kwargs,
-            src=self.src.relative_to(self.site_config.pwd),
+            src=self.src.relative_to(self.site_config.project_dir),
         )

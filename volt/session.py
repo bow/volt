@@ -26,8 +26,8 @@ from .utils import (
 
 def new(
     dirname: Optional[str],
-    cwd: Path,
-    pwd: Path,
+    invoc_dir: Path,
+    project_dir: Path,
     name: str,
     url: str,
     author: Optional[str],
@@ -42,10 +42,9 @@ def new(
     in the target working directory.
 
     :param dirname: Name of the directory in which the project is created.
-    :param cwd: Path to the invocation directory.
-    :param pwd: Path to the parent directory in which ``dirname`` is created.
-    :param name: Name of the static site, to be put inside the generated config
-        file.
+    :param invoc_dir: Path to the invocation directory.
+    :param project_dir: Path to the parent directory in which ``dirname`` is created.
+    :param name: Name of the static site, to be put inside the generated config file.
     :param url: URL of the static site, to be put inside the generated config file.
     :param description: Description of the site, to be put inside the generated
         config file.
@@ -60,30 +59,30 @@ def new(
         * when any directory creation fails.
 
     """
-    pwd = (
-        pwd.resolve() / (dirname or ".")
+    project_dir = (
+        project_dir.resolve() / (dirname or ".")
         if dirname is not None and not os.path.isabs(dirname)
         else Path(dirname or ".")
     )
     if not name and dirname is not None:
-        name = pwd.name
+        name = project_dir.name
     try:
-        pwd.mkdir(parents=True, exist_ok=True)
+        project_dir.mkdir(parents=True, exist_ok=True)
     except OSError as e:
         raise excs.VoltCliError(e.strerror) from e
 
-    if not force and any(True for _ in pwd.iterdir()):
+    if not force and any(True for _ in project_dir.iterdir()):
         raise excs.VoltCliError(
-            f"project directory {pwd} contains files -- use the `-f` flag to"
+            f"project directory {project_dir} contains files -- use the `-f` flag to"
             " force creation in nonempty directories"
         )
 
     # Bootstrap directories.
-    config = SiteConfig(cwd=cwd, pwd=pwd)
+    config = SiteConfig(invoc_dir=invoc_dir, project_dir=project_dir)
     for dp in (
-        config.sources_path,
-        config.static_path,
-        config.themes_path,
+        config.sources_dir,
+        config.static_dir,
+        config.themes_dir,
     ):
         try:
             dp.mkdir(parents=True, exist_ok=True)
@@ -101,9 +100,9 @@ language: "{language or (infer_lang() or '')}"
 """
 
     # Create initial YAML config file.
-    (pwd / config_fname).write_text(new_conf)
+    (project_dir / config_fname).write_text(new_conf)
 
-    return pwd
+    return project_dir
 
 
 def build(
@@ -159,7 +158,7 @@ def edit(
             require_save=False,
         )
         if contents:
-            echo_info(f"created new draft at {str(new_fp.relative_to(sc.cwd))!r}")
+            echo_info(f"created new draft at {str(new_fp.relative_to(sc.invoc_dir))!r}")
             new_fp.write_text(contents)
 
         return None
@@ -167,7 +166,7 @@ def edit(
     match_fp = get_fuzzy_match(
         query=query,
         ext=constants.MARKDOWN_EXT,
-        start_dir=sc.sources_path,
+        start_dir=sc.sources_dir,
         ignore_dirname=None if lookup_drafts else sc.drafts_dirname,
     )
     if match_fp is not None:

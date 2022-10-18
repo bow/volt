@@ -24,7 +24,7 @@ def make_server(sc: SiteConfig, host: str, port: int) -> Callable[[], None]:
         server_version = f"volt-dev-server/{__version__}"
 
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            kwargs["directory"] = f"{sc.out_path}"
+            kwargs["directory"] = f"{sc.target_dir}"
             super().__init__(*args, **kwargs)
 
         def log_message(self, fmt: str, *args: Any) -> None:
@@ -103,12 +103,12 @@ class BuildObserver(Observer):
 class BuildHandler(events.RegexMatchingEventHandler):
     def __init__(self, sc: SiteConfig, build_func: Callable) -> None:
 
-        prefix = f"{sc.rel_pwd}".replace(".", r"\.")
+        prefix = f"{sc.project_dir_rel}".replace(".", r"\.")
         regexes = [
             *[
                 f"^{prefix + '/' + dirname + '/'}.+$"
                 for dirname in (
-                    constants.SITE_EXT_DIRNAME,
+                    constants.SITE_EXTENSION_DIRNAME,
                     constants.SITE_SOURCES_DIRNAME,
                     constants.SITE_STATIC_DIRNAME,
                     constants.SITE_THEMES_DIRNAME,
@@ -117,7 +117,7 @@ class BuildHandler(events.RegexMatchingEventHandler):
             f"^{prefix + '/' + constants.CONFIG_FNAME}$",
         ]
         ignore_regexes = [
-            f"^{prefix + '/' + constants.SITE_OUT_DIRNAME + '/'}.+$",
+            f"^{prefix + '/' + constants.SITE_TARGET_DIRNAME + '/'}.+$",
         ]
         super().__init__(regexes, ignore_regexes, case_sensitive=True)
         self.site_config = sc
@@ -165,7 +165,7 @@ class Rebuilder:
         self._observer = BuildObserver()
         self._observer.schedule(
             BuildHandler(sc, build_func),
-            sc.rel_pwd,
+            sc.project_dir_rel,
             recursive=True,
         )
 

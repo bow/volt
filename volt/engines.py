@@ -40,7 +40,7 @@ class Engine(abc.ABC):
     @property
     def source_dir(self) -> Path:
         """Path to the root source directory for this engine."""
-        return self.site_config.sources_path / self.source_dirname
+        return self.site_config.sources_dir / self.source_dirname
 
     @property
     def source_drafts_dir(self) -> Path:

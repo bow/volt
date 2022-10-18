@@ -64,14 +64,14 @@ class AliasedGroup(click.Group):
 def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     """A versatile static website generator"""
     ctx.params["log_level"] = log_level
-    ctx.params["project_path"] = project_dir
+    ctx.params["project_dir"] = project_dir
 
-    invoc_path = Path.cwd()
-    ctx.params["invoc_path"] = invoc_path
+    invoc_dir = Path.cwd()
+    ctx.params["invoc_dir"] = invoc_dir
 
     sc: Optional[SiteConfig] = None
     if ctx.invoked_subcommand != new.name:
-        sc = SiteConfig.from_project_dir(invoc_path, project_dir)
+        sc = SiteConfig.from_project_dir(invoc_dir, project_dir)
     ctx.params["site_config"] = sc
 
 
@@ -160,10 +160,10 @@ def new(
 
     """
     params = cast(click.Context, ctx.parent).params
-    pwd = session.new(
+    project_dir = session.new(
         dirname=path,
-        cwd=params["invoc_path"],
-        pwd=params["project_path"],
+        invoc_dir=params["invoc_dir"],
+        project_dir=params["project_dir"],
         name=name,
         url=url,
         author=author,
@@ -171,7 +171,7 @@ def new(
         language=lang,
         force=force,
     )
-    echo_info(f"project created at {pwd}")
+    echo_info(f"project created at {project_dir}")
 
 
 @main.command()
@@ -312,7 +312,7 @@ class ExtensionGroup(click.Group):
         mod_name: str = "volt.ext.command",
     ) -> Optional[ModuleType]:
         """Import the custom, user-defined subcommands."""
-        if (fp := sc.xcmd_script_path) is None:
+        if (fp := sc.xcmd_script) is None:
             return None
 
         mod = import_file(fp, mod_name)

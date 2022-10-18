@@ -28,7 +28,7 @@ class SiteConfig(UserDict):
     @classmethod
     def from_project_dir(
         cls,
-        cwd: Path,
+        invoc_dir: Path,
         start_lookup_dir: Path,
         yaml_fname: str = constants.CONFIG_FNAME,
         **kwargs: Any,
@@ -38,7 +38,7 @@ class SiteConfig(UserDict):
         This methods performs an upwards traversal from within the current
         directory to look for a YAML config file and loads it.
 
-        :param cwd: Path to invocation directory.
+        :param invoc_dir: Path to invocation directory.
         :param start_lookup_dir: Path to the directory from which project
             directory lookup should start. If set to ``None``, the lookup will
             start from the current directory.
@@ -46,13 +46,13 @@ class SiteConfig(UserDict):
             values.
 
         """
-        pwd = find_dir_containing(yaml_fname, start_lookup_dir)
-        if pwd is None:
+        project_dir = find_dir_containing(yaml_fname, start_lookup_dir)
+        if project_dir is None:
             return None
 
         return cls.from_yaml(
-            cwd=cwd,
-            pwd=pwd.resolve(),
+            invoc_dir=invoc_dir,
+            project_dir=project_dir.resolve(),
             yaml_fname=yaml_fname,
             **kwargs,
         )
@@ -60,15 +60,15 @@ class SiteConfig(UserDict):
     @classmethod
     def from_yaml(
         cls,
-        cwd: Path,
-        pwd: Path,
+        invoc_dir: Path,
+        project_dir: Path,
         yaml_fname: str = constants.CONFIG_FNAME,
         **kwargs: Any,
     ) -> "SiteConfig":
         """Create a site configuration from a Volt YAML file.
 
-        :param cwd: Path to the invocation directory.
-        :param pwd: Path to the project working directory.
+        :param invoc_dir: Path to the invocation directory.
+        :param project_dir: Path to the project working directory.
         :param yaml_fname: Name of YAML file containing the configuration
             values.
 
@@ -77,8 +77,8 @@ class SiteConfig(UserDict):
         :raises ~exc.VoltConfigError: when validation fails.
 
         """
-        yaml_fp = pwd / yaml_fname
-        with yaml_fp.open() as src:
+        yaml_file = project_dir / yaml_fname
+        with yaml_file.open() as src:
             try:
                 user_conf = cast(Dict[str, Any], yaml.safe_load(src))
             except (ParserError, ScannerError) as e:
@@ -88,33 +88,33 @@ class SiteConfig(UserDict):
                 ) from e
 
         return cls(
-            cwd=cwd,
-            pwd=pwd,
+            invoc_dir=invoc_dir,
+            project_dir=project_dir,
             user_conf=user_conf,
-            yaml_fp=yaml_fp,
+            yaml_file=yaml_file,
             **kwargs,
         )
 
     def __init__(
         self,
-        cwd: Path,
-        pwd: Path,
+        invoc_dir: Path,
+        project_dir: Path,
         project_dirname: str = constants.SITE_PROJECT_DIRNAME,
-        out_dirname: str = constants.SITE_OUT_DIRNAME,
+        target_dirname: str = constants.SITE_TARGET_DIRNAME,
         sources_dirname: str = constants.SITE_SOURCES_DIRNAME,
         themes_dirname: str = constants.SITE_THEMES_DIRNAME,
         static_dirname: str = constants.SITE_STATIC_DIRNAME,
         drafts_dirname: str = constants.SITE_DRAFTS_DIRNAME,
-        ext_dirname: str = constants.SITE_EXT_DIRNAME,
+        extension_dirname: str = constants.SITE_EXTENSION_DIRNAME,
         xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
-        yaml_fp: Optional[Path] = None,
+        yaml_file: Optional[Path] = None,
         user_conf: Optional[dict] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize a site-level configuration.
 
-        :param cwd: Path to the invocation directory.
-        :param pwd: Path to the project directory.
+        :param invoc_dir: Path to the invocation directory.
+        :param project_dir: Path to the project directory.
         :param src_dirname: Base directory name for site source.
         :param out_dirname: Base directory name for site output.
 
@@ -129,17 +129,16 @@ class SiteConfig(UserDict):
         self._theme_config: Optional[dict] = uc.pop("theme", None) or None
         super().__init__(user_conf, **kwargs)
 
-        self._pwd = pwd
-        self._cwd = cwd
-        self._project_path = pwd / project_dirname
-        self._out_path = pwd / out_dirname
-        self._sources_path = self._project_path / sources_dirname
-        self._themes_path = self._project_path / themes_dirname
-        self._ext_path = self._project_path / ext_dirname
+        self._invoc_dir = invoc_dir
+        self._project_dir = project_dir / project_dirname
+        self._target_dir = project_dir / target_dirname
+        self._sources_dir = self._project_dir / sources_dirname
+        self._themes_dir = self._project_dir / themes_dirname
+        self._extension_dir = self._project_dir / extension_dirname
         self._drafts_dirname = drafts_dirname
-        self._static_path = self._project_path / static_dirname
-        self._xcmd_script_path = self._ext_path / xcmd_script_fname
-        self._yaml_fp = yaml_fp
+        self._static_dir = self._project_dir / static_dirname
+        self._xcmd_script = self._extension_dir / xcmd_script_fname
+        self._yaml_file = yaml_file
 
     @cached_property
     def name(self) -> str:
@@ -162,40 +161,35 @@ class SiteConfig(UserDict):
         return self._slug_replacements
 
     @cached_property
-    def pwd(self) -> Path:
+    def project_dir(self) -> Path:
         """Path to the project root directory."""
-        return self._pwd
+        return self._project_dir
 
     @cached_property
-    def cwd(self) -> Path:
-        """Path to the invocation directory."""
-        return self._cwd
-
-    @cached_property
-    def rel_pwd(self) -> Path:
+    def project_dir_rel(self) -> Path:
         """Path to the project directory, relative from invocation directory."""
-        rel = self.cwd.relative_to(self.pwd)
+        rel = self.invoc_dir.relative_to(self.project_dir)
         return Path("/".join(("..",) * len(rel.parts)))
 
     @cached_property
-    def project_path(self) -> Path:
-        """Path to the site source directory."""
-        return self._project_path
+    def invoc_dir(self) -> Path:
+        """Path to the invocation directory."""
+        return self._invoc_dir
 
     @cached_property
-    def out_path(self) -> Path:
+    def target_dir(self) -> Path:
         """Path to the site output directory."""
-        return self._out_path
+        return self._target_dir
 
     @cached_property
-    def sources_path(self) -> Path:
+    def sources_dir(self) -> Path:
         """Path to the site source contents."""
-        return self._sources_path
+        return self._sources_dir
 
     @cached_property
-    def themes_path(self) -> Path:
+    def themes_dir(self) -> Path:
         """Path to the site themes directory."""
-        return self._themes_path
+        return self._themes_dir
 
     @cached_property
     def drafts_dirname(self) -> str:
@@ -203,18 +197,18 @@ class SiteConfig(UserDict):
         return self._drafts_dirname
 
     @cached_property
-    def static_path(self) -> Path:
+    def static_dir(self) -> Path:
         """Path to the site source static files."""
-        return self._static_path
+        return self._static_dir
 
     @cached_property
     def num_common_parts(self) -> int:
-        return len(self.project_path.parts) + 1
+        return len(self.project_dir.parts) + 1
 
     @cached_property
-    def xcmd_script_path(self) -> Optional[Path]:
+    def xcmd_script(self) -> Optional[Path]:
         """Path to a custom CLI extension, if present."""
-        fp = self._xcmd_script_path
+        fp = self._xcmd_script
         if fp.exists():
             return fp
         return None
@@ -230,6 +224,8 @@ class SiteConfig(UserDict):
 
     def reload(self) -> "SiteConfig":
         """Reloads a YAML config."""
-        if self._yaml_fp is None:
+        if self._yaml_file is None:
             raise excs.VoltResourceError("could not reload non-YAML config")
-        return self.__class__.from_yaml(cwd=self.cwd, pwd=self.pwd)
+        return self.__class__.from_yaml(
+            invoc_dir=self.invoc_dir, project_dir=self.project_dir
+        )

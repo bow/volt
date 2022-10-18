@@ -218,7 +218,7 @@ class Site:
 
     def collect_targets(self) -> Iterable[Target]:
         static_targets = self.theme.collect_static_targets() + collect_copy_targets(
-            self.config.static_path, self.config.cwd
+            self.config.static_dir, self.config.invoc_dir
         )
 
         engines = (
@@ -247,17 +247,17 @@ class Site:
                 except ValueError as e:
                     raise VoltResourceError(f"{e}") from e
 
-            build_path = Path(tmp_dir_name)
-            plan.write_nodes(parent_dir=build_path)
+            build_dir = Path(tmp_dir_name)
+            plan.write_nodes(parent_dir=build_dir)
 
-            out_path = self.config.out_path
+            target_dir = self.config.target_dir
             if clean:
-                shutil.rmtree(out_path, ignore_errors=True)
-            shutil.copytree(src=build_path, dst=out_path)
+                shutil.rmtree(target_dir, ignore_errors=True)
+            shutil.copytree(src=build_dir, dst=target_dir)
             # chmod if inside container to ensure host can use it as if not generated
             # from inside the container.
             if self.config.in_docker:
-                for dp, _, fnames in os.walk(out_path):
+                for dp, _, fnames in os.walk(target_dir):
                     os.chmod(dp, 0o777)  # nosec: B103
                     for fn in fnames:
                         os.chmod(os.path.join(dp, fn), 0o666)  # nosec: B103
