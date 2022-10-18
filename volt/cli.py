@@ -8,7 +8,7 @@ from typing import Any, Optional, cast
 import click
 
 from . import __version__, exceptions as excs, session
-from .config import SiteConfig
+from .config import Config
 from .utils import echo_info, import_file
 
 
@@ -69,10 +69,10 @@ def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     invoc_dir = Path.cwd()
     ctx.params["invoc_dir"] = invoc_dir
 
-    sc: Optional[SiteConfig] = None
+    config: Optional[Config] = None
     if ctx.invoked_subcommand != new.name:
-        sc = SiteConfig.from_project_dir(invoc_dir, project_dir)
-    ctx.params["site_config"] = sc
+        config = Config.from_project_dir(invoc_dir, project_dir)
+    ctx.params["config"] = config
 
 
 @main.command()
@@ -205,11 +205,11 @@ def build(
 
     """
     params = cast(click.Context, ctx.parent).params
-    sc = params.get("site_config", None)
-    if sc is None:
+    config = params.get("config", None)
+    if config is None:
         raise excs.VOLT_NO_PROJECT_ERR
 
-    session.build(sc, clean, drafts)
+    session.build(config, clean, drafts)
 
 
 @main.command()
@@ -249,11 +249,11 @@ def edit(
 ) -> None:
     """Open a draft file in an editor."""
     params = cast(click.Context, ctx.parent).params
-    sc = params.get("site_config", None)
-    if sc is None:
+    config = params.get("config", None)
+    if config is None:
         raise excs.VOLT_NO_PROJECT_ERR
 
-    session.edit(sc, name, create, title, drafts)
+    session.edit(config, name, create, title, drafts)
 
 
 @main.command()
@@ -297,18 +297,18 @@ def serve(
 ) -> None:
     """Run the development server."""
     params = cast(click.Context, ctx.parent).params
-    sc = params.get("site_config", None)
-    if sc is None:
+    config = params.get("config", None)
+    if config is None:
         raise excs.VOLT_NO_PROJECT_ERR
 
-    session.serve(sc, host, port, build, drafts, clean)
+    session.serve(config, host, port, build, drafts, clean)
 
 
 class ExtensionGroup(click.Group):
     @classmethod
     def import_xcmd(
         cls,
-        sc: SiteConfig,
+        sc: Config,
         mod_name: str = "volt.ext.command",
     ) -> Optional[ModuleType]:
         """Import the custom, user-defined subcommands."""
@@ -321,9 +321,9 @@ class ExtensionGroup(click.Group):
 
     def list_commands(self, ctx: click.Context) -> list[str]:
         params = cast(click.Context, ctx.parent).params
-        sc = params["site_config"]
+        config = params["config"]
 
-        if (mod := self.import_xcmd(sc)) is None:
+        if (mod := self.import_xcmd(config)) is None:
             return []
 
         rv = [
@@ -340,8 +340,8 @@ class ExtensionGroup(click.Group):
 
     def get_command(self, ctx: click.Context, name: str) -> Any:
         params = cast(click.Context, ctx.parent).params
-        sc = params["site_config"]
-        self.import_xcmd(sc)
+        config = params["config"]
+        self.import_xcmd(config)
         return self.commands.get(name)
 
 

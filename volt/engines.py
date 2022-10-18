@@ -11,7 +11,7 @@ from typing import cast, Any, Optional, Sequence, Type
 from jinja2 import Template
 
 from . import exceptions as excs
-from .config import SiteConfig
+from .config import Config
 from .constants import MARKDOWN_EXT
 from .sources import MarkdownSource
 from .targets import Target
@@ -25,14 +25,14 @@ class Engine(abc.ABC):
 
     def __init__(
         self,
-        site_config: SiteConfig,
+        config: Config,
         theme: Theme,
         source_dirname: str = "",
         opts: Optional[dict] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        self.site_config = site_config
+        self.config = config
         self.theme = theme
         self.source_dirname = source_dirname
         self.opts = opts or {}
@@ -40,12 +40,12 @@ class Engine(abc.ABC):
     @property
     def source_dir(self) -> Path:
         """Path to the root source directory for this engine."""
-        return self.site_config.sources_dir / self.source_dirname
+        return self.config.sources_dir / self.source_dirname
 
     @property
     def source_drafts_dir(self) -> Path:
         """Path to the source drafts directory for this engine."""
-        return self.source_dir / self.site_config.drafts_dirname
+        return self.source_dir / self.config.drafts_dirname
 
     @abc.abstractmethod
     def create_targets(self) -> Sequence[Target]:
@@ -59,7 +59,7 @@ class EngineSpec:
 
     engine: Type[Engine] = field(init=False)
 
-    site_config: SiteConfig
+    config: Config
 
     theme: Theme
 
@@ -94,7 +94,7 @@ class EngineSpec:
 
     def load(self) -> Engine:
         return self.engine(
-            site_config=self.site_config,
+            config=self.config,
             theme=self.theme,
             source_dirname=self.source,
             opts=self.opts,
@@ -153,7 +153,7 @@ class MarkdownEngine(Engine):
 
     def create_targets(self) -> Sequence[Target]:
 
-        config = self.site_config
+        config = self.config
         get_sources = self.get_sources
 
         fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
@@ -162,7 +162,7 @@ class MarkdownEngine(Engine):
             MarkdownSource.from_path(
                 src=fp,
                 template=self.template,
-                site_config=config,
+                config=config,
                 is_draft=is_draft,
             ).target
             for fp, is_draft in fps

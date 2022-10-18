@@ -14,17 +14,17 @@ from watchdog import events
 from watchdog.observers import Observer
 
 from . import __version__, constants
-from .config import SiteConfig
+from .config import Config
 from .utils import echo_fmt, echo_info
 
 
-def make_server(sc: SiteConfig, host: str, port: int) -> Callable[[], None]:
+def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
 
         server_version = f"volt-dev-server/{__version__}"
 
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            kwargs["directory"] = f"{sc.target_dir}"
+            kwargs["directory"] = f"{config.target_dir}"
             super().__init__(*args, **kwargs)
 
         def log_message(self, fmt: str, *args: Any) -> None:
@@ -101,9 +101,9 @@ class BuildObserver(Observer):
 
 
 class BuildHandler(events.RegexMatchingEventHandler):
-    def __init__(self, sc: SiteConfig, build_func: Callable) -> None:
+    def __init__(self, config: Config, build_func: Callable) -> None:
 
-        prefix = f"{sc.project_dir_rel}".replace(".", r"\.")
+        prefix = f"{config.project_dir_rel}".replace(".", r"\.")
         regexes = [
             *[
                 f"^{prefix + '/' + dirname + '/'}.+$"
@@ -120,7 +120,7 @@ class BuildHandler(events.RegexMatchingEventHandler):
             f"^{prefix + '/' + constants.SITE_TARGET_DIRNAME + '/'}.+$",
         ]
         super().__init__(regexes, ignore_regexes, case_sensitive=True)
-        self.site_config = sc
+        self.config = config
         self._build = build_func
 
     def on_any_event(self, event: Any) -> None:
@@ -161,11 +161,11 @@ class BuildHandler(events.RegexMatchingEventHandler):
 
 
 class Rebuilder:
-    def __init__(self, sc: SiteConfig, build_func: Callable) -> None:
+    def __init__(self, config: Config, build_func: Callable) -> None:
         self._observer = BuildObserver()
         self._observer.schedule(
-            BuildHandler(sc, build_func),
-            sc.project_dir_rel,
+            BuildHandler(config, build_func),
+            config.project_dir_rel,
             recursive=True,
         )
 

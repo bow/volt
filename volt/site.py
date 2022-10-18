@@ -10,7 +10,7 @@ from typing import Dict, Generator, Iterable, Iterator, Optional, cast
 
 
 from . import constants
-from .config import SiteConfig
+from .config import Config
 from .engines import MarkdownEngine
 from .exceptions import VoltResourceError
 from .targets import collect_copy_targets, Target
@@ -207,7 +207,7 @@ class Site:
 
     """The static site."""
 
-    def __init__(self, config: SiteConfig) -> None:
+    def __init__(self, config: Config) -> None:
         """Initialize the static site for building.
 
         :param config: The validated site configuration.

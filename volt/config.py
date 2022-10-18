@@ -15,13 +15,8 @@ from . import constants
 from . import exceptions as excs
 from .utils import find_dir_containing
 
-__all__ = ["SiteConfig"]
 
-# Type aliases.
-RawConfig = Dict[str, Any]
-
-
-class SiteConfig(UserDict):
+class Config(UserDict):
 
     """Container for site-level configuration values."""
 
@@ -32,7 +27,7 @@ class SiteConfig(UserDict):
         start_lookup_dir: Path,
         yaml_fname: str = constants.CONFIG_FNAME,
         **kwargs: Any,
-    ) -> Optional["SiteConfig"]:
+    ) -> Optional["Config"]:
         """Create an instance from within a project directory.
 
         This methods performs an upwards traversal from within the current
@@ -64,7 +59,7 @@ class SiteConfig(UserDict):
         project_dir: Path,
         yaml_fname: str = constants.CONFIG_FNAME,
         **kwargs: Any,
-    ) -> "SiteConfig":
+    ) -> "Config":
         """Create a site configuration from a Volt YAML file.
 
         :param invoc_dir: Path to the invocation directory.
@@ -222,7 +217,7 @@ class SiteConfig(UserDict):
     def in_docker(self) -> bool:
         return os.path.exists("/.dockerenv")
 
-    def reload(self) -> "SiteConfig":
+    def reload(self) -> "Config":
         """Reloads a YAML config."""
         if self._yaml_file is None:
             raise excs.VoltResourceError("could not reload non-YAML config")

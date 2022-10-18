@@ -5,7 +5,7 @@
     :license: BSD
 
 """
-from .config import SiteConfig  # noqa: F401
+from .config import Config  # noqa: F401
 from .engines import Engine  # noqa: F401
 from .sources import MarkdownSource  # noqa: F401
 from .targets import Target, TemplateTarget, CopyTarget  # noqa: F401

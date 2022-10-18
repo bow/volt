@@ -20,7 +20,7 @@ from yaml import SafeLoader
 
 from . import constants
 from .exceptions import VoltResourceError
-from .config import SiteConfig
+from .config import Config
 from .targets import TemplateTarget
 
 
@@ -82,7 +82,7 @@ class MarkdownSource(Source):
     is_draft: bool
 
     # Site configuration.
-    site_config: SiteConfig
+    config: Config
 
     # Jinja2 template used for rendering content.
     template: Template
@@ -92,7 +92,7 @@ class MarkdownSource(Source):
         cls,
         src: Path,
         template: Template,
-        site_config: SiteConfig,
+        config: Config,
         meta: Optional[dict] = None,
         is_draft: bool = False,
         fm_sep: str = constants.FRONT_MATTER_SEP,
@@ -100,7 +100,7 @@ class MarkdownSource(Source):
         """Create an instance from a file.
 
         :param src: Path to the source file.
-        :param site_config: Site configuration.
+        :param config: Site configuration.
         :param template: Jinja2 template used for rendering the content.
         :param meta: Optional metadata to inject.
         :param fm_sep: String for separating the markdown front matter.
@@ -123,13 +123,13 @@ class MarkdownSource(Source):
                 **fm,
                 **(meta or {}),
             },
-            site_config=site_config,
+            config=config,
             is_draft=is_draft,
         )
 
     @cached_property
     def url(self) -> str:
-        config = self.site_config
+        config = self.config
         url_key = "url"
         parts = (
             [part for part in self.meta[url_key].split("/") if part]
@@ -147,7 +147,7 @@ class MarkdownSource(Source):
 
     @property
     def abs_url(self) -> str:
-        return urljoin(self.site_config.url, self.url)
+        return urljoin(self.config.url, self.url)
 
     @property
     def title(self) -> str:
@@ -181,12 +181,12 @@ class MarkdownSource(Source):
         render_kwargs = {
             "meta": self.meta,
             "content": self.html,
-            "config": self.site_config,
+            "config": self.config,
         }
 
         return TemplateTarget(
             url=self.url,
             template=self.template,
             render_kwargs=render_kwargs,
-            src=self.src.relative_to(self.site_config.project_dir),
+            src=self.src.relative_to(self.config.project_dir),
         )

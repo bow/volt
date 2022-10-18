@@ -10,7 +10,7 @@ import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
 
 from . import constants, exceptions as excs
-from .config import SiteConfig
+from .config import Config
 from .targets import collect_copy_targets, CopyTarget
 
 if TYPE_CHECKING:
@@ -22,9 +22,9 @@ class Theme:
     """Site theme."""
 
     @classmethod
-    def from_site_config(cls, site_config: SiteConfig) -> "Theme":
+    def from_site_config(cls, config: Config) -> "Theme":
 
-        if (theme_config := site_config.theme) is None:
+        if (theme_config := config.theme) is None:
             raise excs.VoltConfigError("undefined theme")
 
         if (theme_name := theme_config.get("name", None)) is None:
@@ -32,17 +32,17 @@ class Theme:
 
         theme_opts = theme_config.get("opts", None) or {}
 
-        return cls(name=theme_name, opts=theme_opts, site_config=site_config)
+        return cls(name=theme_name, opts=theme_opts, config=config)
 
-    def __init__(self, name: str, opts: dict, site_config: SiteConfig) -> None:
+    def __init__(self, name: str, opts: dict, config: Config) -> None:
         self.name = name
         self.opts = opts
-        self.site_config = site_config
+        self.config = config
 
-        theme_dir = site_config.themes_dir / self.name
+        theme_dir = config.themes_dir / self.name
         if not theme_dir.exists():
             raise excs.VoltConfigError(
-                f"theme {self.name!r} not found in {site_config.themes_dir}"
+                f"theme {self.name!r} not found in {config.themes_dir}"
             )
 
         self.path = theme_dir
@@ -83,13 +83,13 @@ class Theme:
         )
 
     def collect_static_targets(self) -> list[CopyTarget]:
-        return collect_copy_targets(self.static_dir, self.site_config.invoc_dir)
+        return collect_copy_targets(self.static_dir, self.config.invoc_dir)
 
     def load_engines(self) -> Optional[list["Engine"]]:
 
         from .engines import EngineSpec
 
-        site_config = self.site_config
+        config = self.config
         engine_configs: Optional[list[dict]] = self.opts.get(
             "engines", self.defaults.get("engines", None)
         )
@@ -101,7 +101,7 @@ class Theme:
             spec.load()
             for spec in (
                 EngineSpec(
-                    site_config=site_config,
+                    config=config,
                     theme=self,
                     source=entry.get("source", ""),
                     opts=entry.get("opts", {}),

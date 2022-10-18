@@ -11,7 +11,7 @@ import click
 import pendulum
 
 from . import constants, exceptions as excs
-from .config import SiteConfig
+from .config import Config
 from .server import Rebuilder, make_server
 from .site import Site
 from .utils import (
@@ -78,7 +78,7 @@ def new(
         )
 
     # Bootstrap directories.
-    config = SiteConfig(invoc_dir=invoc_dir, project_dir=project_dir)
+    config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
     for dp in (
         config.sources_dir,
         config.static_dir,
@@ -106,7 +106,7 @@ language: "{language or (infer_lang() or '')}"
 
 
 def build(
-    sc: SiteConfig,
+    config: Config,
     clean: bool = True,
     with_drafts: bool = False,
 ) -> Site:
@@ -115,17 +115,17 @@ def build(
     This function may overwrite and/or remove any preexisting files
     and or directories.
 
-    :param site_config: Site configuration.
+    :param config: Site configuration.
     :param clean: Whether to remove the entire site output directory prior
         to building, or not.
 
     """
-    sc._with_drafts = with_drafts
+    config._with_drafts = with_drafts
 
     start_time = time.monotonic()
-    sc["build_time"] = pendulum.now()
+    config["build_time"] = pendulum.now()
 
-    site = Site(config=sc)
+    site = Site(config=config)
     site.build(clean=clean)
     echo_info(
         f"{'draft ' if with_drafts else ''}build"
@@ -136,7 +136,7 @@ def build(
 
 
 def edit(
-    sc: SiteConfig,
+    config: Config,
     query: str,
     create: Optional[str] = None,
     title: Optional[str] = None,
@@ -145,7 +145,7 @@ def edit(
     """Open a draft file in an editor."""
 
     if create is not None:
-        fn = Path(sc.drafts_dirname) / create / query
+        fn = Path(config.drafts_dirname) / create / query
         new_fp = fn.with_suffix(constants.MARKDOWN_EXT)
         new_fp.parent.mkdir(parents=True, exist_ok=True)
         if new_fp.exists():
@@ -158,7 +158,9 @@ def edit(
             require_save=False,
         )
         if contents:
-            echo_info(f"created new draft at {str(new_fp.relative_to(sc.invoc_dir))!r}")
+            echo_info(
+                f"created new draft at {str(new_fp.relative_to(config.invoc_dir))!r}"
+            )
             new_fp.write_text(contents)
 
         return None
@@ -166,8 +168,8 @@ def edit(
     match_fp = get_fuzzy_match(
         query=query,
         ext=constants.MARKDOWN_EXT,
-        start_dir=sc.sources_dir,
-        ignore_dirname=None if lookup_drafts else sc.drafts_dirname,
+        start_dir=config.sources_dir,
+        ignore_dirname=None if lookup_drafts else config.drafts_dirname,
     )
     if match_fp is not None:
         click.edit(filename=f"{match_fp}")
@@ -177,7 +179,7 @@ def edit(
 
 
 def serve(
-    sc: SiteConfig,
+    config: Config,
     host: Optional[str],
     port: int,
     do_build: bool,
@@ -188,19 +190,19 @@ def serve(
     eff_host = "127.0.0.1"
     if host is not None:
         eff_host = host
-    elif sc.in_docker:
+    elif config.in_docker:
         eff_host = "0.0.0.0"
 
-    serve = make_server(sc, eff_host, port)
+    serve = make_server(config, eff_host, port)
 
     if do_build:
 
         def builder() -> None:
-            nonlocal sc
+            nonlocal config
             try:
                 # TODO: Only reload config post-init, on config file change.
-                sc = sc.reload()
-                build(sc, build_clean, build_with_drafts)
+                config = config.reload()
+                build(config, build_clean, build_with_drafts)
             except click.ClickException as e:
                 e.show()
                 echo_err("new build failed -- keeping current build")
@@ -212,7 +214,7 @@ def serve(
                 return None
             return None
 
-        with Rebuilder(sc, builder):
+        with Rebuilder(config, builder):
             echo_info(
                 f"starting dev server"
                 f"{'' if not build_with_drafts else ' in drafts mode'}"
