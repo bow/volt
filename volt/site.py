@@ -16,17 +16,15 @@ from .exceptions import VoltResourceError
 from .targets import collect_copy_targets, Target
 from .theme import Theme
 
-__all__ = ["Site", "SiteNode", "SitePlan"]
 
+class PlanNode:
 
-class SiteNode:
-
-    """Node of the :class:`SitePlan` tree."""
+    """Node of the :class:`Plan` tree."""
 
     __slots__ = ("path", "target", "children", "__dict__")
 
     def __init__(self, path: Path, target: Optional[Target] = None) -> None:
-        """Initialize a site node.
+        """Initialize a plan node.
 
         :param path: Path to the node.
         :param A target to be created in the site output directory.  If set to
@@ -36,7 +34,7 @@ class SiteNode:
         """
         self.path = path
         self.target = target
-        self.children: Optional[Dict[str, SiteNode]] = (
+        self.children: Optional[Dict[str, PlanNode]] = (
             None if target is not None else {}
         )
 
@@ -50,7 +48,7 @@ class SiteNode:
 
         return self.is_dir and value in children
 
-    def __iter__(self) -> Iterator["SiteNode"]:
+    def __iter__(self) -> Iterator["PlanNode"]:
         if not self.is_dir:
             return iter([])
         children = self.children or {}
@@ -93,24 +91,24 @@ class SiteNode:
         children = self.children or {}
         if key in children:
             return
-        children[key] = SiteNode(self.path / key, target)
+        children[key] = PlanNode(self.path / key, target)
         self.children = children
 
 
-class SitePlan:
+class Plan:
 
     """The file and directory layout of the final built site.
 
-    A site plan is essentially an n-ary tree whose nodes represent either
-    directories or files to be created.
+    A plan is essentially an n-ary tree whose nodes represent either directories or
+    files to be created.
 
     """
 
     def __init__(self) -> None:
-        """Initialize a site plan."""
+        """Initialize a plan."""
         out_relpath = Path()
         self.out_relpath = out_relpath
-        self._root = SiteNode(out_relpath)
+        self._root = PlanNode(out_relpath)
         self._root_path_len = len(out_relpath.parts)
 
     def add_target(self, target: Target) -> None:
@@ -142,7 +140,7 @@ class SitePlan:
             try:
                 if idx < rem_len:
                     cur.add_child(p)
-                    cur = cast(Dict[str, SiteNode], cur.children)[p]
+                    cur = cast(Dict[str, PlanNode], cur.children)[p]
                 else:
                     if p in cur:
                         raise ValueError(
@@ -152,7 +150,7 @@ class SitePlan:
                                 if target.src is not None
                                 else ""
                             )
-                            + " already added to the site plan"
+                            + " already added to the plan"
                         )
                     cur.add_child(p, target)
             except TypeError:
@@ -163,7 +161,7 @@ class SitePlan:
 
         return None
 
-    def fnodes(self) -> Generator[SiteNode, None, None]:
+    def fnodes(self) -> Generator[PlanNode, None, None]:
         """Yield all file target nodes, depth-first."""
 
         # TODO: Maybe compress the paths so we don't have to iterate over all
@@ -175,7 +173,7 @@ class SitePlan:
             if not cur.is_dir:
                 yield cur
 
-    def dnodes(self) -> Generator[SiteNode, None, None]:
+    def dnodes(self) -> Generator[PlanNode, None, None]:
         """Yield the least number of directory nodes required to construct
         the site.
 
@@ -193,7 +191,7 @@ class SitePlan:
                 nodes.extend(children)
 
     def write_nodes(self, parent_dir: Path) -> None:
-        """Write the site nodes according to the plan under the given parent
+        """Write the plan nodes according to the plan under the given parent
         directory."""
 
         for dn in self.dnodes():
@@ -242,7 +240,7 @@ class Site:
             prefix=constants.BUILD_DIR_PREFIX
         ) as tmp_dir_name:
 
-            plan = SitePlan()
+            plan = Plan()
             for target in self.collect_targets():
                 try:
                     plan.add_target(target)
