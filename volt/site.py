@@ -144,7 +144,7 @@ class Plan:
                 else:
                     if p in cur:
                         raise ValueError(
-                            f"target path {('/'.join(target.url_parts))!r}"
+                            f"target path {target.url!r}"
                             + (
                                 f" from source {str(target.src)!r}"
                                 if target.src is not None
