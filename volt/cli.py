@@ -38,7 +38,7 @@ class AliasedGroup(click.Group):
 
 
 @click.group(cls=AliasedGroup)
-@click.version_option(__version__)
+@click.version_option(__version__, message="%(version)s")
 @click.option(
     "-D",
     "--project-dir",
