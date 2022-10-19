@@ -146,7 +146,7 @@ class MarkdownSource(Source):
         return f"/{'/'.join(ps)}"
 
     @property
-    def abs_url(self) -> str:
+    def url_abs(self) -> str:
         return urljoin(self.config.url, self.url)
 
     @property
