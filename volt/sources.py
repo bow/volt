@@ -75,8 +75,8 @@ class MarkdownSource(Source):
     # Metadata of the content.
     meta: dict
 
-    # Markdown text of the content, without any metadata.
-    content: str
+    # Markdown text of the body, without any metadata.
+    body: str
 
     # Whether the content is draft or not.
     is_draft: bool
@@ -107,12 +107,12 @@ class MarkdownSource(Source):
 
         ."""
         raw_text = src.read_text()
-        *top, raw_content = raw_text.split(fm_sep, 2)
+        *top, raw_body = raw_text.split(fm_sep, 2)
         raw_fm = [item for item in top if item]
         fm = {} if not raw_fm else yaml.load(raw_fm[0].strip(), Loader=SafeLoader)
 
         return cls(
-            content=raw_content,
+            body=raw_body,
             src=src,
             template=template,
             # TODO: Validate minimal front matter metadata.
@@ -172,7 +172,7 @@ class MarkdownSource(Source):
 
     @cached_property
     def html(self) -> str:
-        return cast(str, MD.convert(self.content))
+        return cast(str, MD.convert(self.body))
 
     @property
     def target(self) -> TemplateTarget:
