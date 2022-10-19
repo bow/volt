@@ -22,7 +22,10 @@ PYTHON_VERSION := 3.10.7
 VENV_NAME ?= $(APP_NAME)-dev
 
 # Non-pyproject.toml dependencies.
-PIP_DEPS := poetry poetry-dynamic-versioning pre-commit twine
+PIP_DEPS := poetry==1.2.2 poetry-dynamic-versioning==0.19.0 twine==4.0.1
+
+# Non-pyproject.toml dev dependencies.
+PIP_DEV_DEPS := pre-commit
 
 ## Toggle for dev setup with pyenv.
 WITH_PYENV ?= 1
@@ -49,7 +52,7 @@ all: help
 
 
 .PHONY: build
-build:  ## Build wheel and source dist.
+build: build-deps  ## Build wheel and source dist.
 	poetry build
 	twine check dist/*
 
@@ -70,6 +73,32 @@ clean:  ## Remove build artifacts, including built Docker images.
 .PHONY: clean-venv
 clean-venv:  ## Remove the created pyenv virtualenv.
 	pyenv virtualenv-delete -f $(VENV_NAME) && rm -f .python-version
+
+
+.PHONY: env
+env:  ## Configure a local development environment.
+	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
+		printf "Configuring a local dev environment using pyenv ...\n" >&2 \
+			&& pyenv install -s "$(PYTHON_VERSION)" \
+			&& pyenv virtualenv -f "$(PYTHON_VERSION)" "$(VENV_NAME)" \
+			&& printf "%s\n%s" "$(VENV_NAME)" "$(PYTHON_VERSION)" > .python-version \
+			&& . "$(shell pyenv root)/versions/$(VENV_NAME)/bin/activate" \
+			&& pip install --upgrade pip && pyenv rehash \
+			&& pip install $(PIP_DEPS) $(PIP_DEV_DEPS) && pyenv rehash \
+			&& poetry config experimental.new-installer false \
+			&& poetry config virtualenvs.create false \
+			&& poetry install && pyenv rehash \
+			&& pre-commit install && pyenv rehash \
+			&& printf "Done.\n" >&2; \
+	else \
+		printf "Configuring a local, bare dev environment ...\n" >&2 \
+			&& pip install $(PIP_DEPS) $(PIP_DEV_DEPS) \
+			&& poetry config experimental.new-installer false \
+			&& poetry config virtualenvs.create false \
+			&& poetry install \
+			&& pre-commit install \
+			&& printf "Done.\n" >&2; \
+	fi
 
 
 .PHONY: fmt
@@ -95,30 +124,9 @@ img:  ## Build and tag the Docker container.
 	docker build --build-arg REVISION=$(GIT_COMMIT)$(GIT_DIRTY) --build-arg BUILD_TIME=$(BUILD_TIME) --tag $(IMG_NAME):$(IMG_TAG) .
 
 
-.PHONY: install-dev
-install-dev:  ## Configure a local development setup.
-	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
-		printf "Configuring a local dev environment using pyenv ...\n" >&2 \
-			&& pyenv install -s "$(PYTHON_VERSION)" \
-			&& pyenv virtualenv -f "$(PYTHON_VERSION)" "$(VENV_NAME)" \
-			&& printf "%s\n%s" "$(VENV_NAME)" "$(PYTHON_VERSION)" > .python-version \
-			&& . "$(shell pyenv root)/versions/$(VENV_NAME)/bin/activate" \
-			&& pip install --upgrade pip && pyenv rehash \
-			&& pip install $(PIP_DEPS) && pyenv rehash \
-			&& poetry config experimental.new-installer false \
-			&& poetry config virtualenvs.create false \
-			&& poetry install && pyenv rehash \
-			&& pre-commit install && pyenv rehash \
-			&& printf "Done.\n" >&2; \
-	else \
-		printf "Configuring a local, bare dev environment ...\n" >&2 \
-			&& pip install $(PIP_DEPS) \
-			&& poetry config experimental.new-installer false \
-			&& poetry config virtualenvs.create false \
-			&& poetry install \
-			&& pre-commit install \
-			&& printf "Done.\n" >&2; \
-	fi
+.PHONY: install-build
+install-build:  ## Install dependencies required only for building.
+	pip install $(PIP_DEPS)
 
 
 .PHONY: lint
