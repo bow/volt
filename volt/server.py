@@ -118,6 +118,7 @@ class BuildHandler(events.RegexMatchingEventHandler):
         ]
         ignore_regexes = [
             f"^{prefix + '/' + constants.SITE_TARGET_DIRNAME + '/'}.+$",
+            f"^{prefix + '/__pycache__'}.+",
         ]
         super().__init__(regexes, ignore_regexes, case_sensitive=True)
         self.config = config
