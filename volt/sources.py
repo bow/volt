@@ -179,9 +179,10 @@ class MarkdownSource(Source):
         """Create a :class:`TemplateTarget` instance."""
 
         render_kwargs = {
+            "config": self.config,
+            "theme": self.config.theme,
             "meta": self.meta,
             "content": self.html,
-            "config": self.config,
         }
 
         return TemplateTarget(
