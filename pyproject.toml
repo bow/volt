@@ -23,9 +23,8 @@ packages = [
 ]
 include = [
     "CHANGELOG.rst",
-    "README.rst",
+    "README.md",
     "LICENSE",
-    "extras/volt",
 ]
 
 [tool.poetry.scripts]
