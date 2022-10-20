@@ -50,6 +50,8 @@ python-slugify = "^5.0.2"
 watchdog = "^2.1.6"
 python-Levenshtein = "0.12.1"
 single-source = "^0.3.0"
+structlog = "^22.1.0"
+better-exceptions = "^0.3.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
