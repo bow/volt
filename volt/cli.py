@@ -9,6 +9,7 @@ import click
 
 from . import __version__, exceptions as excs, session
 from .config import Config
+from .logging import init_logging
 from .utils import echo_info, import_file
 
 
@@ -63,7 +64,8 @@ class AliasedGroup(click.Group):
 @click.pass_context
 def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
     """A versatile static website generator"""
-    ctx.params["log_level"] = log_level
+    init_logging(log_level)
+
     ctx.params["project_dir"] = project_dir
 
     invoc_dir = Path.cwd()
