@@ -10,7 +10,7 @@ import structlog
 
 from . import __version__, exceptions as excs, session
 from .config import Config
-from .logging import init_logging
+from .logging import init_logging, bind_drafts_context
 from .utils import import_file
 
 
@@ -210,6 +210,7 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
+    bind_drafts_context(drafts)
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
@@ -254,6 +255,7 @@ def edit(
     drafts: bool,
 ) -> None:
     """Open a draft file in an editor."""
+    bind_drafts_context(drafts)
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
@@ -302,6 +304,7 @@ def serve(
     clean: bool,
 ) -> None:
     """Run the development server."""
+    bind_drafts_context(drafts)
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:

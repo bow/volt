@@ -11,6 +11,7 @@ from typing import Optional
 import better_exceptions
 import structlog
 from click import style
+from structlog.contextvars import bind_contextvars, merge_contextvars
 
 
 def _get_exceptions_max_length(default: int = 65) -> Optional[int]:
@@ -90,9 +91,16 @@ class _ConsoleLogRenderer:
         return logstr
 
 
+def bind_drafts_context(drafts: bool) -> None:
+    if not drafts:
+        return None
+    bind_contextvars(drafts=True)
+    return None
+
+
 def init_logging(log_level: str) -> None:
     proc_chain: list[structlog.types.Processor] = [
-        structlog.contextvars.merge_contextvars,
+        merge_contextvars,
         structlog.stdlib.add_log_level,
     ]
 

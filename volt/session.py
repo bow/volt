@@ -129,13 +129,7 @@ def build(
     site = Site(config=config)
     site.build(clean=clean)
 
-    log_attrs: dict[str, str | bool] = {
-        "duration": f"{(time.monotonic() - start_time):.2f}s",
-    }
-    if with_drafts:
-        log_attrs["drafts"] = True
-
-    log.info("build completed", **log_attrs)
+    log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
 
     return site
 
@@ -202,8 +196,6 @@ def serve(
 
     if do_build:
 
-        log_attrs = {"drafts": True} if build_with_drafts else {}
-
         def builder() -> None:
             nonlocal config
             try:
@@ -218,13 +210,13 @@ def serve(
                     build_exists = True
                 if build_exists:
                     msg += " -- keeping current build"
-                log.error(msg, **log_attrs)
+                log.error(msg)
                 log.exception(e)
                 return None
             return None
 
         with Rebuilder(config, builder):
-            log.info("starting dev server", **log_attrs)
+            log.info("starting dev server")
             builder()
             serve()
     else:
