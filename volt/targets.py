@@ -13,7 +13,6 @@ from typing import Optional, Tuple
 from jinja2 import Template
 
 from . import error as err
-from .utils import calc_relpath
 
 
 class Target(abc.ABC):
@@ -97,7 +96,7 @@ class CopyTarget(Target):
 def collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
     """Gather files from the given start directory recursively as copy targets."""
 
-    src_relpath = calc_relpath(start_dir, invocation_dir)
+    src_relpath = _calc_relpath(start_dir, invocation_dir)
     src_rel_len = len(src_relpath.parts)
 
     targets: list[CopyTarget] = []
@@ -111,3 +110,30 @@ def collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarg
             targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
 
     return targets
+
+
+def _calc_relpath(target: Path, ref: Path) -> Path:
+    """Calculate the target's path relative to the reference.
+
+    :param target: The path to which the relative path will point.
+    :param ref: Reference path.
+
+    :returns: The relative path from ``ref`` to ``to``.
+
+    :raises ValueError: when one of the given input paths is not an absolute
+        path.
+
+    """
+    ref = ref.expanduser()
+    target = target.expanduser()
+    if not ref.is_absolute() or not target.is_absolute():
+        raise ValueError("could not compute relative paths of non-absolute input paths")
+
+    common = Path(os.path.commonpath([ref, target]))
+    common_len = len(common.parts)
+    ref_uniq = ref.parts[common_len:]
+    target_uniq = target.parts[common_len:]
+
+    rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
+
+    return Path(*rel_parts)

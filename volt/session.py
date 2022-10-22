@@ -2,25 +2,23 @@
 # (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import os
+import subprocess as sp
 import time
 from contextlib import suppress
+from locale import getlocale
 from pathlib import Path
+from shutil import which
 from typing import Optional
 
 import click
 import pendulum
 import structlog
+from thefuzz import process
 
 from . import constants, error as err
 from .config import Config
 from .server import Rebuilder, make_server
 from .site import Site
-from .utils import (
-    get_fuzzy_match,
-    infer_author,
-    infer_front_matter,
-    infer_lang,
-)
 
 log = structlog.get_logger(__name__)
 
@@ -96,8 +94,8 @@ def new(
 name: "{name}"
 url: "{url}"
 description: "{description}"
-author: "{author or (infer_author() or '')}"
-language: "{language or (infer_lang() or '')}"
+author: "{author or (_infer_author() or '')}"
+language: "{language or (_infer_lang() or '')}"
 """
 
     # Create initial YAML config file.
@@ -152,7 +150,7 @@ def edit(
             return None
 
         contents = click.edit(
-            text=infer_front_matter(query, title),
+            text=_infer_front_matter(query, title),
             extension=constants.MARKDOWN_EXT,
             require_save=False,
         )
@@ -164,7 +162,7 @@ def edit(
 
         return None
 
-    match_fp = get_fuzzy_match(
+    match_fp = _get_fuzzy_match(
         query=query,
         ext=constants.MARKDOWN_EXT,
         start_dir=config.sources_dir,
@@ -228,3 +226,91 @@ def serve(
             serve()
     else:
         serve()
+
+
+def _get_fuzzy_match(
+    query: str,
+    ext: str,
+    start_dir: Path,
+    ignore_dirname: Optional[str] = None,
+    cutoff: int = 50,
+) -> Optional[str]:
+    """Return a fuzzy-matched path to a file in one of the given directories"""
+
+    dirs = _walk_dirs(start_dir=start_dir, ignore_dirname=ignore_dirname)
+
+    fp_map = {}
+    for d in dirs:
+        fp_map.update({p: f"{p.relative_to(d)}" for p in d.glob(f"*{ext}")})
+
+    _, _, match_fp = process.extractOne(query, fp_map, score_cutoff=cutoff) or (
+        None,
+        None,
+        None,
+    )
+
+    return match_fp
+
+
+def _walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Path]:
+    """Return the input directory and all its children directories"""
+
+    todo_dirs = [start_dir]
+    dirs: list[Path] = []
+
+    while todo_dirs:
+        cur_dir = todo_dirs.pop()
+        dirs.append(cur_dir)
+        for entry in os.scandir(cur_dir):
+            if not entry.is_dir():
+                continue
+            p = Path(entry.path)
+            if ignore_dirname is not None and p.name == ignore_dirname:
+                continue
+            todo_dirs.append(p)
+
+    return dirs
+
+
+def _infer_lang() -> Optional[str]:
+    lang_code, _ = getlocale()
+    if lang_code is None:
+        return None
+    try:
+        lang, _ = lang_code.split("_", 1)
+    except ValueError:
+        return None
+    return lang
+
+
+def _infer_author(stdout_encoding: str = "utf-8") -> Optional[str]:
+    git_exe = "git"
+    if which(git_exe) is None:
+        return None
+
+    proc = sp.run([git_exe, "config", "--get", "user.name"], capture_output=True)
+    if proc.returncode != 0:
+        return None
+
+    author = proc.stdout.strip().decode(stdout_encoding) or None
+
+    return author
+
+
+def _infer_front_matter(query: str, title: Optional[str]) -> str:
+    fm = {}
+    default_title = Path(query).stem
+
+    title = " ".join([tok.capitalize() for tok in (title or default_title).split("-")])
+    fm["title"] = title
+
+    *section, _ = query.rsplit("/", 1)
+    ns = len(section)
+    if ns == 1:
+        fm["section"] = section[0]
+    elif ns > 1:
+        raise ValueError(f"unexpected query pattern: {query!r}")
+
+    strv = "\n".join([f"{k}: {v}" for k, v in fm.items()])
+
+    return f"""---\n{strv}\n---"""

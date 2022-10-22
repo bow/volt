@@ -11,7 +11,7 @@ import structlog
 from . import __version__, error as err, session
 from .config import Config, set_use_color
 from .logging import init_logging, bind_drafts_context
-from .utils import import_file
+from ._import import import_file
 
 
 log = structlog.get_logger(__name__)

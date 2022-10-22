@@ -16,7 +16,7 @@ from .constants import MARKDOWN_EXT
 from .sources import MarkdownSource
 from .targets import Target
 from .theme import Theme
-from .utils import import_file
+from ._import import import_file
 
 
 class Engine(abc.ABC):

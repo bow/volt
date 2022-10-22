@@ -14,7 +14,6 @@ from yaml.scanner import ScannerError
 
 from . import constants
 from . import error as err
-from .utils import find_dir_containing
 
 
 _use_color_key = "use-color"
@@ -55,7 +54,7 @@ class Config(UserDict):
             values.
 
         """
-        project_dir = find_dir_containing(yaml_fname, start_lookup_dir)
+        project_dir = _find_dir_containing(yaml_fname, start_lookup_dir)
         if project_dir is None:
             return None
 
@@ -236,3 +235,27 @@ class Config(UserDict):
         return self.__class__.from_yaml(
             invoc_dir=self.invoc_dir, project_dir=self.project_dir
         )
+
+
+def _find_dir_containing(fname: str, start: Path) -> Optional[Path]:
+    """Find the directory containing the filename.
+
+    Directory lookup is performed from the given start directory up until the
+    root (`/`) directory. If no start directory is given, the lookup starts
+    from the current directory.
+
+    :param fname: The filename that should be present in the directory.
+    :param start: The path from which lookup starts.
+
+    :returns: The path to the directory that contains the filename or None if
+        no such path can be found.
+
+    """
+    cur = Path(start).expanduser().resolve()
+
+    while cur != cur.parent:
+        if cur.joinpath(fname).exists():
+            return cur
+        cur = cur.parent
+
+    return None
