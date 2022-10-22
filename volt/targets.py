@@ -75,7 +75,7 @@ class CopyTarget(Target):
 
     """A target created by copying another file from the source directory."""
 
-    # Filesystem path to the source.
+    # File system path to the source.
     src: Path
 
     # Path parts / tokens to the target.
