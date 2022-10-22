@@ -78,6 +78,8 @@ class _ConsoleLogRenderer:
                 value = repr(value)
             else:
                 value = f"{value}"
+                if any(char.isspace() for char in value):
+                    value = f"'{value}'"
             logstr += style(f" {key}", fg="bright_black")
             logstr += style("=", fg="bright_white")
             logstr += style(f"{value}", fg="yellow")
