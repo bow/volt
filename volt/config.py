@@ -22,7 +22,7 @@ _use_color: ContextVar[bool] = ContextVar(_use_color_key, default=True)
 
 
 def get_use_color() -> bool:
-    return _use_color.get(_use_color_key)
+    return cast(bool, _use_color.get(_use_color_key))
 
 
 def set_use_color(value: bool) -> bool:

@@ -12,7 +12,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable, NoReturn, Optional, cast
 
 import structlog
-from click import echo, style as cstyle
+from click import echo
 from click._compat import get_text_stderr
 from watchdog import events
 from watchdog.observers import Observer
