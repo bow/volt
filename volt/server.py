@@ -12,13 +12,14 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable, NoReturn, Optional, cast
 
 import structlog
-from click import echo, style
+from click import echo, style as cstyle
 from click._compat import get_text_stderr
 from watchdog import events
 from watchdog.observers import Observer
 
 from . import __version__, constants
 from .config import Config
+from .logging import style
 
 
 log = structlog.get_logger(__name__)

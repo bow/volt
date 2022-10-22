@@ -9,7 +9,7 @@ import click
 import structlog
 
 from . import __version__, exceptions as excs, session
-from .config import Config
+from .config import Config, set_use_color
 from .logging import init_logging, bind_drafts_context
 from .utils import import_file
 
@@ -65,9 +65,17 @@ class AliasedGroup(click.Group):
     default="info",
     help="Logging level. Default: 'info'.",
 )
+@click.option(
+    "--color/--no-color",
+    default=True,
+    help="If set, color consol outputs. Default: set",
+)
 @click.pass_context
-def main(ctx: click.Context, project_dir: Path, log_level: str) -> None:
+def main(ctx: click.Context, project_dir: Path, log_level: str, color: bool) -> None:
     """A versatile static website generator"""
+
+    set_use_color(color)
+
     init_logging(log_level)
 
     ctx.params["project_dir"] = project_dir

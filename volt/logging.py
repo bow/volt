@@ -6,12 +6,20 @@ import sys
 from dataclasses import dataclass
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import better_exceptions
 import structlog
-from click import style
+from click import style as cstyle
 from structlog.contextvars import bind_contextvars, merge_contextvars
+
+from .config import get_use_color
+
+
+def style(text: str, **kwargs: Any) -> str:
+    if not get_use_color():
+        return text
+    return cstyle(text=text, **kwargs)
 
 
 def _get_exceptions_max_length(default: int = 65) -> Optional[int]:
@@ -32,7 +40,9 @@ class _LogLabel:
 
     @property
     def styled(self) -> str:
-        return style(f" {self.text} ", fg=self.bg, bold=True, reverse=True)
+        if get_use_color():
+            return style(f" {self.text} ", fg=self.bg, bold=True, reverse=True)
+        return f"{self.text} |"
 
 
 _level_styles = {

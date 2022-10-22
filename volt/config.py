@@ -3,6 +3,7 @@
 
 import os
 from collections import UserDict
+from contextvars import ContextVar
 from functools import cached_property
 from pathlib import Path
 from typing import cast, Any, Dict, Iterable, Optional
@@ -14,6 +15,19 @@ from yaml.scanner import ScannerError
 from . import constants
 from . import exceptions as excs
 from .utils import find_dir_containing
+
+
+_use_color_key = "use-color"
+_use_color: ContextVar[bool] = ContextVar(_use_color_key, default=True)
+
+
+def get_use_color() -> bool:
+    return _use_color.get(_use_color_key)
+
+
+def set_use_color(value: bool) -> bool:
+    token = _use_color.set(value)
+    return cast(bool, token.old_value)
 
 
 class Config(UserDict):
