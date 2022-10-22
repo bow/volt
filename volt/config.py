@@ -12,21 +12,10 @@ import yaml
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
-from . import constants
-from . import error as err
+from . import constants, error as err
 
 
-_use_color_key = "use-color"
-_use_color: ContextVar[bool] = ContextVar(_use_color_key, default=True)
-
-
-def get_use_color() -> bool:
-    return cast(bool, _use_color.get(_use_color_key))
-
-
-def set_use_color(value: bool) -> bool:
-    token = _use_color.set(value)
-    return cast(bool, token.old_value)
+__all__ = ["Config"]
 
 
 class Config(UserDict):
@@ -235,6 +224,19 @@ class Config(UserDict):
         return self.__class__.from_yaml(
             invoc_dir=self.invoc_dir, project_dir=self.project_dir
         )
+
+
+_use_color_key = "use-color"
+_use_color: ContextVar[bool] = ContextVar(_use_color_key, default=True)
+
+
+def _get_use_color() -> bool:
+    return cast(bool, _use_color.get(_use_color_key))
+
+
+def _set_use_color(value: bool) -> bool:
+    token = _use_color.set(value)
+    return cast(bool, token.old_value)
 
 
 def _find_dir_containing(fname: str, start: Path) -> Optional[Path]:

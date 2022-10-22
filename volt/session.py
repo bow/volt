@@ -17,8 +17,12 @@ from thefuzz import process
 
 from . import constants, error as err
 from .config import Config
-from .server import Rebuilder, make_server
+from .server import _Rebuilder, make_server
 from .site import Site
+
+
+__all__ = ["build", "edit", "new", "serve"]
+
 
 log = structlog.get_logger(__name__)
 
@@ -216,12 +220,12 @@ def serve(
             else:
                 return True
 
-        with Rebuilder(config, builder):
+        with _Rebuilder(config, builder):
             build_exists = True
             if pre_build:
                 build_exists = builder()
             if not build_exists:
-                err.halt("build-nonexistent")
+                err._halt("build-nonexistent")
             log.debug("starting dev server")
             serve()
     else:

@@ -15,6 +15,14 @@ from jinja2 import Template
 from . import error as err
 
 
+__all__ = [
+    "collect_copy_targets",
+    "CopyTarget",
+    "Target",
+    "TemplateTarget",
+]
+
+
 class Target(abc.ABC):
 
     """A single file created in the site output directory."""

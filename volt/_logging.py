@@ -13,11 +13,11 @@ import structlog
 from click import style as cstyle
 from structlog.contextvars import bind_contextvars, merge_contextvars
 
-from .config import get_use_color
+from .config import _get_use_color
 
 
 def style(text: str, **kwargs: Any) -> str:
-    if not get_use_color():
+    if not _get_use_color():
         return text
     return cstyle(text=text, **kwargs)
 
@@ -40,7 +40,7 @@ class _LogLabel:
 
     @property
     def styled(self) -> str:
-        if get_use_color():
+        if _get_use_color():
             return style(f" {self.text} ", fg=self.bg, bold=True, reverse=True)
         return f"{self.text} |"
 

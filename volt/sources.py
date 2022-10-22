@@ -24,7 +24,10 @@ from .config import Config
 from .targets import TemplateTarget
 
 
-MD = Markdown(
+__all__ = ["MarkdownSource", "Source"]
+
+
+_MD = Markdown(
     extras={
         "fenced-code-blocks": {
             "nowrap": False,
@@ -172,7 +175,7 @@ class MarkdownSource(Source):
 
     @cached_property
     def html(self) -> str:
-        return cast(str, MD.convert(self.body))
+        return cast(str, _MD.convert(self.body))
 
     @property
     def target(self) -> TemplateTarget:

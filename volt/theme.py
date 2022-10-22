@@ -17,6 +17,9 @@ if TYPE_CHECKING:
     from .engines import Engine
 
 
+__all__ = ["Theme"]
+
+
 class Theme:
 
     """Site theme."""

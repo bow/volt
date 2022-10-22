@@ -19,7 +19,10 @@ from watchdog.observers import Observer
 
 from . import __version__, constants
 from .config import Config
-from .logging import style
+from ._logging import style
+
+
+__all__ = ["make_server"]
 
 
 log = structlog.get_logger(__name__)
@@ -87,7 +90,7 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
     return serve
 
 
-class SyncQueue(queue.Queue):
+class _SyncQueue(queue.Queue):
 
     """A queue of size=1 that drops events sent to it while it processes tasks"""
 
@@ -116,13 +119,13 @@ class SyncQueue(queue.Queue):
         self._putlock.release()
 
 
-class BuildObserver(Observer):
+class _BuildObserver(Observer):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self._event_queue = SyncQueue()
+        self._event_queue = _SyncQueue()
 
 
-class BuildHandler(events.RegexMatchingEventHandler):
+class _BuildHandler(events.RegexMatchingEventHandler):
     def __init__(self, config: Config, build_func: Callable) -> None:
 
         prefix = f"{config.project_dir_rel}".replace(".", r"\.")
@@ -209,11 +212,11 @@ class BuildHandler(events.RegexMatchingEventHandler):
         return None
 
 
-class Rebuilder:
+class _Rebuilder:
     def __init__(self, config: Config, build_func: Callable) -> None:
-        self._observer = BuildObserver()
+        self._observer = _BuildObserver()
         self._observer.schedule(
-            BuildHandler(config, build_func),
+            _BuildHandler(config, build_func),
             config.project_dir_rel,
             recursive=True,
         )

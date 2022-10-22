@@ -11,6 +11,7 @@ __all__ = [
     "VoltCliError",
     "VoltConfigError",
     "VoltError",
+    "VoltMissingTemplateError",
     "VoltResourceError",
 ]
 
@@ -43,10 +44,10 @@ class VoltMissingTemplateError(VoltResourceError):
     """Raised for errors when loading templates."""
 
 
-def halt(reason: str, exit_code: int = 1) -> NoReturn:
+def _halt(reason: str, exit_code: int = 1) -> NoReturn:
     log.error("halting execution", reason=reason)
     sys.exit(exit_code)
 
 
-def halt_not_in_project() -> NoReturn:
-    halt("not-in-volt-project-dir")
+def _halt_not_in_project() -> NoReturn:
+    _halt("not-in-volt-project-dir")

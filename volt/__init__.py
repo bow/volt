@@ -10,9 +10,10 @@ from pathlib import Path
 from single_source import get_version
 
 from .config import Config  # noqa: F401
-from .engines import Engine  # noqa: F401
-from .sources import MarkdownSource  # noqa: F401
+from .engines import Engine, MarkdownEngine  # noqa: F401
+from .sources import MarkdownSource, Source  # noqa: F401
 from .targets import Target, TemplateTarget, CopyTarget  # noqa: F401
+from .theme import Theme  # noqa: F401
 
 NAME = "volt"
 

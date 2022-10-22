@@ -9,9 +9,19 @@ import click
 import structlog
 
 from . import __version__, error as err, session
-from .config import Config, set_use_color
-from .logging import init_logging, bind_drafts_context
+from .config import Config, _set_use_color
 from ._import import import_file
+from ._logging import init_logging, bind_drafts_context
+
+
+__all__ = [
+    "build",
+    "edit",
+    "main",
+    "new",
+    "serve",
+    "xcmd",
+]
 
 
 log = structlog.get_logger(__name__)
@@ -19,7 +29,7 @@ log = structlog.get_logger(__name__)
 
 # Taken from:
 # https://click.palletsprojects.com/en/8.0.x/advanced/#command-aliases
-class AliasedGroup(click.Group):
+class _AliasedGroup(click.Group):
     def get_command(self, ctx: click.Context, cmd_name: str) -> Optional[click.Command]:
         rv = click.Group.get_command(self, ctx, cmd_name)
         if rv is not None:
@@ -42,7 +52,48 @@ class AliasedGroup(click.Group):
         return cmd.name if cmd is not None else None, cmd, args
 
 
-@click.group(cls=AliasedGroup)
+class _ExtensionGroup(click.Group):
+    @classmethod
+    def import_xcmd(
+        cls,
+        sc: Config,
+        mod_name: str = "volt.ext.command",
+    ) -> Optional[ModuleType]:
+        """Import the custom, user-defined subcommands."""
+        if (fp := sc.xcmd_script) is None:
+            return None
+
+        mod = import_file(fp, mod_name)
+
+        return mod
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        params = cast(click.Context, ctx.parent).params
+        config = params["config"]
+
+        if (mod := self.import_xcmd(config)) is None:
+            return []
+
+        rv = [
+            name
+            for attr in dir(mod)
+            if (
+                isinstance(v := getattr(mod, attr, None), click.Command)
+                and (name := v.name) is not None
+            )
+        ]
+        rv.sort()
+
+        return rv
+
+    def get_command(self, ctx: click.Context, name: str) -> Any:
+        params = cast(click.Context, ctx.parent).params
+        config = params["config"]
+        self.import_xcmd(config)
+        return self.commands.get(name)
+
+
+@click.group(cls=_AliasedGroup)
 @click.version_option(__version__, message="%(version)s")
 @click.option(
     "-D",
@@ -74,7 +125,7 @@ class AliasedGroup(click.Group):
 def main(ctx: click.Context, project_dir: Path, log_level: str, color: bool) -> None:
     """A versatile static website generator"""
 
-    set_use_color(color)
+    _set_use_color(color)
 
     init_logging(log_level)
 
@@ -221,7 +272,7 @@ def build(
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        err.halt_not_in_project()
+        err._halt_not_in_project()
 
     bind_drafts_context(drafts)
     session.build(config, clean, drafts)
@@ -266,7 +317,7 @@ def edit(
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        err.halt_not_in_project()
+        err._halt_not_in_project()
 
     bind_drafts_context(drafts)
     session.edit(config, name, create, title, drafts)
@@ -324,54 +375,13 @@ def serve(
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        err.halt_not_in_project()
+        err._halt_not_in_project()
 
     bind_drafts_context(drafts)
     session.serve(config, host, port, build, pre_build, drafts, clean)
 
 
-class ExtensionGroup(click.Group):
-    @classmethod
-    def import_xcmd(
-        cls,
-        sc: Config,
-        mod_name: str = "volt.ext.command",
-    ) -> Optional[ModuleType]:
-        """Import the custom, user-defined subcommands."""
-        if (fp := sc.xcmd_script) is None:
-            return None
-
-        mod = import_file(fp, mod_name)
-
-        return mod
-
-    def list_commands(self, ctx: click.Context) -> list[str]:
-        params = cast(click.Context, ctx.parent).params
-        config = params["config"]
-
-        if (mod := self.import_xcmd(config)) is None:
-            return []
-
-        rv = [
-            name
-            for attr in dir(mod)
-            if (
-                isinstance(v := getattr(mod, attr, None), click.Command)
-                and (name := v.name) is not None
-            )
-        ]
-        rv.sort()
-
-        return rv
-
-    def get_command(self, ctx: click.Context, name: str) -> Any:
-        params = cast(click.Context, ctx.parent).params
-        config = params["config"]
-        self.import_xcmd(config)
-        return self.commands.get(name)
-
-
-@main.command(cls=ExtensionGroup)
+@main.command(cls=_ExtensionGroup)
 def xcmd() -> None:
     """Execute custom subcommands.
 
