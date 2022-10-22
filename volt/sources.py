@@ -1,7 +1,6 @@
 """Site sources."""
 # (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 
-import abc
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import datetime as dt
@@ -56,8 +55,8 @@ _MD = Markdown(
 )
 
 
-@dataclass
-class Source(abc.ABC):
+@dataclass(kw_only=True)
+class Source:
 
     """A source for the site content."""
 
@@ -65,7 +64,7 @@ class Source(abc.ABC):
     meta: dict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class FileSystemSource(Source):
 
     """A source on the filesystem for the site content."""
@@ -74,7 +73,7 @@ class FileSystemSource(Source):
     src: Path
 
 
-@dataclass(eq=False)
+@dataclass(kw_only=True, eq=False)
 class MarkdownSource(FileSystemSource):
 
     """A markdown source of the site content."""

@@ -8,7 +8,7 @@ import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 from jinja2 import Template
 
@@ -23,15 +23,13 @@ __all__ = [
 ]
 
 
+@dataclass(kw_only=True)
 class Target(abc.ABC):
 
     """A single file created in the site output directory."""
 
     # Relative URL of the target.
     url: str
-
-    # Source of the target.
-    src: Optional[Path]
 
     @cached_property
     def url_parts(self) -> tuple[str, ...]:
@@ -42,13 +40,10 @@ class Target(abc.ABC):
         raise NotImplementedError()
 
 
-@dataclass(frozen=True)
+@dataclass(kw_only=True)
 class TemplateTarget(Target):
 
     """A target created by rendering from a template."""
-
-    # URL of the target.
-    url: str
 
     # Jinja2 template to use.
     template: Template
@@ -70,16 +65,22 @@ class TemplateTarget(Target):
             )
 
 
-@dataclass(frozen=True)
+@dataclass(kw_only=True)
 class CopyTarget(Target):
 
     """A target created by copying another file from the source directory."""
 
-    # File system path to the source.
+    # Source of the copy.
     src: Path
 
     # Path parts / tokens to the target.
-    url_parts: Tuple[str, ...]
+    url_parts: tuple[str, ...]
+
+    # Relative URL of the target.
+    url: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.url = "/".join(self.url_parts)
 
     def write(self, parent_dir: Path) -> None:
         """Copy the source to the destination."""

@@ -148,8 +148,8 @@ class Plan:
                         raise ValueError(
                             f"target path {target.url!r}"
                             + (
-                                f" from source {str(target.src)!r}"
-                                if target.src is not None
+                                f" from source {str(src)!r}"
+                                if (src := getattr(target, "src", None)) is not None
                                 else ""
                             )
                             + " already added to the plan"
