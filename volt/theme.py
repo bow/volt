@@ -9,7 +9,7 @@ from typing import cast, Optional, TYPE_CHECKING
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
 
-from . import constants, exceptions as excs
+from . import constants, error as err
 from .config import Config
 from .targets import collect_copy_targets, CopyTarget
 
@@ -25,10 +25,10 @@ class Theme:
     def from_site_config(cls, config: Config) -> "Theme":
 
         if (theme_config := config.theme) is None:
-            raise excs.VoltConfigError("undefined theme")
+            raise err.VoltConfigError("undefined theme")
 
         if (theme_name := theme_config.get("name", None)) is None:
-            raise excs.VoltConfigError("missing theme name")
+            raise err.VoltConfigError("missing theme name")
 
         theme_opts = theme_config.get("opts", None) or {}
 
@@ -41,7 +41,7 @@ class Theme:
 
         theme_dir = config.themes_dir / self.name
         if not theme_dir.exists():
-            raise excs.VoltConfigError(
+            raise err.VoltConfigError(
                 f"theme {self.name!r} not found in {config.themes_dir}"
             )
 
@@ -119,11 +119,11 @@ class Theme:
         try:
             template = self.template_env.get_template(name)
         except j2exc.TemplateNotFound as e:
-            raise excs.VoltMissingTemplateError(
+            raise err.VoltMissingTemplateError(
                 f"could not find template {name!r}"
             ) from e
         except j2exc.TemplateSyntaxError as e:
-            raise excs.VoltResourceError(
+            raise err.VoltResourceError(
                 f"template {name!r} has syntax errors: {e.message}"
             ) from e
 
@@ -137,7 +137,7 @@ class Theme:
         try:
             template_name = theme_templates[key]
         except KeyError as e:
-            raise excs.VoltResourceError(
+            raise err.VoltResourceError(
                 f"could not find template {key!r} in theme settings"
             ) from e
 

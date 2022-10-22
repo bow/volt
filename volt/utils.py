@@ -12,7 +12,7 @@ from typing import Optional
 
 from thefuzz import process
 
-from . import exceptions as excs
+from . import error as err
 
 
 def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:
@@ -20,7 +20,7 @@ def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:
 
     spec = iutil.spec_from_file_location(mod_name, fp)
     if spec is None:
-        raise excs.VoltResourceError(f"not an importable file: {str(fp)}")
+        raise err.VoltResourceError(f"not an importable file: {str(fp)}")
 
     mod = iutil.module_from_spec(spec)
 

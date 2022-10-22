@@ -8,7 +8,7 @@ from typing import Any, Optional, cast
 import click
 import structlog
 
-from . import __version__, exceptions as excs, session
+from . import __version__, error as err, session
 from .config import Config, set_use_color
 from .logging import init_logging, bind_drafts_context
 from .utils import import_file
@@ -222,7 +222,7 @@ def build(
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        raise excs.VOLT_NO_PROJECT_ERR
+        raise err.VOLT_NO_PROJECT_ERR
 
     session.build(config, clean, drafts)
 
@@ -267,7 +267,7 @@ def edit(
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        raise excs.VOLT_NO_PROJECT_ERR
+        raise err.VOLT_NO_PROJECT_ERR
 
     session.edit(config, name, create, title, drafts)
 
@@ -325,7 +325,7 @@ def serve(
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        raise excs.VOLT_NO_PROJECT_ERR
+        raise err.VOLT_NO_PROJECT_ERR
 
     session.serve(config, host, port, build, pre_build, drafts, clean)
 

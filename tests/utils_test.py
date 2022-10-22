@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from volt import exceptions as excs
+from volt import error as err
 from volt.utils import calc_relpath, import_file
 
 
@@ -27,7 +27,7 @@ def test_import_file_err_not_importable(tmpdir):
         mod_fp = pwd.joinpath("custom.txt")
         mod_fp.write_text("foobar")
 
-        with pytest.raises(excs.VoltResourceError, match="not an importable file:"):
+        with pytest.raises(err.VoltResourceError, match="not an importable file:"):
             import_file(mod_fp, "volt.test.custom")
 
 

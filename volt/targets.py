@@ -12,7 +12,7 @@ from typing import Optional, Tuple
 
 from jinja2 import Template
 
-from . import exceptions as excs
+from . import error as err
 from .utils import calc_relpath
 
 
@@ -58,7 +58,7 @@ class TemplateTarget(Target):
         try:
             (parent_dir.joinpath(*self.url_parts)).write_text(content)
         except OSError as e:
-            raise excs.VoltResourceError(
+            raise err.VoltResourceError(
                 "could not write target" f" {'/'.join(self.url_parts)!r}: {e.strerror}"
             )
 
@@ -87,7 +87,7 @@ class CopyTarget(Target):
             try:
                 shutil.copy2(str_src, str_dest)
             except OSError as e:
-                raise excs.VoltResourceError(
+                raise err.VoltResourceError(
                     f"could not copy {str_src!r} to {str_dest!r}: {e.strerror}"
                 )
 

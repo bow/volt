@@ -19,7 +19,7 @@ from slugify import slugify
 from yaml import SafeLoader
 
 from . import constants
-from .exceptions import VoltResourceError
+from .error import VoltResourceError
 from .config import Config
 from .targets import TemplateTarget
 

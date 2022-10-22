@@ -12,7 +12,7 @@ from typing import Dict, Generator, Iterable, Iterator, Optional, cast
 from . import constants
 from .config import Config
 from .engines import MarkdownEngine
-from .exceptions import VoltResourceError
+from .error import VoltResourceError
 from .targets import collect_copy_targets, Target
 from .theme import Theme
 

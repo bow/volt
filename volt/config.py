@@ -13,7 +13,7 @@ from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from . import constants
-from . import exceptions as excs
+from . import error as err
 from .utils import find_dir_containing
 
 
@@ -92,9 +92,7 @@ class Config(UserDict):
                 user_conf = cast(Dict[str, Any], yaml.safe_load(src))
             except (ParserError, ScannerError) as e:
                 # TODO: display traceback depending on log level
-                raise excs.VoltConfigError(
-                    f"could not parse config: {e.args[0]}"
-                ) from e
+                raise err.VoltConfigError(f"could not parse config: {e.args[0]}") from e
 
         return cls(
             invoc_dir=invoc_dir,
@@ -234,7 +232,7 @@ class Config(UserDict):
     def reload(self) -> "Config":
         """Reloads a YAML config."""
         if self._yaml_file is None:
-            raise excs.VoltResourceError("could not reload non-YAML config")
+            raise err.VoltResourceError("could not reload non-YAML config")
         return self.__class__.from_yaml(
             invoc_dir=self.invoc_dir, project_dir=self.project_dir
         )

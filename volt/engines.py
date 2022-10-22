@@ -10,7 +10,7 @@ from typing import cast, Any, Optional, Sequence, Type
 
 from jinja2 import Template
 
-from . import exceptions as excs
+from . import error as err
 from .config import Config
 from .constants import MARKDOWN_EXT
 from .sources import MarkdownSource
@@ -80,11 +80,11 @@ class EngineSpec:
 
             case (None, None):
                 msg = "one of 'module' or 'file' must be a valid string value"
-                raise excs.VoltConfigError(msg)
+                raise err.VoltConfigError(msg)
 
             case (_, _):
                 msg = "only one of 'module' or 'file' may be specified"
-                raise excs.VoltConfigError(msg)
+                raise err.VoltConfigError(msg)
 
     def load(self) -> Engine:
         return self.engine(
@@ -100,12 +100,12 @@ class EngineSpec:
         try:
             mod = import_module(mod_name)
         except ModuleNotFoundError as e:
-            raise excs.VoltConfigError(f"not a valid module: {mod_name}") from e
+            raise err.VoltConfigError(f"not a valid module: {mod_name}") from e
 
         try:
             return cast(Type[Engine], getattr(mod, cls_name))
         except AttributeError as e:
-            raise excs.VoltConfigError(
+            raise err.VoltConfigError(
                 f"engine {cls_name!r} not found in module {mod_name!r}"
             ) from e
 
@@ -119,7 +119,7 @@ class EngineSpec:
         try:
             return cast(Type[Engine], getattr(mod, cls_name))
         except AttributeError as e:
-            raise excs.VoltConfigError(
+            raise err.VoltConfigError(
                 f"engine {cls_name!r} not found in file {fn!r}"
             ) from e
 
@@ -128,7 +128,7 @@ class EngineSpec:
         try:
             cls_loc, cls_name = spec.rsplit(":", 1)
         except ValueError:
-            raise excs.VoltConfigError(f"invalid engine class specifier: {spec!r}")
+            raise err.VoltConfigError(f"invalid engine class specifier: {spec!r}")
         return cls_loc, cls_name
 
 
@@ -141,7 +141,7 @@ class MarkdownEngine(Engine):
         template_name = self.opts.pop("template_name", "page")
         try:
             self.template = self.theme.load_template(template_name)
-        except excs.VoltMissingTemplateError:
+        except err.VoltMissingTemplateError:
             default_fp = Path(__file__).parent / "defaults" / f"{template_name}.html.j2"
             self.template = Template(default_fp.read_text())
 

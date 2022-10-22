@@ -11,7 +11,7 @@ import click
 import pendulum
 import structlog
 
-from . import constants, exceptions as excs
+from . import constants, error as err
 from .config import Config
 from .server import Rebuilder, make_server
 from .site import Site
@@ -55,7 +55,7 @@ def new(
     :param force: Whether to force project creation in nonempty directories or not.
     :param config_name: Name of the config file to generate.
 
-    :raises ~volt.exceptions.VoltCliError:
+    :raises ~volt.error.VoltCliError:
         * when the given project directory is not empty and force is False.
         * when any directory creation fails.
 
@@ -70,10 +70,10 @@ def new(
     try:
         project_dir.mkdir(parents=True, exist_ok=True)
     except OSError as e:
-        raise excs.VoltCliError(e.strerror) from e
+        raise err.VoltCliError(e.strerror) from e
 
     if not force and any(True for _ in project_dir.iterdir()):
-        raise excs.VoltCliError(
+        raise err.VoltCliError(
             f"project directory {project_dir} contains files -- use the `-f` flag to"
             " force creation in nonempty directories"
         )
@@ -88,7 +88,7 @@ def new(
         try:
             dp.mkdir(parents=True, exist_ok=True)
         except OSError as e:
-            raise excs.VoltCliError(e.strerror) from e
+            raise err.VoltCliError(e.strerror) from e
 
     # Create initial YAML config file.
     new_conf = f"""---
@@ -174,7 +174,7 @@ def edit(
         click.edit(filename=f"{match_fp}")
         return None
 
-    raise excs.VoltResourceError(f"found no matching file for {query!r}")
+    raise err.VoltResourceError(f"found no matching file for {query!r}")
 
 
 def serve(
