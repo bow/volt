@@ -85,7 +85,10 @@ class _ConsoleLogRenderer:
         for key in event_dict.keys():
             value = event_dict[key]
             if not isinstance(value, (str, Path)):
-                value = repr(value)
+                if isinstance(value, bool):
+                    value = "yes" if value else "no"
+                else:
+                    value = repr(value)
             else:
                 value = f"{value}"
                 if any(char.isspace() for char in value):
