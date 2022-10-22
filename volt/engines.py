@@ -52,23 +52,17 @@ class Engine(abc.ABC):
         raise NotImplementedError()
 
 
-@dataclass(eq=True)
+@dataclass(eq=True, repr=True)
 class EngineSpec:
 
     """Specifications of an engine in the config."""
 
-    engine: Type[Engine] = field(init=False)
-
-    config: Config
-
-    theme: Theme
-
     source: str
-
     opts: dict
-
+    config: Config
+    theme: Theme
+    engine: Type[Engine] = field(init=False)
     module: InitVar[Optional[str]]
-
     file: InitVar[Optional[str]]
 
     def __post_init__(
