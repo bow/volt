@@ -279,6 +279,14 @@ def edit(
     help="If set, rebuild site when source files are changed. Default: set.",
 )
 @click.option(
+    "--pre-build/--no-pre-build",
+    default=True,
+    help=(
+        "If set, build site before starting server. This value is ignored"
+        " if '--build' is unset. Default: set."
+    ),
+)
+@click.option(
     "--drafts/--no-drafts",
     default=True,
     help=(
@@ -300,6 +308,7 @@ def serve(
     host: Optional[str],
     port: int,
     build: bool,
+    pre_build: bool,
     drafts: bool,
     clean: bool,
 ) -> None:
@@ -310,7 +319,7 @@ def serve(
     if config is None:
         raise excs.VOLT_NO_PROJECT_ERR
 
-    session.serve(config, host, port, build, drafts, clean)
+    session.serve(config, host, port, build, pre_build, drafts, clean)
 
 
 class ExtensionGroup(click.Group):

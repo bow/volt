@@ -182,6 +182,7 @@ def serve(
     host: Optional[str],
     port: int,
     do_build: bool,
+    pre_build: bool,
     build_with_drafts: bool,
     build_clean: bool,
 ) -> None:
@@ -196,7 +197,7 @@ def serve(
 
     if do_build:
 
-        def builder() -> None:
+        def builder() -> bool:
             nonlocal config
             try:
                 # TODO: Only reload config post-init, on config file change.
@@ -213,11 +214,13 @@ def serve(
                     msg += " -- keeping current build"
                 log.error(msg)
                 log.exception(e)
-                return None
-            return None
+                return False
+            else:
+                return True
 
         with Rebuilder(config, builder):
-            builder()
+            if pre_build:
+                builder()
             log.debug("starting dev server")
             serve()
     else:
