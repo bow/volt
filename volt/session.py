@@ -214,13 +214,17 @@ def serve(
                     msg += " -- keeping current build"
                 log.error(msg)
                 log.exception(e)
-                return False
+                return build_exists
             else:
                 return True
 
         with Rebuilder(config, builder):
+            build_exists = True
             if pre_build:
-                builder()
+                build_exists = builder()
+            if not build_exists:
+                log.error("exiting", reason="build-nonexistent")
+                return
             log.debug("starting dev server")
             serve()
     else:
