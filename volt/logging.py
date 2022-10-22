@@ -106,11 +106,13 @@ def init_logging(log_level: str) -> None:
         structlog.stdlib.add_log_level,
     ]
 
+    log_level = log_level.upper()
+
     log_config = {
         "version": 1,
         "disable_existing_loggers": False,
         "root": {
-            "level": log_level.upper(),
+            "level": log_level,
             "handlers": ["err_console"],
         },
         "handlers": {
@@ -139,3 +141,13 @@ def init_logging(log_level: str) -> None:
     )
 
     dictConfig(log_config)
+
+    if log_level == "DEBUG":
+        from platform import platform
+        from . import __version__
+
+        bind_contextvars(
+            python_version=sys.version,
+            volt_version=__version__,
+            platform=platform(),
+        )
