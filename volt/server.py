@@ -41,9 +41,11 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
             if status.value >= 400:
                 code = style(code, fg="red", bold=True)
             elif status.value >= 300:
-                code = style(code, fg="blue", bold=True)
+                code = style(code, fg="yellow", bold=True)
             else:
-                code = style(code, fg="green", bold=True)
+                code = style(code, fg="cyan", bold=True)
+
+            path = style(path, fg="magenta")
 
             echo(fmt % (code, method, path), file=get_text_stderr())
 
