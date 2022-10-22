@@ -97,8 +97,9 @@ class _ConsoleLogRenderer:
         if exc_info is not None:
             if not isinstance(exc_info, tuple):
                 exc_info = sys.exc_info()
-            logstr += "\n"
-            logstr += "".join(better_exceptions.format_exception(*exc_info))
+            if any(item is not None for item in exc_info):
+                logstr += "\n"
+                logstr += "".join(better_exceptions.format_exception(*exc_info))
 
         return logstr
 
