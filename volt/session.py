@@ -206,8 +206,9 @@ def serve(
                 msg = "build failed"
                 build_exists = False
                 target_dir = config.target_dir
-                if target_dir.exists() and any(True for _ in target_dir.iterdir()):
-                    build_exists = True
+                with suppress(Exception):
+                    if target_dir.exists() and any(True for _ in target_dir.iterdir()):
+                        build_exists = True
                 if build_exists:
                     msg += " -- keeping current build"
                 log.error(msg)
