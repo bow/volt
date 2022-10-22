@@ -48,4 +48,5 @@ def halt(reason: str, exit_code: int = 1) -> NoReturn:
     sys.exit(exit_code)
 
 
-VOLT_NO_PROJECT_ERR = VoltCliError("not in a volt project")
+def halt_not_in_project() -> NoReturn:
+    halt("not-in-volt-project-dir")

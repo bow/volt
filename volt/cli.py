@@ -218,12 +218,12 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    bind_drafts_context(drafts)
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        raise err.VOLT_NO_PROJECT_ERR
+        err.halt_not_in_project()
 
+    bind_drafts_context(drafts)
     session.build(config, clean, drafts)
 
 
@@ -263,12 +263,12 @@ def edit(
     drafts: bool,
 ) -> None:
     """Open a draft file in an editor."""
-    bind_drafts_context(drafts)
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        raise err.VOLT_NO_PROJECT_ERR
+        err.halt_not_in_project()
 
+    bind_drafts_context(drafts)
     session.edit(config, name, create, title, drafts)
 
 
@@ -321,12 +321,12 @@ def serve(
     clean: bool,
 ) -> None:
     """Run the development server."""
-    bind_drafts_context(drafts)
     params = cast(click.Context, ctx.parent).params
     config = params.get("config", None)
     if config is None:
-        raise err.VOLT_NO_PROJECT_ERR
+        err.halt_not_in_project()
 
+    bind_drafts_context(drafts)
     session.serve(config, host, port, build, pre_build, drafts, clean)
 
 
