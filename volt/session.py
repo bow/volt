@@ -3,6 +3,7 @@
 
 import os
 import time
+from contextlib import suppress
 from pathlib import Path
 from typing import Optional
 
@@ -210,7 +211,14 @@ def serve(
                 config = config.reload()
                 build(config, build_clean, build_with_drafts)
             except Exception as e:
-                log.error("new build failed -- keeping current build", **log_attrs)
+                msg = "build failed"
+                build_exists = False
+                target_dir = config.target_dir
+                if target_dir.exists() and any(True for _ in target_dir.iterdir()):
+                    build_exists = True
+                if build_exists:
+                    msg += " -- keeping current build"
+                log.error(msg, **log_attrs)
                 log.exception(e)
                 return None
             return None
