@@ -9,13 +9,17 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable, Optional, cast
 
-from click import style
+import structlog
+from click import echo, style
+from click._compat import get_text_stderr
 from watchdog import events
 from watchdog.observers import Observer
 
 from . import __version__, constants
 from .config import Config
-from .utils import echo_fmt, echo_info
+
+
+log = structlog.get_logger(__name__)
 
 
 def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
@@ -41,7 +45,7 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
             else:
                 code = style(code, fg="green", bold=True)
 
-            echo_fmt(fmt % (code, method, path), capitalize=False)
+            echo(fmt % (code, method, path), file=get_text_stderr())
 
         def log_request(
             self,
@@ -49,7 +53,7 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
             size: str | int = "-",
         ) -> Any:
             ts = dt.now().strftime("%H:%M:%S.%f")
-            fmt = '%29s | %%s · %%s "%%s"' % style(ts, fg="bright_black")
+            fmt = '%30s | %%s · %%s "%%s"' % style(ts, fg="bright_black")
             method, path = self.requestline[:-9].split(" ", 1)
             self.log_message(fmt, method, cast(HTTPStatus, code), path)
 
@@ -59,7 +63,7 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
 
     def serve() -> None:
         httpd = ThreadingHTTPServer((host, port), HTTPRequestHandler)
-        echo_info(f"dev server listening at http://{host}:{port}")
+        log.info("dev server listening", addr=f"http://{host}:{port}")
         httpd.serve_forever()
 
     return serve
@@ -126,37 +130,63 @@ class BuildHandler(events.RegexMatchingEventHandler):
 
     def on_any_event(self, event: Any) -> None:
 
-        msg = ""
+        log_attrs: dict = {}
         match type(event):
 
             case events.FileCreatedEvent:
-                msg = f"file created: {event.src_path}"
+                log_attrs = dict(
+                    reason="file-created",
+                    file=event.src_path,
+                )
 
             case events.FileModifiedEvent:
-                msg = f"file modified: {event.src_path}"
+                log_attrs = dict(
+                    reason="file-modified",
+                    file=event.src_path,
+                )
 
             case events.FileDeletedEvent:
-                msg = f"file deleted: {event.src_path}"
+                log_attrs = dict(
+                    reason="file-deleted",
+                    file=event.src_path,
+                )
 
             case events.FileMovedEvent:
-                msg = f"file moved: {event.src_path} to {event.dest_path}"
+                log_attrs = dict(
+                    reason="file-moved",
+                    src=event.src_path,
+                    dest=event.dest_path,
+                )
 
             case events.DirCreatedEvent:
-                msg = f"directory created: {event.src_path}"
+                log_attrs = dict(
+                    reason="dir-created",
+                    dir=event.src_path,
+                )
 
             case events.DirModifiedEvent:
-                msg = f"directory modified: {event.src_path}"
+                log_attrs = dict(
+                    reason="dir-modified",
+                    dir=event.src_path,
+                )
 
             case events.DirDeletedEvent:
-                msg = f"directory deleted: {event.src_path}"
+                log_attrs = dict(
+                    reason="dir-deleted",
+                    dir=event.src_path,
+                )
 
             case events.DirMovedEvent:
-                msg = f"directory moved: {event.src_path} to {event.dest_path}"
+                log_attrs = dict(
+                    reason="dir-moved",
+                    src=event.src_path,
+                    dest=event.dest_path,
+                )
 
             case _:
-                msg = "unknown change detected"
+                log_attrs = dict(reason="unknown")
 
-        echo_info(f"{msg} -- rebuilding")
+        log.info("Rebuilding site", **log_attrs)
         self._build()
         return None
 

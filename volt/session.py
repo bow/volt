@@ -3,25 +3,25 @@
 
 import os
 import time
-import traceback
 from pathlib import Path
 from typing import Optional
 
 import click
 import pendulum
+import structlog
 
 from . import constants, exceptions as excs
 from .config import Config
 from .server import Rebuilder, make_server
 from .site import Site
 from .utils import (
-    echo_err,
-    echo_info,
     get_fuzzy_match,
     infer_author,
     infer_front_matter,
     infer_lang,
 )
+
+log = structlog.get_logger(__name__)
 
 
 def new(
@@ -127,10 +127,14 @@ def build(
 
     site = Site(config=config)
     site.build(clean=clean)
-    echo_info(
-        f"{'draft ' if with_drafts else ''}build"
-        f" completed in {(time.monotonic() - start_time):.2f}s"
-    )
+
+    log_attrs: dict[str, str | bool] = {
+        "duration": f"{(time.monotonic() - start_time):.2f}s",
+    }
+    if with_drafts:
+        log_attrs["drafts"] = True
+
+    log.info("build completed", **log_attrs)
 
     return site
 
@@ -158,7 +162,7 @@ def edit(
             require_save=False,
         )
         if contents:
-            echo_info(
+            log.info(
                 f"created new draft at {str(new_fp.relative_to(config.invoc_dir))!r}"
             )
             new_fp.write_text(contents)
@@ -197,28 +201,22 @@ def serve(
 
     if do_build:
 
+        log_attrs = {"drafts": True} if build_with_drafts else {}
+
         def builder() -> None:
             nonlocal config
             try:
                 # TODO: Only reload config post-init, on config file change.
                 config = config.reload()
                 build(config, build_clean, build_with_drafts)
-            except click.ClickException as e:
-                e.show()
-                echo_err("new build failed -- keeping current build")
-                return None
             except Exception as e:
-                echo_err("new build failed -- keeping current build")
-                tb = traceback.format_exception(type(e), e, e.__traceback__)
-                echo_err("".join(tb))
+                log.error("new build failed -- keeping current build", **log_attrs)
+                log.exception(e)
                 return None
             return None
 
         with Rebuilder(config, builder):
-            echo_info(
-                f"starting dev server"
-                f"{'' if not build_with_drafts else ' in drafts mode'}"
-            )
+            log.info("starting dev server", **log_attrs)
             builder()
             serve()
     else:

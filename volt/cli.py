@@ -6,11 +6,15 @@ from types import ModuleType
 from typing import Any, Optional, cast
 
 import click
+import structlog
 
 from . import __version__, exceptions as excs, session
 from .config import Config
 from .logging import init_logging
-from .utils import echo_info, import_file
+from .utils import import_file
+
+
+log = structlog.get_logger(__name__)
 
 
 # Taken from:
@@ -173,7 +177,7 @@ def new(
         language=lang,
         force=force,
     )
-    echo_info(f"project created at {project_dir}")
+    log.info(f"project created at {project_dir}")
 
 
 @main.command()

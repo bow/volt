@@ -8,36 +8,11 @@ from os import path, scandir, PathLike
 from pathlib import Path
 from shutil import which
 from types import ModuleType
-from typing import IO, Any, Optional
+from typing import Optional
 
-from click import echo, style
-from click._compat import get_text_stderr
 from thefuzz import process
 
 from . import exceptions as excs
-
-
-def echo_fmt(
-    msg: str,
-    style: str = "",
-    file: Optional[IO[Any]] = None,
-    capitalize: bool = True,
-) -> None:
-    """Show a formatted message"""
-    if file is None:
-        file = get_text_stderr()
-    msg = msg[0].upper() + msg[1:] if capitalize else msg
-    echo(f"{style} {msg}", file=file)
-
-
-def echo_info(msg: str, **kwargs: Any) -> None:
-    """Show a formatted info message."""
-    echo_fmt(msg, style(" INF ", bg="blue", bold=True), **kwargs)
-
-
-def echo_err(msg: str, **kwargs: Any) -> None:
-    """Show a formatted error message."""
-    echo_fmt(msg, style(" ERR ", bg="red", bold=True), **kwargs)
 
 
 def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:

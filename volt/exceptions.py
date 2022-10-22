@@ -1,8 +1,6 @@
 """Custom exceptions."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
-from typing import IO, Any, Optional
-
 from click import ClickException
 
 __all__ = [
@@ -21,11 +19,6 @@ class VoltError(Exception):
 class VoltCliError(VoltError, ClickException):
 
     """Exceptions displayed as error messages to users."""
-
-    def show(self, file: Optional[IO[Any]] = None) -> None:
-        from .utils import echo_err
-
-        echo_err(self.format_message(), file=file)
 
 
 class VoltConfigError(VoltCliError):
