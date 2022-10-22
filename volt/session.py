@@ -62,35 +62,10 @@ def new(
         * when any directory creation fails.
 
     """
-    project_dir = (
-        project_dir.resolve() / (dirname or ".")
-        if dirname is not None and not os.path.isabs(dirname)
-        else Path(dirname or ".")
-    )
+    project_dir = _bootstrap_project_dirs(invoc_dir, project_dir, dirname, force)
+
     if not name and dirname is not None:
         name = project_dir.name
-    try:
-        project_dir.mkdir(parents=True, exist_ok=True)
-    except OSError as e:
-        raise err.VoltCliError(e.strerror) from e
-
-    if not force and any(True for _ in project_dir.iterdir()):
-        raise err.VoltCliError(
-            f"project directory {project_dir} contains files -- use the `-f` flag to"
-            " force creation in nonempty directories"
-        )
-
-    # Bootstrap directories.
-    config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
-    for dp in (
-        config.sources_dir,
-        config.static_dir,
-        config.themes_dir,
-    ):
-        try:
-            dp.mkdir(parents=True, exist_ok=True)
-        except OSError as e:
-            raise err.VoltCliError(e.strerror) from e
 
     # Create initial YAML config file.
     new_conf = f"""---
@@ -274,6 +249,36 @@ def _walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Pa
             todo_dirs.append(p)
 
     return dirs
+
+
+def _bootstrap_project_dirs(
+    invoc_dir: Path,
+    project_dir: Path,
+    dirname: Optional[str],
+    force: bool,
+) -> Path:
+
+    project_dir = (
+        project_dir / (dirname or ".")
+        if dirname is not None and not os.path.isabs(dirname)
+        else Path(dirname or ".")
+    ).resolve()
+
+    if not force and project_dir.exists() and any(True for _ in project_dir.iterdir()):
+        raise err.VoltCliError(
+            f"project directory {project_dir} contains files -- use the `-f` flag to"
+            " force creation in nonempty directories"
+        )
+
+    config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
+    for dp in (
+        config.sources_dir,
+        config.static_dir,
+        config.themes_dir,
+    ):
+        dp.mkdir(parents=True, exist_ok=True)
+
+    return project_dir
 
 
 def _infer_lang() -> Optional[str]:
