@@ -223,8 +223,7 @@ def serve(
             if pre_build:
                 build_exists = builder()
             if not build_exists:
-                log.error("exiting", reason="build-nonexistent")
-                return
+                err.halt("build-nonexistent")
             log.debug("starting dev server")
             serve()
     else:
