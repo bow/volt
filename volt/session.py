@@ -217,8 +217,8 @@ def serve(
             return None
 
         with Rebuilder(config, builder):
-            log.info("starting dev server")
             builder()
+            log.debug("starting dev server")
             serve()
     else:
         serve()

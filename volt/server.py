@@ -203,7 +203,7 @@ class BuildHandler(events.RegexMatchingEventHandler):
             case _:
                 log_attrs = dict(reason="unknown")
 
-        log.info("Rebuilding site", **log_attrs)
+        log.info("rebuilding site", **log_attrs)
         self._build()
         return None
 
