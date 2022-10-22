@@ -1,14 +1,26 @@
 """Logging-related functionalities."""
 # (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import os
 import sys
 from dataclasses import dataclass
 from logging.config import dictConfig
 from pathlib import Path
+from typing import Optional
 
 import better_exceptions
 import structlog
 from click import style
+
+
+def _get_exceptions_max_length(default: int = 65) -> Optional[int]:
+    value = os.environ.get("VOLT_EXCEPTIONS_MAX_LENGTH", None)
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    return None
+
+
+better_exceptions.MAX_LENGTH = _get_exceptions_max_length()
 
 
 @dataclass
