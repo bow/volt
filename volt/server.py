@@ -2,12 +2,14 @@
 # (c) 2012-2021 Wibowo Arindrarto <contact@arindrarto.dev>
 
 import queue
+import signal
+import sys
 import threading
 from contextlib import suppress
 from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Callable, Optional, cast
+from typing import Any, Callable, NoReturn, Optional, cast
 
 import structlog
 from click import echo, style
@@ -65,6 +67,19 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
 
     def serve() -> None:
         httpd = ThreadingHTTPServer((host, port), HTTPRequestHandler)
+
+        def signal_handler(signum: int, frame: Any) -> NoReturn:
+            try:
+                httpd.server_close()
+            finally:
+                if signum == signal.SIGINT:
+                    print("", file=sys.stderr, flush=True)
+                log.info(f"dev server stopped ({signal.strsignal(signum)})")
+                sys.exit(0)
+
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+
         log.info("dev server listening", addr=f"http://{host}:{port}")
         httpd.serve_forever()
 
