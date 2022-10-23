@@ -3,7 +3,6 @@
 
 import os
 from collections import UserDict
-from contextvars import ContextVar
 from functools import cached_property
 from pathlib import Path
 from typing import cast, Any, Dict, Iterable, Literal, Optional
