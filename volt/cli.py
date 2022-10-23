@@ -69,8 +69,7 @@ class _ExtensionGroup(click.Group):
         return mod
 
     def list_commands(self, ctx: click.Context) -> list[str]:
-        params = cast(click.Context, ctx.parent).params
-        config = params["config"]
+        config = _get_config(ctx)
 
         if (mod := self.import_xcmd(config)) is None:
             return []
@@ -88,8 +87,7 @@ class _ExtensionGroup(click.Group):
         return rv
 
     def get_command(self, ctx: click.Context, name: str) -> Any:
-        params = cast(click.Context, ctx.parent).params
-        config = params["config"]
+        config = _get_config(ctx)
         self.import_xcmd(config)
         return self.commands.get(name)
 
@@ -154,6 +152,8 @@ def main(
     config: Optional[Config] = None
     if ctx.invoked_subcommand != new.name:
         config = Config.from_project_dir(invoc_dir, project_dir)
+        if config is None:
+            err._halt_not_in_project()
     ctx.params["config"] = config
 
 
@@ -286,12 +286,9 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    params = cast(click.Context, ctx.parent).params
-    config = params.get("config", None)
-    if config is None:
-        err._halt_not_in_project()
-
+    config = _get_config(ctx)
     bind_drafts_context(drafts)
+
     session.build(config, clean, drafts)
 
 
@@ -331,12 +328,9 @@ def edit(
     drafts: bool,
 ) -> None:
     """Open a draft file in an editor."""
-    params = cast(click.Context, ctx.parent).params
-    config = params.get("config", None)
-    if config is None:
-        err._halt_not_in_project()
-
+    config = _get_config(ctx)
     bind_drafts_context(drafts)
+
     session.edit(config, name, create, title, drafts)
 
 
@@ -389,12 +383,9 @@ def serve(
     clean: bool,
 ) -> None:
     """Run the development server."""
-    params = cast(click.Context, ctx.parent).params
-    config = params.get("config", None)
-    if config is None:
-        err._halt_not_in_project()
-
+    config = _get_config(ctx)
     bind_drafts_context(drafts)
+
     session.serve(config, host, port, rebuild, pre_build, drafts, clean)
 
 
@@ -406,3 +397,8 @@ def xcmd() -> None:
     defined in an `ext/cmd.py` file in your project.
 
     """
+
+
+def _get_config(ctx: click.Context) -> Config:
+    config = cast(click.Context, ctx.parent).params["config"]
+    return cast(Config, config)
