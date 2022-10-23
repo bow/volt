@@ -13,6 +13,7 @@ from typing import Optional
 import click
 import pendulum
 import structlog
+from structlog.contextvars import bind_contextvars, unbind_contextvars
 from thefuzz import process
 
 from . import constants, error as err
@@ -99,6 +100,8 @@ def build(
 
     """
     config._with_drafts = with_drafts
+    log_attrs = {"drafts": with_drafts}
+    bind_contextvars(**log_attrs)
 
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
@@ -120,6 +123,8 @@ def build(
         raise
     else:
         log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
+    finally:
+        unbind_contextvars(*log_attrs.keys())
 
     return site
 

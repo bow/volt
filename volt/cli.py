@@ -12,7 +12,7 @@ import structlog
 from . import __version__, error as err, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle
 from ._import import import_file
-from ._logging import init_logging, bind_drafts_context
+from ._logging import init_logging
 
 
 __all__ = [
@@ -287,7 +287,6 @@ def build(
 
     """
     config = _get_config(ctx)
-    bind_drafts_context(drafts)
 
     session.build(config, clean, drafts)
 
@@ -329,7 +328,6 @@ def edit(
 ) -> None:
     """Open a draft file in an editor."""
     config = _get_config(ctx)
-    bind_drafts_context(drafts)
 
     session.edit(config, name, create, title, drafts)
 
@@ -384,7 +382,6 @@ def serve(
 ) -> None:
     """Run the development server."""
     config = _get_config(ctx)
-    bind_drafts_context(drafts)
 
     session.serve(config, host, port, rebuild, pre_build, drafts, clean)
 
