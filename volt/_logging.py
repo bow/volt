@@ -43,7 +43,7 @@ class _LogLabel:
     def styled(self) -> str:
         if _get_use_color():
             return style(f" {self.text} ", fg=self.bg, bold=True, reverse=True)
-        return f"{self.text} |"
+        return f"◆ {self.text} |"
 
 
 _level_styles = {
@@ -71,11 +71,7 @@ class _ConsoleLogRenderer:
         label = _level_styles.get(level, _default_style)
         logstr = f"{label.styled} "
 
-        event = event_dict.pop("event", "")
-        if isinstance(event, Exception):
-            event = f"{event.__class__.__name__}: {event}"
-        else:
-            event = f"{event}"
+        event = f"{event_dict.pop('event', '')}"
         logstr += style(f"{event[0].upper() + event[1:]}", bold=True)
 
         exc_info = event_dict.pop("exc_info", None)
@@ -127,7 +123,7 @@ class _ConsoleLogRenderer:
             case "plain":
                 rendered += "".join(traceback.format_exception(*exc_info))
 
-        return rendered
+        return rendered.removesuffix("\n")
 
 
 def bind_drafts_context(drafts: bool) -> None:
