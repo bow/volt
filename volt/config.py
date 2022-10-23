@@ -226,32 +226,35 @@ class Config(UserDict):
         )
 
 
-_use_color_key = "use-color"
-_use_color: ContextVar[bool] = ContextVar(_use_color_key, default=True)
+_ExcStyle = Literal["pretty", "plain"]
+# NOTE: Not context vars because our watchers and server are thread-based
+#       without any clean ways of propagating the contexts.
+_use_color: bool = True
+_exc_style: _ExcStyle = "pretty"
 
 
 def _get_use_color() -> bool:
-    return cast(bool, _use_color.get(_use_color_key))
+    global _use_color
+    return _use_color
 
 
 def _set_use_color(value: bool) -> bool:
-    token = _use_color.set(value)
-    return cast(bool, token.old_value)
-
-
-_ExcStyle = Literal["pretty", "plain"]
-
-_exc_style_key = "exc-style"
-_exc_style: ContextVar[_ExcStyle] = ContextVar(_exc_style_key, default="pretty")
+    global _use_color
+    cur = _use_color
+    _use_color = value
+    return cur
 
 
 def _get_exc_style() -> _ExcStyle:
-    return cast(_ExcStyle, _exc_style.get(_exc_style_key))
+    global _exc_style
+    return _exc_style
 
 
 def _set_exc_style(value: _ExcStyle) -> _ExcStyle:
-    token = _exc_style.set(value)
-    return cast(_ExcStyle, token.old_value)
+    global _exc_style
+    cur = _exc_style
+    _exc_style = value
+    return cur
 
 
 def _find_dir_containing(fname: str, start: Path) -> Optional[Path]:

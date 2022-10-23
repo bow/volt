@@ -122,6 +122,8 @@ class _ConsoleLogRenderer:
                 rendered += "".join(better_exceptions.format_exception(*exc_info))
             case "plain":
                 rendered += "".join(traceback.format_exception(*exc_info))
+            case otherwise:
+                raise ValueError(f"unexpected exception style: {otherwise!r}")
 
         return rendered.removesuffix("\n")
 
