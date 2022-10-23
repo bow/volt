@@ -104,9 +104,22 @@ def build(
     config["build_time"] = pendulum.now()
 
     site = Site(config=config)
-    site.build(clean=clean)
 
-    log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
+    try:
+        site.build(clean=clean)
+    except Exception:
+        msg = "build failed"
+        build_exists = False
+        target_dir = config.target_dir
+        with suppress(Exception):
+            if target_dir.exists() and any(True for _ in target_dir.iterdir()):
+                build_exists = True
+        if build_exists:
+            msg += " -- keeping current build"
+        log.error(msg)
+        raise
+    else:
+        log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
 
     return site
 
@@ -181,18 +194,7 @@ def serve(
                 config = config.reload()
                 build(config, build_clean, build_with_drafts)
             except Exception as e:
-                msg = "build failed"
-                build_exists = False
-                target_dir = config.target_dir
-                with suppress(Exception):
-                    if target_dir.exists() and any(True for _ in target_dir.iterdir()):
-                        build_exists = True
-                if build_exists:
-                    msg += " -- keeping current build"
-                log.error(msg)
                 log.exception(e)
-            finally:
-                return None
 
         with _Rebuilder(config, builder):
             if pre_build:
