@@ -1,6 +1,7 @@
 """Main entry point for command line invocation."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
+import sys
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, cast
@@ -9,8 +10,9 @@ import better_exceptions
 import click
 import structlog
 
-from . import __version__, error as err, session
+from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle
+from .error import VoltCliError
 from ._import import import_file
 from ._logging import init_logging
 
@@ -20,12 +22,22 @@ __all__ = [
     "edit",
     "main",
     "new",
+    "root",
     "serve",
     "xcmd",
 ]
 
 
 log = structlog.get_logger(__name__)
+
+
+def main() -> None:
+    """Main entry point."""
+    try:
+        root()
+    except Exception as e:
+        log.exception(e)
+        sys.exit(1)
 
 
 # Taken from:
@@ -127,7 +139,7 @@ class _ExtensionGroup(click.Group):
     help="Exception style. Default: 'pretty'.",
 )
 @click.pass_context
-def main(
+def root(
     ctx: click.Context,
     project_dir: Path,
     log_level: str,
@@ -153,11 +165,13 @@ def main(
     if ctx.invoked_subcommand != new.name:
         config = Config.from_project_dir(invoc_dir, project_dir)
         if config is None:
-            err._halt_not_in_project()
+            raise VoltCliError(
+                f"Command {ctx.invoked_subcommand!r} works only within a Volt project"
+            )
     ctx.params["config"] = config
 
 
-@main.command()
+@root.command()
 @click.argument("path", type=str, required=False, default=None)
 @click.option(
     "-n",
@@ -256,7 +270,7 @@ def new(
     log.info(f"project created at {project_dir}")
 
 
-@main.command()
+@root.command()
 @click.option(
     "--drafts/--no-drafts",
     default=False,
@@ -291,7 +305,7 @@ def build(
     session.build(config, clean, drafts)
 
 
-@main.command()
+@root.command()
 @click.argument("name", type=str, required=True)
 @click.option(
     "-c",
@@ -332,7 +346,7 @@ def edit(
     session.edit(config, name, create, title, drafts)
 
 
-@main.command()
+@root.command()
 @click.option(
     "-h",
     "--host",
@@ -386,7 +400,7 @@ def serve(
     session.serve(config, host, port, rebuild, pre_build, drafts, clean)
 
 
-@main.command(cls=_ExtensionGroup)
+@root.command(cls=_ExtensionGroup)
 def xcmd() -> None:
     """Execute custom subcommands.
 

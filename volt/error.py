@@ -1,8 +1,7 @@
 """Error handling and custom exceptions."""
 # (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
 
-import sys
-from typing import NoReturn
+from typing import IO, Any, Optional
 
 from click import ClickException
 from structlog import get_logger
@@ -28,6 +27,9 @@ class VoltCliError(VoltError, ClickException):
 
     """Exceptions displayed as error messages to users."""
 
+    def show(self, file: Optional[IO[Any]] = None) -> None:
+        log.error(f"{self}")
+
 
 class VoltConfigError(VoltCliError):
 
@@ -42,12 +44,3 @@ class VoltResourceError(VoltConfigError):
 class VoltMissingTemplateError(VoltResourceError):
 
     """Raised for errors when loading templates."""
-
-
-def _halt(reason: str, exit_code: int = 1) -> NoReturn:
-    log.error("halting execution", reason=reason)
-    sys.exit(exit_code)
-
-
-def _halt_not_in_project() -> NoReturn:
-    _halt("not-in-volt-project-dir")
