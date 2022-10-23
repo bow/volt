@@ -72,7 +72,7 @@ class _ConsoleLogRenderer:
 
         event = event_dict.pop("event", "")
         if isinstance(event, Exception):
-            event = f"{event} ({event.__class__.__name__})"
+            event = f"{event.__class__.__name__}: {event}"
         else:
             event = f"{event}"
         logstr += style(f"{event[0].upper() + event[1:]}", bold=True)
