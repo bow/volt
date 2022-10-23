@@ -174,7 +174,7 @@ def serve(
 
     if do_build:
 
-        def builder() -> bool:
+        def builder() -> None:
             nonlocal config
             try:
                 # TODO: Only reload config post-init, on config file change.
@@ -191,16 +191,12 @@ def serve(
                     msg += " -- keeping current build"
                 log.error(msg)
                 log.exception(e)
-                return build_exists
-            else:
-                return True
+            finally:
+                return None
 
         with _Rebuilder(config, builder):
-            build_exists = True
             if pre_build:
-                build_exists = builder()
-            if not build_exists:
-                err._halt("build-nonexistent")
+                builder()
             log.debug("starting dev server")
             serve()
     else:
