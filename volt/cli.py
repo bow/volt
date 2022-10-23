@@ -5,11 +5,12 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, cast
 
+import better_exceptions
 import click
 import structlog
 
 from . import __version__, error as err, session
-from .config import Config, _set_use_color
+from .config import Config, _set_exc_style, _set_use_color, _ExcStyle
 from ._import import import_file
 from ._logging import init_logging, bind_drafts_context
 
@@ -121,9 +122,25 @@ class _ExtensionGroup(click.Group):
     default=True,
     help="If set, color consol outputs. Default: set",
 )
+@click.option(
+    "--exc-style",
+    type=click.Choice(["plain", "pretty"]),
+    default="pretty",
+    help="Exception style. Default: 'pretty'.",
+)
 @click.pass_context
-def main(ctx: click.Context, project_dir: Path, log_level: str, color: bool) -> None:
+def main(
+    ctx: click.Context,
+    project_dir: Path,
+    log_level: str,
+    color: bool,
+    exc_style: _ExcStyle,
+) -> None:
     """A versatile static website generator"""
+
+    if exc_style == "pretty":
+        better_exceptions.hook()
+    _set_exc_style(exc_style)
 
     _set_use_color(color)
 

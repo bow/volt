@@ -6,7 +6,7 @@ from collections import UserDict
 from contextvars import ContextVar
 from functools import cached_property
 from pathlib import Path
-from typing import cast, Any, Dict, Iterable, Optional
+from typing import cast, Any, Dict, Iterable, Literal, Optional
 
 import yaml
 from yaml.parser import ParserError
@@ -237,6 +237,21 @@ def _get_use_color() -> bool:
 def _set_use_color(value: bool) -> bool:
     token = _use_color.set(value)
     return cast(bool, token.old_value)
+
+
+_ExcStyle = Literal["pretty", "plain"]
+
+_exc_style_key = "exc-style"
+_exc_style: ContextVar[_ExcStyle] = ContextVar(_exc_style_key, default="pretty")
+
+
+def _get_exc_style() -> _ExcStyle:
+    return cast(_ExcStyle, _exc_style.get(_exc_style_key))
+
+
+def _set_exc_style(value: _ExcStyle) -> _ExcStyle:
+    token = _exc_style.set(value)
+    return cast(_ExcStyle, token.old_value)
 
 
 def _find_dir_containing(fname: str, start: Path) -> Optional[Path]:

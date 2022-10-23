@@ -3,6 +3,7 @@
 
 import os
 import sys
+import traceback
 from dataclasses import dataclass
 from logging.config import dictConfig
 from pathlib import Path
@@ -13,7 +14,7 @@ import structlog
 from click import style as cstyle
 from structlog.contextvars import bind_contextvars, merge_contextvars
 
-from .config import _get_use_color
+from .config import _get_exc_style, _get_use_color
 
 
 def style(text: str, **kwargs: Any) -> str:
@@ -102,7 +103,11 @@ class _ConsoleLogRenderer:
                 exc_info = sys.exc_info()
             if any(item is not None for item in exc_info):
                 logstr += "\n"
-                logstr += "".join(better_exceptions.format_exception(*exc_info))
+                match _get_exc_style():
+                    case "pretty":
+                        logstr += "".join(better_exceptions.format_exception(*exc_info))
+                    case "plain":
+                        logstr += "".join(traceback.format_exception(*exc_info))
 
         return logstr
 
