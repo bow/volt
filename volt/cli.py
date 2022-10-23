@@ -350,7 +350,7 @@ def edit(
 )
 @click.option("-p", "--port", type=int, default=5050, help="Server port.")
 @click.option(
-    "--build/--no-build",
+    "--rebuild/--no-rebuild",
     default=True,
     help="If set, rebuild site when source files are changed. Default: set.",
 )
@@ -383,7 +383,7 @@ def serve(
     ctx: click.Context,
     host: Optional[str],
     port: int,
-    build: bool,
+    rebuild: bool,
     pre_build: bool,
     drafts: bool,
     clean: bool,
@@ -395,7 +395,7 @@ def serve(
         err._halt_not_in_project()
 
     bind_drafts_context(drafts)
-    session.serve(config, host, port, build, pre_build, drafts, clean)
+    session.serve(config, host, port, rebuild, pre_build, drafts, clean)
 
 
 @main.command(cls=_ExtensionGroup)

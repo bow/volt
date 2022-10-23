@@ -171,7 +171,7 @@ def serve(
     config: Config,
     host: Optional[str],
     port: int,
-    do_build: bool,
+    rebuild: bool,
     pre_build: bool,
     build_with_drafts: bool,
     build_clean: bool,
@@ -185,7 +185,10 @@ def serve(
 
     serve = make_server(config, eff_host, port)
 
-    if do_build:
+    if not rebuild:
+        serve()
+
+    else:
 
         def builder() -> None:
             nonlocal config
@@ -201,8 +204,6 @@ def serve(
                 builder()
             log.debug("starting dev server")
             serve()
-    else:
-        serve()
 
 
 def _get_fuzzy_match(
