@@ -79,10 +79,19 @@ class _ConsoleLogRenderer:
         logstr += style(f"{event[0].upper() + event[1:]}", bold=True)
 
         exc_info = event_dict.pop("exc_info", None)
+        logstr += self._render_event_dict(event_dict)
+        logstr += self._render_exc_info(exc_info)
 
-        if event_dict.keys():
-            logstr += " ·"
+        return logstr
 
+    @staticmethod
+    def _render_event_dict(event_dict: structlog.types.EventDict) -> str:
+
+        keys = event_dict.keys()
+        if not keys:
+            return ""
+
+        rendered = " ·"
         for key in event_dict.keys():
             value = event_dict[key]
             if not isinstance(value, (str, Path)):
@@ -94,22 +103,31 @@ class _ConsoleLogRenderer:
                 value = f"{value}"
                 if any(char.isspace() for char in value):
                     value = f"'{value}'"
-            logstr += style(f" {key}", fg="bright_black")
-            logstr += style("=", fg="bright_white")
-            logstr += style(f"{value}", fg="yellow")
+            rendered += style(f" {key}", fg="bright_black")
+            rendered += style("=", fg="bright_white")
+            rendered += style(f"{value}", fg="yellow")
 
-        if exc_info is not None:
-            if not isinstance(exc_info, tuple):
-                exc_info = sys.exc_info()
-            if any(item is not None for item in exc_info):
-                logstr += "\n"
-                match _get_exc_style():
-                    case "pretty":
-                        logstr += "".join(better_exceptions.format_exception(*exc_info))
-                    case "plain":
-                        logstr += "".join(traceback.format_exception(*exc_info))
+        return rendered
 
-        return logstr
+    @staticmethod
+    def _render_exc_info(exc_info: Any) -> str:
+        if exc_info is None:
+            return ""
+
+        if not isinstance(exc_info, tuple):
+            exc_info = sys.exc_info()
+
+        if all(item is None for item in exc_info):
+            return ""
+
+        rendered = "\n"
+        match _get_exc_style():
+            case "pretty":
+                rendered += "".join(better_exceptions.format_exception(*exc_info))
+            case "plain":
+                rendered += "".join(traceback.format_exception(*exc_info))
+
+        return rendered
 
 
 def bind_drafts_context(drafts: bool) -> None:
