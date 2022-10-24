@@ -130,7 +130,7 @@ class _ExtensionGroup(click.Group):
 @click.option(
     "--color/--no-color",
     default=True,
-    help="If set, color consol outputs. Default: set",
+    help="If set, color console outputs. Default: set",
 )
 @click.option(
     "--exc-style",
