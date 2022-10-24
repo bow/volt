@@ -51,7 +51,7 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
             else:
                 code = style(code, fg="cyan", bold=True)
 
-            path = style(path, fg="magenta")
+            path = style(path, fg="bright_blue")
 
             echo(fmt % (code, method, path), file=get_text_stderr())
 
