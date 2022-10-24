@@ -4,14 +4,14 @@
 import sys
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Optional, cast
+from typing import cast, Any, Literal, Optional
 
 import better_exceptions
 import click
 import structlog
 
 from . import __version__, session
-from .config import Config, _set_exc_style, _set_use_color, _ExcStyle
+from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
 from .error import VoltCliError
 from ._import import import_file
 from ._logging import init_logging
@@ -235,6 +235,16 @@ def root(
         " the target directory."
     ),
 )
+@click.option(
+    "--vcs",
+    type=click.Choice(["none", "git"]),
+    default="git",
+    help=(
+        "The version control system (VCS) initialized in the newly created project."
+        " If 'git' is chosen, the created files are also added to the staging area."
+        " If 'none' is chosen, no VCS initialization is performed. Default: git."
+    ),
+)
 @click.pass_context
 def new(
     ctx: click.Context,
@@ -245,6 +255,7 @@ def new(
     desc: str,
     lang: Optional[str],
     force: bool,
+    vcs: _VCS | Literal["none"],
 ) -> None:
     """Start a new project.
 
@@ -266,6 +277,7 @@ def new(
         description=desc,
         language=lang,
         force=force,
+        vcs=vcs if vcs != "none" else None,
     )
     log.info(f"project created at {project_dir}")
 

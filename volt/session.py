@@ -13,11 +13,15 @@ from typing import Optional
 import click
 import pendulum
 import structlog
-from structlog.contextvars import bind_contextvars, unbind_contextvars
+from structlog.contextvars import (
+    bind_contextvars,
+    bound_contextvars,
+    unbind_contextvars,
+)
 from thefuzz import process
 
 from . import constants, error as err
-from .config import Config
+from .config import Config, _VCS
 from .server import _Rebuilder, make_server
 from .site import Site
 
@@ -38,6 +42,7 @@ def new(
     description: str,
     language: Optional[str],
     force: bool,
+    vcs: Optional[_VCS],
     config_fname: str = constants.CONFIG_FNAME,
 ) -> Path:
     """Create a new project.
@@ -56,6 +61,7 @@ def new(
         config file. If set to ``None``, the value will be inferred from the system
         locale.
     :param force: Whether to force project creation in nonempty directories or not.
+    :param vcs: Version control system to initialize in the newly created project.
     :param config_name: Name of the config file to generate.
 
     :raises ~volt.error.VoltCliError:
@@ -80,6 +86,21 @@ language: "{language or (_infer_lang() or '')}"
 
     # Create initial YAML config file.
     (project_dir / config_fname).write_text(new_conf)
+
+    if vcs is None:
+        log.debug("skipping vcs initialization as no vcs is requested")
+        return project_dir
+
+    with bound_contextvars(vcs=vcs, project_dir=project_dir):
+
+        log.debug("initializing vcs")
+        match vcs:
+            case "git":
+                initialized = _initialize_git(project_dir)
+                if not initialized:
+                    log.debug("failed to initialize vcs")
+            case _:
+                raise ValueError(f"unknown vcs: {vcs!r}")
 
     return project_dir
 
@@ -301,7 +322,7 @@ def _infer_author(stdout_encoding: str = "utf-8") -> Optional[str]:
     if which(git_exe) is None:
         return None
 
-    proc = sp.run([git_exe, "config", "--get", "user.name"], capture_output=True)
+    proc = _run_process([git_exe, "config", "--get", "user.name"])
     if proc.returncode != 0:
         return None
 
@@ -327,3 +348,34 @@ def _infer_front_matter(query: str, title: Optional[str]) -> str:
     strv = "\n".join([f"{k}: {v}" for k, v in fm.items()])
 
     return f"""---\n{strv}\n---"""
+
+
+def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
+    git_exe = "git"
+    if which(git_exe) is None:
+        log.debug("can not find 'git' executable")
+        return False
+
+    proc_init = _run_process(["git", "-C", f"{project_dir}", "init"])
+    if proc_init.returncode != 0:
+        log.debug(
+            "git init failed",
+            stdout=proc_init.stdout.decode(stream_encoding),
+            stderr=proc_init.stderr.decode(stream_encoding),
+        )
+        return False
+
+    proc_add = _run_process(["git", "-C", f"{project_dir}", "add", f"{project_dir}"])
+    if proc_add.returncode != 0:
+        log.debug(
+            "git add failed",
+            stdout=proc_add.stdout.decode(stream_encoding),
+            stderr=proc_add.stderr.decode(stream_encoding),
+        )
+        return False
+
+    return True
+
+
+def _run_process(toks: list[str]) -> sp.CompletedProcess:
+    return sp.run(toks, capture_output=True)

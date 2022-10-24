@@ -225,7 +225,9 @@ class Config(UserDict):
         )
 
 
+_VCS = Literal["git"]
 _ExcStyle = Literal["pretty", "plain"]
+
 # NOTE: Not context vars because our watchers and server are thread-based
 #       without any clean ways of propagating the contexts.
 _use_color: bool = True
