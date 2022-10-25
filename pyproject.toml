@@ -52,6 +52,7 @@ python-Levenshtein = "0.12.1"
 single-source = "^0.3.0"
 structlog = "^22.1.0"
 better-exceptions = "^0.3.3"
+blinker = "^1.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
