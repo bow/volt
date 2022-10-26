@@ -92,6 +92,9 @@ warn_unreachable = true
 allow_untyped_globals = false
 strict_equality = true
 
+[tool.distutils.bdist_wheel]
+universal = true
+
 [build-system]
 requires = ["poetry>=1.1.4", "poetry-dynamic-versioning"]
 build-backend = "poetry.masonry.api"
