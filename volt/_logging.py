@@ -2,17 +2,18 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
+import io
 import sys
 import traceback
 from dataclasses import dataclass
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-import better_exceptions
+import click
 import structlog
-from click import style as cstyle
+from rich.console import Console
+from rich.traceback import Traceback
 from structlog.contextvars import bind_contextvars, merge_contextvars
 
 from .config import _get_exc_style, _get_use_color
@@ -21,17 +22,7 @@ from .config import _get_exc_style, _get_use_color
 def style(text: str, **kwargs: Any) -> str:
     if not _get_use_color():
         return text
-    return cstyle(text=text, **kwargs)
-
-
-def _get_exceptions_max_length(default: int = 65) -> Optional[int]:
-    value = os.environ.get("VOLT_EXCEPTIONS_MAX_LENGTH", None)
-    if isinstance(value, str) and value.isdigit():
-        return int(value)
-    return None
-
-
-better_exceptions.MAX_LENGTH = _get_exceptions_max_length()
+    return click.style(text=text, **kwargs)
 
 
 @dataclass
@@ -120,7 +111,18 @@ class _ConsoleLogRenderer:
         rendered = "\n"
         match _get_exc_style():
             case "pretty":
-                rendered += "".join(better_exceptions.format_exception(*exc_info))
+                buf = io.StringIO()
+                Console(file=buf).print(
+                    Traceback.from_exception(
+                        exc_type=exc_info[0],
+                        exc_value=exc_info[1],
+                        traceback=exc_info[2],
+                        show_locals=True,
+                        width=95,
+                        suppress=[click],
+                    )
+                )
+                rendered += buf.getvalue()
             case "plain":
                 rendered += "".join(traceback.format_exception(*exc_info))
             case otherwise:

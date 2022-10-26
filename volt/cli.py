@@ -7,9 +7,9 @@ from pathlib import Path
 from types import ModuleType
 from typing import cast, Any, Literal, Optional
 
-import better_exceptions
 import click
 import structlog
+from rich.traceback import install
 
 from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
@@ -150,7 +150,7 @@ def root(
     """A versatile static website generator"""
 
     if exc_style == "pretty":
-        better_exceptions.hook()
+        install(show_locals=True, width=95)
     _set_exc_style(exc_style)
 
     _set_use_color(color)
