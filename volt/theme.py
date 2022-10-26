@@ -1,5 +1,6 @@
 """Site theme."""
-# (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
+# Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
+# SPDX-License-Identifier: BSD-3-Clause
 
 import yaml
 from pathlib import Path

@@ -1,3 +1,10 @@
+# Dockerfile for packaging releases.
+#
+# Copyright (c) 2022 Wibowo Arindrarto <contact@arindrarto.dev>
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# This file is part of Volt <https://github.com/bow/volt>.
+
 FROM python:3.10.7-alpine AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on

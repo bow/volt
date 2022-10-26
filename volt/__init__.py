@@ -1,8 +1,8 @@
 """
     A versatile static website generator.
 
-    :copyright: (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
-    :license: BSD
+    :copyright: (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
+    :license: BSD-3-Clause
 
 """
 from pathlib import Path

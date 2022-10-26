@@ -1,5 +1,6 @@
 """Volt test utilities."""
-# (c) 2012-2020 Wibowo Arindrarto <contact@arindrarto.dev>
+# Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 def create_fs_fixture(fs, layout):
