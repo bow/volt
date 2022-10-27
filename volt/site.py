@@ -285,7 +285,7 @@ class Site:
         """Build the static site in the destination directory."""
 
         self.collect_targets()
-        signals.send(signals.post_collect_targets, site=self)
+        signals.send(signals.post_site_collect_targets, site=self)
 
         self.write(clean=clean)
 

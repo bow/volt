@@ -5,7 +5,7 @@
 from . import signals as s
 
 
-__all__ = ["post_collect_targets"]
+__all__ = ["post_site_collect_targets"]
 
 
-post_collect_targets = s.post_collect_targets.connect
+post_site_collect_targets = s.post_site_collect_targets.connect

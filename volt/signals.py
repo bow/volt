@@ -12,7 +12,7 @@ from structlog.contextvars import bound_contextvars
 log = structlog.get_logger(__name__)
 
 
-post_collect_targets = signal("post-collect-targets")
+post_site_collect_targets = signal("post-site-collect-targets")
 
 
 def send(signal: NamedSignal, *args: Any, **kwargs: Any) -> None:
