@@ -11,7 +11,7 @@ from typing import cast, Any, Literal, Optional
 import click
 import structlog
 from rich.traceback import install
-from structlog.contextvars import bind_contextvars, bound_contextvars
+from structlog.contextvars import bind_contextvars
 
 from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS

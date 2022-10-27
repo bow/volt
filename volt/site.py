@@ -19,6 +19,7 @@ from .engines import MarkdownEngine
 from .error import VoltResourceError
 from .targets import collect_copy_targets, Target
 from .theme import Theme
+from ._logging import log_method
 
 
 __all__ = ["Plan", "PlanNode", "Site"]
@@ -227,6 +228,7 @@ class Site:
         self.theme = Theme.from_site_config(config)
         self.targets: Sequence[Target] = []
 
+    @log_method
     def collect_targets(self) -> None:
         static_targets = self.theme.collect_static_targets() + collect_copy_targets(
             self.config.static_dir, self.config.invoc_dir
@@ -246,6 +248,7 @@ class Site:
 
         return None
 
+    @log_method
     def write(
         self,
         clean: bool,
@@ -279,20 +282,17 @@ class Site:
 
         return None
 
+    @log_method
     def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
 
-        log.debug("calling Site.collect_targets")
         self.collect_targets()
-        log.debug("called Site.collect_targets")
 
         with bound_contextvars(signal=f"{signals.post_collect_targets.name}"):
-            log.debug("sending signal")
-            signals.post_collect_targets.send(site=self)
-            log.debug("sent signal")
+            log.debug("sending to signal")
+            rvs = signals.post_collect_targets.send(site=self)
+            log.debug("sent to signal", num_receiver=len(rvs))
 
-        log.debug("calling Site.write")
         self.write(clean=clean)
-        log.debug("called site.write")
 
         return None

@@ -13,6 +13,7 @@ from jinja2 import Environment, FileSystemLoader, Template
 from . import constants, error as err
 from .config import Config
 from .targets import collect_copy_targets, CopyTarget
+from ._logging import log_method
 
 if TYPE_CHECKING:
     from .engines import Engine
@@ -26,6 +27,7 @@ class Theme:
     """Site theme."""
 
     @classmethod
+    @log_method
     def from_site_config(cls, config: Config) -> "Theme":
 
         if (theme_config := config.theme) is None:
@@ -86,9 +88,11 @@ class Theme:
             enable_async=True,
         )
 
+    @log_method
     def collect_static_targets(self) -> list[CopyTarget]:
         return collect_copy_targets(self.static_dir, self.config.invoc_dir)
 
+    @log_method
     def load_engines(self) -> Optional[list["Engine"]]:
 
         from .engines import EngineSpec
@@ -118,6 +122,7 @@ class Theme:
 
         return engines
 
+    @log_method
     def load_template_file(self, name: str) -> Template:
         """Load a template with the given file name."""
         try:
@@ -133,6 +138,7 @@ class Theme:
 
         return template
 
+    @log_method
     def load_template(self, key: str) -> Template:
         """Load a theme template with the given key."""
 

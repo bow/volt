@@ -6,9 +6,10 @@ import io
 import sys
 import traceback
 from dataclasses import dataclass
+from functools import wraps
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, TypeVar, ParamSpec
 
 import click
 import structlog
@@ -19,10 +20,27 @@ from structlog.contextvars import bind_contextvars, merge_contextvars
 from .config import _get_exc_style, _get_use_color
 
 
+T = TypeVar("T")
+P = ParamSpec("P")
+
+
 def style(text: str, **kwargs: Any) -> str:
     if not _get_use_color():
         return text
     return click.style(text=text, **kwargs)
+
+
+def log_method(clb: Callable[P, T]) -> Callable[P, T]:
+    @wraps(clb)
+    def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
+        log = structlog.get_logger(clb.__module__)
+        log.debug(f"calling method {clb.__qualname__}")
+        rv = clb(*args, **kwargs)
+        log.debug(f"returned from method {clb.__qualname__}")
+
+        return rv
+
+    return wrapped
 
 
 @dataclass
