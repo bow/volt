@@ -170,6 +170,11 @@ def init_logging(log_level: str) -> None:
                 "foreign_pre_chain": proc_chain,
             },
         },
+        "loggers": {
+            "asyncio": {
+                "level": "WARNING",
+            }
+        },
     }
 
     processors = proc_chain + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter]
