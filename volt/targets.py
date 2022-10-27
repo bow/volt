@@ -81,7 +81,7 @@ class CopyTarget(Target):
     url: str = field(init=False)
 
     def __post_init__(self) -> None:
-        self.url = "/".join(self.url_parts)
+        self.url = f"/{'/'.join(self.url_parts)}"
 
     def write(self, parent_dir: Path) -> None:
         """Copy the source to the destination."""
