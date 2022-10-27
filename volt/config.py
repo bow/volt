@@ -102,6 +102,7 @@ class Config(UserDict):
         drafts_dirname: str = constants.SITE_DRAFTS_DIRNAME,
         extension_dirname: str = constants.SITE_EXTENSION_DIRNAME,
         xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
+        hooks_script_fname: str = constants.SITE_HOOKS_SCRIPT_FNAME,
         yaml_file: Optional[Path] = None,
         user_conf: Optional[dict] = None,
         **kwargs: Any,
@@ -133,6 +134,7 @@ class Config(UserDict):
         self._drafts_dirname = drafts_dirname
         self._static_dir = self._project_dir / static_dirname
         self._xcmd_script = self._extension_dir / xcmd_script_fname
+        self._hooks_script = self._extension_dir / hooks_script_fname
         self._yaml_file = yaml_file
 
     @cached_property
@@ -204,6 +206,14 @@ class Config(UserDict):
     def xcmd_script(self) -> Optional[Path]:
         """Path to a custom CLI extension, if present."""
         fp = self._xcmd_script
+        if fp.exists():
+            return fp
+        return None
+
+    @cached_property
+    def hooks_script(self) -> Optional[Path]:
+        """Path to a custom hooks extension, if present."""
+        fp = self._hooks_script
         if fp.exists():
             return fp
         return None

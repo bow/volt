@@ -169,6 +169,13 @@ def root(
             raise VoltCliError(
                 f"Command {ctx.invoked_subcommand!r} works only within a Volt project"
             )
+        if (fp := config.hooks_script) is not None:
+            from ._import import import_file
+
+            # NOTE: keeping a reference to the imported module to avoid garbage
+            #       cleanup that would remove hooks.
+            ctx.params["_hooks"] = import_file(fp, "volt.ext.hooks")
+
     ctx.params["config"] = config
 
 

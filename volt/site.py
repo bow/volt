@@ -9,8 +9,11 @@ from functools import cached_property
 from pathlib import Path
 from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
+import structlog
+
 from . import constants
 from .config import Config
+from .constants import signals
 from .engines import MarkdownEngine
 from .error import VoltResourceError
 from .targets import collect_copy_targets, Target
@@ -18,6 +21,9 @@ from .theme import Theme
 
 
 __all__ = ["Plan", "PlanNode", "Site"]
+
+
+log = structlog.get_logger(__name__)
 
 
 class PlanNode:
@@ -275,7 +281,16 @@ class Site:
     def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
 
+        log.debug("calling Site.collect_targets")
         self.collect_targets()
+        log.debug("called Site.collect_targets")
+
+        log.debug(f"sending signal {signals.post_collect_targets.name!r}")
+        signals.post_collect_targets.send(site=self)
+        log.debug(f"sent signal {signals.post_collect_targets.name!r}")
+
+        log.debug("calling Site.write")
         self.write(clean=clean)
+        log.debug("called site.write")
 
         return None
