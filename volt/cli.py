@@ -4,12 +4,14 @@
 
 import sys
 from pathlib import Path
+from platform import platform
 from types import ModuleType
 from typing import cast, Any, Literal, Optional
 
 import click
 import structlog
 from rich.traceback import install
+from structlog.contextvars import bind_contextvars, bound_contextvars
 
 from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
@@ -39,6 +41,8 @@ def main() -> None:
     except Exception as e:
         log.exception(e)
         sys.exit(1)
+    finally:
+        log.debug("Volt completed successfully")
 
 
 # Taken from:
@@ -156,27 +160,49 @@ def root(
     _set_use_color(color)
 
     init_logging(log_level)
+    if log_level == "debug":
+        bind_contextvars(subcommand=ctx.invoked_subcommand)
+        log.debug(
+            "starting Volt",
+            version=__version__,
+            python_version=sys.version,
+            platform=platform(),
+        )
 
+    log.debug("setting project dir", path=project_dir)
     ctx.params["project_dir"] = project_dir
 
+    log.debug("setting invocation dir", path=project_dir)
     invoc_dir = Path.cwd()
     ctx.params["invoc_dir"] = invoc_dir
 
     config: Optional[Config] = None
     if ctx.invoked_subcommand != new.name:
+
+        log.debug("loading config", invoc_dir=invoc_dir, project_dir=project_dir)
         config = Config.from_project_dir(invoc_dir, project_dir)
         if config is None:
             raise VoltCliError(
-                f"Command {ctx.invoked_subcommand!r} works only within a Volt project"
+                f"Command {ctx.invoked_subcommand!r} works only within a Volt"
+                " project"
             )
+        log.debug("loaded config")
+
+        log.debug("checking if hooks extension is present")
         if (fp := config.hooks_script) is not None:
             from ._import import import_file
 
             # NOTE: keeping a reference to the imported module to avoid garbage
             #       cleanup that would remove hooks.
+            log.debug("loading hooks extension", path=fp)
             ctx.params["_hooks"] = import_file(fp, "volt.ext.hooks")
+            log.debug("loaded hooks extension")
+        else:
+            log.debug("found no hooks extension")
 
     ctx.params["config"] = config
+
+    log.debug("running subcommand")
 
 
 @root.command()

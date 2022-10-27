@@ -64,7 +64,10 @@ class _ConsoleLogRenderer:
         logstr = f"{label.styled} "
 
         event = f"{event_dict.pop('event', '')}"
-        logstr += style(f"{event[0].upper() + event[1:]}", bold=True)
+        logstr += style(
+            f"{event[0].upper() + event[1:]}",
+            bold=level not in {"notset", "debug"},
+        )
 
         exc_info = event_dict.pop("exc_info", None)
         logstr += self._render_event_dict(event_dict)
@@ -179,13 +182,3 @@ def init_logging(log_level: str) -> None:
     )
 
     dictConfig(log_config)
-
-    if log_level == "DEBUG":
-        from platform import platform
-        from . import __version__
-
-        bind_contextvars(
-            python_version=sys.version,
-            volt_version=__version__,
-            platform=platform(),
-        )

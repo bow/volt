@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
 import structlog
+from structlog.contextvars import bound_contextvars
 
 from . import constants
 from .config import Config
@@ -285,9 +286,10 @@ class Site:
         self.collect_targets()
         log.debug("called Site.collect_targets")
 
-        log.debug(f"sending signal {signals.post_collect_targets.name!r}")
-        signals.post_collect_targets.send(site=self)
-        log.debug(f"sent signal {signals.post_collect_targets.name!r}")
+        with bound_contextvars(signal=f"{signals.post_collect_targets.name}"):
+            log.debug("sending signal")
+            signals.post_collect_targets.send(site=self)
+            log.debug("sent signal")
 
         log.debug("calling Site.write")
         self.write(clean=clean)
