@@ -7,7 +7,7 @@ import shutil
 import tempfile
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Generator, Iterable, Iterator, Optional, cast
+from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
 from . import constants
 from .config import Config
@@ -218,8 +218,9 @@ class Site:
         """
         self.config = config
         self.theme = Theme.from_site_config(config)
+        self.targets: Sequence[Target] = []
 
-    def collect_targets(self) -> Iterable[Target]:
+    def collect_targets(self) -> None:
         static_targets = self.theme.collect_static_targets() + collect_copy_targets(
             self.config.static_dir, self.config.invoc_dir
         )
@@ -234,17 +235,21 @@ class Site:
             target for engine in engines for target in engine.create_targets()
         ]
 
-        return targets
+        self.targets = targets
 
-    def build(self, clean: bool = True) -> None:
-        """Build the static site in the destination directory."""
+        return None
 
-        with tempfile.TemporaryDirectory(
-            prefix=constants.BUILD_DIR_PREFIX
-        ) as tmp_dir_name:
+    def write(
+        self,
+        clean: bool,
+        build_dir_prefix: str = constants.BUILD_DIR_PREFIX,
+    ) -> None:
+        """Write all collected targets under the destination directory."""
+
+        with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
 
             plan = Plan()
-            for target in self.collect_targets():
+            for target in self.targets:
                 try:
                     plan.add_target(target)
                 except ValueError as e:
@@ -264,5 +269,13 @@ class Site:
                     os.chmod(dp, 0o777)  # nosec: B103
                     for fn in fnames:
                         os.chmod(os.path.join(dp, fn), 0o666)  # nosec: B103
+
+        return None
+
+    def build(self, clean: bool = True) -> None:
+        """Build the static site in the destination directory."""
+
+        self.collect_targets()
+        self.write(clean=clean)
 
         return None
