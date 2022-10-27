@@ -10,11 +10,9 @@ from pathlib import Path
 from typing import Dict, Generator, Iterator, Optional, Sequence, cast
 
 import structlog
-from structlog.contextvars import bound_contextvars
 
-from . import constants
+from . import constants, signals
 from .config import Config
-from .constants import signals
 from .engines import MarkdownEngine
 from .error import VoltResourceError
 from .targets import collect_copy_targets, Target
@@ -287,11 +285,7 @@ class Site:
         """Build the static site in the destination directory."""
 
         self.collect_targets()
-
-        with bound_contextvars(signal=f"{signals.post_collect_targets.name}"):
-            log.debug("sending to signal")
-            rvs = signals.post_collect_targets.send(site=self)
-            log.debug("sent to signal", num_receiver=len(rvs))
+        signals.send(signals.post_collect_targets, site=self)
 
         self.write(clean=clean)
 

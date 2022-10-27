@@ -2,8 +2,6 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from blinker import signal
-
 
 # Prefix for build directory names.
 BUILD_DIR_PREFIX = "volt-build-"
@@ -59,9 +57,3 @@ SITE_HOOKS_SCRIPT_FNAME = "hooks.py"
 
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"
-
-
-# Namespace for signals.
-class signals:
-
-    post_collect_targets = signal("post-collect-targets")
