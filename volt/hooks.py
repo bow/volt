@@ -9,3 +9,4 @@ __all__ = ["post_site_collect_targets"]
 
 
 post_site_collect_targets = s.post_site_collect_targets.connect
+pre_site_write = s.pre_site_write.connect
