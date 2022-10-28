@@ -24,7 +24,7 @@ from .config import Config
 from .targets import TemplateTarget
 
 
-__all__ = ["FileSystemSource", "MarkdownSource", "Source"]
+__all__ = ["FileSource", "MarkdownSource", "Source"]
 
 
 _MD = Markdown(
@@ -66,7 +66,7 @@ class Source:
 
 
 @dataclass(kw_only=True)
-class FileSystemSource(Source):
+class FileSource(Source):
 
     """A source on the filesystem for the site content."""
 
@@ -75,7 +75,7 @@ class FileSystemSource(Source):
 
 
 @dataclass(kw_only=True, eq=False)
-class MarkdownSource(FileSystemSource):
+class MarkdownSource(FileSource):
 
     """A markdown source of the site content."""
 
