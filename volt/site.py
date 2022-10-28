@@ -2,12 +2,23 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import fnmatch
 import os
 import shutil
 import tempfile
 from functools import cached_property
+from itertools import filterfalse, tee
 from pathlib import Path
-from typing import Dict, Generator, Iterator, Optional, Sequence, cast
+from typing import (
+    cast,
+    Callable,
+    Dict,
+    Generator,
+    Iterator,
+    Optional,
+    Sequence,
+    TypeVar,
+)
 
 import structlog
 
@@ -295,3 +306,25 @@ class Site:
         self.write(clean=clean)
 
         return None
+
+    def extract_targets(self, pattern: str) -> list[Target]:
+        matching, rest = _partition_targets(
+            self.targets,
+            lambda t: fnmatch.fnmatch(t.url, pattern),
+        )
+        rv = list(matching)
+        self.targets = list(rest)
+        return rv
+
+
+T = TypeVar("T")
+
+
+def _partition_targets(
+    targets: Sequence[T],
+    pred: Callable[[T], bool],
+) -> tuple[Iterator[T], Iterator[T]]:
+    iter1, iter2 = tee(targets)
+    matching = filter(pred, iter1)
+    rest = filterfalse(pred, iter2)
+    return matching, rest
