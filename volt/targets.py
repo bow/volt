@@ -62,7 +62,7 @@ class TemplateTarget(Target):
             (parent_dir.joinpath(*self.url_parts)).write_text(content)
         except OSError as e:
             raise err.VoltResourceError(
-                "could not write target" f" {'/'.join(self.url_parts)!r}: {e.strerror}"
+                f"could not write target {self.url!r}: {e.strerror}"
             )
 
 
