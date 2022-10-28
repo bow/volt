@@ -61,6 +61,7 @@ _level_styles = {
     "debug": _LogLabel(text="DBG", bg="magenta"),
     "info": _LogLabel(text="INF", bg="cyan"),
     "warn": _LogLabel(text="WRN", bg="yellow"),
+    "warning": _LogLabel(text="WRN", bg="yellow"),
     "error": _LogLabel(text="ERR", bg="red"),
     "critical": _LogLabel(text="CRT", bg="red"),
     "exception": _LogLabel(text="EXC", bg="red"),
@@ -81,7 +82,7 @@ class _ConsoleLogRenderer:
         label = _level_styles.get(level, _default_style)
         logstr = f"{label.styled} "
 
-        event = f"{event_dict.pop('event', '')}"
+        event = f"{event_dict.pop('event', '')}" or "<no-event>"
         logstr += style(
             f"{event[0].upper() + event[1:]}",
             bold=level not in {"notset", "debug"},

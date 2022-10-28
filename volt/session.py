@@ -2,6 +2,7 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import bdb
 import os
 import subprocess as sp
 import time
@@ -132,6 +133,9 @@ def build(
 
     try:
         site.build(clean=clean)
+    except bdb.BdbQuit:
+        unbind_contextvars(*log_attrs.keys())
+        log.warn("exiting from debugger -- build may be compromised")
     except Exception:
         msg = "build failed"
         build_exists = False
