@@ -50,7 +50,7 @@ class TemplateTarget(Target):
     template: Template
 
     # Render arguments.
-    render_kwargs: dict
+    render_kwargs: dict = field(repr=False)
 
     # Source of the target.
     src: Optional[Path] = field(default=None)
