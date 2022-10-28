@@ -226,6 +226,10 @@ class Site:
         self.theme = Theme.from_site_config(config)
         self.targets: Sequence[Target] = []
 
+    def __repr__(self) -> str:
+        config = self.config
+        return f"{self.__class__.__name__}(name={config.name!r}, url={config.url!r})"
+
     @log_method
     def collect_targets(self) -> None:
         static_targets = self.theme.collect_static_targets() + collect_copy_targets(
