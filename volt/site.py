@@ -287,6 +287,7 @@ class Site:
         self.collect_targets()
         signals.send(signals.post_site_collect_targets, site=self)
 
+        signals.send(signals.pre_site_write, site=self)
         self.write(clean=clean)
 
         return None
