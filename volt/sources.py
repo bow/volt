@@ -88,14 +88,10 @@ class MarkdownSource(FileSource):
     # Markdown text of the body, without any metadata.
     body: str
 
-    # Jinja2 template used for rendering content.
-    template: Template
-
     @classmethod
     def from_path(
         cls,
         src: Path,
-        template: Template,
         config: Config,
         meta: Optional[dict] = None,
         is_draft: bool = False,
@@ -105,7 +101,6 @@ class MarkdownSource(FileSource):
 
         :param src: Path to the source file.
         :param config: Site configuration.
-        :param template: Jinja2 template used for rendering the content.
         :param meta: Optional metadata to inject.
         :param fm_sep: String for separating the markdown front matter.
 
@@ -118,7 +113,6 @@ class MarkdownSource(FileSource):
         return cls(
             body=raw_body,
             src=src,
-            template=template,
             # TODO: Validate minimal front matter metadata.
             meta={
                 "labels": {},
@@ -178,8 +172,7 @@ class MarkdownSource(FileSource):
     def html(self) -> str:
         return cast(str, _MD.convert(self.body))
 
-    @property
-    def target(self) -> TemplateTarget:
+    def to_target(self, template: Template) -> TemplateTarget:
         """Create a :class:`TemplateTarget` instance."""
 
         render_kwargs = {
@@ -191,7 +184,7 @@ class MarkdownSource(FileSource):
 
         return TemplateTarget(
             url=self.url,
-            template=self.template,
+            template=template,
             render_kwargs=render_kwargs,
             src=self.src.relative_to(self.config.project_dir),
         )
