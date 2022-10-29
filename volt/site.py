@@ -236,7 +236,7 @@ class Site:
         """
         self.config = config
         self.theme = Theme.from_site_config(config)
-        self.targets: Sequence[Target] = []
+        self.targets = list[Target]()
 
     def __repr__(self) -> str:
         config = self.config
