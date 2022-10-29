@@ -316,6 +316,11 @@ class Site:
                 continue
             target.render_kwargs.update(**kwargs)
 
+    def select_targets(self, pattern: str) -> list[Target]:
+        return [
+            target for target in self.targets if fnmatch.fnmatch(target.url, pattern)
+        ]
+
     def extract_targets(self, pattern: str) -> list[Target]:
         matching, rest = _partition_targets(
             self.targets,
