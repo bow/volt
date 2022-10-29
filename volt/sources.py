@@ -64,6 +64,12 @@ class Source:
     # Metadata of the content.
     meta: dict
 
+    # Site configuration.
+    config: Config
+
+    # Whether the content is draft or not.
+    is_draft: bool
+
 
 @dataclass(kw_only=True)
 class FileSource(Source):
@@ -81,12 +87,6 @@ class MarkdownSource(FileSource):
 
     # Markdown text of the body, without any metadata.
     body: str
-
-    # Whether the content is draft or not.
-    is_draft: bool
-
-    # Site configuration.
-    config: Config
 
     # Jinja2 template used for rendering content.
     template: Template
