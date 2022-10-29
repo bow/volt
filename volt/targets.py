@@ -19,6 +19,7 @@ from . import error as err
 __all__ = [
     "collect_copy_targets",
     "CopyTarget",
+    "FileTarget",
     "Target",
     "TemplateTarget",
 ]
@@ -39,6 +40,30 @@ class Target(abc.ABC):
     @abc.abstractmethod
     def write(self, parent_dir: Path) -> None:
         raise NotImplementedError()
+
+
+@dataclass(kw_only=True)
+class FileTarget(Target):
+
+    """A single file to be written with contents from memory."""
+
+    contents: str | bytes
+
+    def write(self, parent_dir: Path) -> None:
+        fp = parent_dir.joinpath(*self.url_parts)
+        contents = self.contents
+
+        try:
+            if isinstance(contents, str):
+                fp.write_text(contents)
+            elif isinstance(contents, bytes):
+                fp.write_bytes(contents)
+            else:
+                raise ValueError(f"unexpected content type: '{type(contents)}'")
+        except OSError as e:
+            raise err.VoltResourceError(
+                f"could not write target {self.url!r}: {e.strerror}"
+            )
 
 
 @dataclass(kw_only=True)
