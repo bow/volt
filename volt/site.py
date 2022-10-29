@@ -11,6 +11,7 @@ from itertools import filterfalse, tee
 from pathlib import Path
 from typing import (
     cast,
+    Any,
     Callable,
     Dict,
     Generator,
@@ -26,7 +27,7 @@ from . import constants, signals
 from .config import Config
 from .engines import MarkdownEngine
 from .error import VoltResourceError
-from .targets import collect_copy_targets, Target
+from .targets import collect_copy_targets, Target, TemplateTarget
 from .theme import Theme
 from ._logging import log_method
 
@@ -302,10 +303,18 @@ class Site:
         self.collect_targets()
         signals.send(signals.post_site_collect_targets, site=self)
 
+        self.update_render_kwargs(site=self, config=self.config)
+
         signals.send(signals.pre_site_write, site=self)
         self.write(clean=clean)
 
         return None
+
+    def update_render_kwargs(self, **kwargs: Any) -> None:
+        for target in self.targets:
+            if not isinstance(target, TemplateTarget):
+                continue
+            target.render_kwargs.update(**kwargs)
 
     def extract_targets(self, pattern: str) -> list[Target]:
         matching, rest = _partition_targets(
