@@ -129,9 +129,8 @@ def build(
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
-    site = Site(config=config)
-
     try:
+        site = Site(config)
         site.build(clean=clean)
     except bdb.BdbQuit:
         unbind_contextvars(*log_attrs.keys())
@@ -149,10 +148,9 @@ def build(
         raise
     else:
         log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
+        return site
     finally:
         unbind_contextvars(*log_attrs.keys())
-
-    return site
 
 
 def edit(

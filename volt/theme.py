@@ -28,7 +28,7 @@ class Theme:
 
     @classmethod
     @log_method
-    def from_site_config(cls, config: Config) -> "Theme":
+    def from_config(cls, config: Config) -> "Theme":
 
         if (theme_config := config.theme) is None:
             raise err.VoltConfigError("undefined theme")
