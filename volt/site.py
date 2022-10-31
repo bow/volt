@@ -251,7 +251,7 @@ class Site:
         engines = (
             engs
             if (engs := self.theme.load_engines()) is not None
-            else [MarkdownEngine(config=self.config, source_dirname="")]
+            else [MarkdownEngine(config=self.config, theme=self.theme)]
         )
 
         targets = static_targets + [
