@@ -159,7 +159,7 @@ class MarkdownEngine(Engine):
         targets = [
             MarkdownSource.from_path(
                 src=fp, config=config, is_draft=is_draft
-            ).to_target(self.template)
+            ).to_template_target(self.template)
             for fp, is_draft in fps
         ]
 

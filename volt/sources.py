@@ -172,7 +172,7 @@ class MarkdownSource(FileSource):
     def html(self) -> str:
         return cast(str, _MD.convert(self.body))
 
-    def to_target(self, template: Template) -> TemplateTarget:
+    def to_template_target(self, template: Template) -> TemplateTarget:
         """Create a :class:`TemplateTarget` instance."""
 
         render_kwargs = {
