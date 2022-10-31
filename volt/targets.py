@@ -38,7 +38,7 @@ class Target(abc.ABC):
         return tuple([part for part in self.url.split("/") if part])
 
     @abc.abstractmethod
-    def write(self, parent_dir: Path) -> None:
+    def write(self, build_dir: Path) -> None:
         raise NotImplementedError()
 
 
@@ -49,8 +49,8 @@ class FileTarget(Target):
 
     contents: str | bytes
 
-    def write(self, parent_dir: Path) -> None:
-        fp = parent_dir.joinpath(*self.url_parts)
+    def write(self, build_dir: Path) -> None:
+        fp = build_dir.joinpath(*self.url_parts)
         contents = self.contents
 
         try:
@@ -80,11 +80,11 @@ class TemplateTarget(Target):
     # Source of the target.
     src: Optional[Path] = field(default=None)
 
-    def write(self, parent_dir: Path) -> None:
+    def write(self, build_dir: Path) -> None:
         """Render the template and write it to the destination."""
         content = self.template.render(**self.render_kwargs)
         try:
-            (parent_dir.joinpath(*self.url_parts)).write_text(content)
+            (build_dir.joinpath(*self.url_parts)).write_text(content)
         except OSError as e:
             raise err.VoltResourceError(
                 f"could not write target {self.url!r}: {e.strerror}"
@@ -108,10 +108,10 @@ class CopyTarget(Target):
     def __post_init__(self) -> None:
         self.url = f"/{'/'.join(self.url_parts)}"
 
-    def write(self, parent_dir: Path) -> None:
+    def write(self, build_dir: Path) -> None:
         """Copy the source to the destination."""
         str_src = str(self.src)
-        path_dest = parent_dir.joinpath(*self.url_parts)
+        path_dest = build_dir.joinpath(*self.url_parts)
         str_dest = str(path_dest)
         do_copy = not path_dest.exists() or not filecmp.cmp(
             str_src, str_dest, shallow=False

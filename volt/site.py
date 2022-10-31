@@ -76,7 +76,7 @@ class PlanNode:
 
         return iter(children.values())
 
-    def create(self, parent_dir: Path) -> None:
+    def create(self, build_dir: Path) -> None:
         """Write the node to the filesystem.
 
         If the node represents a directory, the directory and its parents will
@@ -85,10 +85,10 @@ class PlanNode:
 
         """
         if self.target is None:
-            (parent_dir / self.path).mkdir(parents=True, exist_ok=True)
+            (build_dir / self.path).mkdir(parents=True, exist_ok=True)
             return None
 
-        self.target.write(parent_dir=parent_dir)
+        self.target.write(build_dir=build_dir)
         return None
 
     def add_child(self, key: str, target: Optional[Target] = None) -> None:
@@ -211,15 +211,15 @@ class Plan:
             else:
                 nodes.extend(children)
 
-    def write_nodes(self, parent_dir: Path) -> None:
+    def write_nodes(self, build_dir: Path) -> None:
         """Write the plan nodes according to the plan under the given parent
         directory."""
 
         for dn in self.dnodes():
-            dn.create(parent_dir=parent_dir)
+            dn.create(build_dir=build_dir)
 
         for fn in self.fnodes():
-            fn.create(parent_dir=parent_dir)
+            fn.create(build_dir=build_dir)
 
         return None
 
@@ -280,7 +280,7 @@ class Site:
                     raise VoltResourceError(f"{e}") from e
 
             build_dir = Path(tmp_dir_name)
-            plan.write_nodes(parent_dir=build_dir)
+            plan.write_nodes(build_dir=build_dir)
 
             target_dir = self.config.target_dir
             if clean:
