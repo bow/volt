@@ -16,6 +16,9 @@ DEFAULT_SLUG_REPLACEMENTS = {
     ('"', ""),
 }
 
+# Static directory name.
+STATIC_DIRNAME = "static"
+
 # Separator string for text content front matter.
 FRONT_MATTER_SEP = "---\n"
 
@@ -34,8 +37,8 @@ SITE_EXTENSION_DIRNAME = "extension"
 # Site output directory name.
 SITE_TARGET_DIRNAME = "target"
 
-# Site static directory name.
-SITE_STATIC_DIRNAME = "static"
+# Site user static directory name.
+SITE_STATIC_DIRNAME = f"{SITE_SOURCES_DIRNAME}/{STATIC_DIRNAME}"
 
 # Site project directory name.
 SITE_PROJECT_DIRNAME = ""
@@ -57,3 +60,6 @@ SITE_HOOKS_SCRIPT_FNAME = "hooks.py"
 
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"
+
+# Site theme static directory name.
+THEME_STATIC_DIRNAME = f"{STATIC_DIRNAME}"
