@@ -15,7 +15,7 @@ from . import error as err
 from .config import Config
 from .constants import MARKDOWN_EXT
 from .sources import MarkdownSource
-from .targets import Target
+from .targets import Target, TemplateTarget
 from .theme import Theme
 from ._import import import_file
 
@@ -149,7 +149,7 @@ class MarkdownEngine(Engine):
             default_fp = Path(__file__).parent / "defaults" / f"{template_name}.html.j2"
             self.template = Template(default_fp.read_text())
 
-    def create_targets(self) -> Sequence[Target]:
+    def create_targets(self) -> Sequence[TemplateTarget]:
 
         config = self.config
         get_sources = self.get_sources
