@@ -117,7 +117,7 @@ class EngineSpec:
         fn, cls_name = self._parse_class_spec(file_spec)
 
         fp = Path(fn) if os.path.isabs(fn) else theme.path / fn
-        mod_name = f"volt.ext.theme.engines.{'.'.join(fp.parts[1:])}"
+        mod_name = f"volt.custom.theme.engines.{'.'.join(fp.parts[1:])}"
         mod = import_file(fp, mod_name)
 
         try:

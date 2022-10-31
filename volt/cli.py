@@ -75,7 +75,7 @@ class _ExtensionGroup(click.Group):
     def import_xcmd(
         cls,
         config: Config,
-        mod_name: str = "volt.ext.command",
+        mod_name: str = "volt.custom.cli",
     ) -> Optional[ModuleType]:
         """Import the custom, user-defined subcommands."""
         if (fp := config.xcmd_script) is None:
