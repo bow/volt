@@ -1,4 +1,4 @@
-"""Tests for volt.targets."""
+"""Tests for volt.engines."""
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from volt.targets import _calc_relpath
+from volt.engines import _calc_relpath
 
 
 @pytest.mark.parametrize(

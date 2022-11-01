@@ -25,9 +25,9 @@ import structlog
 
 from . import constants, signals
 from .config import Config
-from .engines import MarkdownEngine
+from .engines import Engine, MarkdownEngine, StaticEngine
 from .error import VoltResourceError
-from .targets import collect_copy_targets, Target, TemplateTarget
+from .targets import Target, TemplateTarget
 from .theme import Theme
 from ._logging import log_method
 
@@ -244,21 +244,32 @@ class Site:
 
     @log_method
     def collect_targets(self) -> None:
-        static_targets = self.theme.collect_static_targets() + collect_copy_targets(
-            self.config.static_dir, self.config.invoc_dir
+
+        log.debug("loading theme engines")
+        engines: list[Engine] | None = self.theme.load_engines()
+        log.debug(
+            "loaded theme engines",
+            engines=[engine.name for engine in (engines or [])],
         )
 
-        engines = (
-            engs
-            if (engs := self.theme.load_engines()) is not None
-            else [MarkdownEngine(config=self.config, theme=self.theme)]
+        # Add MarkdownEngine if no engines are loaded.
+        if not engines:
+            log.debug("adding MarkdownEngine to loaded engines")
+            engines = [MarkdownEngine(config=self.config, theme=self.theme)]
+
+        # Add StaticEngine if not already added.
+        if not any(engine.__class__ is StaticEngine for engine in engines):
+            log.debug("adding StaticEngine to loaded engines")
+            engines.insert(0, StaticEngine(config=self.config, theme=self.theme))
+
+        log.debug(
+            "loaded all site engines",
+            engines=[engine.name for engine in engines],
         )
 
-        targets = static_targets + [
+        self.targets = [
             target for engine in engines for target in engine.create_targets()
         ]
-
-        self.targets = targets
 
         return None
 

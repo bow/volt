@@ -9,18 +9,22 @@ from importlib import import_module
 from pathlib import Path
 from typing import cast, Any, Optional, Sequence, Type
 
+import structlog
 from jinja2 import Template
 
 from . import error as err
 from .config import Config
-from .constants import MARKDOWN_EXT
+from .constants import MARKDOWN_EXT, STATIC_DIRNAME
 from .sources import MarkdownSource
-from .targets import Target, TemplateTarget
+from .targets import CopyTarget, Target, TemplateTarget
 from .theme import Theme
 from ._import import import_file
 
 
 __all__ = ["Engine", "EngineSpec", "MarkdownEngine"]
+
+
+log = structlog.get_logger(__name__)
 
 
 class Engine(abc.ABC):
@@ -40,6 +44,11 @@ class Engine(abc.ABC):
         self.theme = theme
         self.source_dirname = source_dirname
         self.opts = opts or {}
+
+    @property
+    def name(self) -> str:
+        """Name of the engine class."""
+        return self.__class__.__name__
 
     @property
     def source_dir(self) -> Path:
@@ -136,6 +145,41 @@ class EngineSpec:
         return cls_loc, cls_name
 
 
+class StaticEngine(Engine):
+
+    """Engine that resolves and copies static files."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        if (kwargs.get("source_dirname") or STATIC_DIRNAME) != STATIC_DIRNAME:
+            raise err.VoltConfigError(
+                f"if specified, 'source' must be {STATIC_DIRNAME!r} for {self.name}"
+            )
+        kwargs["source_dirname"] = STATIC_DIRNAME
+        super().__init__(*args, **kwargs)
+
+    @property
+    def source_drafts_dir(self) -> Path:
+        log.warn(f"drafts directory is not applicable to {self.name}")
+        return self.source_dir
+
+    def create_targets(self) -> Sequence[CopyTarget]:
+        config = self.config
+        theme = self.theme
+
+        targets = {
+            target.url: target
+            for target in _collect_copy_targets(theme.static_dir, config.invoc_dir)
+        }
+
+        for user_target in _collect_copy_targets(config.static_dir, config.invoc_dir):
+            url = user_target.url
+            if url in targets:
+                log.warn("using user-defined target instead of theme target", url=url)
+            targets[url] = user_target
+
+        return list(targets.values())
+
+
 class MarkdownEngine(Engine):
 
     """Engine that creates HTML targets from Markdown sources."""
@@ -168,3 +212,49 @@ class MarkdownEngine(Engine):
     def get_sources(self, drafts: bool = False) -> list[tuple[Path, bool]]:
         eff_dir = self.source_dir if not drafts else self.source_drafts_dir
         return [(p, drafts) for p in eff_dir.glob(f"*{MARKDOWN_EXT}")]
+
+
+def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
+    """Gather files from the given start directory recursively as copy targets."""
+
+    src_relpath = _calc_relpath(start_dir, invocation_dir)
+    src_rel_len = len(src_relpath.parts)
+
+    targets: list[CopyTarget] = []
+    entries = list(os.scandir(src_relpath))
+    while entries:
+        de = entries.pop()
+        if de.is_dir():
+            entries.extend(os.scandir(de))
+        else:
+            dtoks = Path(de.path).parts[src_rel_len:]
+            targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
+
+    return targets
+
+
+def _calc_relpath(target: Path, ref: Path) -> Path:
+    """Calculate the target's path relative to the reference.
+
+    :param target: The path to which the relative path will point.
+    :param ref: Reference path.
+
+    :returns: The relative path from ``ref`` to ``to``.
+
+    :raises ValueError: when one of the given input paths is not an absolute
+        path.
+
+    """
+    ref = ref.expanduser()
+    target = target.expanduser()
+    if not ref.is_absolute() or not target.is_absolute():
+        raise ValueError("could not compute relative paths of non-absolute input paths")
+
+    common = Path(os.path.commonpath([ref, target]))
+    common_len = len(common.parts)
+    ref_uniq = ref.parts[common_len:]
+    target_uniq = target.parts[common_len:]
+
+    rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
+
+    return Path(*rel_parts)
