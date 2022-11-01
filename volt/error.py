@@ -2,7 +2,7 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from typing import IO, Any, Optional
+from typing import Any, IO, Optional
 
 from click import ClickException
 from structlog import get_logger
@@ -28,7 +28,7 @@ class VoltCliError(VoltError, ClickException):
 
     """Exceptions displayed as error messages to users."""
 
-    def show(self, file: Optional[IO[Any]] = None) -> None:
+    def show(self, _: Optional[IO[Any]] = None) -> None:
         log.error(f"{self}")
 
 

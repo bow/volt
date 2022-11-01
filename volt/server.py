@@ -10,7 +10,7 @@ from contextlib import suppress
 from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Callable, NoReturn, Optional, cast
+from typing import cast, Any, Callable, NoReturn, Optional
 
 import structlog
 from click import echo
