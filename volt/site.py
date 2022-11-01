@@ -247,7 +247,7 @@ class Site:
     def load_engines(self) -> None:
 
         log.debug("loading theme engines")
-        engines: list[Engine] | None = self.theme.load_engines()
+        engines: Optional[list[Engine]] = self.theme.load_engines()
         log.debug(
             "loaded theme engines",
             engines=[engine.name for engine in (engines or [])],
