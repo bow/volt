@@ -236,6 +236,7 @@ class Site:
         """
         self.config = config
         self.targets = list[Target]()
+        self.engines = list[Engine]()
         self.theme = Theme.from_config(config)
 
     def __repr__(self) -> str:
@@ -243,7 +244,7 @@ class Site:
         return f"{self.__class__.__name__}(name={config.name!r}, url={config.url!r})"
 
     @log_method
-    def collect_targets(self) -> None:
+    def load_engines(self) -> None:
 
         log.debug("loading theme engines")
         engines: list[Engine] | None = self.theme.load_engines()
@@ -262,15 +263,17 @@ class Site:
             log.debug("adding StaticEngine to loaded engines")
             engines.insert(0, StaticEngine(config=self.config, theme=self.theme))
 
+        self.engines = engines
         log.debug(
             "loaded all site engines",
             engines=[engine.name for engine in engines],
         )
 
+    @log_method
+    def collect_targets(self) -> None:
         self.targets = [
-            target for engine in engines for target in engine.create_targets()
+            target for engine in self.engines for target in engine.create_targets()
         ]
-
         return None
 
     @log_method
@@ -310,6 +313,9 @@ class Site:
     @log_method
     def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
+
+        self.load_engines()
+        signals.send(signals.post_site_load_engines, site=self)
 
         self.collect_targets()
         signals.send(signals.post_site_collect_targets, site=self)
