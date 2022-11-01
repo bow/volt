@@ -53,6 +53,9 @@ class Theme:
 
         self.path = theme_dir
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(name={self.name!r}, ...)"
+
     @cached_property
     def static_dir(self) -> Path:
         """Path to the site source theme static files."""
