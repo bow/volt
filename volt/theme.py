@@ -125,7 +125,7 @@ class Theme:
 
         return engines
 
-    @log_method
+    @log_method(with_args=True)
     def load_template_file(self, name: str) -> Template:
         """Load a template with the given file name."""
         try:
@@ -141,7 +141,7 @@ class Theme:
 
         return template
 
-    @log_method
+    @log_method(with_args=True)
     def load_template(self, key: str) -> Template:
         """Load a theme template with the given key."""
 

@@ -276,7 +276,7 @@ class Site:
         ]
         return None
 
-    @log_method
+    @log_method(with_args=True)
     def write(
         self,
         clean: bool,
@@ -310,7 +310,7 @@ class Site:
 
         return None
 
-    @log_method
+    @log_method(with_args=True)
     def build(self, clean: bool = True) -> None:
         """Build the static site in the destination directory."""
 

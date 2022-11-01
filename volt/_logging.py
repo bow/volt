@@ -9,19 +9,15 @@ from dataclasses import dataclass
 from functools import wraps
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Any, Callable, TypeVar, ParamSpec
+from typing import overload, Any, Callable, Optional, ParamSpec, TypeVar
 
 import click
 import structlog
 from rich.console import Console
 from rich.traceback import Traceback
-from structlog.contextvars import bind_contextvars, merge_contextvars
+from structlog.contextvars import bind_contextvars, bound_contextvars, merge_contextvars
 
 from .config import _get_exc_style, _get_use_color
-
-
-T = TypeVar("T")
-P = ParamSpec("P")
 
 
 def style(text: str, **kwargs: Any) -> str:
@@ -30,17 +26,52 @@ def style(text: str, **kwargs: Any) -> str:
     return click.style(text=text, **kwargs)
 
 
-def log_method(clb: Callable[P, T]) -> Callable[P, T]:
-    @wraps(clb)
-    def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
-        log = structlog.get_logger(clb.__module__)
-        log.debug(f"calling method {clb.__qualname__}")
-        rv = clb(*args, **kwargs)
-        log.debug(f"returned from method {clb.__qualname__}")
+T = TypeVar("T")
+P = ParamSpec("P")
 
-        return rv
 
-    return wrapped
+@overload
+def log_method(__clb: Callable[P, T]) -> Callable[P, T]:
+    ...
+
+
+@overload
+def log_method(*, with_args: bool) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    ...
+
+
+def log_method(
+    __clb: Optional[Callable[P, T]] = None,
+    with_args: bool = False,
+) -> Callable[P, T] | Callable[[Callable[P, T]], Callable[P, T]]:
+    def decorator(clb: Callable[P, T]) -> Callable[P, T]:
+        @wraps(clb)
+        def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
+            log = structlog.get_logger(clb.__module__)
+
+            log_attrs: dict = {}
+            if with_args:
+                # Skip 'self' from being logged.
+                if args_v := args[1:]:
+                    log_attrs["args"] = args_v
+                if kwargs:
+                    log_attrs["kwargs"] = kwargs
+
+            with bound_contextvars(**log_attrs):
+                log.debug(f"calling method {clb.__qualname__}")
+
+            rv = clb(*args, **kwargs)
+
+            with bound_contextvars(**log_attrs):
+                log.debug(f"returned from method {clb.__qualname__}")
+
+            return rv
+
+        return wrapped
+
+    if __clb is None:
+        return decorator
+    return decorator(__clb)
 
 
 @dataclass
