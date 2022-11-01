@@ -277,41 +277,38 @@ class Site:
         return None
 
     @log_method(with_args=True)
-    def write(
-        self,
-        clean: bool,
-        build_dir_prefix: str = constants.BUILD_DIR_PREFIX,
-    ) -> None:
+    def write(self, build_dir: Path, clean: bool) -> None:
         """Write all collected targets under the destination directory."""
 
-        with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
+        plan = Plan()
+        for target in self.targets:
+            try:
+                plan.add_target(target)
+            except ValueError as e:
+                raise VoltResourceError(f"{e}") from e
 
-            plan = Plan()
-            for target in self.targets:
-                try:
-                    plan.add_target(target)
-                except ValueError as e:
-                    raise VoltResourceError(f"{e}") from e
+        plan.write_nodes(build_dir=build_dir)
 
-            build_dir = Path(tmp_dir_name)
-            plan.write_nodes(build_dir=build_dir)
-
-            target_dir = self.config.target_dir
-            if clean:
-                shutil.rmtree(target_dir, ignore_errors=True)
-            shutil.copytree(src=build_dir, dst=target_dir)
-            # chmod if inside container to ensure host can use it as if not generated
-            # from inside the container.
-            if self.config.in_docker:
-                for dp, _, fnames in os.walk(target_dir):
-                    os.chmod(dp, 0o777)  # nosec: B103
-                    for fn in fnames:
-                        os.chmod(os.path.join(dp, fn), 0o666)  # nosec: B103
+        target_dir = self.config.target_dir
+        if clean:
+            shutil.rmtree(target_dir, ignore_errors=True)
+        shutil.copytree(src=build_dir, dst=target_dir)
+        # chmod if inside container to ensure host can use it as if not generated
+        # from inside the container.
+        if self.config.in_docker:
+            for dp, _, fnames in os.walk(target_dir):
+                os.chmod(dp, 0o777)  # nosec: B103
+                for fn in fnames:
+                    os.chmod(os.path.join(dp, fn), 0o666)  # nosec: B103
 
         return None
 
     @log_method(with_args=True)
-    def build(self, clean: bool = True) -> None:
+    def build(
+        self,
+        clean: bool = True,
+        build_dir_prefix: str = constants.BUILD_DIR_PREFIX,
+    ) -> None:
         """Build the static site in the destination directory."""
 
         self.load_engines()
@@ -322,8 +319,11 @@ class Site:
 
         self.update_render_kwargs(site=self, config=self.config)
 
-        signals.send(signals.pre_site_write, site=self)
-        self.write(clean=clean)
+        with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
+            build_dir = Path(tmp_dir_name)
+            signals.send(signals.pre_site_write, site=self, build_dir=build_dir)
+            self.write(build_dir=build_dir, clean=clean)
+            log.debug("removing build dir", path=build_dir)
 
         return None
 
