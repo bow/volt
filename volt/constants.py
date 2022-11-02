@@ -25,35 +25,58 @@ FRONT_MATTER_SEP = "---\n"
 # Extension for Markdown source files.
 MARKDOWN_EXT = ".md"
 
-# Site source directory name.
-SITE_SOURCES_DIRNAME = "source"
+# Project source directory name.
+PROJECT_SOURCES_DIRNAME = "source"
 
-# Site draft contents directory name.
-SITE_DRAFTS_DIRNAME = ".drafts"
+# Project draft contents directory name.
+PROJECT_DRAFTS_DIRNAME = ".drafts"
 
-# Site directory name for extension code.
-SITE_EXTENSION_DIRNAME = "extension"
+# Project directory name for extension code.
+PROJECT_EXTENSION_DIRNAME = "extension"
 
-# Site output directory name.
-SITE_TARGET_DIRNAME = "target"
+# Qualified module name for the project.
+PROJECT_MOD_QUALNAME = "volt.project"
 
-# Site user static directory name.
-SITE_STATIC_DIRNAME = f"{SITE_SOURCES_DIRNAME}/{STATIC_DIRNAME}"
+# Qualified module name for project extensions.
+PROJECT_EXTENSION_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{PROJECT_EXTENSION_DIRNAME}"
 
-# Site project directory name.
-SITE_PROJECT_DIRNAME = ""
+# Module name for custom CLI.
+CLI_MOD_NAME = "cli"
+
+# Qualified module name for custom CLI.
+PROJECT_CLI_MOD_QUALNAME = f"{PROJECT_EXTENSION_MOD_QUALNAME}.{CLI_MOD_NAME}"
+
+# Module name for custom hooks.
+HOOKS_MOD_NAME = "hooks"
+
+# Qualified module name for custom hooks.
+PROJECT_HOOKS_MOD_QUALNAME = f"{PROJECT_EXTENSION_MOD_QUALNAME}.{HOOKS_MOD_NAME}"
+
+# Project output directory name.
+PROJECT_TARGET_DIRNAME = "target"
+
+# Project static directory name.
+PROJECT_STATIC_DIRNAME = f"{PROJECT_SOURCES_DIRNAME}/{STATIC_DIRNAME}"
 
 # Site theme directory name.
 SITE_THEMES_DIRNAME = "theme"
 
-# Theme templates directory name.
-SITE_THEME_TEMPLATES_DIRNAME = "templates"
-
 # CLI extension filename.
-SITE_XCMD_SCRIPT_FNAME = "cli.py"
+XCMD_FNAME = f"{CLI_MOD_NAME}.py"
 
-# Hooks extension filename.
-SITE_HOOKS_SCRIPT_FNAME = "hooks.py"
+# Hooks filename.
+HOOKS_FNAME = f"{HOOKS_MOD_NAME}.py"
+
+###
+
+# Root module name for the theme.
+THEME_ROOT_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{SITE_THEMES_DIRNAME}"
+
+# Theme engines module name.
+ENGINES_MOD_NAME = "engines"
+
+# File name for theme engines.
+ENGINES_FNAME = f"{ENGINES_MOD_NAME}.py"
 
 # Theme base settings file name.
 THEME_SETTINGS_FNAME = "theme.yaml"
@@ -61,17 +84,5 @@ THEME_SETTINGS_FNAME = "theme.yaml"
 # Site theme static directory name.
 THEME_STATIC_DIRNAME = f"{STATIC_DIRNAME}"
 
-# Module name for the project.
-PROJECT_MOD_QUALNAME = "volt.project"
-
-# Module name for custom CLI.
-PROJECT_CLI_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{SITE_EXTENSION_DIRNAME}.cli"
-
-# Root module name for the theme.
-ROOT_THEME_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{SITE_THEMES_DIRNAME}"
-
-# Theme engines module name.
-THEME_ENGINES_MOD_NAME = "engines"
-
-# File name for theme engines.
-ENGINES_FNAME = f"{THEME_ENGINES_MOD_NAME}.py"
+# Theme templates directory name.
+THEME_TEMPLATES_DIRNAME = "templates"

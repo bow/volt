@@ -12,7 +12,6 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 from . import constants, error as err
 from .config import Config
-from .constants import ENGINES_FNAME, ROOT_THEME_MOD_QUALNAME, THEME_ENGINES_MOD_NAME
 from .targets import collect_copy_targets, CopyTarget
 from ._logging import log_method
 
@@ -60,17 +59,17 @@ class Theme:
     @cached_property
     def module_name(self) -> str:
         """Module name of the theme."""
-        return f"{ROOT_THEME_MOD_QUALNAME}.{self.name}"
+        return f"{constants.THEME_ROOT_MOD_QUALNAME}.{self.name}"
 
     @cached_property
     def engines_module_name(self) -> str:
         """Module name for theme engines."""
-        return f"{self.module_name}.{THEME_ENGINES_MOD_NAME}"
+        return f"{self.module_name}.{constants.ENGINES_MOD_NAME}"
 
     @cached_property
     def engines_module_path(self) -> Optional[Path]:
         """Path to theme engines, if defined."""
-        fp = self.path / ENGINES_FNAME
+        fp = self.path / constants.ENGINES_FNAME
         if fp.exists():
             return fp
         return None
@@ -94,7 +93,7 @@ class Theme:
     @cached_property
     def templates_dir(self) -> Path:
         """Path to the theme template directory."""
-        return self.path / constants.SITE_THEME_TEMPLATES_DIRNAME
+        return self.path / constants.THEME_TEMPLATES_DIRNAME
 
     @cached_property
     def template_env(self) -> Environment:

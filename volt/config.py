@@ -94,15 +94,14 @@ class Config(UserDict):
         self,
         invoc_dir: Path,
         project_dir: Path,
-        project_dirname: str = constants.SITE_PROJECT_DIRNAME,
-        target_dirname: str = constants.SITE_TARGET_DIRNAME,
-        sources_dirname: str = constants.SITE_SOURCES_DIRNAME,
+        target_dirname: str = constants.PROJECT_TARGET_DIRNAME,
+        sources_dirname: str = constants.PROJECT_SOURCES_DIRNAME,
         themes_dirname: str = constants.SITE_THEMES_DIRNAME,
-        static_dirname: str = constants.SITE_STATIC_DIRNAME,
-        drafts_dirname: str = constants.SITE_DRAFTS_DIRNAME,
-        extension_dirname: str = constants.SITE_EXTENSION_DIRNAME,
-        xcmd_script_fname: str = constants.SITE_XCMD_SCRIPT_FNAME,
-        hooks_script_fname: str = constants.SITE_HOOKS_SCRIPT_FNAME,
+        static_dirname: str = constants.PROJECT_STATIC_DIRNAME,
+        drafts_dirname: str = constants.PROJECT_DRAFTS_DIRNAME,
+        extension_dirname: str = constants.PROJECT_EXTENSION_DIRNAME,
+        xcmd_script_fname: str = constants.XCMD_FNAME,
+        hooks_script_fname: str = constants.HOOKS_FNAME,
         yaml_file: Optional[Path] = None,
         user_conf: Optional[dict] = None,
         **kwargs: Any,
@@ -126,7 +125,7 @@ class Config(UserDict):
         super().__init__(user_conf, **kwargs)
 
         self._invoc_dir = invoc_dir
-        self._project_dir = project_dir / project_dirname
+        self._project_dir = project_dir
         self._target_dir = project_dir / target_dirname
         self._sources_dir = self._project_dir / sources_dirname
         self._themes_dir = self._project_dir / themes_dirname

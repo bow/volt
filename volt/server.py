@@ -134,16 +134,16 @@ class _BuildHandler(events.RegexMatchingEventHandler):
             *[
                 f"^{prefix + '/' + dirname + '/'}.+$"
                 for dirname in (
-                    constants.SITE_EXTENSION_DIRNAME,
-                    constants.SITE_SOURCES_DIRNAME,
-                    constants.SITE_STATIC_DIRNAME,
+                    constants.PROJECT_EXTENSION_DIRNAME,
+                    constants.PROJECT_SOURCES_DIRNAME,
+                    constants.PROJECT_STATIC_DIRNAME,
                     constants.SITE_THEMES_DIRNAME,
                 )
             ],
             f"^{prefix + '/' + constants.CONFIG_FNAME}$",
         ]
         ignore_regexes = [
-            f"^{prefix + '/' + constants.SITE_TARGET_DIRNAME + '/'}.+$",
+            f"^{prefix + '/' + constants.PROJECT_TARGET_DIRNAME + '/'}.+$",
             f"^{prefix + '/__pycache__'}.+",
         ]
         super().__init__(regexes, ignore_regexes, case_sensitive=True)
