@@ -76,13 +76,12 @@ class _ExtensionGroup(click.Group):
     def import_xcmd(
         cls,
         config: Config,
-        mod_name: str = f"{PROJECT_CLI_MOD_QUALNAME}",
     ) -> Optional[ModuleType]:
         """Import the custom, user-defined subcommands."""
-        if (fp := config.xcmd_script) is None:
+        if (fp := config.xcmd_module_path) is None:
             return None
 
-        mod = import_file(fp, mod_name)
+        mod = import_file(fp, config.xcmd_module_name)
 
         return mod
 
@@ -190,13 +189,13 @@ def root(
         log.debug("loaded config")
 
         log.debug("checking if hooks extension is present")
-        if (fp := config.hooks_script) is not None:
+        if (fp := config.hooks_module_path) is not None:
             from ._import import import_file
 
             # NOTE: keeping a reference to the imported module to avoid garbage
             #       cleanup that would remove hooks.
             log.debug("loading hooks extension", path=fp)
-            ctx.params["_hooks"] = import_file(fp, "volt.ext.hooks")
+            ctx.params["_hooks"] = import_file(fp, config.hooks_module_name)
             log.debug("loaded hooks extension")
         else:
             log.debug("found no hooks extension")

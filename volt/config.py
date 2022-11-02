@@ -132,8 +132,8 @@ class Config(UserDict):
         self._extension_dir = self._project_dir / extension_dirname
         self._drafts_dirname = drafts_dirname
         self._static_dir = self._project_dir / static_dirname
-        self._xcmd_script = self._extension_dir / xcmd_script_fname
-        self._hooks_script = self._extension_dir / hooks_script_fname
+        self._xcmd_module_path = self._extension_dir / xcmd_script_fname
+        self._hooks_module_path = self._extension_dir / hooks_script_fname
         self._yaml_file = yaml_file
 
     @cached_property
@@ -202,20 +202,30 @@ class Config(UserDict):
         return len(self.project_dir.parts) + 1
 
     @cached_property
-    def xcmd_script(self) -> Optional[Path]:
+    def xcmd_module_path(self) -> Optional[Path]:
         """Path to a custom CLI extension, if present."""
-        fp = self._xcmd_script
+        fp = self._xcmd_module_path
         if fp.exists():
             return fp
         return None
 
     @cached_property
-    def hooks_script(self) -> Optional[Path]:
+    def xcmd_module_name(self) -> str:
+        """Module name for CLI extensions."""
+        return constants.PROJECT_CLI_MOD_QUALNAME
+
+    @cached_property
+    def hooks_module_path(self) -> Optional[Path]:
         """Path to a custom hooks extension, if present."""
-        fp = self._hooks_script
+        fp = self._hooks_module_path
         if fp.exists():
             return fp
         return None
+
+    @cached_property
+    def hooks_module_name(self) -> str:
+        """Module name for hooks."""
+        return constants.PROJECT_HOOKS_MOD_QUALNAME
 
     @cached_property
     def with_drafts(self) -> bool:
