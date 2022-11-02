@@ -3,14 +3,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import importlib.util as iutil
-from os import PathLike
+from pathlib import Path
 from types import ModuleType
 
 from . import error as err
 
 
-def import_file(fp: str | bytes | PathLike, mod_name: str) -> ModuleType:
+def import_file(fp: Path, mod_name: str) -> ModuleType:
     """Import the given file as the given module name"""
+
+    fp = fp.expanduser().resolve()
 
     spec = iutil.spec_from_file_location(mod_name, fp)
     if spec is None:
