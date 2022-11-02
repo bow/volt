@@ -15,6 +15,7 @@ from structlog.contextvars import bind_contextvars
 
 from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
+from .constants import PROJECT_CLI_MOD_QUALNAME
 from .error import VoltCliError
 from ._import import import_file
 from ._logging import init_logging
@@ -75,7 +76,7 @@ class _ExtensionGroup(click.Group):
     def import_xcmd(
         cls,
         config: Config,
-        mod_name: str = "volt.custom.cli",
+        mod_name: str = f"{PROJECT_CLI_MOD_QUALNAME}",
     ) -> Optional[ModuleType]:
         """Import the custom, user-defined subcommands."""
         if (fp := config.xcmd_script) is None:

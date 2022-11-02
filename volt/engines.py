@@ -14,7 +14,7 @@ from jinja2 import Template
 
 from . import error as err
 from .config import Config
-from .constants import MARKDOWN_EXT, STATIC_DIRNAME
+from .constants import MARKDOWN_EXT, PROJECT_MOD_QUALNAME, STATIC_DIRNAME
 from .sources import MarkdownSource
 from .targets import CopyTarget, Target, TemplateTarget
 from .theme import Theme
@@ -125,9 +125,8 @@ class EngineSpec:
     def _load_engine_file(self, theme: Theme, file_spec: str) -> Type[Engine]:
         fn, cls_name = self._parse_class_spec(file_spec)
 
-        fp = Path(fn) if os.path.isabs(fn) else theme.path / fn
-        mod_name = f"volt.custom.theme.engines.{'.'.join(fp.parts[1:])}"
-        mod = import_file(fp, mod_name)
+        mod_name = f"{PROJECT_MOD_QUALNAME}.engines"
+        mod = import_file(theme.path / fn, mod_name)
 
         try:
             return cast(Type[Engine], getattr(mod, cls_name))

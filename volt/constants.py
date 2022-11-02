@@ -49,9 +49,6 @@ SITE_THEMES_DIRNAME = "theme"
 # Theme templates directory name.
 SITE_THEME_TEMPLATES_DIRNAME = "templates"
 
-# Theme engines directory name.
-SITE_THEME_ENGINES_DIRNAME = "engines"
-
 # CLI extension filename.
 SITE_XCMD_SCRIPT_FNAME = "cli.py"
 
@@ -63,3 +60,15 @@ THEME_SETTINGS_FNAME = "theme.yaml"
 
 # Site theme static directory name.
 THEME_STATIC_DIRNAME = f"{STATIC_DIRNAME}"
+
+# Module name for the project.
+PROJECT_MOD_QUALNAME = "volt.project"
+
+# Module name for custom CLI.
+PROJECT_CLI_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{SITE_EXTENSION_DIRNAME}.cli"
+
+# Root module name for the theme.
+ROOT_THEME_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{SITE_THEMES_DIRNAME}"
+
+# Theme engines module name.
+THEME_ENGINES_MOD_NAME = "engines"
