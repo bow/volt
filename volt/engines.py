@@ -14,11 +14,12 @@ from jinja2 import Template
 
 from . import error as err
 from .config import Config
-from .constants import MARKDOWN_EXT, PROJECT_MOD_QUALNAME, STATIC_DIRNAME
+from .constants import MARKDOWN_EXT, STATIC_DIRNAME
 from .sources import MarkdownSource
 from .targets import CopyTarget, Target, TemplateTarget
 from .theme import Theme
 from ._import import import_file
+from ._logging import log_method
 
 
 __all__ = ["Engine", "EngineSpec", "MarkdownEngine"]
@@ -76,27 +77,28 @@ class EngineSpec:
     theme: Theme
     engine: Type[Engine] = field(init=False)
     module: InitVar[Optional[str]]
-    file: InitVar[Optional[str]]
+    klass: InitVar[Optional[str]]
 
     def __post_init__(
         self,
         module: Optional[str],
-        file: Optional[str],
+        klass: Optional[str],
     ) -> None:
-        match (module, file):
+        match (module, klass):
 
             case (m, None) if isinstance(m, str):
                 self.engine = self._load_engine_module(m)
 
             case (None, f) if isinstance(f, str):
-                self.engine = self._load_engine_file(self.theme, f)
+                # TODO: Expand to also be able to load packages, not just modules.
+                self.engine = self._load_engine_class(self.theme, f)
 
             case (None, None):
-                msg = "one of 'module' or 'file' must be a valid string value"
+                msg = "one of 'module' or 'class' must be a valid string value"
                 raise err.VoltConfigError(msg)
 
             case (_, _):
-                msg = "only one of 'module' or 'file' may be specified"
+                msg = "only one of 'module' or 'class' may be specified"
                 raise err.VoltConfigError(msg)
 
     def load(self) -> Engine:
@@ -107,6 +109,7 @@ class EngineSpec:
             opts=self.opts,
         )
 
+    @log_method(with_args=True)
     def _load_engine_module(self, mod_spec: str) -> Type[Engine]:
         mod_name, cls_name = self._parse_class_spec(mod_spec)
 
@@ -122,17 +125,28 @@ class EngineSpec:
                 f"engine {cls_name!r} not found in module {mod_name!r}"
             ) from e
 
-    def _load_engine_file(self, theme: Theme, file_spec: str) -> Type[Engine]:
-        fn, cls_name = self._parse_class_spec(file_spec)
+    @log_method(with_args=True)
+    def _load_engine_class(
+        self,
+        theme: Theme,
+        name: str,
+    ) -> Type[Engine]:
+        if not name.isidentifier():
+            raise err.VoltConfigError(f"invalid engine class specifier: {name!r}")
 
-        mod_name = f"{PROJECT_MOD_QUALNAME}.engines"
-        mod = import_file(theme.path / fn, mod_name)
+        if (fp := theme.engines_module_path) is None:
+            raise err.VoltConfigError("theme engines file not found")
+
+        mod_name = theme.engines_module_name
+
+        log.debug("loading file as module", path=fp, module=mod_name)
+        mod = import_file(fp, mod_name)
 
         try:
-            return cast(Type[Engine], getattr(mod, cls_name))
+            return cast(Type[Engine], getattr(mod, name))
         except AttributeError as e:
             raise err.VoltConfigError(
-                f"engine {cls_name!r} not found in file {fn!r}"
+                f"engine {name!r} not found in file {str(fp)!r}"
             ) from e
 
     @staticmethod

@@ -12,7 +12,7 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 from . import constants, error as err
 from .config import Config
-from .constants import ROOT_THEME_MOD_QUALNAME, THEME_ENGINES_MOD_NAME
+from .constants import ENGINES_FNAME, ROOT_THEME_MOD_QUALNAME, THEME_ENGINES_MOD_NAME
 from .targets import collect_copy_targets, CopyTarget
 from ._logging import log_method
 
@@ -66,6 +66,14 @@ class Theme:
     def engines_module_name(self) -> str:
         """Module name for theme engines."""
         return f"{self.module_name}.{THEME_ENGINES_MOD_NAME}"
+
+    @cached_property
+    def engines_module_path(self) -> Optional[Path]:
+        """Path to theme engines, if defined."""
+        fp = self.path / ENGINES_FNAME
+        if fp.exists():
+            return fp
+        return None
 
     @cached_property
     def static_dir(self) -> Path:
@@ -123,7 +131,7 @@ class Theme:
                     source=entry.get("source", ""),
                     opts=entry.get("opts", {}),
                     module=entry.get("module", None),
-                    file=entry.get("file", None),
+                    klass=entry.get("class", None),
                 )
                 for entry in engine_configs
             )

@@ -72,3 +72,6 @@ ROOT_THEME_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{SITE_THEMES_DIRNAME}"
 
 # Theme engines module name.
 THEME_ENGINES_MOD_NAME = "engines"
+
+# File name for theme engines.
+ENGINES_FNAME = f"{THEME_ENGINES_MOD_NAME}.py"
