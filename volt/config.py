@@ -74,8 +74,8 @@ class Config(UserDict):
         :raises ~exc.VoltConfigError: when validation fails.
 
         """
-        yaml_file = project_dir / yaml_fname
-        with yaml_file.open() as src:
+        yaml_path = project_dir / yaml_fname
+        with yaml_path.open() as src:
             try:
                 user_conf = cast(Dict[str, Any], yaml.safe_load(src))
             except (ParserError, ScannerError) as e:
@@ -86,7 +86,7 @@ class Config(UserDict):
             invoc_dir=invoc_dir,
             project_dir=project_dir,
             user_conf=user_conf,
-            yaml_file=yaml_file,
+            yaml_path=yaml_path,
             **kwargs,
         )
 
@@ -100,10 +100,13 @@ class Config(UserDict):
         static_dirname: str = constants.PROJECT_STATIC_DIRNAME,
         drafts_dirname: str = constants.PROJECT_DRAFTS_DIRNAME,
         extension_dirname: str = constants.PROJECT_EXTENSION_DIRNAME,
-        xcmd_script_fname: str = constants.XCMD_FNAME,
-        hooks_script_fname: str = constants.HOOKS_FNAME,
-        yaml_file: Optional[Path] = None,
+        xcmd_fname: str = constants.XCMD_FNAME,
+        xcmd_mod_name: str = constants.PROJECT_CLI_MOD_QUALNAME,
+        hooks_fname: str = constants.HOOKS_FNAME,
+        hooks_mod_name: str = constants.PROJECT_HOOKS_MOD_QUALNAME,
+        yaml_path: Optional[Path] = None,
         user_conf: Optional[dict] = None,
+        slug_replacements: Iterable[Iterable[str]] = constants.SLUG_REPLACEMENTS,
         **kwargs: Any,
     ) -> None:
         """Initialize a site-level configuration.
@@ -119,7 +122,7 @@ class Config(UserDict):
         self._name: str = uc.pop("name", "")
         self._url: str = uc.pop("url", "")
         self._slug_replacements: Iterable[Iterable[str]] = (
-            uc.pop("slug_replacements", None) or constants.DEFAULT_SLUG_REPLACEMENTS
+            uc.pop("slug_replacements", None) or slug_replacements
         )
         self._theme_config: Optional[dict] = uc.pop("theme", None) or None
         super().__init__(user_conf, **kwargs)
@@ -132,9 +135,11 @@ class Config(UserDict):
         self._extension_dir = self._project_dir / extension_dirname
         self._drafts_dirname = drafts_dirname
         self._static_dir = self._project_dir / static_dirname
-        self._xcmd_module_path = self._extension_dir / xcmd_script_fname
-        self._hooks_module_path = self._extension_dir / hooks_script_fname
-        self._yaml_file = yaml_file
+        self._xcmd_module_path = self._extension_dir / xcmd_fname
+        self._xcmd_module_name = xcmd_mod_name
+        self._hooks_module_path = self._extension_dir / hooks_fname
+        self._hooks_module_name = hooks_mod_name
+        self._yaml_path = yaml_path
 
     @cached_property
     def name(self) -> str:
@@ -212,7 +217,7 @@ class Config(UserDict):
     @cached_property
     def xcmd_module_name(self) -> str:
         """Module name for CLI extensions."""
-        return constants.PROJECT_CLI_MOD_QUALNAME
+        return self._xcmd_module_name
 
     @cached_property
     def hooks_module_path(self) -> Optional[Path]:
@@ -225,7 +230,7 @@ class Config(UserDict):
     @cached_property
     def hooks_module_name(self) -> str:
         """Module name for hooks."""
-        return constants.PROJECT_HOOKS_MOD_QUALNAME
+        return self._hooks_module_name
 
     @cached_property
     def with_drafts(self) -> bool:
@@ -238,7 +243,7 @@ class Config(UserDict):
 
     def reload(self) -> "Config":
         """Reloads a YAML config."""
-        if self._yaml_file is None:
+        if self._yaml_path is None:
             raise err.VoltResourceError("could not reload non-YAML config")
         return self.__class__.from_yaml(
             invoc_dir=self.invoc_dir, project_dir=self.project_dir

@@ -10,7 +10,7 @@ BUILD_DIR_PREFIX = "volt-build-"
 CONFIG_FNAME = "volt.yaml"
 
 # Default slug replacements.
-DEFAULT_SLUG_REPLACEMENTS = {
+SLUG_REPLACEMENTS = {
     ("I/O", "io"),
     ("'", ""),
     ('"', ""),
