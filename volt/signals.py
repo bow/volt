@@ -23,3 +23,14 @@ def send(signal: NamedSignal, *args: Any, **kwargs: Any) -> None:
         rvs = signal.send(*args, **kwargs)
         log.debug("sent to signal", num_receiver=len(rvs))
     return None
+
+
+def _clear() -> None:
+    for s in (
+        post_site_load_engines,
+        post_site_collect_targets,
+        pre_site_write,
+    ):
+        log.debug("clearing receivers", signal=s.name)
+        s.receivers.clear()
+    return None

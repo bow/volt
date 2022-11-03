@@ -188,18 +188,6 @@ def root(
             )
         log.debug("loaded config")
 
-        log.debug("checking if hooks extension is present")
-        if (fp := config.hooks_module_path) is not None:
-            from ._import import import_file
-
-            # NOTE: keeping a reference to the imported module to avoid garbage
-            #       cleanup that would remove hooks.
-            log.debug("loading hooks extension", path=fp)
-            ctx.params["_hooks"] = import_file(fp, config.hooks_module_name)
-            log.debug("loaded hooks extension")
-        else:
-            log.debug("found no hooks extension")
-
     ctx.params["config"] = config
 
     log.debug("running subcommand")

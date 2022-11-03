@@ -6,6 +6,7 @@ import fnmatch
 import os
 import shutil
 import tempfile
+from contextlib import suppress
 from functools import cached_property
 from itertools import filterfalse, tee
 from pathlib import Path
@@ -29,6 +30,7 @@ from .engines import Engine, MarkdownEngine, StaticEngine
 from .error import VoltResourceError
 from .targets import Target, TemplateTarget
 from .theme import Theme
+from ._import import import_file
 from ._logging import log_method
 
 
@@ -244,6 +246,25 @@ class Site:
         return f"{self.__class__.__name__}(name={config.name!r}, url={config.url!r})"
 
     @log_method
+    def load_hooks(self) -> None:
+
+        config = self.config
+        log.debug("checking if project hooks extension is present")
+        fp = config.hooks_module_path
+
+        if fp is None:
+            log.debug("found no project hooks extension")
+            return None
+
+        log.debug("loading project hooks extension", path=fp)
+        # NOTE: keeping a reference to the imported module to avoid garbage
+        #       cleanup that would remove hooks.
+        self.__hooks = import_file(fp, config.hooks_module_name)
+        log.debug("loaded project hooks extension")
+
+        return None
+
+    @log_method
     def load_engines(self) -> None:
 
         log.debug("loading theme engines")
@@ -311,6 +332,8 @@ class Site:
     ) -> None:
         """Build the static site in the destination directory."""
 
+        self.load_hooks()
+
         self.load_engines()
         signals.send(signals.post_site_load_engines, site=self)
 
@@ -346,6 +369,12 @@ class Site:
         rv = list(matching)
         self.targets = list(rest)
         return rv
+
+    @log_method
+    def _cleanup(self) -> None:
+        with suppress(AttributeError):
+            del self.__hooks
+        signals._clear()
 
 
 T = TypeVar("T")
