@@ -223,7 +223,10 @@ def init_logging(log_level: str) -> None:
         "loggers": {
             "asyncio": {
                 "level": "WARNING",
-            }
+            },
+            "watchdog": {
+                "level": "WARNING",
+            },
         },
     }
 
