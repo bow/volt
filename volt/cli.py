@@ -15,7 +15,6 @@ from structlog.contextvars import bind_contextvars
 
 from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
-from .constants import PROJECT_CLI_MOD_QUALNAME
 from .error import VoltCliError
 from ._import import import_file
 from ._logging import init_logging
