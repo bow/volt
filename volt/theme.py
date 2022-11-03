@@ -75,6 +75,19 @@ class Theme:
         return None
 
     @cached_property
+    def hooks_module_name(self) -> str:
+        """Module name for theme hooks."""
+        return f"{self.module_name}.{constants.HOOKS_MOD_NAME}"
+
+    @cached_property
+    def hooks_module_path(self) -> Optional[Path]:
+        """Path to theme hooks, if defined."""
+        fp = self.path / constants.HOOKS_FNAME
+        if fp.exists():
+            return fp
+        return None
+
+    @cached_property
     def static_dir(self) -> Path:
         """Path to the site source theme static files."""
         return self.path / constants.THEME_STATIC_DIRNAME

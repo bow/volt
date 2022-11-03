@@ -10,6 +10,7 @@ from contextlib import suppress
 from functools import cached_property
 from itertools import filterfalse, tee
 from pathlib import Path
+from types import ModuleType
 from typing import (
     cast,
     Any,
@@ -17,6 +18,7 @@ from typing import (
     Dict,
     Generator,
     Iterator,
+    Literal,
     Optional,
     Sequence,
     TypeVar,
@@ -240,6 +242,7 @@ class Site:
         self.targets = list[Target]()
         self.engines = list[Engine]()
         self.theme = Theme.from_config(config)
+        self.__hooks: dict[str, ModuleType] = {}
 
     def __repr__(self) -> str:
         config = self.config
@@ -247,20 +250,8 @@ class Site:
 
     @log_method
     def load_hooks(self) -> None:
-
-        config = self.config
-        log.debug("checking if project hooks extension is present")
-        fp = config.hooks_module_path
-
-        if fp is None:
-            log.debug("found no project hooks extension")
-            return None
-
-        log.debug("loading project hooks extension", path=fp)
-        # NOTE: keeping a reference to the imported module to avoid garbage
-        #       cleanup that would remove hooks.
-        self.__hooks = import_file(fp, config.hooks_module_name)
-        log.debug("loaded project hooks extension")
+        self.__load_hooks("theme")
+        self.__load_hooks("project")
 
         return None
 
@@ -373,8 +364,34 @@ class Site:
     @log_method
     def _cleanup(self) -> None:
         with suppress(AttributeError):
-            del self.__hooks
+            self.__hooks = {}
         signals._clear()
+
+    @log_method
+    def __load_hooks(self, kind: Literal["project"] | Literal["theme"]) -> None:
+
+        config = self.config
+
+        fp = config.hooks_module_path
+        name = config.hooks_module_name
+
+        theme = self.theme
+        if kind == "theme":
+            fp = theme.hooks_module_path
+            name = theme.hooks_module_name
+
+        log.debug(f"checking if {kind} hooks extension is present")
+        if fp is None:
+            log.debug(f"found no {kind} hooks extension")
+            return None
+
+        log.debug(f"loading {kind} hooks extension", path=fp, name=name)
+        # NOTE: keeping a reference to the imported module to avoid garbage
+        #       cleanup that would remove hooks.
+        self.__hooks[kind] = import_file(fp, name)
+        log.debug(f"loaded {kind} hooks extension")
+
+        return None
 
 
 T = TypeVar("T")
