@@ -12,7 +12,6 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 from . import constants, error as err
 from .config import Config
-from .targets import collect_copy_targets, CopyTarget
 from ._logging import log_method
 
 if TYPE_CHECKING:
@@ -36,9 +35,10 @@ class Theme:
         if (theme_name := theme_config.get("name", None)) is None:
             raise err.VoltConfigError("missing theme name")
 
-        theme_opts = theme_config.get("opts", None) or {}
+        opts = theme_config.get("opts", None) or {}
+        # hooks = theme_config.get("hooks", None) or {}
 
-        return cls(name=theme_name, opts=theme_opts, config=config)
+        return cls(name=theme_name, opts=opts, config=config)
 
     def __init__(self, name: str, opts: dict, config: Config) -> None:
         self.name = name
@@ -124,10 +124,6 @@ class Theme:
             auto_reload=True,
             enable_async=True,
         )
-
-    @log_method
-    def collect_static_targets(self) -> list[CopyTarget]:
-        return collect_copy_targets(self.static_dir, self.config.invoc_dir)
 
     @log_method
     def load_engines(self) -> Optional[list["Engine"]]:

@@ -5,7 +5,6 @@
 import abc
 import filecmp
 from functools import cached_property
-import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -17,7 +16,6 @@ from . import error as err
 
 
 __all__ = [
-    "collect_copy_targets",
     "CopyTarget",
     "FileTarget",
     "Target",
@@ -126,49 +124,3 @@ class CopyTarget(Target):
                 )
 
         return None
-
-
-def collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
-    """Gather files from the given start directory recursively as copy targets."""
-
-    src_relpath = _calc_relpath(start_dir, invocation_dir)
-    src_rel_len = len(src_relpath.parts)
-
-    targets: list[CopyTarget] = []
-    entries = list(os.scandir(src_relpath))
-    while entries:
-        de = entries.pop()
-        if de.is_dir():
-            entries.extend(os.scandir(de))
-        else:
-            dtoks = Path(de.path).parts[src_rel_len:]
-            targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
-
-    return targets
-
-
-def _calc_relpath(target: Path, ref: Path) -> Path:
-    """Calculate the target's path relative to the reference.
-
-    :param target: The path to which the relative path will point.
-    :param ref: Reference path.
-
-    :returns: The relative path from ``ref`` to ``to``.
-
-    :raises ValueError: when one of the given input paths is not an absolute
-        path.
-
-    """
-    ref = ref.expanduser()
-    target = target.expanduser()
-    if not ref.is_absolute() or not target.is_absolute():
-        raise ValueError("could not compute relative paths of non-absolute input paths")
-
-    common = Path(os.path.commonpath([ref, target]))
-    common_len = len(common.parts)
-    ref_uniq = ref.parts[common_len:]
-    target_uniq = target.parts[common_len:]
-
-    rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
-
-    return Path(*rel_parts)
