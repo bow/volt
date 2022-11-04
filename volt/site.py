@@ -248,15 +248,92 @@ class Site:
         config = self.config
         return f"{self.__class__.__name__}(name={config.name!r}, url={config.url!r})"
 
-    @log_method
-    def load_hooks(self) -> None:
-        self.__load_hooks("theme")
-        self.__load_hooks("project")
+    @log_method(with_args=True)
+    def build(
+        self,
+        clean: bool = True,
+        build_dir_prefix: str = constants.BUILD_DIR_PREFIX,
+    ) -> None:
+        """Build the static site in the destination directory."""
+
+        try:
+            self.__build(clean=clean, build_dir_prefix=build_dir_prefix)
+        finally:
+            with suppress(AttributeError):
+                self.__hooks = {}
+            signals._clear()
+
+    def select_targets(self, pattern: str) -> list[Target]:
+        return [
+            target for target in self.targets if fnmatch.fnmatch(target.url, pattern)
+        ]
+
+    def extract_targets(self, pattern: str) -> list[Target]:
+        matching, rest = _partition_targets(
+            self.targets,
+            lambda t: fnmatch.fnmatch(t.url, pattern),
+        )
+        rv = list(matching)
+        self.targets = list(rest)
+        return rv
+
+    @log_method(with_args=True)
+    def __build(self, clean: bool, build_dir_prefix: str) -> None:
+        """Build the static site in the destination directory."""
+
+        self.__load_hooks()
+
+        self.__load_engines()
+        signals.send(signals.post_site_load_engines, site=self)
+
+        self.__collect_targets()
+        signals.send(signals.post_site_collect_targets, site=self)
+
+        self.__update_render_kwargs(site=self, config=self.config)
+
+        with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
+            build_dir = Path(tmp_dir_name)
+            signals.send(signals.pre_site_write, site=self, build_dir=build_dir)
+            self.__write(build_dir=build_dir, clean=clean)
+            log.debug("removing build dir", path=build_dir)
 
         return None
 
     @log_method
-    def load_engines(self) -> None:
+    def __load_hooks(self) -> None:
+        self.__load_hook("theme")
+        self.__load_hook("project")
+
+        return None
+
+    @log_method
+    def __load_hook(self, kind: Literal["project"] | Literal["theme"]) -> None:
+
+        config = self.config
+
+        fp = config.hooks_module_path
+        name = config.hooks_module_name
+
+        theme = self.theme
+        if kind == "theme":
+            fp = theme.hooks_module_path
+            name = theme.hooks_module_name
+
+        log.debug(f"checking if {kind} hooks extension is present")
+        if fp is None:
+            log.debug(f"found no {kind} hooks extension")
+            return None
+
+        log.debug(f"loading {kind} hooks extension", path=fp, name=name)
+        # NOTE: keeping a reference to the imported module to avoid garbage
+        #       cleanup that would remove hooks.
+        self.__hooks[kind] = import_file(fp, name)
+        log.debug(f"loaded {kind} hooks extension")
+
+        return None
+
+    @log_method
+    def __load_engines(self) -> None:
 
         log.debug("loading theme engines")
         engines: Optional[list[Engine]] = self.theme.load_engines()
@@ -282,14 +359,14 @@ class Site:
         )
 
     @log_method
-    def collect_targets(self) -> None:
+    def __collect_targets(self) -> None:
         self.targets = [
             target for engine in self.engines for target in engine.create_targets()
         ]
         return None
 
     @log_method(with_args=True)
-    def write(self, build_dir: Path, clean: bool) -> None:
+    def __write(self, build_dir: Path, clean: bool) -> None:
         """Write all collected targets under the destination directory."""
 
         plan = Plan()
@@ -315,88 +392,11 @@ class Site:
 
         return None
 
-    @log_method(with_args=True)
-    def build(
-        self,
-        clean: bool = True,
-        build_dir_prefix: str = constants.BUILD_DIR_PREFIX,
-    ) -> None:
-        """Build the static site in the destination directory."""
-
-        try:
-            self.__build(clean=clean, build_dir_prefix=build_dir_prefix)
-        finally:
-            with suppress(AttributeError):
-                self.__hooks = {}
-            signals._clear()
-
-    def update_render_kwargs(self, **kwargs: Any) -> None:
+    def __update_render_kwargs(self, **kwargs: Any) -> None:
         for target in self.targets:
             if not isinstance(target, TemplateTarget):
                 continue
             target.render_kwargs.update(**kwargs)
-
-    def select_targets(self, pattern: str) -> list[Target]:
-        return [
-            target for target in self.targets if fnmatch.fnmatch(target.url, pattern)
-        ]
-
-    def extract_targets(self, pattern: str) -> list[Target]:
-        matching, rest = _partition_targets(
-            self.targets,
-            lambda t: fnmatch.fnmatch(t.url, pattern),
-        )
-        rv = list(matching)
-        self.targets = list(rest)
-        return rv
-
-    @log_method(with_args=True)
-    def __build(self, clean: bool, build_dir_prefix: str) -> None:
-        """Build the static site in the destination directory."""
-
-        self.load_hooks()
-
-        self.load_engines()
-        signals.send(signals.post_site_load_engines, site=self)
-
-        self.collect_targets()
-        signals.send(signals.post_site_collect_targets, site=self)
-
-        self.update_render_kwargs(site=self, config=self.config)
-
-        with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
-            build_dir = Path(tmp_dir_name)
-            signals.send(signals.pre_site_write, site=self, build_dir=build_dir)
-            self.write(build_dir=build_dir, clean=clean)
-            log.debug("removing build dir", path=build_dir)
-
-        return None
-
-    @log_method
-    def __load_hooks(self, kind: Literal["project"] | Literal["theme"]) -> None:
-
-        config = self.config
-
-        fp = config.hooks_module_path
-        name = config.hooks_module_name
-
-        theme = self.theme
-        if kind == "theme":
-            fp = theme.hooks_module_path
-            name = theme.hooks_module_name
-
-        log.debug(f"checking if {kind} hooks extension is present")
-        if fp is None:
-            log.debug(f"found no {kind} hooks extension")
-            return None
-
-        log.debug(f"loading {kind} hooks extension", path=fp, name=name)
-        # NOTE: keeping a reference to the imported module to avoid garbage
-        #       cleanup that would remove hooks.
-        self.__hooks[kind] = import_file(fp, name)
-        log.debug(f"loaded {kind} hooks extension")
-
-        return None
 
 
 T = TypeVar("T")
