@@ -157,50 +157,50 @@ class _BuildHandler(events.RegexMatchingEventHandler):
 
             case events.FileCreatedEvent:
                 log_attrs = dict(
-                    reason="file-created",
+                    reason="file_created",
                     file=event.src_path,
                 )
 
             case events.FileModifiedEvent:
                 log_attrs = dict(
-                    reason="file-modified",
+                    reason="file_modified",
                     file=event.src_path,
                 )
 
             case events.FileDeletedEvent:
                 log_attrs = dict(
-                    reason="file-deleted",
+                    reason="file_deleted",
                     file=event.src_path,
                 )
 
             case events.FileMovedEvent:
                 log_attrs = dict(
-                    reason="file-moved",
+                    reason="file_moved",
                     src=event.src_path,
                     dest=event.dest_path,
                 )
 
             case events.DirCreatedEvent:
                 log_attrs = dict(
-                    reason="dir-created",
+                    reason="dir_created",
                     dir=event.src_path,
                 )
 
             case events.DirModifiedEvent:
                 log_attrs = dict(
-                    reason="dir-modified",
+                    reason="dir_modified",
                     dir=event.src_path,
                 )
 
             case events.DirDeletedEvent:
                 log_attrs = dict(
-                    reason="dir-deleted",
+                    reason="dir_deleted",
                     dir=event.src_path,
                 )
 
             case events.DirMovedEvent:
                 log_attrs = dict(
-                    reason="dir-moved",
+                    reason="dir_moved",
                     src=event.src_path,
                     dest=event.dest_path,
                 )
