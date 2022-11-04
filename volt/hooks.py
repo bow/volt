@@ -17,6 +17,18 @@ __all__ = [
 ]
 
 
+def name() -> str:
+    """Return the name of the current hook.
+
+    This function must be called inside the top-level hook function. That is, the
+    function that is decorated with the hook.
+
+    """
+    frame = sys._getframe(1)
+    hook_name = frame.f_code.co_name
+    return hook_name
+
+
 def log() -> Any:
     """Return a logger for a hook function.
 
