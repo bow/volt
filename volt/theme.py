@@ -131,7 +131,7 @@ class Theme:
         from .engines import EngineSpec
 
         config = self.config
-        engine_configs: Optional[list[dict]] = self.opts.get(
+        engine_configs: Optional[dict] = self.opts.get(
             "engines", self.defaults.get("engines", None)
         )
 
@@ -142,6 +142,7 @@ class Theme:
             spec.load()
             for spec in (
                 EngineSpec(
+                    id=entry_id,
                     config=config,
                     theme=self,
                     source=entry.get("source", ""),
@@ -149,7 +150,7 @@ class Theme:
                     module=entry.get("module", None),
                     klass=entry.get("class", None),
                 )
-                for entry in engine_configs
+                for entry_id, entry in engine_configs.items()
             )
         ]
 

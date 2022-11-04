@@ -345,12 +345,17 @@ class Site:
         # Add MarkdownEngine if no engines are loaded.
         if not engines:
             log.debug("adding MarkdownEngine to loaded engines")
-            engines = [MarkdownEngine(config=self.config, theme=self.theme)]
+            engines = [
+                MarkdownEngine(id="markdown", config=self.config, theme=self.theme)
+            ]
 
         # Add StaticEngine if not already added.
         if not any(engine.__class__ is StaticEngine for engine in engines):
             log.debug("adding StaticEngine to loaded engines")
-            engines.insert(0, StaticEngine(config=self.config, theme=self.theme))
+            engines.insert(
+                0,
+                StaticEngine(id="static", config=self.config, theme=self.theme),
+            )
 
         self.engines = engines
         log.debug(

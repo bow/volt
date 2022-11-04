@@ -34,6 +34,7 @@ class Engine(abc.ABC):
 
     def __init__(
         self,
+        id: str,
         config: Config,
         theme: Theme,
         source_dirname: str = "",
@@ -41,6 +42,7 @@ class Engine(abc.ABC):
         *args: Any,
         **kwargs: Any,
     ) -> None:
+        self.id = id
         self.config = config
         self.theme = theme
         self.source_dirname = source_dirname
@@ -71,6 +73,7 @@ class EngineSpec:
 
     """Specifications of an engine in the config."""
 
+    id: str
     source: str
     opts: dict
     config: Config
@@ -103,6 +106,7 @@ class EngineSpec:
 
     def load(self) -> Engine:
         return self.engine(
+            id=self.id,
             config=self.config,
             theme=self.theme,
             source_dirname=self.source,
