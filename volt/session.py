@@ -150,9 +150,6 @@ def build(
     else:
         log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
         return site
-    finally:
-        with suppress(NameError):
-            site._cleanup()
 
 
 def edit(

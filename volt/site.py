@@ -323,23 +323,12 @@ class Site:
     ) -> None:
         """Build the static site in the destination directory."""
 
-        self.load_hooks()
-
-        self.load_engines()
-        signals.send(signals.post_site_load_engines, site=self)
-
-        self.collect_targets()
-        signals.send(signals.post_site_collect_targets, site=self)
-
-        self.update_render_kwargs(site=self, config=self.config)
-
-        with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
-            build_dir = Path(tmp_dir_name)
-            signals.send(signals.pre_site_write, site=self, build_dir=build_dir)
-            self.write(build_dir=build_dir, clean=clean)
-            log.debug("removing build dir", path=build_dir)
-
-        return None
+        try:
+            self.__build(clean=clean, build_dir_prefix=build_dir_prefix)
+        finally:
+            with suppress(AttributeError):
+                self.__hooks = {}
+            signals._clear()
 
     def update_render_kwargs(self, **kwargs: Any) -> None:
         for target in self.targets:
@@ -361,11 +350,27 @@ class Site:
         self.targets = list(rest)
         return rv
 
-    @log_method
-    def _cleanup(self) -> None:
-        with suppress(AttributeError):
-            self.__hooks = {}
-        signals._clear()
+    @log_method(with_args=True)
+    def __build(self, clean: bool, build_dir_prefix: str) -> None:
+        """Build the static site in the destination directory."""
+
+        self.load_hooks()
+
+        self.load_engines()
+        signals.send(signals.post_site_load_engines, site=self)
+
+        self.collect_targets()
+        signals.send(signals.post_site_collect_targets, site=self)
+
+        self.update_render_kwargs(site=self, config=self.config)
+
+        with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
+            build_dir = Path(tmp_dir_name)
+            signals.send(signals.pre_site_write, site=self, build_dir=build_dir)
+            self.write(build_dir=build_dir, clean=clean)
+            log.debug("removing build dir", path=build_dir)
+
+        return None
 
     @log_method
     def __load_hooks(self, kind: Literal["project"] | Literal["theme"]) -> None:
