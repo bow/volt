@@ -111,7 +111,7 @@ def build(
     config: Config,
     clean: bool = True,
     with_drafts: bool = False,
-) -> Site:
+) -> Optional[Site]:
     """Build the site.
 
     This function may overwrite and/or remove any preexisting files
@@ -132,10 +132,12 @@ def build(
     try:
         site = Site(config)
         site.build(clean=clean)
+        log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
+        return site
     except bdb.BdbQuit:
         unbind_contextvars(*log_attrs.keys())
         log.warn("exiting from debugger -- build may be compromised")
-        return site
+        return None
     except Exception:
         msg = "build failed"
         build_exists = False
@@ -147,9 +149,6 @@ def build(
             msg += " -- keeping current build"
         log.error(msg)
         raise
-    else:
-        log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
-        return site
 
 
 def edit(
