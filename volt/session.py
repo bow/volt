@@ -129,15 +129,15 @@ def build(
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
+    site: Optional[Site] = None
+
     try:
         site = Site(config)
         site.build(clean=clean)
         log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
-        return site
     except bdb.BdbQuit:
         unbind_contextvars(*log_attrs.keys())
         log.warn("exiting from debugger -- build may be compromised")
-        return None
     except Exception:
         msg = "build failed"
         build_exists = False
@@ -149,6 +149,8 @@ def build(
             msg += " -- keeping current build"
         log.error(msg)
         raise
+
+    return site
 
 
 def edit(
