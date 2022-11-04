@@ -56,6 +56,14 @@ class Theme:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name!r}, ...)"
 
+    def get_hook_opts(self, name: str) -> dict:
+        """Retrieve options for the given hook."""
+        return cast(dict, ((self.opts.get("hooks") or {}).get(name) or {}))
+
+    def hook_enabled(self, name: str) -> bool:
+        """Check whether the given hook is enabled."""
+        return self.get_hook_opts(name).get("enabled") or False
+
     @cached_property
     def module_name(self) -> str:
         """Module name of the theme."""
