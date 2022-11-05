@@ -307,7 +307,7 @@ class Site:
         return None
 
     @log_method
-    def __load_hook(self, kind: Literal["project"] | Literal["theme"]) -> None:
+    def __load_hook(self, kind: Literal["project", "theme"]) -> None:
 
         config = self.config
 
