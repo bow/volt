@@ -6,7 +6,7 @@ import yaml
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
-from typing import cast, Optional, TYPE_CHECKING
+from typing import cast, Literal, Optional, TYPE_CHECKING
 
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
@@ -33,33 +33,58 @@ class Theme:
         if config.theme_name is None:
             raise err.VoltConfigError("undefined theme")
 
-        opts = config.theme_overrides.get("opts", None) or {}
+        return cls(name=config.theme_name, site_config=config)
 
-        return cls(name=config.theme_name, opts=opts, config=config)
+    def __init__(self, name: str, site_config: Config) -> None:
+        self._name = name
+        self._config = site_config
 
-    def __init__(self, name: str, opts: dict, config: Config) -> None:
-        self.name = name
-        self.opts = opts
-        self.config = config
-
-        theme_dir = config.themes_dir / self.name
+        theme_dir = site_config.themes_dir / self.name
         if not theme_dir.exists():
             raise err.VoltConfigError(
-                f"theme {self.name!r} not found in {config.themes_dir}"
+                f"theme {self.name!r} not found in {site_config.themes_dir}"
             )
+        self._path = theme_dir
 
-        self.path = theme_dir
+        self._opts = self._resolve_config("opts")
+        self._engines = self._resolve_config("engines")
+        self._hooks = self._resolve_config("hooks")
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name!r}, ...)"
 
-    def get_hook_opts(self, name: str) -> dict:
-        """Retrieve options for the given hook."""
-        return cast(dict, ((self.opts.get("hooks") or {}).get(name) or {}))
+    @property
+    def name(self) -> str:
+        """Theme name."""
+        return self._name
+
+    @property
+    def opts(self) -> dict:
+        """Theme options."""
+        return self._opts
+
+    @property
+    def engines(self) -> dict:
+        """Theme engines."""
+        return self._engines
+
+    @property
+    def hooks(self) -> dict:
+        """Theme hooks."""
+        return self._hooks
+
+    def get_hook_config(self, name: str) -> dict:
+        """Retrieve config for the given hook."""
+        return self.hooks.get(name) or {}
 
     def hook_enabled(self, name: str) -> bool:
         """Check whether the given hook is enabled."""
-        return self.get_hook_opts(name).get("enabled") or False
+        return self.get_hook_config(name).get("enabled") or False
+
+    @property
+    def path(self) -> Path:
+        """Path to the theme directory."""
+        return self._path
 
     @cached_property
     def module_name(self) -> str:
@@ -97,15 +122,20 @@ class Theme:
         """Path to the site source theme static files."""
         return self.path / constants.THEME_STATIC_DIRNAME
 
+    @property
+    def config(self) -> Config:
+        """Site-level configurations."""
+        return self._config
+
     @cached_property
-    def config_path(self) -> Path:
+    def config_defaults_path(self) -> Path:
         """Path to theme default configurations."""
         return self.path / constants.THEME_SETTINGS_FNAME
 
     @cached_property
     def config_defaults(self) -> dict:
         """Default theme configurations."""
-        with self.config_path.open("r") as src:
+        with self.config_defaults_path.open("r") as src:
             return cast(dict, yaml.safe_load(src))
 
     @cached_property
@@ -127,28 +157,28 @@ class Theme:
 
         from .engines import EngineSpec
 
-        config = self.config
-        engine_configs: Optional[dict] = self.opts.get(
-            "engines", self.config_defaults.get("engines", None)
-        )
-
-        if engine_configs is None:
-            return None
-
         specs = [
             EngineSpec(
                 id=entry_id,
-                config=config,
+                config=self.config,
                 theme=self,
                 source=entry.get("source", ""),
                 opts=entry.get("opts", {}),
                 module=entry.get("module", None),
                 klass=entry.get("class", None),
             )
-            for entry_id, entry in engine_configs.items()
+            for entry_id, entry in self.engines.items()
         ]
 
         return specs
+
+    @log_method(with_args=True)
+    def _resolve_config(self, key: Literal["engines", "hooks", "opts"]) -> dict:
+        """Resolve theme configuration by applying overrides to defaults"""
+        return _overlay(
+            self.config_defaults.get(key, None),
+            self.config.theme_overrides.get(key, None),
+        )
 
     @log_method(with_args=True)
     def load_template_file(self, name: str) -> Template:
