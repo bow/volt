@@ -97,14 +97,14 @@ class Theme:
         return self.path / constants.THEME_STATIC_DIRNAME
 
     @cached_property
-    def config_dir(self) -> Path:
+    def config_path(self) -> Path:
         """Path to theme default configurations."""
         return self.path / constants.THEME_SETTINGS_FNAME
 
     @cached_property
     def config_defaults(self) -> dict:
         """Default theme configurations."""
-        with self.config_dir.open("r") as src:
+        with self.config_path.open("r") as src:
             return cast(dict, yaml.safe_load(src))
 
     @cached_property
