@@ -6,7 +6,6 @@ import fnmatch
 import os
 import shutil
 import tempfile
-from contextlib import suppress
 from functools import cached_property
 from itertools import filterfalse, tee
 from pathlib import Path
@@ -259,8 +258,7 @@ class Site:
         try:
             self.__build(clean=clean, build_dir_prefix=build_dir_prefix)
         finally:
-            with suppress(AttributeError):
-                self.__hooks = {}
+            self.__hooks = {}
             signals._clear()
 
     def select_targets(self, pattern: str) -> list[Target]:
