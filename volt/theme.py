@@ -15,7 +15,7 @@ from .config import Config
 from ._logging import log_method
 
 if TYPE_CHECKING:
-    from .engines import Engine
+    from .engines import EngineSpec
 
 
 __all__ = ["Theme"]
@@ -126,7 +126,7 @@ class Theme:
         )
 
     @log_method
-    def load_engines(self) -> Optional[list["Engine"]]:
+    def get_engine_specs(self) -> Optional[list["EngineSpec"]]:
 
         from .engines import EngineSpec
 
@@ -138,23 +138,20 @@ class Theme:
         if engine_configs is None:
             return None
 
-        engines = [
-            spec.load()
-            for spec in (
-                EngineSpec(
-                    id=entry_id,
-                    config=config,
-                    theme=self,
-                    source=entry.get("source", ""),
-                    opts=entry.get("opts", {}),
-                    module=entry.get("module", None),
-                    klass=entry.get("class", None),
-                )
-                for entry_id, entry in engine_configs.items()
+        specs = [
+            EngineSpec(
+                id=entry_id,
+                config=config,
+                theme=self,
+                source=entry.get("source", ""),
+                opts=entry.get("opts", {}),
+                module=entry.get("module", None),
+                klass=entry.get("class", None),
             )
+            for entry_id, entry in engine_configs.items()
         ]
 
-        return engines
+        return specs
 
     @log_method(with_args=True)
     def load_template_file(self, name: str) -> Template:

@@ -335,23 +335,22 @@ class Site:
     @log_method
     def __load_engines(self) -> None:
 
+        specs = self.theme.get_engine_specs() or []
+
         log.debug("loading theme engines")
-        engines: Optional[list[Engine]] = self.theme.load_engines()
-        log.debug(
-            "loaded theme engines",
-            engines=[engine.name for engine in (engines or [])],
-        )
+        engines: list[Engine] = [spec.load() for spec in specs]
+        log.debug("loaded theme engines", engines=[engine.name for engine in engines])
 
         # Add MarkdownEngine if no engines are loaded.
         if not engines:
-            log.debug("adding MarkdownEngine to loaded engines")
-            engines = [
+            log.debug(f"adding {MarkdownEngine.__name__} to loaded engines")
+            engines.append(
                 MarkdownEngine(id="markdown", config=self.config, theme=self.theme)
-            ]
+            )
 
         # Add StaticEngine if not already added.
         if not any(engine.__class__ is StaticEngine for engine in engines):
-            log.debug("adding StaticEngine to loaded engines")
+            log.debug(f"adding {StaticEngine.__name__} to loaded engines")
             engines.insert(
                 0,
                 StaticEngine(id="static", config=self.config, theme=self.theme),
