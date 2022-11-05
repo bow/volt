@@ -22,7 +22,7 @@ from ._import import import_file
 from ._logging import log_method
 
 
-__all__ = ["Engine", "EngineSpec", "MarkdownEngine"]
+__all__ = ["Engine", "EngineSpec", "MarkdownEngine", "StaticEngine"]
 
 
 log = structlog.get_logger(__name__)
