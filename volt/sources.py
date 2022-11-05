@@ -175,16 +175,12 @@ class MarkdownSource(FileSource):
     def to_template_target(self, template: Template) -> TemplateTarget:
         """Create a :class:`TemplateTarget` instance."""
 
-        render_kwargs = {
-            "config": self.config,
-            "theme": self.config.theme,
-            "meta": self.meta,
-            "content": self.html,
-        }
-
         return TemplateTarget(
             url=self.url,
             template=template,
-            render_kwargs=render_kwargs,
+            render_kwargs={
+                "meta": self.meta,
+                "content": self.html,
+            },
             src=self.src.relative_to(self.config.project_dir),
         )
