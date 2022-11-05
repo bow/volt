@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import yaml
+from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
 from typing import cast, Optional, TYPE_CHECKING
@@ -181,3 +182,25 @@ class Theme:
         template = self.load_template_file(template_name)
 
         return template
+
+
+def _overlay(base: Optional[dict], mod: Optional[dict]) -> dict:
+
+    _nonexistent = object()
+
+    def func(overlaid: dict, mod: dict) -> None:
+        for mk, mv in mod.items():
+            ov = overlaid.get(mk, _nonexistent)
+            if (
+                ov is _nonexistent
+                or not isinstance(mv, dict)
+                or not isinstance(ov, dict)
+            ):
+                overlaid[mk] = mv
+            else:
+                func(ov, mv)
+
+    overlaid = deepcopy(base) if base is not None else {}
+    func(overlaid, mod or {})
+
+    return overlaid
