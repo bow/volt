@@ -124,7 +124,11 @@ class Config(UserDict):
         self._slug_replacements: Iterable[Iterable[str]] = (
             uc.pop("slug_replacements", None) or slug_replacements
         )
-        self._theme_config: Optional[dict] = uc.pop("theme", None) or None
+
+        theme_config = uc.pop("theme", {}) or {}
+        self._theme_name = theme_config.pop("name", None) or None
+        self._theme_overrides = theme_config
+
         super().__init__(user_conf, **kwargs)
 
         self._invoc_dir = invoc_dir
@@ -152,9 +156,14 @@ class Config(UserDict):
         return self._url
 
     @cached_property
-    def theme(self) -> Optional[dict]:
-        """Theme configurations."""
-        return self._theme_config
+    def theme_name(self) -> Optional[str]:
+        """Name of theme in use."""
+        return self._theme_name
+
+    @cached_property
+    def theme_overrides(self) -> dict:
+        """Site-level theme overrides."""
+        return self._theme_overrides
 
     @cached_property
     def slug_replacements(self) -> Iterable[Iterable[str]]:

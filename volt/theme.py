@@ -29,16 +29,12 @@ class Theme:
     @log_method
     def from_config(cls, config: Config) -> "Theme":
 
-        if (theme_config := config.theme) is None:
+        if config.theme_name is None:
             raise err.VoltConfigError("undefined theme")
 
-        if (theme_name := theme_config.get("name", None)) is None:
-            raise err.VoltConfigError("missing theme name")
+        opts = config.theme_overrides.get("opts", None) or {}
 
-        opts = theme_config.get("opts", None) or {}
-        # hooks = theme_config.get("hooks", None) or {}
-
-        return cls(name=theme_name, opts=opts, config=config)
+        return cls(name=config.theme_name, opts=opts, config=config)
 
     def __init__(self, name: str, opts: dict, config: Config) -> None:
         self.name = name
@@ -106,7 +102,7 @@ class Theme:
         return self.path / constants.THEME_SETTINGS_FNAME
 
     @cached_property
-    def defaults(self) -> dict:
+    def config_defaults(self) -> dict:
         """Default theme configurations."""
         with self.config_dir.open("r") as src:
             return cast(dict, yaml.safe_load(src))
@@ -132,7 +128,7 @@ class Theme:
 
         config = self.config
         engine_configs: Optional[dict] = self.opts.get(
-            "engines", self.defaults.get("engines", None)
+            "engines", self.config_defaults.get("engines", None)
         )
 
         if engine_configs is None:
@@ -173,7 +169,7 @@ class Theme:
     def load_template(self, key: str) -> Template:
         """Load a theme template with the given key."""
 
-        theme_templates = self.defaults["templates"]
+        theme_templates = self.config_defaults["templates"]
 
         try:
             template_name = theme_templates[key]

@@ -287,11 +287,7 @@ class Site:
         self.__collect_targets()
         signals.send(signals.post_site_collect_targets, site=self)
 
-        self.__update_render_kwargs(
-            site=self,
-            config=self.config,
-            theme=self.config.theme,
-        )
+        self.__update_render_kwargs(site=self, config=self.config)
 
         with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
             build_dir = Path(tmp_dir_name)
