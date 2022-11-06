@@ -41,7 +41,7 @@ def main() -> None:
     except Exception as e:
         log.exception(e)
         sys.exit(1)
-    finally:
+    else:
         log.debug("Volt completed successfully")
 
 
