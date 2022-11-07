@@ -15,11 +15,7 @@ from typing import Optional
 import click
 import pendulum
 import structlog
-from structlog.contextvars import (
-    bind_contextvars,
-    bound_contextvars,
-    unbind_contextvars,
-)
+from structlog.contextvars import bound_contextvars
 from thefuzz import process
 
 from . import constants, error as err
@@ -110,7 +106,7 @@ language: "{language or (_infer_lang() or '')}"
 def build(
     config: Config,
     clean: bool = True,
-    with_drafts: bool = False,
+    drafts: bool = False,
 ) -> Optional[Site]:
     """Build the site.
 
@@ -122,33 +118,34 @@ def build(
         to building, or not.
 
     """
-    config._with_drafts = with_drafts
-    log_attrs = {"drafts": with_drafts}
-    bind_contextvars(**log_attrs)
-
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
+    config._with_drafts = drafts
+    log_attrs = {"drafts": drafts}
     site: Optional[Site] = None
 
-    try:
-        site = Site(config)
-        site.build(clean=clean)
-        log.info("build completed", duration=f"{(time.monotonic() - start_time):.2f}s")
-    except bdb.BdbQuit:
-        unbind_contextvars(*log_attrs.keys())
-        log.warn("exiting from debugger -- build may be compromised")
-    except Exception:
-        msg = "build failed"
-        build_exists = False
-        target_dir = config.target_dir
-        with suppress(Exception):
-            if target_dir.exists() and any(True for _ in target_dir.iterdir()):
-                build_exists = True
-        if build_exists:
-            msg += " -- keeping current build"
-        log.error(msg)
-        raise
+    with bound_contextvars(**log_attrs):
+        try:
+            site = Site(config)
+            site.build(clean=clean)
+            log.info(
+                "build completed",
+                duration=f"{(time.monotonic() - start_time):.2f}s",
+            )
+        except bdb.BdbQuit:
+            log.warn("exiting from debugger -- build may be compromised")
+        except Exception:
+            msg = "build failed"
+            build_exists = False
+            target_dir = config.target_dir
+            with suppress(Exception):
+                if target_dir.exists() and any(True for _ in target_dir.iterdir()):
+                    build_exists = True
+            if build_exists:
+                msg += " -- keeping current build"
+            log.error(msg)
+            raise
 
     return site
 
