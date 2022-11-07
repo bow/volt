@@ -94,6 +94,7 @@ class Config(UserDict):
         self,
         invoc_dir: Path,
         project_dir: Path,
+        with_drafts: bool = False,
         target_dirname: str = constants.PROJECT_TARGET_DIRNAME,
         sources_dirname: str = constants.PROJECT_SOURCES_DIRNAME,
         themes_dirname: str = constants.SITE_THEMES_DIRNAME,
@@ -118,7 +119,6 @@ class Config(UserDict):
 
         """
         uc = user_conf or {}
-        self._with_drafts: bool = uc.pop("with_drafts", False)
         self._name: str = uc.pop("name", "")
         self._url: str = uc.pop("url", "")
         self._slug_replacements: Iterable[Iterable[str]] = (
@@ -144,6 +144,8 @@ class Config(UserDict):
         self._hooks_module_path = self._extension_dir / hooks_fname
         self._hooks_module_name = hooks_mod_name
         self._yaml_path = yaml_path
+
+        self._with_drafts = with_drafts
 
     @cached_property
     def name(self) -> str:
