@@ -108,7 +108,7 @@ env:  ## Configure a local development environment.
 
 .PHONY: fmt
 fmt:  ## Apply Black.
-	poetry run black -t py310 .
+	poetry run black -t py310 volt tests
 
 
 .PHONY: help
