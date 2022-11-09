@@ -2,7 +2,9 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import sys
+from contextlib import suppress
 from pathlib import Path
 from platform import platform
 from types import ModuleType
@@ -15,7 +17,7 @@ from structlog.contextvars import bind_contextvars
 
 from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
-from .error import VoltCliError
+from .error import VoltCliError, _VoltServerExit
 from ._import import import_file
 from ._logging import init_logging
 
@@ -41,6 +43,11 @@ def main() -> None:
     except Exception as e:
         log.exception(e)
         sys.exit(1)
+    except _VoltServerExit as e:
+        log.debug("removing server run file", path=e.run_file_path)
+        with suppress(Exception):
+            os.unlink(e.run_file_path)
+        sys.exit(0)
     else:
         log.debug("Volt completed successfully")
 
@@ -379,7 +386,7 @@ def edit(
     session.edit(config, name, create, title, drafts)
 
 
-@root.command()
+@root.group(invoke_without_command=True)
 @click.option(
     "-h",
     "--host",
@@ -430,7 +437,30 @@ def serve(
     """Run the development server."""
     config = _get_config(ctx)
 
-    session.serve(config, host, port, rebuild, pre_build, drafts, clean)
+    if ctx.invoked_subcommand is None:
+        session.serve(config, host, port, rebuild, pre_build, drafts, clean)
+
+
+@serve.command("drafts")
+@click.option(
+    "-s",
+    "--set",
+    "value",
+    flag_value=True,
+)
+@click.option(
+    "-u",
+    "--unset",
+    "value",
+    flag_value=False,
+)
+@click.pass_context
+def serve_toggle_drafts(
+    ctx: click.Context,
+    value: bool,
+) -> None:
+    print("Value is", value)
+    return None
 
 
 @root.command(cls=_ExtensionGroup)

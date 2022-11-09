@@ -2,6 +2,7 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import queue
 import signal
 import sys
@@ -10,6 +11,7 @@ from contextlib import suppress
 from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import cast, Any, Callable, NoReturn, Optional
 
 import structlog
@@ -20,6 +22,7 @@ from watchdog.observers import Observer
 
 from . import __version__, constants
 from .config import Config
+from .error import _VoltServerExit
 from ._logging import style
 
 
@@ -27,6 +30,45 @@ __all__ = ["make_server"]
 
 
 log = structlog.get_logger(__name__)
+
+
+class _RunFile:
+    @classmethod
+    def from_config(cls, config: Config) -> "_RunFile":
+        return cls(config._server_run_path, config.with_drafts)
+
+    @classmethod
+    def from_path(cls, path: Path) -> Optional["_RunFile"]:
+        if not path.exists():
+            return None
+        drafts = path.read_text().strip() == "drafts"
+        return cls(path, drafts)
+
+    def __init__(self, path: Path, drafts: bool) -> None:
+        self._path = path
+        self._drafts = drafts
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def drafts(self) -> bool:
+        return self._drafts
+
+    def set_drafts(self) -> None:
+        self._drafts = True
+
+    def unset_drafts(self) -> None:
+        self._drafts = False
+
+    def dump(self) -> None:
+        self.path.write_text("drafts" if self._drafts else "no-drafts")
+        return None
+
+    def remove(self) -> None:
+        with suppress(OSError):
+            os.unlink(self.path)
 
 
 def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
@@ -70,6 +112,9 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
             # overrides parent log_error to reduce noise.
             pass
 
+    run_file = _RunFile.from_config(config)
+    run_file.dump()
+
     def serve() -> None:
         httpd = ThreadingHTTPServer((host, port), HTTPRequestHandler)
 
@@ -80,7 +125,7 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
                 if signum == signal.SIGINT:
                     print("", file=sys.stderr, flush=True)
                 log.info(f"dev server stopped ({signal.strsignal(signum)})")
-                sys.exit(0)
+                raise _VoltServerExit(run_file_path=run_file.path)
 
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
@@ -141,6 +186,7 @@ class _BuildHandler(events.RegexMatchingEventHandler):
                 )
             ],
             f"^{prefix + '/' + constants.CONFIG_FNAME}$",
+            f"^{prefix + '/' + constants.SERVER_RUN_FNAME}$",
         ]
         ignore_regexes = [
             f"^{prefix + '/' + constants.PROJECT_TARGET_DIRNAME + '/'}.+$",

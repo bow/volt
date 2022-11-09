@@ -146,6 +146,7 @@ class Config(UserDict):
         self._yaml_path = yaml_path
 
         self._with_drafts = with_drafts
+        self._server_run_path = project_dir / constants.SERVER_RUN_FNAME
 
     @cached_property
     def name(self) -> str:
@@ -252,12 +253,15 @@ class Config(UserDict):
     def in_docker(self) -> bool:
         return os.path.exists("/.dockerenv")
 
-    def reload(self) -> "Config":
+    def reload(self, drafts: Optional[bool] = None) -> "Config":
         """Reloads a YAML config."""
         if self._yaml_path is None:
             raise err.VoltResourceError("could not reload non-YAML config")
+        reloaded_drafts = drafts if drafts is not None else self.with_drafts
         return self.__class__.from_yaml(
-            invoc_dir=self.invoc_dir, project_dir=self.project_dir
+            invoc_dir=self.invoc_dir,
+            project_dir=self.project_dir,
+            drafts=reloaded_drafts,
         )
 
 

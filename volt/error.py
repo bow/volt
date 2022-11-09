@@ -2,6 +2,7 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+from pathlib import Path
 from typing import Any, IO, Optional
 
 from click import ClickException
@@ -45,3 +46,12 @@ class VoltResourceError(VoltConfigError):
 class VoltMissingTemplateError(VoltResourceError):
 
     """Raised for errors when loading templates."""
+
+
+class _VoltServerExit(SystemExit):
+
+    """Raised to indicate the development server exiting."""
+
+    def __init__(self, run_file_path: Path, *args: Any, **kwargs: Any) -> None:
+        self.run_file_path = run_file_path
+        super().__init__(*args, **kwargs)

@@ -67,6 +67,9 @@ XCMD_FNAME = f"{CLI_MOD_NAME}.py"
 # Hooks filename.
 HOOKS_FNAME = f"{HOOKS_MOD_NAME}.py"
 
+# Server run filename.
+SERVER_RUN_FNAME = ".volt-server.run"
+
 ###
 
 # Root module name for the theme.

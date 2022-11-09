@@ -20,7 +20,7 @@ from thefuzz import process
 
 from . import constants, error as err
 from .config import Config, _VCS
-from .server import _Rebuilder, make_server
+from .server import _Rebuilder, _RunFile, make_server
 from .site import Site
 
 
@@ -209,6 +209,7 @@ def serve(
     elif config.in_docker:
         eff_host = "0.0.0.0"
 
+    config._with_drafts = build_with_drafts
     serve = make_server(config, eff_host, port)
 
     if not rebuild:
@@ -218,10 +219,12 @@ def serve(
 
         def builder() -> None:
             nonlocal config
+            rf = _RunFile.from_path(config._server_run_path)
+            drafts = build_with_drafts if rf is None else rf.drafts
             try:
                 # TODO: Only reload config post-init, on config file change.
-                config = config.reload()
-                build(config, build_clean, build_with_drafts)
+                config = config.reload(drafts=drafts)
+                build(config, build_clean, drafts)
             except Exception as e:
                 log.exception(e)
 
