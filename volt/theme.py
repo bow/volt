@@ -97,12 +97,9 @@ class Theme:
         return f"{self.module_name}.{constants.ENGINES_MOD_NAME}"
 
     @cached_property
-    def engines_module_path(self) -> Optional[Path]:
-        """Path to theme engines, if defined."""
-        fp = self.path / constants.ENGINES_FNAME
-        if fp.exists():
-            return fp
-        return None
+    def engines_module_path(self) -> Path:
+        """Path to theme engines."""
+        return self.path / constants.ENGINES_FNAME
 
     @cached_property
     def hooks_module_name(self) -> str:
@@ -110,12 +107,9 @@ class Theme:
         return f"{self.module_name}.{constants.HOOKS_MOD_NAME}"
 
     @cached_property
-    def hooks_module_path(self) -> Optional[Path]:
-        """Path to theme hooks, if defined."""
-        fp = self.path / constants.HOOKS_FNAME
-        if fp.exists():
-            return fp
-        return None
+    def hooks_module_path(self) -> Path:
+        """Path to the theme hooks file."""
+        return self.path / constants.HOOKS_FNAME
 
     @cached_property
     def static_dir(self) -> Path:

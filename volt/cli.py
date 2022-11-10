@@ -84,7 +84,9 @@ class _ExtensionGroup(click.Group):
         config: Config,
     ) -> Optional[ModuleType]:
         """Import the custom, user-defined subcommands."""
-        if (fp := config.xcmd_module_path) is None:
+
+        fp = config.xcmd_module_path
+        if not fp.exists():
             return None
 
         mod = import_file(fp, config.xcmd_module_name)

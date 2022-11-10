@@ -138,7 +138,8 @@ class EngineSpec:
         if not name.isidentifier():
             raise err.VoltConfigError(f"invalid engine class specifier: {name!r}")
 
-        if (fp := theme.engines_module_path) is None:
+        fp = theme.engines_module_path
+        if not fp.exists():
             raise err.VoltConfigError("theme engines file not found")
 
         mod_name = theme.engines_module_name

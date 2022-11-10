@@ -219,12 +219,9 @@ class Config(UserDict):
         return len(self.project_dir.parts) + 1
 
     @cached_property
-    def xcmd_module_path(self) -> Optional[Path]:
-        """Path to a custom CLI extension, if present."""
-        fp = self._xcmd_module_path
-        if fp.exists():
-            return fp
-        return None
+    def xcmd_module_path(self) -> Path:
+        """Path to a custom CLI extension."""
+        return self._xcmd_module_path
 
     @cached_property
     def xcmd_module_name(self) -> str:
@@ -232,12 +229,9 @@ class Config(UserDict):
         return self._xcmd_module_name
 
     @cached_property
-    def hooks_module_path(self) -> Optional[Path]:
-        """Path to a custom hooks extension, if present."""
-        fp = self._hooks_module_path
-        if fp.exists():
-            return fp
-        return None
+    def hooks_module_path(self) -> Path:
+        """Path to a custom hooks extension."""
+        return self._hooks_module_path
 
     @cached_property
     def hooks_module_name(self) -> str:

@@ -318,7 +318,7 @@ class Site:
             name = theme.hooks_module_name
 
         log.debug(f"checking if {kind} hooks extension is present")
-        if fp is None:
+        if not fp.exists():
             log.debug(f"found no {kind} hooks extension")
             return None
 
