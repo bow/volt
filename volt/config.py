@@ -255,7 +255,7 @@ class Config(UserDict):
         return self.__class__.from_yaml(
             invoc_dir=self.invoc_dir,
             project_dir=self.project_dir,
-            drafts=reloaded_drafts,
+            with_drafts=reloaded_drafts,
         )
 
 
