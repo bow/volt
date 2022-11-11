@@ -2,7 +2,6 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
 import sys
 from contextlib import suppress
 from pathlib import Path
@@ -46,7 +45,7 @@ def main() -> None:
     except _VoltServerExit as e:
         log.debug("removing server run file", path=e.run_file_path)
         with suppress(Exception):
-            os.unlink(e.run_file_path)
+            e.run_file_path.unlink()
         sys.exit(0)
     else:
         log.debug("Volt completed successfully")

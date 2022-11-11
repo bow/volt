@@ -2,7 +2,6 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
 import queue
 import signal
 import sys
@@ -68,7 +67,7 @@ class _RunFile:
 
     def remove(self) -> None:
         with suppress(OSError):
-            os.unlink(self.path)
+            self.path.unlink()
 
 
 def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
