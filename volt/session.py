@@ -103,11 +103,7 @@ language: "{language or (_infer_lang() or '')}"
     return project_dir
 
 
-def build(
-    config: Config,
-    clean: bool = True,
-    drafts: bool = False,
-) -> Optional[Site]:
+def build(config: Config, clean: bool = True) -> Optional[Site]:
     """Build the site.
 
     This function may overwrite and/or remove any preexisting files
@@ -121,7 +117,7 @@ def build(
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
-    config._with_drafts = drafts
+    drafts = config.with_drafts
     log_attrs = {"drafts": drafts}
     site: Optional[Site] = None
 
@@ -155,7 +151,6 @@ def edit(
     query: str,
     create: Optional[str] = None,
     title: Optional[str] = None,
-    lookup_drafts: bool = False,
 ) -> None:
     """Open a draft file in an editor."""
 
@@ -184,7 +179,7 @@ def edit(
         query=query,
         ext=constants.MARKDOWN_EXT,
         start_dir=config.sources_dir,
-        ignore_dirname=None if lookup_drafts else config.drafts_dirname,
+        ignore_dirname=None if config.with_drafts else config.drafts_dirname,
     )
     if match_fp is not None:
         click.edit(filename=f"{match_fp}")
@@ -199,7 +194,6 @@ def serve(
     port: int,
     rebuild: bool,
     pre_build: bool,
-    build_with_drafts: bool,
     build_clean: bool,
 ) -> None:
 
@@ -209,7 +203,7 @@ def serve(
     elif config.in_docker:
         eff_host = "0.0.0.0"
 
-    config._with_drafts = build_with_drafts
+    build_with_drafts = config.with_drafts
     serve = make_server(config, eff_host, port)
 
     if not rebuild:
@@ -224,7 +218,7 @@ def serve(
             try:
                 # TODO: Only reload config post-init, on config file change.
                 config = config.reload(drafts=drafts)
-                build(config, build_clean, drafts)
+                build(config, build_clean)
             except Exception as e:
                 log.exception(e)
 

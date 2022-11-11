@@ -341,9 +341,9 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    config = _get_config(ctx)
+    config = _get_config(ctx, drafts=drafts)
 
-    session.build(config, clean, drafts)
+    session.build(config, clean)
 
 
 @root.command()
@@ -382,9 +382,9 @@ def edit(
     drafts: bool,
 ) -> None:
     """Open a draft file in an editor."""
-    config = _get_config(ctx)
+    config = _get_config(ctx, drafts=drafts)
 
-    session.edit(config, name, create, title, drafts)
+    session.edit(config, name, create, title)
 
 
 @root.group(invoke_without_command=True)
@@ -436,10 +436,10 @@ def serve(
     clean: bool,
 ) -> None:
     """Run the development server."""
-    config = _get_config(ctx)
+    config = _get_config(ctx, drafts=drafts)
 
     if ctx.invoked_subcommand is None:
-        session.serve(config, host, port, rebuild, pre_build, drafts, clean)
+        session.serve(config, host, port, rebuild, pre_build, clean)
 
 
 @serve.command("drafts")
@@ -474,6 +474,11 @@ def xcmd() -> None:
     """
 
 
-def _get_config(ctx: click.Context) -> Config:
-    config = cast(click.Context, ctx.parent).params["config"]
-    return cast(Config, config)
+def _get_config(ctx: click.Context, drafts: Optional[bool] = None) -> Config:
+    config = cast(
+        Config,
+        cast(click.Context, ctx.parent).params["config"],
+    )
+    if drafts is not None:
+        config._with_drafts = drafts
+    return config
