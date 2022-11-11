@@ -377,6 +377,9 @@ def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
         )
         return False
 
+    gitignore = project_dir / ".gitignore"
+    gitignore.write_text(f"{constants.SERVER_RUN_FNAME}  # Volt server run file")
+
     return True
 
 
