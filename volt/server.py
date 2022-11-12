@@ -33,6 +33,10 @@ log = structlog.get_logger(__name__)
 
 
 class _RunFile:
+
+    DRAFTS_ON = "drafts"
+    DRAFTS_OFF = "no-drafts"
+
     @classmethod
     def from_config(cls, config: Config) -> "_RunFile":
         log.debug("creating server run file object from config")
@@ -46,7 +50,7 @@ class _RunFile:
                 log.debug("no server run file found")
                 return None
 
-        drafts = path.read_text().strip() == "drafts"
+        drafts = path.read_text().strip() == cls.DRAFTS_ON
         return cls(path, drafts)
 
     def __init__(self, path: Path, drafts: bool) -> None:
@@ -68,12 +72,8 @@ class _RunFile:
         self._drafts = False
 
     def dump(self) -> None:
-        log.debug(
-            "writing server run file",
-            path=self.path,
-            drafts="on" if self.drafts else "off",
-        )
-        self.path.write_text("drafts" if self._drafts else "no-drafts")
+        log.debug("writing server run file", path=self.path, drafts=self.drafts)
+        self.path.write_text(self.DRAFTS_ON if self.drafts else self.DRAFTS_OFF)
         return None
 
     def remove(self) -> None:
