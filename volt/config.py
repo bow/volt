@@ -148,32 +148,32 @@ class Config(UserDict):
         self._with_drafts = with_drafts
         self._server_run_path = project_dir / constants.SERVER_RUN_FNAME
 
-    @cached_property
+    @property
     def name(self) -> str:
         """Name of the site."""
         return self._name
 
-    @cached_property
+    @property
     def url(self) -> str:
         """URL of the site."""
         return self._url
 
-    @cached_property
+    @property
     def theme_name(self) -> Optional[str]:
         """Name of theme in use."""
         return self._theme_name
 
-    @cached_property
+    @property
     def theme_overrides(self) -> dict:
         """Site-level theme overrides."""
         return self._theme_overrides
 
-    @cached_property
+    @property
     def slug_replacements(self) -> Iterable[Iterable[str]]:
         """Slug replacements rules."""
         return self._slug_replacements
 
-    @cached_property
+    @property
     def project_dir(self) -> Path:
         """Path to the project root directory."""
         return self._project_dir
@@ -184,32 +184,32 @@ class Config(UserDict):
         rel = self.invoc_dir.relative_to(self.project_dir)
         return Path("/".join(("..",) * len(rel.parts)))
 
-    @cached_property
+    @property
     def invoc_dir(self) -> Path:
         """Path to the invocation directory."""
         return self._invoc_dir
 
-    @cached_property
+    @property
     def target_dir(self) -> Path:
         """Path to the site output directory."""
         return self._target_dir
 
-    @cached_property
+    @property
     def sources_dir(self) -> Path:
         """Path to the site source contents."""
         return self._sources_dir
 
-    @cached_property
+    @property
     def themes_dir(self) -> Path:
         """Path to the site themes directory."""
         return self._themes_dir
 
-    @cached_property
+    @property
     def drafts_dirname(self) -> str:
         """Name of the drafts directory."""
         return self._drafts_dirname
 
-    @cached_property
+    @property
     def static_dir(self) -> Path:
         """Path to the site source static files."""
         return self._static_dir
@@ -218,32 +218,32 @@ class Config(UserDict):
     def num_common_parts(self) -> int:
         return len(self.project_dir.parts) + 1
 
-    @cached_property
+    @property
     def xcmd_module_path(self) -> Path:
         """Path to a custom CLI extension."""
         return self._xcmd_module_path
 
-    @cached_property
+    @property
     def xcmd_module_name(self) -> str:
         """Module name for CLI extensions."""
         return self._xcmd_module_name
 
-    @cached_property
+    @property
     def hooks_module_path(self) -> Path:
         """Path to a custom hooks extension."""
         return self._hooks_module_path
 
-    @cached_property
+    @property
     def hooks_module_name(self) -> str:
         """Module name for hooks."""
         return self._hooks_module_name
 
-    @cached_property
+    @property
     def with_drafts(self) -> bool:
         """Whether to publish draft contents or not."""
         return self._with_drafts
 
-    @cached_property
+    @property
     def in_docker(self) -> bool:
         return os.path.exists("/.dockerenv")
 
