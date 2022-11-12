@@ -16,6 +16,7 @@ from typing import cast, Any, Callable, NoReturn, Optional
 import structlog
 from click import echo
 from click._compat import get_text_stderr
+from structlog.contextvars import bound_contextvars
 from watchdog import events
 from watchdog.observers import Observer
 
@@ -34,12 +35,17 @@ log = structlog.get_logger(__name__)
 class _RunFile:
     @classmethod
     def from_config(cls, config: Config) -> "_RunFile":
+        log.debug("creating server run file object from config")
         return cls(config._server_run_path, config.with_drafts)
 
     @classmethod
     def from_path(cls, path: Path) -> Optional["_RunFile"]:
-        if not path.exists():
-            return None
+        with bound_contextvars(path=path):
+            log.debug("creating server run file object from existing file")
+            if not path.exists():
+                log.debug("no server run file found")
+                return None
+
         drafts = path.read_text().strip() == "drafts"
         return cls(path, drafts)
 
@@ -62,10 +68,16 @@ class _RunFile:
         self._drafts = False
 
     def dump(self) -> None:
+        log.debug(
+            "writing server run file",
+            path=self.path,
+            drafts="on" if self.drafts else "off",
+        )
         self.path.write_text("drafts" if self._drafts else "no-drafts")
         return None
 
     def remove(self) -> None:
+        log.debug("removing server run file", path=self.path)
         with suppress(OSError):
             self.path.unlink()
 
