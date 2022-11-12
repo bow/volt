@@ -258,6 +258,11 @@ class Config(UserDict):
             with_drafts=reloaded_drafts,
         )
 
+    def _set_drafts(self, value: Optional[bool]) -> None:
+        if value is not None:
+            self._with_drafts = value
+        return None
+
 
 _VCS = Literal["git"]
 _ExcStyle = Literal["pretty", "plain"]

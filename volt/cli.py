@@ -479,6 +479,5 @@ def _get_config(ctx: click.Context, drafts: Optional[bool] = None) -> Config:
         Config,
         cast(click.Context, ctx.parent).params["config"],
     )
-    if drafts is not None:
-        config._with_drafts = drafts
+    config._set_drafts(drafts)
     return config
