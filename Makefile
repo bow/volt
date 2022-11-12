@@ -21,7 +21,7 @@ endif
 APP_NAME := volt
 
 # Latest version of supported Python.
-PYTHON_VERSION := 3.10.8
+PYTHON_VERSION := 3.11.0
 
 # Name of virtualenv for development.
 VENV_NAME ?= $(APP_NAME)-dev
@@ -108,7 +108,7 @@ env:  ## Configure a local development environment.
 
 .PHONY: fmt
 fmt:  ## Apply Black.
-	poetry run black -t py310 volt tests
+	poetry run black -t py311 volt tests
 
 
 .PHONY: help
@@ -145,7 +145,7 @@ lint-types:  ## Lint the type hints.
 
 .PHONY: lint-style
 lint-style:  ## Lint style conventions.
-	poetry run flake8 --statistics volt tests && poetry run black -t py310 --check .
+	poetry run flake8 --statistics volt tests && poetry run black -t py311 --check .
 
 
 .PHONY: lint-metrics
