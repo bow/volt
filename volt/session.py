@@ -229,6 +229,15 @@ def serve(
             serve()
 
 
+def serve_drafts(config: Config, value: Optional[bool]) -> None:
+    rf = _RunFile.from_path(config._server_run_path)
+    if rf is None:
+        # NOTE: Setting 'drafts' to False here since we will toggle it later.
+        rf = _RunFile.from_config(config=config, drafts=False)
+
+    return rf.toggle_drafts(value).dump()
+
+
 def _get_fuzzy_match(
     query: str,
     ext: str,

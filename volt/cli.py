@@ -443,24 +443,39 @@ def serve(
 
 
 @serve.command("drafts")
+@click.option("-s", "--set", "str_value", flag_value="on", help="Turn on drafts mode.")
 @click.option(
-    "-s",
-    "--set",
-    "value",
-    flag_value=True,
+    "-u", "--unset", "str_value", flag_value="off", help="Turn off drafts mode."
 )
 @click.option(
-    "-u",
-    "--unset",
-    "value",
-    flag_value=False,
+    "-t",
+    "--toggle",
+    "str_value",
+    flag_value="unspecified",
+    default=True,
+    hidden=True,
+    help="Toggle currently-set drafts mode.",
 )
 @click.pass_context
-def serve_toggle_drafts(
+def serve_drafts(
     ctx: click.Context,
-    value: bool,
+    str_value: Literal["on", "off", "unspecified"],
 ) -> None:
-    print("Value is", value)
+    """Set or unset drafts mode for a running server.
+
+    If neither '-s' or '-u' is specified, this command attempts to toggle the
+    currently-set mode, defaulting to '-s' if it fails to do so.
+
+    """
+    value: Optional[bool] = None
+    if str_value == "on":
+        value = True
+    elif str_value == "off":
+        value = False
+
+    config = _get_config(cast(click.Context, ctx.parent))
+    session.serve_drafts(config=config, value=value)
+
     return None
 
 

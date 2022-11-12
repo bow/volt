@@ -38,9 +38,12 @@ class _RunFile:
     DRAFTS_OFF = "no-drafts"
 
     @classmethod
-    def from_config(cls, config: Config) -> "_RunFile":
-        log.debug("creating server run file object from config")
-        return cls(config._server_run_path, config.with_drafts)
+    def from_config(cls, config: Config, drafts: Optional[bool] = None) -> "_RunFile":
+        log.debug("creating server run file object from config", drafts=drafts)
+        return cls(
+            path=config._server_run_path,
+            drafts=drafts if drafts is not None else config.with_drafts,
+        )
 
     @classmethod
     def from_path(cls, path: Path) -> Optional["_RunFile"]:
@@ -65,11 +68,12 @@ class _RunFile:
     def drafts(self) -> bool:
         return self._drafts
 
-    def set_drafts(self) -> None:
-        self._drafts = True
-
-    def unset_drafts(self) -> None:
-        self._drafts = False
+    def toggle_drafts(self, value: Optional[bool]) -> "_RunFile":
+        log.debug("toggling server drafts mode", value=value)
+        new_value = value if value is not None else (not self._drafts)
+        self._drafts = new_value
+        log.debug("toggled server drafts mode", value=self.drafts)
+        return self
 
     def dump(self) -> None:
         log.debug("writing server run file", path=self.path, drafts=self.drafts)
