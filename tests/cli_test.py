@@ -18,31 +18,28 @@ def test_new_ok_e2e(log_init: MagicMock, has_git: bool) -> None:
 
     with runner.isolated_filesystem() as ifs:
 
-        assert list(ifs.iterdir()) == []
+        u.assert_dir_empty(ifs)
 
         res = runner.invoke(cli.root, toks)
         assert res.exit_code == 0
 
-        assert sorted([p for p in ifs.iterdir()]) == sorted(
+        u.assert_dir_contains_only(
+            ifs,
             [
                 ifs / fn
-                for fn in [
+                for fn in (
                     *([".gitignore", ".git"] if has_git else []),
                     "volt.yaml",
                     "theme",
                     "source",
-                ]
-            ]
+                )
+            ],
         )
 
-        with (ifs / "volt.yaml").open("r") as src:
-            config = yaml.safe_load(src)
-
+        config = u.load_config(ifs / "volt.yaml")
         # Author and language are too env-dependent; enough to check that they exist.
-        _sentinel = object()
-        assert config.pop("author", _sentinel) is not _sentinel
-        assert config.pop("language", _sentinel) is not _sentinel
-
+        assert u.has_and_pop(config, "author")
+        assert u.has_and_pop(config, "language")
         assert config == {
             "name": "",
             "url": "https://site.net",

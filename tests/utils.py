@@ -2,10 +2,12 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Generator, Optional
 
+import yaml
 from click.testing import CliRunner
 
 
@@ -50,3 +52,31 @@ class CommandRunner(CliRunner):
                 cur_p.touch()
 
         return None
+
+
+def assert_dir_empty(path: Path) -> None:
+    assert path.is_dir()
+    contents = list(path.iterdir())
+    assert contents == [], contents
+
+
+def assert_dir_contains_only(path: Path, fps: list[os.PathLike]) -> None:
+    assert path.is_dir()
+    contents = sorted(path.iterdir())
+    assert contents == sorted([Path(fp) for fp in fps]), contents
+
+
+def load_config(config_fp: Path) -> dict:
+    with config_fp.open() as src:
+        config = yaml.safe_load(src)
+    return config
+
+
+_sentinel = object()
+
+
+def has_and_pop(d: dict, key: Any) -> bool:
+    try:
+        return d.pop(key, _sentinel) is not _sentinel
+    except KeyError:
+        return False
