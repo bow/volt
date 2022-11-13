@@ -374,7 +374,7 @@ def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
         log.debug("can not find 'git' executable")
         return False
 
-    proc_init = _run_process(["git", "-C", f"{project_dir}", "init"])
+    proc_init = _run_process([git_exe, "-C", f"{project_dir}", "init"])
     if proc_init.returncode != 0:
         log.debug(
             "git init failed",
@@ -383,7 +383,7 @@ def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
         )
         return False
 
-    proc_add = _run_process(["git", "-C", f"{project_dir}", "add", f"{project_dir}"])
+    proc_add = _run_process([git_exe, "-C", f"{project_dir}", "add", f"{project_dir}"])
     if proc_add.returncode != 0:
         log.debug(
             "git add failed",
