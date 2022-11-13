@@ -4,7 +4,6 @@
 
 from unittest.mock import MagicMock
 
-import yaml
 from pytest_mock import MockerFixture
 
 from volt import cli
