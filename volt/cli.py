@@ -46,7 +46,6 @@ def main() -> None:
         log.debug("removing server run file", path=e.run_file_path)
         with suppress(Exception):
             e.run_file_path.unlink()
-        sys.exit(0)
     else:
         log.debug("Volt completed successfully")
 
