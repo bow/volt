@@ -241,11 +241,18 @@ class Site:
         self.targets = list[Target]()
         self.engines = list[Engine]()
         self.theme = Theme.from_config(config)
+
+        self.__build_dir: Optional[Path] = None
         self.__hooks: dict[str, ModuleType] = {}
 
     def __repr__(self) -> str:
         config = self.config
         return f"{self.__class__.__name__}(name={config.name!r}, url={config.url!r})"
+
+    @property
+    def build_dir(self) -> Optional[Path]:
+        """Build directory, set only just before the site is written to disk."""
+        return self.__build_dir
 
     @log_method(with_args=True)
     def build(
@@ -292,9 +299,10 @@ class Site:
         with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
             build_dir = Path(tmp_dir_name)
 
-            signals.send(signals.pre_site_write, site=self, build_dir=build_dir)
+            self.__build_dir = build_dir
+            signals.send(signals.pre_site_write, site=self)
             self.__write(build_dir=build_dir, clean=clean)
-            signals.send(signals.post_site_write, site=self, build_dir=build_dir)
+            signals.send(signals.post_site_write, site=self)
 
             log.debug("removing build dir", path=build_dir)
 
