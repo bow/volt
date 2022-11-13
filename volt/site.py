@@ -291,8 +291,11 @@ class Site:
 
         with tempfile.TemporaryDirectory(prefix=build_dir_prefix) as tmp_dir_name:
             build_dir = Path(tmp_dir_name)
+
             signals.send(signals.pre_site_write, site=self, build_dir=build_dir)
             self.__write(build_dir=build_dir, clean=clean)
+            signals.send(signals.post_site_write, site=self, build_dir=build_dir)
+
             log.debug("removing build dir", path=build_dir)
 
         return None

@@ -14,6 +14,7 @@ __all__ = [
     "post_site_load_engines",
     "post_site_collect_targets",
     "pre_site_write",
+    "post_site_write",
 ]
 
 
@@ -46,5 +47,8 @@ def log() -> Any:
 
 
 post_site_load_engines = s.post_site_load_engines.connect
+
 post_site_collect_targets = s.post_site_collect_targets.connect
+
 pre_site_write = s.pre_site_write.connect
+post_site_write = s.post_site_write.connect

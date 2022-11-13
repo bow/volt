@@ -13,8 +13,11 @@ log = structlog.get_logger(__name__)
 
 
 post_site_load_engines = signal("post_site_load_engines")
+
 post_site_collect_targets = signal("post_site_collect_targets")
+
 pre_site_write = signal("pre_site_write")
+post_site_write = signal("post_site_write")
 
 
 def send(signal: NamedSignal, *args: Any, **kwargs: Any) -> None:
