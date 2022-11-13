@@ -307,7 +307,7 @@ def new(
         force=force,
         vcs=vcs if vcs != "none" else None,
     )
-    log.info(f"project created at {project_dir}")
+    log.info("project created", path=project_dir)
 
 
 @root.command()
