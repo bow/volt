@@ -298,7 +298,7 @@ def _resolve_project_dir(
 ) -> Path:
 
     dirname_specified = dirname is not None
-    dirname_abs = dirname_specified and os.path.isabs(dirname)
+    dirname_abs = dirname is not None and os.path.isabs(dirname)
     project_dir_specified = invoc_dir != project_dir
 
     if dirname_specified and dirname_abs and project_dir_specified:
