@@ -67,10 +67,18 @@ def new(
         * when any directory creation fails.
 
     """
-    project_dir = _bootstrap_project_dirs(invoc_dir, project_dir, dirname, force)
+    project_dir = _resolve_project_dir(invoc_dir, project_dir, dirname, force)
 
     if not name and dirname is not None:
         name = project_dir.name
+
+    config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
+    for dp in (
+        config.sources_dir,
+        config.static_dir,
+        config.themes_dir,
+    ):
+        dp.mkdir(parents=True, exist_ok=True)
 
     # Create initial YAML config file.
     new_conf = f"""---
@@ -282,14 +290,18 @@ def _walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Pa
     return dirs
 
 
-def _bootstrap_project_dirs(
+def _resolve_project_dir(
     invoc_dir: Path,
     project_dir: Path,
     dirname: Optional[str],
     force: bool,
 ) -> Path:
 
-    if dirname is not None and os.path.isabs(dirname) and invoc_dir != project_dir:
+    dirname_specified = dirname is not None
+    dirname_abs = dirname_specified and os.path.isabs(dirname)
+    project_dir_specified = invoc_dir != project_dir
+
+    if dirname_specified and dirname_abs and project_dir_specified:
         log.warn(
             "ignoring specified project path as command is invoked with an absolute"
             " path",
@@ -297,25 +309,17 @@ def _bootstrap_project_dirs(
             command_path=dirname,
         )
 
-    project_dir = (
-        project_dir / (dirname or ".")
-        if dirname is not None and not os.path.isabs(dirname)
-        else Path(dirname or ".")
-    ).resolve()
+    project_dir = (project_dir / (dirname or ".")).resolve()
 
-    if not force and project_dir.exists() and any(True for _ in project_dir.iterdir()):
+    project_dir_nonempty = project_dir.exists() and any(
+        True for _ in project_dir.iterdir()
+    )
+
+    if not force and project_dir_nonempty:
         raise err.VoltCliError(
             f"project directory {project_dir} contains files -- use the `-f` flag to"
             " force creation in nonempty directories"
         )
-
-    config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
-    for dp in (
-        config.sources_dir,
-        config.static_dir,
-        config.themes_dir,
-    ):
-        dp.mkdir(parents=True, exist_ok=True)
 
     return project_dir
 
