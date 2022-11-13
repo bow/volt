@@ -289,6 +289,14 @@ def _bootstrap_project_dirs(
     force: bool,
 ) -> Path:
 
+    if dirname is not None and os.path.isabs(dirname) and invoc_dir != project_dir:
+        log.warn(
+            "ignoring specified project path as command is invoked with an absolute"
+            " path",
+            project_path=project_dir,
+            command_path=dirname,
+        )
+
     project_dir = (
         project_dir / (dirname or ".")
         if dirname is not None and not os.path.isabs(dirname)
