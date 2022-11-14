@@ -92,7 +92,7 @@ class _ExtensionGroup(click.Group):
         return mod
 
     def list_commands(self, ctx: click.Context) -> list[str]:
-        config = _get_config(ctx)
+        config = _get_config(ctx.parent)
 
         if (mod := self.import_xcmd(config)) is None:
             return []
@@ -110,7 +110,7 @@ class _ExtensionGroup(click.Group):
         return rv
 
     def get_command(self, ctx: click.Context, name: str) -> Any:
-        config = _get_config(ctx)
+        config = _get_config(ctx.parent)
         self.import_xcmd(config)
         return self.commands.get(name)
 
@@ -187,12 +187,10 @@ def root(
 
         log.debug("loading config", invoc_dir=invoc_dir, project_dir=project_dir)
         config = Config.from_project_dir(invoc_dir, project_dir)
-        if config is None:
-            raise VoltCliError(
-                f"Command {ctx.invoked_subcommand!r} works only within a Volt"
-                " project"
-            )
-        log.debug("loaded config")
+        if config is not None:
+            log.debug("loaded config")
+        else:
+            log.debug("no config found")
 
     ctx.params["config"] = config
 
@@ -340,7 +338,7 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    config = _get_config(ctx, drafts=drafts)
+    config = _get_config(ctx.parent, drafts=drafts)
 
     session.build(config, clean)
 
@@ -381,7 +379,7 @@ def edit(
     drafts: bool,
 ) -> None:
     """Open a draft file in an editor."""
-    config = _get_config(ctx, drafts=drafts)
+    config = _get_config(ctx.parent, drafts=drafts)
 
     session.edit(config, name, create, title)
 
@@ -435,7 +433,7 @@ def serve(
     clean: bool,
 ) -> None:
     """Run the development server."""
-    config = _get_config(ctx, drafts=drafts)
+    config = _get_config(ctx.parent, drafts=drafts)
 
     if ctx.invoked_subcommand is None:
         session.serve(config, host, port, rebuild, pre_build, clean)
@@ -488,10 +486,14 @@ def xcmd() -> None:
     """
 
 
-def _get_config(ctx: click.Context, drafts: Optional[bool] = None) -> Config:
-    config = cast(
-        Config,
-        cast(click.Context, ctx.parent).params["config"],
-    )
+def _get_config(ctx: Optional[click.Context], drafts: Optional[bool] = None) -> Config:
+    if ctx is None:
+        raise ValueError("missing expected context")
+
+    config = cast(Optional[Config], ctx.params.get("config"))
+    if config is None:
+        raise VoltCliError(
+            f"command {ctx.invoked_subcommand!r} works only within a Volt project"
+        )
     config._set_drafts(drafts)
     return config
