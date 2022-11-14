@@ -483,7 +483,7 @@ def xcmd() -> None:
     """Execute custom subcommands.
 
     Custom subcommands are Click-decorated functions
-    defined in an `ext/cmd.py` file in your project.
+    defined in the `cli.py` file in your project extension directory.
 
     """
 
