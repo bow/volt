@@ -12,6 +12,8 @@ from structlog.contextvars import bound_contextvars
 log = structlog.get_logger(__name__)
 
 
+post_site_load_theme = signal("post_site_load_theme")
+
 post_site_load_engines = signal("post_site_load_engines")
 
 post_site_collect_targets = signal("post_site_collect_targets")

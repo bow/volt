@@ -11,6 +11,7 @@ from . import signals as s
 
 __all__ = [
     "log",
+    "post_site_load_theme",
     "post_site_load_engines",
     "post_site_collect_targets",
     "pre_site_write",
@@ -45,6 +46,8 @@ def log() -> Any:
     mod_name = frame.f_globals["__name__"]
     return structlog.get_logger(mod_name, hook=hook_name)
 
+
+post_site_load_theme = s.post_site_load_theme.connect
 
 post_site_load_engines = s.post_site_load_engines.connect
 

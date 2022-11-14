@@ -237,13 +237,15 @@ class Site:
         :param config: The validated site configuration.
 
         """
+        self.__build_dir: Optional[Path] = None
+        self.__hooks: dict[str, ModuleType] = {}
+
         self.config = config
         self.targets = list[Target]()
         self.engines = list[Engine]()
-        self.theme = Theme.from_config(config)
 
-        self.__build_dir: Optional[Path] = None
-        self.__hooks: dict[str, ModuleType] = {}
+        self.theme = Theme.from_config(config)
+        signals.send(signals.post_site_load_theme, site=self)
 
     def __repr__(self) -> str:
         config = self.config
