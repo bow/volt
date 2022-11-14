@@ -157,7 +157,7 @@ def root(
     color: bool,
     exc_style: _ExcStyle,
 ) -> None:
-    """A versatile static website generator"""
+    """Volt is an extensible static website generator"""
 
     if exc_style == "pretty":
         install(show_locals=True, width=95)
@@ -283,7 +283,7 @@ def new(
     force: bool,
     vcs: _VCS | Literal["none"],
 ) -> None:
-    """Start a new project.
+    """Start a new project
 
     This command creates a new project at the given path, optionally setting some
     configuration values.
@@ -328,7 +328,7 @@ def build(
     drafts: bool,
     clean: bool,
 ) -> None:
-    """Build static site.
+    """Build the site
 
     This command generates the static site in the site destination directory
     (default: `dist`).
@@ -378,7 +378,7 @@ def edit(
     title: str,
     drafts: bool,
 ) -> None:
-    """Open a draft file in an editor."""
+    """Open a source file in an editor"""
     config = _get_config(ctx.parent, drafts=drafts)
 
     session.edit(config, name, create, title)
@@ -432,7 +432,7 @@ def serve(
     drafts: bool,
     clean: bool,
 ) -> None:
-    """Run the development server."""
+    """Run the development server"""
     config = _get_config(ctx.parent, drafts=drafts)
 
     if ctx.invoked_subcommand is None:
@@ -478,7 +478,7 @@ def serve_drafts(
 
 @root.command(cls=_ExtensionGroup)
 def xcmd() -> None:
-    """Execute custom subcommands.
+    """Execute custom subcommands
 
     Custom subcommands are Click-decorated functions
     defined in the `cli.py` file in your project extension directory.
