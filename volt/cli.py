@@ -52,7 +52,7 @@ def main() -> None:
 
 # Taken from:
 # https://click.palletsprojects.com/en/8.0.x/advanced/#command-aliases
-class _AliasedGroup(click.Group):
+class _RootGroup(click.Group):
     def get_command(self, ctx: click.Context, cmd_name: str) -> Optional[click.Command]:
         rv = click.Group.get_command(self, ctx, cmd_name)
         if rv is not None:
@@ -115,7 +115,7 @@ class _ExtensionGroup(click.Group):
         return self.commands.get(name)
 
 
-@click.group(cls=_AliasedGroup)
+@click.group(cls=_RootGroup)
 @click.version_option(__version__, message="%(version)s")
 @click.option(
     "-D",
