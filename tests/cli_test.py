@@ -4,6 +4,7 @@
 
 from unittest.mock import MagicMock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from volt import cli
@@ -11,7 +12,12 @@ from volt import cli
 from . import utils as u
 
 
-def test_new_ok_e2e(log_init: MagicMock, has_git: bool) -> None:
+@pytest.fixture(autouse=True)
+def log_init(mocker: MockerFixture) -> MagicMock:
+    return mocker.patch("volt.cli.init_logging")
+
+
+def test_new_ok_e2e(has_git: bool) -> None:
     runner = u.CommandRunner()
     toks = ["new", "-u", "https://site.net"]
 
@@ -48,7 +54,7 @@ def test_new_ok_e2e(log_init: MagicMock, has_git: bool) -> None:
     return None
 
 
-def test_new_ok_minimal(mocker: MockerFixture, log_init: MagicMock) -> None:
+def test_new_ok_minimal(mocker: MockerFixture) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.new")
     toks = ["new"]
@@ -72,7 +78,7 @@ def test_new_ok_minimal(mocker: MockerFixture, log_init: MagicMock) -> None:
         )
 
 
-def test_new_ok_extended(mocker: MockerFixture, log_init: MagicMock):
+def test_new_ok_extended(mocker: MockerFixture):
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.new")
     toks = [
