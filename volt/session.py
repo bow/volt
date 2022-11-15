@@ -15,6 +15,7 @@ from typing import Optional
 import click
 import pendulum
 import structlog
+import yaml
 from structlog.contextvars import bound_contextvars
 from thefuzz import process
 
@@ -80,18 +81,16 @@ def new(
     ):
         dp.mkdir(parents=True, exist_ok=True)
 
-    # Create initial YAML config file.
-    new_conf = f"""---
-# Volt configuration file.
-name: "{name}"
-url: "{url}"
-description: "{description}"
-author: "{author or (_infer_author() or '')}"
-language: "{language or (_infer_lang() or '')}"
-"""
-
-    # Create initial YAML config file.
-    (project_dir / config_fname).write_text(new_conf)
+    yaml_config = {
+        "name": name,
+        "url": url,
+        "description": description,
+        "author": author or (_infer_author() or ""),
+        "language": language or (_infer_lang() or ""),
+    }
+    with (project_dir / config_fname).open("w") as fh:
+        fh.write("# Volt configuration file\n\n")
+        yaml.safe_dump(yaml_config, fh, sort_keys=False)
 
     if vcs is None:
         log.debug("skipping vcs initialization as no vcs is requested")
