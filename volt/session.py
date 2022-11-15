@@ -106,7 +106,7 @@ language: "{language or (_infer_lang() or '')}"
                 if not initialized:
                     log.debug("failed to initialize vcs")
             case _:
-                raise ValueError(f"unknown vcs: {vcs!r}")
+                log.warn("vcs is unsupported")
 
     return project_dir
 
