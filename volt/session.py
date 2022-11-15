@@ -86,8 +86,10 @@ def new(
         "url": url,
         "description": description,
         "author": author or (_infer_author() or ""),
-        "language": language or (_infer_lang() or ""),
     }
+    if lang := language or (_infer_lang() or ""):
+        yaml_config["language"] = lang
+
     with (project_dir / config_fname).open("w") as fh:
         fh.write("# Volt configuration file\n\n")
         yaml.safe_dump(yaml_config, fh, sort_keys=False)
