@@ -370,6 +370,10 @@ def _infer_front_matter(query: str, title: Optional[str]) -> str:
 
 
 def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
+
+    gitignore = project_dir / ".gitignore"
+    gitignore.write_text(f"{constants.SERVER_RUN_FNAME}  # Volt server run file")
+
     if (git_exe := which("git")) is None:
         log.warn("can not find git executable")
         return False
@@ -391,9 +395,6 @@ def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
             stderr=proc_add.stderr.decode(stream_encoding),
         )
         return False
-
-    gitignore = project_dir / ".gitignore"
-    gitignore.write_text(f"{constants.SERVER_RUN_FNAME}  # Volt server run file")
 
     return True
 

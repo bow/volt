@@ -2,6 +2,7 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import subprocess as sp
 from unittest.mock import MagicMock
 
 import pytest
@@ -50,6 +51,16 @@ def test_new_ok_e2e(has_git: bool) -> None:
             "url": "https://site.net",
             "description": "",
         }
+
+        if has_git:
+            proc = sp.run(
+                ["git", "-C", f"{ifs.resolve()}", "status", "--porcelain"],
+                capture_output=True,
+            )
+            if proc.returncode != 0:
+                return None
+            stdout_lines = proc.stdout.decode("utf-8").split("\n")
+            assert sorted(stdout_lines) == ["", "A  .gitignore", "A  volt.yaml"]
 
     return None
 
