@@ -107,7 +107,7 @@ def new(
                 if not initialized:
                     log.debug("failed to initialize vcs")
             case _:
-                log.warn("vcs is unsupported")
+                raise ValueError(f"vcs {vcs!r} is unsupported")
 
     return project_dir
 

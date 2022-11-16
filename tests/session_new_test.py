@@ -333,12 +333,11 @@ def test_ok_git_add_fail(tmp_path: Path, mocker: MockerFixture) -> None:
     return None
 
 
-def test_ok_unsupported_vcs(tmp_path: Path) -> None:
+def test_err_unsupported_vcs(tmp_path: Path) -> None:
     u.assert_dir_empty(tmp_path)
 
-    with capture_logs() as logs:
-        assert logs == []
-        project_dir = session.new(
+    with pytest.raises(ValueError, match="vcs 'subversion' is unsupported"):
+        session.new(
             dirname=None,
             invoc_dir=tmp_path,
             project_dir=tmp_path,
@@ -350,9 +349,8 @@ def test_ok_unsupported_vcs(tmp_path: Path) -> None:
             force=False,
             vcs="subversion",  # type: ignore[arg-type]
         )
-        assert u.log_exists(logs, event="vcs is unsupported", log_level="warning")
 
-    assert_new_project_layout(project_dir, with_git=False)
+    assert_new_project_layout(tmp_path, with_git=False)
 
     return None
 
