@@ -337,8 +337,7 @@ def _infer_lang() -> Optional[str]:
 
 
 def _infer_author(stdout_encoding: str = "utf-8") -> Optional[str]:
-    git_exe = "git"
-    if which(git_exe) is None:
+    if (git_exe := which("git")) is None:
         return None
 
     proc = _run_process([git_exe, "config", "--get", "user.name"])
@@ -370,8 +369,7 @@ def _infer_front_matter(query: str, title: Optional[str]) -> str:
 
 
 def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
-    git_exe = "git"
-    if which(git_exe) is None:
+    if (git_exe := which("git")) is None:
         log.debug("can not find 'git' executable")
         return False
 
