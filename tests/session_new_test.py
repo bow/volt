@@ -49,8 +49,8 @@ def test_ok_minimal(tmp_path: Path) -> None:
 def test_err_not_empty_no_force(tmp_path: Path) -> None:
     u.assert_dir_empty(tmp_path)
 
-    yaml_fp = tmp_path / "vol.yaml"
-    yaml_fp.write_text("existing")
+    config_fp = tmp_path / "volt.yaml"
+    config_fp.write_text("existing")
 
     with pytest.raises(
         err.VoltCliError,
@@ -69,8 +69,8 @@ def test_err_not_empty_no_force(tmp_path: Path) -> None:
             vcs=None,
         )
 
-    u.assert_dir_contains_only(tmp_path, [yaml_fp])
-    assert yaml_fp.read_text() == "existing"
+    u.assert_dir_contains_only(tmp_path, [config_fp])
+    assert config_fp.read_text() == "existing"
 
     return None
 

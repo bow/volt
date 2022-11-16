@@ -187,7 +187,7 @@ def root(
     if ctx.invoked_subcommand != new.name:
 
         log.debug("loading config", invoc_dir=invoc_dir, project_dir=project_dir)
-        config = Config.from_project_dir(invoc_dir, project_dir)
+        config = Config.from_within_project_dir(invoc_dir, project_dir)
         if config is not None:
             log.debug("loaded config")
         else:
