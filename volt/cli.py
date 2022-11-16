@@ -28,6 +28,7 @@ __all__ = [
     "new",
     "root",
     "serve",
+    "serve_drafts",
     "xcmd",
 ]
 
