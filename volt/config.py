@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import cast, Any, Dict, Iterable, Literal, Optional
 
 import tomlkit
-from tomlkit.exceptions import TOMLKitError
 
 from . import constants, error as err
 
