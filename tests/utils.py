@@ -2,13 +2,13 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generator, Optional
+from typing import Any, Generator, Iterable, Optional
 
 import yaml
 from click.testing import CliRunner
+from structlog.types import EventDict
 
 
 # Layout for test files and directories.
@@ -60,7 +60,7 @@ def assert_dir_empty(path: Path) -> None:
     assert contents == [], contents
 
 
-def assert_dir_contains_only(path: Path, fps: list[os.PathLike]) -> None:
+def assert_dir_contains_only(path: Path, fps: list[str] | list[Path]) -> None:
     assert path.is_dir()
     contents = sorted(path.iterdir())
     assert contents == sorted([Path(fp) for fp in fps]), contents
@@ -84,3 +84,10 @@ def has_and_pop(d: dict, key: Any) -> bool:
         return d.pop(key, _sentinel) is not _sentinel
     except KeyError:
         return False
+
+
+def log_exists(items: Iterable[EventDict], **kwargs: Any) -> bool:
+    def pred(item: EventDict, **kwargs: Any) -> bool:
+        return all(key in item and item[key] == value for key, value in kwargs.items())
+
+    return any(pred(item, **kwargs) for item in items)
