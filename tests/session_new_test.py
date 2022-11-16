@@ -24,7 +24,7 @@ def test_ok_minimal(tmp_path: Path) -> None:
         project_dir=tmp_path,
         name="",
         url="",
-        author=None,
+        authors=[],
         description="",
         language=None,
         force=False,
@@ -39,7 +39,7 @@ def test_ok_minimal(tmp_path: Path) -> None:
 
     site_config = config["site"]
     site_config.pop("language", None)
-    assert u.has_and_pop(site_config, "author")
+    assert u.has_and_pop(site_config, "authors")
     assert site_config == {
         "name": "",
         "url": "",
@@ -65,7 +65,7 @@ def test_err_not_empty_no_force(tmp_path: Path) -> None:
             project_dir=tmp_path,
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -91,7 +91,7 @@ def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
             project_dir=tmp_path.resolve() / "bzzt",
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -114,7 +114,7 @@ def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
 
     site_config = config["site"]
     site_config.pop("language", None)
-    assert u.has_and_pop(site_config, "author")
+    assert u.has_and_pop(site_config, "authors")
     assert site_config == {
         "name": "bar",
         "url": "",
@@ -133,7 +133,7 @@ def test_ok_inferred_name(tmp_path: Path) -> None:
         project_dir=tmp_path,
         name="",
         url="",
-        author=None,
+        authors=[],
         description="",
         language=None,
         force=False,
@@ -149,7 +149,7 @@ def test_ok_inferred_name(tmp_path: Path) -> None:
 
     site_config = config["site"]
     site_config.pop("language", None)
-    assert u.has_and_pop(site_config, "author")
+    assert u.has_and_pop(site_config, "authors")
     assert site_config == {
         "name": "bar",
         "url": "",
@@ -171,7 +171,7 @@ def test_ok_infer_author_no_git(tmp_path: Path, mocker: MockerFixture) -> None:
         project_dir=tmp_path,
         name="",
         url="",
-        author=None,
+        authors=[],
         description="",
         language=None,
         force=False,
@@ -186,7 +186,7 @@ def test_ok_infer_author_no_git(tmp_path: Path, mocker: MockerFixture) -> None:
 
     site_config = config["site"]
     site_config.pop("language", None)
-    assert u.has_and_pop(site_config, "author")
+    assert u.has_and_pop(site_config, "authors")
     assert site_config == {
         "name": "",
         "url": "",
@@ -220,7 +220,7 @@ def test_ok_infer_author_no_git_user_name(
             project_dir=tmp_path,
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -241,7 +241,7 @@ def test_ok_infer_author_no_git_user_name(
 
     site_config = config["site"]
     site_config.pop("language", None)
-    assert u.has_and_pop(site_config, "author")
+    assert u.has_and_pop(site_config, "authors")
     assert site_config == {
         "name": "",
         "url": "",
@@ -265,7 +265,7 @@ def test_ok_git_exe_missing(tmp_path: Path, mocker: MockerFixture) -> None:
             project_dir=tmp_path,
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -301,7 +301,7 @@ def test_ok_git_init_fail(tmp_path: Path, mocker: MockerFixture) -> None:
             project_dir=tmp_path,
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -334,7 +334,7 @@ def test_ok_git_add_fail(tmp_path: Path, mocker: MockerFixture) -> None:
             project_dir=tmp_path,
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -358,7 +358,7 @@ def test_err_unsupported_vcs(tmp_path: Path) -> None:
             project_dir=tmp_path,
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -382,7 +382,7 @@ def test_ok_infer_lang(tmp_path: Path, mocker: MockerFixture) -> None:
         project_dir=tmp_path,
         name="",
         url="",
-        author=None,
+        authors=[],
         description="",
         language=None,
         force=False,
@@ -396,7 +396,7 @@ def test_ok_infer_lang(tmp_path: Path, mocker: MockerFixture) -> None:
     u.assert_keys_only(config, ["site"])
 
     site_config = config["site"]
-    assert u.has_and_pop(site_config, "author")
+    assert u.has_and_pop(site_config, "authors")
     assert site_config == {
         "name": "",
         "url": "",
@@ -424,7 +424,7 @@ def test_ok_infer_lang_missing(
         project_dir=tmp_path,
         name="",
         url="",
-        author=None,
+        authors=[],
         description="",
         language=None,
         force=False,
@@ -438,7 +438,7 @@ def test_ok_infer_lang_missing(
     u.assert_keys_only(config, ["site"])
 
     site_config = config["site"]
-    assert u.has_and_pop(site_config, "author")
+    assert u.has_and_pop(site_config, "authors")
     assert "language" not in site_config
     assert site_config == {
         "name": "",

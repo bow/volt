@@ -47,7 +47,7 @@ def test_new_ok_e2e(has_git: bool) -> None:
 
         site_config = config["site"]
         site_config.pop("language", None)
-        assert u.has_and_pop(site_config, "author")
+        assert u.has_and_pop(site_config, "authors")
         assert site_config == {
             "name": "",
             "url": "https://site.net",
@@ -83,7 +83,7 @@ def test_new_ok_minimal(mocker: MockerFixture) -> None:
             project_dir=ifs,
             name="",
             url="",
-            author=None,
+            authors=[],
             description="",
             language=None,
             force=False,
@@ -102,6 +102,8 @@ def test_new_ok_extended(mocker: MockerFixture):
         "custom_name",
         "--author",
         "John Doe",
+        "--author",
+        "Jane Roe",
         "--force",
         "--vcs",
         "none",
@@ -118,7 +120,7 @@ def test_new_ok_extended(mocker: MockerFixture):
             project_dir=ifs / "custom_project",
             name="custom_name",
             url="",
-            author="John Doe",
+            authors=["John Doe", "Jane Roe"],
             description="",
             language=None,
             force=True,

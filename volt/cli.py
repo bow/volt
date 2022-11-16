@@ -226,11 +226,13 @@ def root(
 @click.option(
     "-a",
     "--author",
-    type=str,
-    default=None,
+    "authors",
+    multiple=True,
+    required=False,
     help=(
-        "Site author. If given, the value will be set in the created config file."
-        " Default: inferred from git config, if available."
+        "Site author(s). If given, the value will be set in the created config file."
+        " Multiple values may be specified. Default: inferred from git config, if"
+        " available."
     ),
 )
 @click.option(
@@ -278,7 +280,7 @@ def new(
     dir_name: Optional[str],
     name: str,
     url: str,
-    author: Optional[str],
+    authors: tuple[str],
     desc: str,
     lang: Optional[str],
     force: bool,
@@ -300,7 +302,7 @@ def new(
         project_dir=params["project_dir"],
         name=name,
         url=url,
-        author=author,
+        authors=list(authors),
         description=desc,
         language=lang,
         force=force,

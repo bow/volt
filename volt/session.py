@@ -37,7 +37,7 @@ def new(
     project_dir: Path,
     name: str,
     url: str,
-    author: Optional[str],
+    authors: list[str],
     description: str,
     language: Optional[str],
     force: bool,
@@ -75,7 +75,7 @@ def new(
         name=name,
         url=url,
         description=description,
-        author=author,
+        authors=authors,
         language=language,
         dir_name_specified=dir_name is not None,
     )
@@ -327,7 +327,7 @@ def _resolve_file_config(
     name: str,
     url: str,
     description: str,
-    author: Optional[str],
+    authors: list[str],
     language: Optional[str],
     dir_name_specified: bool,
 ) -> dict:
@@ -335,12 +335,17 @@ def _resolve_file_config(
     if not name and dir_name_specified:
         name = project_dir.name
 
-    site_config = {
+    site_config: dict[str, str | list[str]] = {
         "name": name,
         "url": url,
         "description": description,
-        "author": author or (_infer_author() or ""),
     }
+
+    if not authors:
+        if (author := _infer_author()) is not None:
+            authors.append(author)
+    site_config["authors"] = authors
+
     if lang := language or (_infer_lang() or ""):
         site_config["language"] = lang
 
