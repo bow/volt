@@ -10,13 +10,6 @@ repos:
           "--target-version", "py311",
           "--exclude", '/(\.eggs|\.git|\.mypy_cache|\.tox|\.venv|_build|build|dist)/',
         ]
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.20.0
-    hooks:
-      - id: yamllint
-        name: "Lint YAMLs"
-        types: [yaml]
-        args: ["-c=.yamllint.yaml"]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.3.0
     hooks:
