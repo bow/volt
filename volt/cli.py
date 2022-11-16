@@ -158,7 +158,7 @@ def root(
     color: bool,
     exc_style: _ExcStyle,
 ) -> None:
-    """Volt is an extensible static website generator"""
+    """A minimal and extensible static website generator"""
 
     if exc_style == "pretty":
         install(show_locals=True, width=95)

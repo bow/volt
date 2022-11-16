@@ -1,5 +1,5 @@
 """
-    A versatile static website generator.
+    A minimal and extensible static website generator.
 
     :copyright: (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
     :license: BSD-3-Clause
