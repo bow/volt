@@ -473,7 +473,7 @@ def serve_drafts(
     elif str_value == "off":
         value = False
 
-    config = _get_config(cast(click.Context, ctx.parent))
+    config = _get_config(cast(click.Context, ctx.parent).parent)
     session.serve_drafts(config=config, value=value)
 
     return None
