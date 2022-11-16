@@ -19,7 +19,7 @@ def test_ok_minimal(tmp_path: Path) -> None:
     u.assert_dir_empty(tmp_path)
 
     project_dir = session.new(
-        dirname=None,
+        dir_name=None,
         invoc_dir=tmp_path,
         project_dir=tmp_path,
         name="",
@@ -57,7 +57,7 @@ def test_err_not_empty_no_force(tmp_path: Path) -> None:
         match=f"project directory {tmp_path} contains files",
     ):
         session.new(
-            dirname=None,
+            dir_name=None,
             invoc_dir=tmp_path,
             project_dir=tmp_path,
             name="",
@@ -83,7 +83,7 @@ def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
     with capture_logs() as logs:
         assert logs == []
         project_dir = session.new(
-            dirname=f"{dir_path}",
+            dir_name=f"{dir_path}",
             invoc_dir=tmp_path,
             project_dir=tmp_path.resolve() / "bzzt",
             name="",
@@ -122,7 +122,7 @@ def test_ok_inferred_name(tmp_path: Path) -> None:
     u.assert_dir_empty(tmp_path)
 
     project_dir = session.new(
-        dirname="foo/bar",
+        dir_name="foo/bar",
         invoc_dir=tmp_path,
         project_dir=tmp_path,
         name="",
@@ -157,7 +157,7 @@ def test_ok_infer_author_no_git(tmp_path: Path, mocker: MockerFixture) -> None:
     which_m.return_value = None
 
     project_dir = session.new(
-        dirname=None,
+        dir_name=None,
         invoc_dir=tmp_path,
         project_dir=tmp_path,
         name="",
@@ -203,7 +203,7 @@ def test_ok_infer_author_no_git_user_name(
     with capture_logs() as logs:
         assert logs == []
         project_dir = session.new(
-            dirname=None,
+            dir_name=None,
             invoc_dir=tmp_path,
             project_dir=tmp_path,
             name="",
@@ -245,7 +245,7 @@ def test_ok_git_exe_missing(tmp_path: Path, mocker: MockerFixture) -> None:
     with capture_logs() as logs:
         assert logs == []
         project_dir = session.new(
-            dirname=None,
+            dir_name=None,
             invoc_dir=tmp_path,
             project_dir=tmp_path,
             name="",
@@ -281,7 +281,7 @@ def test_ok_git_init_fail(tmp_path: Path, mocker: MockerFixture) -> None:
     with capture_logs() as logs:
         assert logs == []
         project_dir = session.new(
-            dirname=None,
+            dir_name=None,
             invoc_dir=tmp_path,
             project_dir=tmp_path,
             name="",
@@ -314,7 +314,7 @@ def test_ok_git_add_fail(tmp_path: Path, mocker: MockerFixture) -> None:
     with capture_logs() as logs:
         assert logs == []
         project_dir = session.new(
-            dirname=None,
+            dir_name=None,
             invoc_dir=tmp_path,
             project_dir=tmp_path,
             name="",
@@ -338,7 +338,7 @@ def test_err_unsupported_vcs(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="vcs 'subversion' is unsupported"):
         session.new(
-            dirname=None,
+            dir_name=None,
             invoc_dir=tmp_path,
             project_dir=tmp_path,
             name="",
@@ -362,7 +362,7 @@ def test_ok_infer_lang(tmp_path: Path, mocker: MockerFixture) -> None:
     locale_m.return_value = ("en_US", "UTF-8")
 
     project_dir = session.new(
-        dirname=None,
+        dir_name=None,
         invoc_dir=tmp_path,
         project_dir=tmp_path,
         name="",
@@ -401,7 +401,7 @@ def test_ok_infer_lang_missing(
     locale_m.return_value = getlocale_rv
 
     project_dir = session.new(
-        dirname=None,
+        dir_name=None,
         invoc_dir=tmp_path,
         project_dir=tmp_path,
         name="",

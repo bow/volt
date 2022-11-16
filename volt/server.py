@@ -192,19 +192,19 @@ class _BuildHandler(events.RegexMatchingEventHandler):
         prefix = f"{config.project_dir_rel}".replace(".", r"\.")
         regexes = [
             *[
-                f"^{prefix + '/' + dirname + '/'}.+$"
-                for dirname in (
-                    constants.PROJECT_EXTENSION_DIRNAME,
-                    constants.PROJECT_SOURCES_DIRNAME,
-                    constants.PROJECT_STATIC_DIRNAME,
-                    constants.SITE_THEMES_DIRNAME,
+                f"^{prefix + '/' + dir_name + '/'}.+$"
+                for dir_name in (
+                    constants.PROJECT_EXTENSION_DIR_NAME,
+                    constants.PROJECT_SOURCES_DIR_NAME,
+                    constants.PROJECT_STATIC_DIR_NAME,
+                    constants.SITE_THEMES_DIR_NAME,
                 )
             ],
-            f"^{prefix + '/' + constants.CONFIG_FNAME}$",
-            f"^{prefix + '/' + constants.SERVER_RUN_FNAME}$",
+            f"^{prefix + '/' + constants.CONFIG_FILE_NAME}$",
+            f"^{prefix + '/' + constants.SERVER_RUN_FILE_NAME}$",
         ]
         ignore_regexes = [
-            f"^{prefix + '/' + constants.PROJECT_TARGET_DIRNAME + '/'}.+$",
+            f"^{prefix + '/' + constants.PROJECT_TARGET_DIR_NAME + '/'}.+$",
             f"^{prefix + '/__pycache__'}.+",
         ]
         super().__init__(regexes, ignore_regexes, case_sensitive=True)

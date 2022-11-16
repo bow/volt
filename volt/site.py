@@ -400,9 +400,9 @@ class Site:
         # chmod if inside container to ensure host can use it as if not generated
         # from inside the container.
         if self.config.in_docker:
-            for dp, _, fnames in os.walk(target_dir):
+            for dp, _, file_names in os.walk(target_dir):
                 os.chmod(dp, 0o777)  # nosec: B103
-                for fn in fnames:
+                for fn in file_names:
                     os.chmod(os.path.join(dp, fn), 0o666)  # nosec: B103
 
         return None

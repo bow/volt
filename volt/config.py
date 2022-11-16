@@ -27,7 +27,7 @@ class Config(UserDict):
         cls,
         invoc_dir: Path,
         start_lookup_dir: Path,
-        yaml_fname: str = constants.CONFIG_FNAME,
+        yaml_file_name: str = constants.CONFIG_FILE_NAME,
         **kwargs: Any,
     ) -> Optional["Config"]:
         """Create an instance from within a project directory.
@@ -39,18 +39,18 @@ class Config(UserDict):
         :param start_lookup_dir: Path to the directory from which project
             directory lookup should start. If set to ``None``, the lookup will
             start from the current directory.
-        :param yaml_fname: Name of YAML file containing the configuration
+        :param yaml_file_name: Name of YAML file containing the configuration
             values.
 
         """
-        project_dir = _find_dir_containing(yaml_fname, start_lookup_dir)
+        project_dir = _find_dir_containing(yaml_file_name, start_lookup_dir)
         if project_dir is None:
             return None
 
         return cls.from_yaml(
             invoc_dir=invoc_dir,
             project_dir=project_dir.resolve(),
-            yaml_fname=yaml_fname,
+            yaml_file_name=yaml_file_name,
             **kwargs,
         )
 
@@ -59,14 +59,14 @@ class Config(UserDict):
         cls,
         invoc_dir: Path,
         project_dir: Path,
-        yaml_fname: str = constants.CONFIG_FNAME,
+        yaml_file_name: str = constants.CONFIG_FILE_NAME,
         **kwargs: Any,
     ) -> "Config":
         """Create a site configuration from a Volt YAML file.
 
         :param invoc_dir: Path to the invocation directory.
         :param project_dir: Path to the project working directory.
-        :param yaml_fname: Name of YAML file containing the configuration
+        :param yaml_file_name: Name of YAML file containing the configuration
             values.
 
         :returns: A site config instance.
@@ -74,7 +74,7 @@ class Config(UserDict):
         :raises ~exc.VoltConfigError: when validation fails.
 
         """
-        yaml_path = project_dir / yaml_fname
+        yaml_path = project_dir / yaml_file_name
         with yaml_path.open() as src:
             try:
                 user_conf = cast(Dict[str, Any], yaml.safe_load(src))
@@ -95,29 +95,22 @@ class Config(UserDict):
         invoc_dir: Path,
         project_dir: Path,
         with_drafts: bool = False,
-        target_dirname: str = constants.PROJECT_TARGET_DIRNAME,
-        sources_dirname: str = constants.PROJECT_SOURCES_DIRNAME,
-        themes_dirname: str = constants.SITE_THEMES_DIRNAME,
-        static_dirname: str = constants.PROJECT_STATIC_DIRNAME,
-        drafts_dirname: str = constants.PROJECT_DRAFTS_DIRNAME,
-        extension_dirname: str = constants.PROJECT_EXTENSION_DIRNAME,
-        xcmd_fname: str = constants.XCMD_FNAME,
-        xcmd_mod_name: str = constants.PROJECT_CLI_MOD_QUALNAME,
-        hooks_fname: str = constants.HOOKS_FNAME,
-        hooks_mod_name: str = constants.PROJECT_HOOKS_MOD_QUALNAME,
+        target_dir_name: str = constants.PROJECT_TARGET_DIR_NAME,
+        sources_dir_name: str = constants.PROJECT_SOURCES_DIR_NAME,
+        themes_dir_name: str = constants.SITE_THEMES_DIR_NAME,
+        static_dir_name: str = constants.PROJECT_STATIC_DIR_NAME,
+        drafts_dir_name: str = constants.PROJECT_DRAFTS_DIR_NAME,
+        extension_dir_name: str = constants.PROJECT_EXTENSION_DIR_NAME,
+        xcmd_file_name: str = constants.XCMD_FILE_NAME,
+        xcmd_mod_name: str = constants.PROJECT_CLI_MOD_QUAL_NAME,
+        hooks_file_name: str = constants.HOOKS_FILE_NAME,
+        hooks_mod_name: str = constants.PROJECT_HOOKS_MOD_QUAL_NAME,
         yaml_path: Optional[Path] = None,
         user_conf: Optional[dict] = None,
         slug_replacements: Iterable[Iterable[str]] = constants.SLUG_REPLACEMENTS,
         **kwargs: Any,
     ) -> None:
-        """Initialize a site-level configuration.
-
-        :param invoc_dir: Path to the invocation directory.
-        :param project_dir: Path to the project directory.
-        :param src_dirname: Base directory name for site source.
-        :param out_dirname: Base directory name for site output.
-
-        """
+        """Initialize a site-level configuration."""
         uc = user_conf or {}
         self._name: str = uc.pop("name", "")
         self._url: str = uc.pop("url", "")
@@ -133,20 +126,20 @@ class Config(UserDict):
 
         self._invoc_dir = invoc_dir
         self._project_dir = project_dir
-        self._target_dir = project_dir / target_dirname
-        self._sources_dir = self._project_dir / sources_dirname
-        self._themes_dir = self._project_dir / themes_dirname
-        self._extension_dir = self._project_dir / extension_dirname
-        self._drafts_dirname = drafts_dirname
-        self._static_dir = self._project_dir / static_dirname
-        self._xcmd_module_path = self._extension_dir / xcmd_fname
+        self._target_dir = project_dir / target_dir_name
+        self._sources_dir = self._project_dir / sources_dir_name
+        self._themes_dir = self._project_dir / themes_dir_name
+        self._extension_dir = self._project_dir / extension_dir_name
+        self._drafts_dir_name = drafts_dir_name
+        self._static_dir = self._project_dir / static_dir_name
+        self._xcmd_module_path = self._extension_dir / xcmd_file_name
         self._xcmd_module_name = xcmd_mod_name
-        self._hooks_module_path = self._extension_dir / hooks_fname
+        self._hooks_module_path = self._extension_dir / hooks_file_name
         self._hooks_module_name = hooks_mod_name
         self._yaml_path = yaml_path
 
         self._with_drafts = with_drafts
-        self._server_run_path = project_dir / constants.SERVER_RUN_FNAME
+        self._server_run_path = project_dir / constants.SERVER_RUN_FILE_NAME
 
     @property
     def name(self) -> str:
@@ -205,9 +198,9 @@ class Config(UserDict):
         return self._themes_dir
 
     @property
-    def drafts_dirname(self) -> str:
+    def drafts_dir_name(self) -> str:
         """Name of the drafts directory."""
-        return self._drafts_dirname
+        return self._drafts_dir_name
 
     @property
     def static_dir(self) -> Path:
@@ -297,14 +290,14 @@ def _set_exc_style(value: _ExcStyle) -> _ExcStyle:
     return cur
 
 
-def _find_dir_containing(fname: str, start: Path) -> Optional[Path]:
+def _find_dir_containing(file_name: str, start: Path) -> Optional[Path]:
     """Find the directory containing the filename.
 
     Directory lookup is performed from the given start directory up until the
     root (`/`) directory. If no start directory is given, the lookup starts
     from the current directory.
 
-    :param fname: The filename that should be present in the directory.
+    :param file_name: The file name that should be present in the directory.
     :param start: The path from which lookup starts.
 
     :returns: The path to the directory that contains the filename or None if
@@ -314,7 +307,7 @@ def _find_dir_containing(fname: str, start: Path) -> Optional[Path]:
     cur = Path(start).expanduser().resolve()
 
     while cur != cur.parent:
-        if cur.joinpath(fname).exists():
+        if cur.joinpath(file_name).exists():
             return cur
         cur = cur.parent
 

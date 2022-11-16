@@ -199,7 +199,7 @@ def root(
 
 
 @root.command()
-@click.argument("path", type=str, required=False, default=None)
+@click.argument("dir_name", type=str, required=False, default=None)
 @click.option(
     "-n",
     "--name",
@@ -209,7 +209,7 @@ def root(
     help=(
         "Name of the static site. If given, the value will be set in the created"
         " config file. Default: empty string or the base name of the project"
-        " path, when it is specified."
+        " path, when specified."
     ),
 )
 @click.option(
@@ -275,7 +275,7 @@ def root(
 @click.pass_context
 def new(
     ctx: click.Context,
-    path: Optional[str],
+    dir_name: Optional[str],
     name: str,
     url: str,
     author: Optional[str],
@@ -286,16 +286,16 @@ def new(
 ) -> None:
     """Start a new project
 
-    This command creates a new project at the given path, optionally setting some
+    This command creates a new project at the given directory, optionally setting some
     configuration values.
 
-    If no path is specified, this command defaults to project creation in the current
-    directory.
+    If DIR_NAME is not specified, this command defaults to creating the project in the
+    current directory.
 
     """
     params = cast(click.Context, ctx.parent).params
     project_dir = session.new(
-        dirname=path,
+        dir_name=dir_name,
         invoc_dir=params["invoc_dir"],
         project_dir=params["project_dir"],
         name=name,

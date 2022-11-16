@@ -32,7 +32,7 @@ log = structlog.get_logger(__name__)
 
 
 def new(
-    dirname: Optional[str],
+    dir_name: Optional[str],
     invoc_dir: Path,
     project_dir: Path,
     name: str,
@@ -42,16 +42,16 @@ def new(
     language: Optional[str],
     force: bool,
     vcs: Optional[_VCS],
-    config_fname: str = constants.CONFIG_FNAME,
+    config_file_name: str = constants.CONFIG_FILE_NAME,
 ) -> Path:
     """Create a new project.
 
     This function may overwrite any preexisting files and or directories
     in the target working directory.
 
-    :param dirname: Name of the directory in which the project is created.
+    :param dir_name: Name of the directory in which the project is created.
     :param invoc_dir: Path to the invocation directory.
-    :param project_dir: Path to the parent directory in which ``dirname`` is created.
+    :param project_dir: Path to the parent directory in which ``dir_name`` is created.
     :param name: Name of the static site, to be put inside the generated config file.
     :param url: URL of the static site, to be put inside the generated config file.
     :param description: Description of the site, to be put inside the generated
@@ -61,14 +61,14 @@ def new(
         locale.
     :param force: Whether to force project creation in nonempty directories or not.
     :param vcs: Version control system to initialize in the newly created project.
-    :param config_name: Name of the config file to generate.
+    :param config_file_name: Name of the config file to generate.
 
     :raises ~volt.error.VoltCliError:
         * when the given project directory is not empty and force is False.
         * when any directory creation fails.
 
     """
-    project_dir = _resolve_project_dir(invoc_dir, project_dir, dirname, force)
+    project_dir = _resolve_project_dir(invoc_dir, project_dir, dir_name, force)
 
     yaml_config = _resolve_yaml_config(
         project_dir=project_dir,
@@ -77,7 +77,7 @@ def new(
         description=description,
         author=author,
         language=language,
-        dirname_specified=dirname is not None,
+        dir_name_specified=dir_name is not None,
     )
 
     config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
@@ -87,7 +87,7 @@ def new(
         config.themes_dir,
     ):
         dp.mkdir(parents=True, exist_ok=True)
-    with (project_dir / config_fname).open("w") as fh:
+    with (project_dir / config_file_name).open("w") as fh:
         fh.write("# Volt configuration file\n\n")
         yaml.safe_dump(yaml_config, fh, sort_keys=False)
 
@@ -161,7 +161,7 @@ def edit(
     """Open a draft file in an editor."""
 
     if create is not None:
-        fn = Path(config.drafts_dirname) / create / query
+        fn = Path(config.drafts_dir_name) / create / query
         new_fp = fn.with_suffix(constants.MARKDOWN_EXT)
         new_fp.parent.mkdir(parents=True, exist_ok=True)
         if new_fp.exists():
@@ -185,7 +185,7 @@ def edit(
         query=query,
         ext=constants.MARKDOWN_EXT,
         start_dir=config.sources_dir,
-        ignore_dirname=None if config.with_drafts else config.drafts_dirname,
+        ignore_dir_name=None if config.with_drafts else config.drafts_dir_name,
     )
     if match_fp is not None:
         click.edit(filename=f"{match_fp}")
@@ -248,12 +248,12 @@ def _get_fuzzy_match(
     query: str,
     ext: str,
     start_dir: Path,
-    ignore_dirname: Optional[str] = None,
+    ignore_dir_name: Optional[str] = None,
     cutoff: int = 50,
 ) -> Optional[str]:
     """Return a fuzzy-matched path to a file in one of the given directories"""
 
-    dirs = _walk_dirs(start_dir=start_dir, ignore_dirname=ignore_dirname)
+    dirs = _walk_dirs(start_dir=start_dir, ignore_dir_name=ignore_dir_name)
 
     fp_map = {}
     for d in dirs:
@@ -268,7 +268,7 @@ def _get_fuzzy_match(
     return match_fp
 
 
-def _walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Path]:
+def _walk_dirs(start_dir: Path, ignore_dir_name: Optional[str] = None) -> list[Path]:
     """Return the input directory and all its children directories"""
 
     todo_dirs = [start_dir]
@@ -281,7 +281,7 @@ def _walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Pa
             if not entry.is_dir():
                 continue
             p = Path(entry.path)
-            if ignore_dirname is not None and p.name == ignore_dirname:
+            if ignore_dir_name is not None and p.name == ignore_dir_name:
                 continue
             todo_dirs.append(p)
 
@@ -291,23 +291,23 @@ def _walk_dirs(start_dir: Path, ignore_dirname: Optional[str] = None) -> list[Pa
 def _resolve_project_dir(
     invoc_dir: Path,
     project_dir: Path,
-    dirname: Optional[str],
+    dir_name: Optional[str],
     force: bool,
 ) -> Path:
 
-    dirname_specified = dirname is not None
-    dirname_abs = dirname is not None and os.path.isabs(dirname)
+    dir_name_specified = dir_name is not None
+    dir_name_abs = dir_name is not None and os.path.isabs(dir_name)
     project_dir_specified = invoc_dir != project_dir
 
-    if dirname_specified and dirname_abs and project_dir_specified:
+    if dir_name_specified and dir_name_abs and project_dir_specified:
         log.warn(
             "ignoring specified project path as command is invoked with an absolute"
             " path",
             project_path=project_dir,
-            command_path=dirname,
+            command_path=dir_name,
         )
 
-    project_dir = (project_dir / (dirname or ".")).resolve()
+    project_dir = (project_dir / (dir_name or ".")).resolve()
 
     project_dir_nonempty = project_dir.exists() and any(
         True for _ in project_dir.iterdir()
@@ -329,10 +329,10 @@ def _resolve_yaml_config(
     description: str,
     author: Optional[str],
     language: Optional[str],
-    dirname_specified: bool,
+    dir_name_specified: bool,
 ) -> dict:
 
-    if not name and dirname_specified:
+    if not name and dir_name_specified:
         name = project_dir.name
 
     rv = {
@@ -394,7 +394,7 @@ def _infer_front_matter(query: str, title: Optional[str]) -> str:
 def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
 
     gitignore = project_dir / ".gitignore"
-    gitignore.write_text(f"{constants.SERVER_RUN_FNAME}  # Volt server run file")
+    gitignore.write_text(f"{constants.SERVER_RUN_FILE_NAME}  # Volt server run file")
 
     if (git_exe := which("git")) is None:
         log.warn("can not find git executable")

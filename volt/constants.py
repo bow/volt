@@ -7,7 +7,7 @@
 BUILD_DIR_PREFIX = "volt-build-"
 
 # Config file name.
-CONFIG_FNAME = "volt.yaml"
+CONFIG_FILE_NAME = "volt.yaml"
 
 # Default slug replacements.
 SLUG_REPLACEMENTS = {
@@ -17,7 +17,7 @@ SLUG_REPLACEMENTS = {
 }
 
 # Static directory name.
-STATIC_DIRNAME = "static"
+STATIC_DIR_NAME = "static"
 
 # Separator string for text content front matter.
 FRONT_MATTER_SEP = "---\n"
@@ -26,66 +26,68 @@ FRONT_MATTER_SEP = "---\n"
 MARKDOWN_EXT = ".md"
 
 # Project source directory name.
-PROJECT_SOURCES_DIRNAME = "source"
+PROJECT_SOURCES_DIR_NAME = "source"
 
 # Project draft contents directory name.
-PROJECT_DRAFTS_DIRNAME = ".drafts"
+PROJECT_DRAFTS_DIR_NAME = ".drafts"
 
 # Project directory name for extension code.
-PROJECT_EXTENSION_DIRNAME = "extension"
+PROJECT_EXTENSION_DIR_NAME = "extension"
 
 # Qualified module name for the project.
-PROJECT_MOD_QUALNAME = "volt.project"
+PROJECT_MOD_QUAL_NAME = "volt.project"
 
 # Qualified module name for project extensions.
-PROJECT_EXTENSION_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{PROJECT_EXTENSION_DIRNAME}"
+PROJECT_EXTENSION_MOD_QUAL_NAME = (
+    f"{PROJECT_MOD_QUAL_NAME}.{PROJECT_EXTENSION_DIR_NAME}"
+)
 
 # Module name for custom CLI.
 CLI_MOD_NAME = "cli"
 
 # Qualified module name for custom CLI.
-PROJECT_CLI_MOD_QUALNAME = f"{PROJECT_EXTENSION_MOD_QUALNAME}.{CLI_MOD_NAME}"
+PROJECT_CLI_MOD_QUAL_NAME = f"{PROJECT_EXTENSION_MOD_QUAL_NAME}.{CLI_MOD_NAME}"
 
 # Module name for custom hooks.
 HOOKS_MOD_NAME = "hooks"
 
 # Qualified module name for custom hooks.
-PROJECT_HOOKS_MOD_QUALNAME = f"{PROJECT_EXTENSION_MOD_QUALNAME}.{HOOKS_MOD_NAME}"
+PROJECT_HOOKS_MOD_QUAL_NAME = f"{PROJECT_EXTENSION_MOD_QUAL_NAME}.{HOOKS_MOD_NAME}"
 
 # Project output directory name.
-PROJECT_TARGET_DIRNAME = "target"
+PROJECT_TARGET_DIR_NAME = "target"
 
 # Project static directory name.
-PROJECT_STATIC_DIRNAME = f"{PROJECT_SOURCES_DIRNAME}/{STATIC_DIRNAME}"
+PROJECT_STATIC_DIR_NAME = f"{PROJECT_SOURCES_DIR_NAME}/{STATIC_DIR_NAME}"
 
 # Site theme directory name.
-SITE_THEMES_DIRNAME = "theme"
+SITE_THEMES_DIR_NAME = "theme"
 
 # CLI extension filename.
-XCMD_FNAME = f"{CLI_MOD_NAME}.py"
+XCMD_FILE_NAME = f"{CLI_MOD_NAME}.py"
 
 # Hooks filename.
-HOOKS_FNAME = f"{HOOKS_MOD_NAME}.py"
+HOOKS_FILE_NAME = f"{HOOKS_MOD_NAME}.py"
 
 # Server run filename.
-SERVER_RUN_FNAME = ".volt-server.run"
+SERVER_RUN_FILE_NAME = ".volt-server.run"
 
 ###
 
 # Root module name for the theme.
-THEME_ROOT_MOD_QUALNAME = f"{PROJECT_MOD_QUALNAME}.{SITE_THEMES_DIRNAME}"
+THEME_ROOT_MOD_QUAL_NAME = f"{PROJECT_MOD_QUAL_NAME}.{SITE_THEMES_DIR_NAME}"
 
 # Theme engines module name.
 ENGINES_MOD_NAME = "engines"
 
 # File name for theme engines.
-ENGINES_FNAME = f"{ENGINES_MOD_NAME}.py"
+ENGINES_FILE_NAME = f"{ENGINES_MOD_NAME}.py"
 
 # Theme base settings file name.
-THEME_SETTINGS_FNAME = "theme.yaml"
+THEME_SETTINGS_FILE_NAME = "theme.yaml"
 
 # Site theme static directory name.
-THEME_STATIC_DIRNAME = f"{STATIC_DIRNAME}"
+THEME_STATIC_DIR_NAME = f"{STATIC_DIR_NAME}"
 
 # Theme templates directory name.
-THEME_TEMPLATES_DIRNAME = "templates"
+THEME_TEMPLATES_DIR_NAME = "templates"

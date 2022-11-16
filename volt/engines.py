@@ -14,7 +14,7 @@ from jinja2 import Template
 
 from . import error as err
 from .config import Config
-from .constants import MARKDOWN_EXT, STATIC_DIRNAME
+from .constants import MARKDOWN_EXT, STATIC_DIR_NAME
 from .sources import MarkdownSource
 from .targets import CopyTarget, Target, TemplateTarget
 from .theme import Theme
@@ -37,7 +37,7 @@ class Engine(abc.ABC):
         id: str,
         config: Config,
         theme: Theme,
-        source_dirname: str = "",
+        source_dir_name: str = "",
         opts: Optional[dict] = None,
         *args: Any,
         **kwargs: Any,
@@ -45,7 +45,7 @@ class Engine(abc.ABC):
         self.id = id
         self.config = config
         self.theme = theme
-        self.source_dirname = source_dirname
+        self.source_dir_name = source_dir_name
         self.opts = opts or {}
 
     @property
@@ -56,12 +56,12 @@ class Engine(abc.ABC):
     @property
     def source_dir(self) -> Path:
         """Path to the root source directory for this engine."""
-        return self.config.sources_dir / self.source_dirname
+        return self.config.sources_dir / self.source_dir_name
 
     @property
     def source_drafts_dir(self) -> Path:
         """Path to the source drafts directory for this engine."""
-        return self.source_dir / self.config.drafts_dirname
+        return self.source_dir / self.config.drafts_dir_name
 
     @abc.abstractmethod
     def create_targets(self) -> Sequence[Target]:
@@ -109,7 +109,7 @@ class EngineSpec:
             id=self.id,
             config=self.config,
             theme=self.theme,
-            source_dirname=self.source,
+            source_dir_name=self.source,
             opts=self.opts,
         )
 
@@ -168,11 +168,11 @@ class StaticEngine(Engine):
     """Engine that resolves and copies static files."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        if (kwargs.get("source_dirname") or STATIC_DIRNAME) != STATIC_DIRNAME:
+        if (kwargs.get("source_dir_name") or STATIC_DIR_NAME) != STATIC_DIR_NAME:
             raise err.VoltConfigError(
-                f"if specified, 'source' must be {STATIC_DIRNAME!r} for {self.name}"
+                f"if specified, 'source' must be {STATIC_DIR_NAME!r} for {self.name}"
             )
-        kwargs["source_dirname"] = STATIC_DIRNAME
+        kwargs["source_dir_name"] = STATIC_DIR_NAME
         super().__init__(*args, **kwargs)
 
     @property

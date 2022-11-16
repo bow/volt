@@ -89,7 +89,7 @@ class Theme:
     @cached_property
     def module_name(self) -> str:
         """Module name of the theme."""
-        return f"{constants.THEME_ROOT_MOD_QUALNAME}.{self.name}"
+        return f"{constants.THEME_ROOT_MOD_QUAL_NAME}.{self.name}"
 
     @cached_property
     def engines_module_name(self) -> str:
@@ -99,7 +99,7 @@ class Theme:
     @cached_property
     def engines_module_path(self) -> Path:
         """Path to theme engines."""
-        return self.path / constants.ENGINES_FNAME
+        return self.path / constants.ENGINES_FILE_NAME
 
     @cached_property
     def hooks_module_name(self) -> str:
@@ -109,12 +109,12 @@ class Theme:
     @cached_property
     def hooks_module_path(self) -> Path:
         """Path to the theme hooks file."""
-        return self.path / constants.HOOKS_FNAME
+        return self.path / constants.HOOKS_FILE_NAME
 
     @cached_property
     def static_dir(self) -> Path:
         """Path to the site source theme static files."""
-        return self.path / constants.THEME_STATIC_DIRNAME
+        return self.path / constants.THEME_STATIC_DIR_NAME
 
     @property
     def config(self) -> Config:
@@ -124,7 +124,7 @@ class Theme:
     @cached_property
     def config_defaults_path(self) -> Path:
         """Path to theme default configurations."""
-        return self.path / constants.THEME_SETTINGS_FNAME
+        return self.path / constants.THEME_SETTINGS_FILE_NAME
 
     @cached_property
     def config_defaults(self) -> dict:
@@ -135,7 +135,7 @@ class Theme:
     @cached_property
     def templates_dir(self) -> Path:
         """Path to the theme template directory."""
-        return self.path / constants.THEME_TEMPLATES_DIRNAME
+        return self.path / constants.THEME_TEMPLATES_DIR_NAME
 
     @cached_property
     def template_env(self) -> Environment:

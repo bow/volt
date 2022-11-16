@@ -75,7 +75,7 @@ def test_new_ok_minimal(mocker: MockerFixture) -> None:
         assert res.exit_code == 0
 
         sess_func.assert_called_once_with(
-            dirname=None,
+            dir_name=None,
             invoc_dir=ifs,
             project_dir=ifs,
             name="",
@@ -110,7 +110,7 @@ def test_new_ok_extended(mocker: MockerFixture):
         assert res.exit_code == 0
 
         sess_func.assert_called_once_with(
-            dirname="custom_path",
+            dir_name="custom_path",
             invoc_dir=ifs,
             project_dir=ifs / "custom_project",
             name="custom_name",
