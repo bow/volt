@@ -42,7 +42,7 @@ def test_new_ok_e2e(has_git: bool) -> None:
             ],
         )
 
-        config = u.load_config(ifs / "volt.yaml")
+        config = u.load_project_config(ifs)
         # Author and language are too env-dependent; enough to check that they exist.
         assert u.has_and_pop(config, "author")
         assert u.has_and_pop(config, "language")

@@ -72,6 +72,10 @@ def load_config(config_fp: Path) -> dict:
     return config
 
 
+def load_project_config(project_dir: Path) -> dict:
+    return load_config(project_dir / "volt.yaml")
+
+
 _sentinel = object()
 
 
