@@ -70,7 +70,7 @@ def new(
     """
     project_dir = _resolve_project_dir(invoc_dir, project_dir, dir_name, force)
 
-    yaml_config = _resolve_file_config(
+    file_config = _resolve_file_config(
         project_dir=project_dir,
         name=name,
         url=url,
@@ -89,7 +89,7 @@ def new(
         dp.mkdir(parents=True, exist_ok=True)
     with (project_dir / config_file_name).open("w") as fh:
         fh.write("# Volt configuration file\n\n")
-        yaml.safe_dump(yaml_config, fh, sort_keys=False)
+        yaml.safe_dump(file_config, fh, sort_keys=False)
 
     if vcs is None:
         log.debug("skipping vcs initialization as no vcs is requested")
