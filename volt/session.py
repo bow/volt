@@ -342,6 +342,7 @@ def _infer_author(stdout_encoding: str = "utf-8") -> Optional[str]:
 
     proc = _run_process([git_exe, "config", "--get", "user.name"])
     if proc.returncode != 0:
+        log.warn("no author can be inferred as git returns no 'user.name' value")
         return None
 
     author = proc.stdout.strip().decode(stdout_encoding) or None
@@ -370,12 +371,12 @@ def _infer_front_matter(query: str, title: Optional[str]) -> str:
 
 def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
     if (git_exe := which("git")) is None:
-        log.debug("can not find 'git' executable")
+        log.warn("can not find git executable")
         return False
 
     proc_init = _run_process([git_exe, "-C", f"{project_dir}", "init"])
     if proc_init.returncode != 0:
-        log.debug(
+        log.warn(
             "git init failed",
             stdout=proc_init.stdout.decode(stream_encoding),
             stderr=proc_init.stderr.decode(stream_encoding),
@@ -384,7 +385,7 @@ def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
 
     proc_add = _run_process([git_exe, "-C", f"{project_dir}", "add", f"{project_dir}"])
     if proc_add.returncode != 0:
-        log.debug(
+        log.warn(
             "git add failed",
             stdout=proc_add.stdout.decode(stream_encoding),
             stderr=proc_add.stderr.decode(stream_encoding),
