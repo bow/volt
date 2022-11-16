@@ -35,7 +35,7 @@ def test_new_ok_e2e(has_git: bool) -> None:
                 ifs / fn
                 for fn in (
                     *([".gitignore", ".git"] if has_git else []),
-                    "volt.yaml",
+                    "volt.toml",
                     "theme",
                     "source",
                 )
@@ -62,7 +62,7 @@ def test_new_ok_e2e(has_git: bool) -> None:
             if proc.returncode != 0:
                 return None
             stdout_lines = proc.stdout.decode("utf-8").split("\n")
-            assert sorted(stdout_lines) == ["", "A  .gitignore", "A  volt.yaml"]
+            assert sorted(stdout_lines) == ["", "A  .gitignore", "A  volt.toml"]
 
     return None
 

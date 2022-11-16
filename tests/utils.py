@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Generator, Iterable, Optional
 
-import yaml
+import tomlkit
 from click.testing import CliRunner
 from structlog.types import EventDict
 
@@ -68,12 +68,12 @@ def assert_dir_contains_only(path: Path, fps: list[str] | list[Path]) -> None:
 
 def load_config(config_fp: Path) -> dict:
     with config_fp.open() as src:
-        config = yaml.safe_load(src)
+        config = tomlkit.load(src)
     return config
 
 
 def load_project_config(project_dir: Path) -> dict:
-    return load_config(project_dir / "volt.yaml")
+    return load_config(project_dir / "volt.toml")
 
 
 def assert_keys_only(d: dict, keys: list[Any]) -> None:

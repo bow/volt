@@ -8,9 +8,8 @@ from functools import cached_property
 from pathlib import Path
 from typing import cast, Any, Dict, Iterable, Literal, Optional
 
-import yaml
-from yaml.parser import ParserError
-from yaml.scanner import ScannerError
+import tomlkit
+from tomlkit.exceptions import TOMLKitError
 
 from . import constants, error as err
 
@@ -74,11 +73,7 @@ class Config(UserDict):
         """
         config_path = project_dir / config_file_name
         with config_path.open() as src:
-            try:
-                user_conf = cast(Dict[str, Any], yaml.safe_load(src))
-            except (ParserError, ScannerError) as e:
-                # TODO: display traceback depending on log level
-                raise err.VoltConfigError(f"could not parse config: {e.args[0]}") from e
+            user_conf = cast(Dict[str, Any], tomlkit.load(src))
 
         return cls(
             invoc_dir=invoc_dir,

@@ -52,7 +52,7 @@ def test_ok_minimal(tmp_path: Path) -> None:
 def test_err_not_empty_no_force(tmp_path: Path) -> None:
     u.assert_dir_empty(tmp_path)
 
-    config_fp = tmp_path / "volt.yaml"
+    config_fp = tmp_path / "volt.toml"
     config_fp.write_text("existing")
 
     with pytest.raises(
@@ -453,7 +453,7 @@ def assert_new_project_layout(project_dir: Path, with_git: bool = True) -> None:
 
     theme_dir = project_dir / "theme"
     sources_dir = project_dir / "source"
-    config_fp = project_dir / "volt.yaml"
+    config_fp = project_dir / "volt.toml"
 
     dir_contents = [theme_dir, sources_dir, config_fp]
 

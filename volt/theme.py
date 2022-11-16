@@ -2,7 +2,7 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import yaml
+import tomlkit
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
@@ -130,7 +130,7 @@ class Theme:
     def config_defaults(self) -> dict:
         """Default theme configurations."""
         with self.config_defaults_path.open("r") as src:
-            return cast(dict, yaml.safe_load(src)).get("theme", {})
+            return cast(dict, tomlkit.load(src)).get("theme", {})
 
     @cached_property
     def templates_dir(self) -> Path:

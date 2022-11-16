@@ -7,7 +7,7 @@
 BUILD_DIR_PREFIX = "volt-build-"
 
 # Config file name.
-CONFIG_FILE_NAME = "volt.yaml"
+CONFIG_FILE_NAME = "volt.toml"
 
 # Default slug replacements.
 SLUG_REPLACEMENTS = {
@@ -84,7 +84,7 @@ ENGINES_MOD_NAME = "engines"
 ENGINES_FILE_NAME = f"{ENGINES_MOD_NAME}.py"
 
 # Theme base settings file name.
-THEME_SETTINGS_FILE_NAME = "theme.yaml"
+THEME_SETTINGS_FILE_NAME = "theme.toml"
 
 # Site theme static directory name.
 THEME_STATIC_DIR_NAME = f"{STATIC_DIR_NAME}"
