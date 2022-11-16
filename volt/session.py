@@ -70,8 +70,15 @@ def new(
     """
     project_dir = _resolve_project_dir(invoc_dir, project_dir, dirname, force)
 
-    if not name and dirname is not None:
-        name = project_dir.name
+    yaml_config = _resolve_yaml_config(
+        project_dir=project_dir,
+        name=name,
+        url=url,
+        description=description,
+        author=author,
+        language=language,
+        dirname_specified=dirname is not None,
+    )
 
     config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
     for dp in (
@@ -80,16 +87,6 @@ def new(
         config.themes_dir,
     ):
         dp.mkdir(parents=True, exist_ok=True)
-
-    yaml_config = {
-        "name": name,
-        "url": url,
-        "description": description,
-        "author": author or (_infer_author() or ""),
-    }
-    if lang := language or (_infer_lang() or ""):
-        yaml_config["language"] = lang
-
     with (project_dir / config_fname).open("w") as fh:
         fh.write("# Volt configuration file\n\n")
         yaml.safe_dump(yaml_config, fh, sort_keys=False)
@@ -323,6 +320,31 @@ def _resolve_project_dir(
         )
 
     return project_dir
+
+
+def _resolve_yaml_config(
+    project_dir: Path,
+    name: str,
+    url: str,
+    description: str,
+    author: Optional[str],
+    language: Optional[str],
+    dirname_specified: bool,
+) -> dict:
+
+    if not name and dirname_specified:
+        name = project_dir.name
+
+    rv = {
+        "name": name,
+        "url": url,
+        "description": description,
+        "author": author or (_infer_author() or ""),
+    }
+    if lang := language or (_infer_lang() or ""):
+        rv["language"] = lang
+
+    return rv
 
 
 def _infer_lang() -> Optional[str]:
