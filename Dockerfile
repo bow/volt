@@ -34,6 +34,7 @@ LABEL org.opencontainers.image.created="${BUILD_TIME}"
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 ENV PIP_NO_CACHE_DIR=on
 ENV PIP_NO_INDEX=on
+ENV PYTHONCACHEPREFIX=$HOME/.cache/python/pycache
 
 WORKDIR /app
 COPY --from=builder /wheels /wheels
