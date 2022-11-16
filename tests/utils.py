@@ -76,6 +76,11 @@ def load_project_config(project_dir: Path) -> dict:
     return load_config(project_dir / "volt.yaml")
 
 
+def assert_keys_only(d: dict, keys: list[Any]) -> None:
+    ks = d.keys()
+    assert sorted(ks) == sorted(keys), ks
+
+
 _sentinel = object()
 
 

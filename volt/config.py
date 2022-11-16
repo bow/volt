@@ -110,17 +110,19 @@ class Config(UserDict):
     ) -> None:
         """Initialize a site-level configuration."""
         uc = user_conf or {}
-        self._name: str = uc.pop("name", "")
-        self._url: str = uc.pop("url", "")
+
+        site_config = uc.pop("site", {})
+        self._name: str = site_config.pop("name", "")
+        self._url: str = site_config.pop("url", "")
         self._slug_replacements: Iterable[Iterable[str]] = (
-            uc.pop("slug_replacements", None) or slug_replacements
+            site_config.pop("slug_replacements", None) or slug_replacements
         )
 
         theme_config = uc.pop("theme", {}) or {}
         self._theme_name = theme_config.pop("name", None) or None
         self._theme_overrides = theme_config
 
-        super().__init__(user_conf, **kwargs)
+        super().__init__(site_config, **kwargs)
 
         self._invoc_dir = invoc_dir
         self._project_dir = project_dir

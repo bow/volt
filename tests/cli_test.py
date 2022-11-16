@@ -43,9 +43,12 @@ def test_new_ok_e2e(has_git: bool) -> None:
         )
 
         config = u.load_project_config(ifs)
-        config.pop("language", None)
-        assert u.has_and_pop(config, "author")
-        assert config == {
+        u.assert_keys_only(config, ["site"])
+
+        site_config = config["site"]
+        site_config.pop("language", None)
+        assert u.has_and_pop(site_config, "author")
+        assert site_config == {
             "name": "",
             "url": "https://site.net",
             "description": "",

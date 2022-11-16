@@ -70,7 +70,7 @@ def new(
     """
     project_dir = _resolve_project_dir(invoc_dir, project_dir, dir_name, force)
 
-    yaml_config = _resolve_yaml_config(
+    yaml_config = _resolve_file_config(
         project_dir=project_dir,
         name=name,
         url=url,
@@ -322,7 +322,7 @@ def _resolve_project_dir(
     return project_dir
 
 
-def _resolve_yaml_config(
+def _resolve_file_config(
     project_dir: Path,
     name: str,
     url: str,
@@ -335,16 +335,16 @@ def _resolve_yaml_config(
     if not name and dir_name_specified:
         name = project_dir.name
 
-    rv = {
+    site_config = {
         "name": name,
         "url": url,
         "description": description,
         "author": author or (_infer_author() or ""),
     }
     if lang := language or (_infer_lang() or ""):
-        rv["language"] = lang
+        site_config["language"] = lang
 
-    return rv
+    return {"site": site_config}
 
 
 def _infer_lang() -> Optional[str]:

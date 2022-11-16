@@ -130,7 +130,7 @@ class Theme:
     def config_defaults(self) -> dict:
         """Default theme configurations."""
         with self.config_defaults_path.open("r") as src:
-            return cast(dict, yaml.safe_load(src))
+            return cast(dict, yaml.safe_load(src)).get("theme", {})
 
     @cached_property
     def templates_dir(self) -> Path:

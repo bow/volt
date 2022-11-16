@@ -35,9 +35,12 @@ def test_ok_minimal(tmp_path: Path) -> None:
     assert_new_project_layout(project_dir, with_git=False)
 
     config = u.load_project_config(project_dir)
-    config.pop("language", None)
-    assert u.has_and_pop(config, "author")
-    assert config == {
+    u.assert_keys_only(config, ["site"])
+
+    site_config = config["site"]
+    site_config.pop("language", None)
+    assert u.has_and_pop(site_config, "author")
+    assert site_config == {
         "name": "",
         "url": "",
         "description": "",
@@ -107,9 +110,12 @@ def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
     assert_new_project_layout(project_dir, with_git=False)
 
     config = u.load_project_config(project_dir)
-    config.pop("language", None)
-    assert u.has_and_pop(config, "author")
-    assert config == {
+    u.assert_keys_only(config, ["site"])
+
+    site_config = config["site"]
+    site_config.pop("language", None)
+    assert u.has_and_pop(site_config, "author")
+    assert site_config == {
         "name": "bar",
         "url": "",
         "description": "",
@@ -139,9 +145,12 @@ def test_ok_inferred_name(tmp_path: Path) -> None:
     assert_new_project_layout(project_dir, with_git=False)
 
     config = u.load_project_config(project_dir)
-    config.pop("language", None)
-    assert u.has_and_pop(config, "author")
-    assert config == {
+    u.assert_keys_only(config, ["site"])
+
+    site_config = config["site"]
+    site_config.pop("language", None)
+    assert u.has_and_pop(site_config, "author")
+    assert site_config == {
         "name": "bar",
         "url": "",
         "description": "",
@@ -173,9 +182,12 @@ def test_ok_infer_author_no_git(tmp_path: Path, mocker: MockerFixture) -> None:
     assert_new_project_layout(project_dir, with_git=False)
 
     config = u.load_project_config(project_dir)
-    config.pop("language", None)
-    assert u.has_and_pop(config, "author")
-    assert config == {
+    u.assert_keys_only(config, ["site"])
+
+    site_config = config["site"]
+    site_config.pop("language", None)
+    assert u.has_and_pop(site_config, "author")
+    assert site_config == {
         "name": "",
         "url": "",
         "description": "",
@@ -225,9 +237,12 @@ def test_ok_infer_author_no_git_user_name(
     assert_new_project_layout(project_dir, with_git=False)
 
     config = u.load_project_config(project_dir)
-    config.pop("language", None)
-    assert u.has_and_pop(config, "author")
-    assert config == {
+    u.assert_keys_only(config, ["site"])
+
+    site_config = config["site"]
+    site_config.pop("language", None)
+    assert u.has_and_pop(site_config, "author")
+    assert site_config == {
         "name": "",
         "url": "",
         "description": "",
@@ -378,8 +393,11 @@ def test_ok_infer_lang(tmp_path: Path, mocker: MockerFixture) -> None:
     assert_new_project_layout(project_dir, with_git=False)
 
     config = u.load_project_config(project_dir)
-    assert u.has_and_pop(config, "author")
-    assert config == {
+    u.assert_keys_only(config, ["site"])
+
+    site_config = config["site"]
+    assert u.has_and_pop(site_config, "author")
+    assert site_config == {
         "name": "",
         "url": "",
         "description": "",
@@ -417,9 +435,12 @@ def test_ok_infer_lang_missing(
     assert_new_project_layout(project_dir, with_git=False)
 
     config = u.load_project_config(project_dir)
-    assert u.has_and_pop(config, "author")
-    assert "language" not in config
-    assert config == {
+    u.assert_keys_only(config, ["site"])
+
+    site_config = config["site"]
+    assert u.has_and_pop(site_config, "author")
+    assert "language" not in site_config
+    assert site_config == {
         "name": "",
         "url": "",
         "description": "",
