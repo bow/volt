@@ -400,7 +400,7 @@ def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
         log.warn("can not find git executable")
         return False
 
-    proc_init = _run_process([git_exe, "-C", f"{project_dir.resolve()}", "init"])
+    proc_init = _run_process([git_exe, "-C", f"{project_dir}", "init"])
     if proc_init.returncode != 0:
         log.warn(
             "git init failed",
@@ -409,7 +409,7 @@ def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
         )
         return False
 
-    proc_add = _run_process([git_exe, "-C", f"{project_dir.resolve()}", "add", "."])
+    proc_add = _run_process([git_exe, "-C", f"{project_dir}", "add", "."])
     if proc_add.returncode != 0:
         log.warn(
             "git add failed",
