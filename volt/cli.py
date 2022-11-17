@@ -425,6 +425,12 @@ def edit(
         " building. Default: set."
     ),
 )
+@click.option(
+    "-q",
+    "--quiet",
+    is_flag=True,
+    help="If set, hide the startup banner. Default: unset.",
+)
 @click.pass_context
 def serve(
     ctx: click.Context,
@@ -434,12 +440,25 @@ def serve(
     pre_build: bool,
     drafts: bool,
     clean: bool,
+    quiet: bool,
 ) -> None:
     """Run the development server"""
+    if ctx.invoked_subcommand is not None:
+        return None
+
     config = _get_config(ctx.parent, drafts=drafts)
 
-    if ctx.invoked_subcommand is None:
-        session.serve(config, host, port, rebuild, pre_build, clean)
+    if not quiet:
+        print(
+            """ _    __        __ __
+| |  / /____   / // /_
+| | / // __ \ / // __/
+| |/ // /_/ // // /_
+|___/ \____//_/ \__/""",  # noqa
+            file=sys.stderr,
+        )
+
+    session.serve(config, host, port, rebuild, pre_build, clean)
 
 
 @serve.command("drafts")
