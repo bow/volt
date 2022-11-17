@@ -120,14 +120,12 @@ def build(config: Config, clean: bool = True) -> Optional[Site]:
         to building, or not.
 
     """
+    site: Optional[Site] = None
+
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
-    drafts = config.with_drafts
-    log_attrs = {"drafts": drafts}
-    site: Optional[Site] = None
-
-    with bound_contextvars(**log_attrs):
+    with bound_contextvars(drafts=config.with_drafts):
         try:
             site = Site(config)
             site.build(clean=clean)
