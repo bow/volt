@@ -167,6 +167,7 @@ def root(
     _set_use_color(color)
 
     init_logging(log_level)
+    ctx.params["log_level"] = log_level
     if log_level == "debug":
         bind_contextvars(subcommand=ctx.invoked_subcommand)
         log.debug(
@@ -446,19 +447,21 @@ def serve(
     if ctx.invoked_subcommand is not None:
         return None
 
-    config = _get_config(ctx.parent, drafts=drafts)
-
     if not quiet:
         print(
             """ _    __        __ __
 | |  / /____   / // /_
 | | / // __ \ / // __/
 | |/ // /_/ // // /_
-|___/ \____//_/ \__/""",  # noqa
+|___/ \____//_/ \__/
+""",  # noqa
             file=sys.stderr,
         )
 
-    session.serve(config, host, port, rebuild, pre_build, clean)
+    config = _get_config(ctx.parent, drafts=drafts)
+    log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
+
+    session.serve(config, host, port, rebuild, pre_build, clean, log_level)
 
 
 @serve.command("drafts")

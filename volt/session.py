@@ -199,6 +199,7 @@ def serve(
     rebuild: bool,
     pre_build: bool,
     build_clean: bool,
+    log_level: str,
 ) -> None:
 
     eff_host = "127.0.0.1"
@@ -208,7 +209,7 @@ def serve(
         eff_host = "0.0.0.0"
 
     build_with_drafts = config.with_drafts
-    serve = make_server(config, eff_host, port)
+    serve = make_server(config, eff_host, port, log_level)
 
     if not rebuild:
         serve()

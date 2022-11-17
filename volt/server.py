@@ -86,7 +86,9 @@ class _RunFile:
             self.path.unlink()
 
 
-def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
+def make_server(
+    config: Config, host: str, port: int, log_level: str
+) -> Callable[[], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
 
         server_version = f"volt-dev-server/{__version__}"
@@ -95,23 +97,30 @@ def make_server(config: Config, host: str, port: int) -> Callable[[], None]:
             kwargs["directory"] = f"{config.target_dir}"
             super().__init__(*args, **kwargs)
 
-        def log_message(self, fmt: str, *args: Any) -> None:
-            # overrides parent log_message to provide a more compact output.
-            method: str = args[0]
-            status: HTTPStatus = args[1]
-            path: str = args[2]
+        if log_level in {"warning", "error", "critical"}:
 
-            code = f"{status.value}"
-            if status.value >= 400:
-                code = style(code, fg="red", bold=True)
-            elif status.value >= 300:
-                code = style(code, fg="yellow", bold=True)
-            else:
-                code = style(code, fg="cyan", bold=True)
+            def log_message(self, fmt: str, *args: Any) -> None:
+                return None
 
-            path = style(path, fg="bright_blue")
+        else:
 
-            echo(fmt % (code, method, path), file=get_text_stderr())
+            def log_message(self, fmt: str, *args: Any) -> None:
+                # overrides parent log_message to provide a more compact output.
+                method: str = args[0]
+                status: HTTPStatus = args[1]
+                path: str = args[2]
+
+                code = f"{status.value}"
+                if status.value >= 400:
+                    code = style(code, fg="red", bold=True)
+                elif status.value >= 300:
+                    code = style(code, fg="yellow", bold=True)
+                else:
+                    code = style(code, fg="cyan", bold=True)
+
+                path = style(path, fg="bright_blue")
+
+                echo(fmt % (code, method, path), file=get_text_stderr())
 
         def log_request(
             self,
