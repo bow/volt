@@ -27,7 +27,7 @@ import structlog
 
 from . import constants, signals
 from .config import Config
-from .engines import Engine, MarkdownEngine, StaticEngine
+from .engines import Engine, Markdown2Engine, StaticEngine
 from .error import VoltResourceError
 from .targets import Target, TemplateTarget
 from .theme import Theme
@@ -352,11 +352,11 @@ class Site:
         engines: list[Engine] = [spec.load() for spec in specs]
         log.debug("loaded theme engines", engines=[engine.name for engine in engines])
 
-        # Add MarkdownEngine if no engines are loaded.
+        # Add Markdown2Engine if no engines are loaded.
         if not engines:
-            log.debug(f"adding {MarkdownEngine.__name__} to loaded engines")
+            log.debug(f"adding {Markdown2Engine.__name__} to loaded engines")
             engines.append(
-                MarkdownEngine(id="markdown", config=self.config, theme=self.theme)
+                Markdown2Engine(id="markdown", config=self.config, theme=self.theme)
             )
 
         # Add StaticEngine if not already added.

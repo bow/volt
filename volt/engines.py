@@ -15,14 +15,14 @@ from jinja2 import Template
 from . import error as err
 from .config import Config
 from .constants import MARKDOWN_EXT, STATIC_DIR_NAME
-from .sources import MarkdownSource
+from .sources import Markdown2Source
 from .targets import CopyTarget, Target, TemplateTarget
 from .theme import Theme
 from ._import import import_file
 from ._logging import log_method
 
 
-__all__ = ["Engine", "EngineSpec", "MarkdownEngine", "StaticEngine"]
+__all__ = ["Engine", "EngineSpec", "Markdown2Engine", "StaticEngine"]
 
 
 log = structlog.get_logger(__name__)
@@ -198,9 +198,9 @@ class StaticEngine(Engine):
         return list(targets.values())
 
 
-class MarkdownEngine(Engine):
+class Markdown2Engine(Engine):
 
-    """Engine that creates HTML targets from Markdown sources."""
+    """Engine that creates HTML targets using the markdown2 library."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -219,7 +219,7 @@ class MarkdownEngine(Engine):
         fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
 
         targets = [
-            MarkdownSource.from_path(
+            Markdown2Source.from_path(
                 src=fp, config=config, is_draft=is_draft
             ).to_template_target(self.template)
             for fp, is_draft in fps
