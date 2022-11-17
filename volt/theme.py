@@ -31,7 +31,7 @@ class Theme:
     def from_config(cls, config: Config) -> "Theme":
 
         if config.theme_name is None:
-            raise err.VoltConfigError("undefined theme")
+            raise err.VoltConfigError("config defines no theme")
 
         return cls(name=config.theme_name, site_config=config)
 
