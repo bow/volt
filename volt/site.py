@@ -396,7 +396,7 @@ class Site:
         target_dir = self.config.target_dir
         if clean:
             shutil.rmtree(target_dir, ignore_errors=True)
-        shutil.copytree(src=build_dir, dst=target_dir)
+        shutil.copytree(src=build_dir, dst=target_dir, dirs_exist_ok=not clean)
         # chmod if inside container to ensure host can use it as if not generated
         # from inside the container.
         if self.config.in_docker:
