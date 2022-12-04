@@ -155,17 +155,17 @@ lint-metrics:  ## Lint various metrics.
 	poetry run radon cc --total-average --show-closures --show-complexity --min C volt
 
 
-.PHONY: scan-security
-scan-security: scan-security-ast scan-security-deps  ## Perform all security analyses.
+.PHONY: scan-sec
+scan-sec: scan-sec-ast scan-sec-deps  ## Perform all security analyses.
 
 
-.PHONY: scan-security-ast
-scan-security-ast:  ## Perform static security analysis on the AST.
+.PHONY: scan-sec-ast
+scan-sec-ast:  ## Perform static security analysis on the AST.
 	poetry run bandit -r crimson
 
 
-.PHONY: scan-security-deps
-scan-security-deps:  ## Scan dependencies for reported vulnerabilities.
+.PHONY: scan-sec-deps
+scan-sec-deps:  ## Scan dependencies for reported vulnerabilities.
 	poetry export --without-hashes -f requirements.txt -o /dev/stdout | poetry run safety check --full-report --stdin
 
 

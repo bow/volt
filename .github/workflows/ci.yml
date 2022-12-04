@@ -76,9 +76,9 @@ jobs:
           - name: Lint other metrics
             rule: lint-metrics
           - name: Scan AST security
-            rule: scan-security-ast
+            rule: scan-sec-ast
           - name: Scan dependencies
-            rule: scan-security-deps
+            rule: scan-sec-deps
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
