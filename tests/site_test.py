@@ -19,7 +19,7 @@ class MockTarget(Target):
 
 def test_site_node_no_target():
     p = Path("/fs")
-    sn = site.PlanNode(p)
+    sn = site._PlanNode(p)
     assert sn.path == p
     assert sn.target is None
     assert sn.children == {}
@@ -43,7 +43,7 @@ def test_site_node_no_target():
 def test_site_node_with_target():
     p = Path("/fs")
     t = MockTarget()
-    sn = site.PlanNode(p, target=t)
+    sn = site._PlanNode(p, target=t)
     assert sn.path == p
     assert sn.target == t
     assert sn.children is None
@@ -59,7 +59,7 @@ def test_site_node_with_target():
 
 def test_site_node_add_children_existing_key():
     p = Path("/fs")
-    sn = site.PlanNode(p)
+    sn = site._PlanNode(p)
     c1 = MockTarget("s/1")
     c2 = MockTarget("s/2")
     sn.add_child("key", c1)
@@ -95,7 +95,7 @@ def test_site_node_add_children_existing_key():
     ],
 )
 def test_site_plan_ok(targets, dpaths, fpaths):
-    sp = site.Plan()
+    sp = site._Plan()
     for target in targets:
         res = sp.add_target(MockTarget(target))
         assert res is None
@@ -119,7 +119,7 @@ def test_site_plan_ok(targets, dpaths, fpaths):
     ],
 )
 def test_site_plan_fail(target1, target2, exp_msg):
-    sp = site.Plan()
+    sp = site._Plan()
     sp.add_target(MockTarget(target1))
     with pytest.raises(ValueError, match=exp_msg):
         sp.add_target(MockTarget(target2))

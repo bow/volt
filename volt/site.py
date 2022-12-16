@@ -35,15 +35,15 @@ from ._import import import_file
 from ._logging import log_method
 
 
-__all__ = ["Plan", "PlanNode", "Site"]
+__all__ = ["Site"]
 
 
 log = structlog.get_logger(__name__)
 
 
-class PlanNode:
+class _PlanNode:
 
-    """Node of the :class:`Plan` tree."""
+    """Node of the :class:`_Plan` tree."""
 
     __slots__ = ("path", "target", "children", "__dict__")
 
@@ -58,7 +58,7 @@ class PlanNode:
         """
         self.path = path
         self.target = target
-        self.children: Optional[Dict[str, PlanNode]] = (
+        self.children: Optional[Dict[str, _PlanNode]] = (
             None if target is not None else {}
         )
 
@@ -72,7 +72,7 @@ class PlanNode:
 
         return self.is_dir and value in children
 
-    def __iter__(self) -> Iterator["PlanNode"]:
+    def __iter__(self) -> Iterator["_PlanNode"]:
         if not self.is_dir:
             return iter([])
         children = self.children or {}
@@ -115,11 +115,11 @@ class PlanNode:
         children = self.children or {}
         if key in children:
             return
-        children[key] = PlanNode(self.path / key, target)
+        children[key] = _PlanNode(self.path / key, target)
         self.children = children
 
 
-class Plan:
+class _Plan:
 
     """The file and directory layout of the final built site.
 
@@ -132,7 +132,7 @@ class Plan:
         """Initialize a plan."""
         out_relpath = Path()
         self.out_relpath = out_relpath
-        self._root = PlanNode(out_relpath)
+        self._root = _PlanNode(out_relpath)
         self._root_path_len = len(out_relpath.parts)
 
     def add_target(self, target: Target) -> None:
@@ -164,7 +164,7 @@ class Plan:
             try:
                 if idx < rem_len:
                     cur.add_child(p)
-                    cur = cast(Dict[str, PlanNode], cur.children)[p]
+                    cur = cast(Dict[str, _PlanNode], cur.children)[p]
                 else:
                     if p in cur:
                         raise ValueError(
@@ -185,7 +185,7 @@ class Plan:
 
         return None
 
-    def fnodes(self) -> Generator[PlanNode, None, None]:
+    def fnodes(self) -> Generator[_PlanNode, None, None]:
         """Yield all file target nodes, depth-first."""
 
         # TODO: Maybe compress the paths so we don't have to iterate over all
@@ -197,7 +197,7 @@ class Plan:
             if not cur.is_dir:
                 yield cur
 
-    def dnodes(self) -> Generator[PlanNode, None, None]:
+    def dnodes(self) -> Generator[_PlanNode, None, None]:
         """Yield the least number of directory nodes required to construct
         the site.
 
@@ -384,7 +384,7 @@ class Site:
     def __write(self, build_dir: Path, clean: bool) -> None:
         """Write all collected targets under the destination directory."""
 
-        plan = Plan()
+        plan = _Plan()
         for target in self.targets:
             try:
                 plan.add_target(target)
