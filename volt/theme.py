@@ -6,7 +6,16 @@ import tomlkit
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
-from typing import cast, Literal, Optional, TYPE_CHECKING
+from typing import (
+    cast,
+    overload,
+    Callable,
+    Literal,
+    Optional,
+    ParamSpec,
+    TypeVar,
+    TYPE_CHECKING,
+)
 
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
@@ -14,12 +23,13 @@ from jinja2 import Environment, FileSystemLoader, Template
 from . import constants, error as err
 from .config import Config
 from ._logging import log_method
+from ._import import import_file
 
 if TYPE_CHECKING:
     from .engines import EngineSpec
 
 
-__all__ = ["Theme"]
+__all__ = ["template_filter", "Theme"]
 
 
 class Theme:
@@ -49,6 +59,7 @@ class Theme:
         self._opts = self._resolve_config("opts")
         self._engines = self._resolve_config("engines")
         self._hooks = self._resolve_config("hooks")
+        self._template_filters = self._load_template_filters()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name!r}, ...)"
@@ -112,6 +123,16 @@ class Theme:
         return self.path / constants.HOOKS_FILE_NAME
 
     @cached_property
+    def template_filters_module_name(self) -> str:
+        """Module name for theme template filters."""
+        return f"{self.module_name}.{constants.TEMPLATE_FILTERS_MOD_NAME}"
+
+    @cached_property
+    def template_filters_module_path(self) -> Path:
+        """Path to theme template filters."""
+        return self.path / constants.TEMPLATE_FILTERS_FILE_NAME
+
+    @cached_property
     def static_dir(self) -> Path:
         """Path to the site source theme static files."""
         return self.path / constants.THEME_STATIC_DIR_NAME
@@ -140,11 +161,17 @@ class Theme:
     @cached_property
     def template_env(self) -> Environment:
         """Theme template environment."""
-        return Environment(  # nosec
+        env = Environment(  # nosec
             loader=FileSystemLoader(self.templates_dir),
             auto_reload=True,
             enable_async=True,
         )
+        for filter_name, filter_func in self._template_filters.items():
+            if filter_name in env.filters:
+                raise err.VoltError(f"filter function {filter_name!r} already defined")
+            env.filters[filter_name] = filter_func
+
+        return env
 
     @log_method
     def get_engine_specs(self) -> Optional[list["EngineSpec"]]:
@@ -165,6 +192,24 @@ class Theme:
         ]
 
         return specs
+
+    @log_method
+    def _load_template_filters(self) -> dict[str, Callable]:
+        """Load custom template filters."""
+        try:
+            filters_mod = import_file(
+                self.template_filters_module_path,
+                self.template_filters_module_name,
+            )
+        except FileNotFoundError:
+            return {}
+        else:
+            filters: dict[str, Callable] = {
+                obj._volt_template_filter: obj
+                for obj in filters_mod.__dict__.values()
+                if callable(obj) and hasattr(obj, _template_filter_mark)
+            }
+            return filters
 
     @log_method(with_args=True)
     def _resolve_config(self, key: Literal["engines", "hooks", "opts"]) -> dict:
@@ -228,3 +273,33 @@ def _overlay(base: Optional[dict], mod: Optional[dict]) -> dict:
     func(overlaid, mod or {})
 
     return overlaid
+
+
+T = TypeVar("T")
+P = ParamSpec("P")
+
+_template_filter_mark = "_volt_template_filter"
+
+
+@overload
+def template_filter(__clb: Callable[P, T]) -> Callable[P, T]:
+    ...
+
+
+@overload
+def template_filter(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    ...
+
+
+def template_filter(
+    __clb: Optional[Callable[P, T]] = None,
+    name: Optional[str] = None,
+) -> Callable[P, T] | Callable[[Callable[P, T]], Callable[P, T]]:
+    def decorator(clb: Callable[P, T]) -> Callable[P, T]:
+        setattr(clb, _template_filter_mark, name or clb.__name__)
+        return clb
+
+    if __clb is None:
+        return decorator
+
+    return decorator(__clb)

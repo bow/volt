@@ -91,3 +91,9 @@ THEME_STATIC_DIR_NAME = f"{STATIC_DIR_NAME}"
 
 # Theme templates directory name.
 THEME_TEMPLATES_DIR_NAME = "templates"
+
+# Module name for custom template filters.
+TEMPLATE_FILTERS_MOD_NAME = "filters"
+
+# Template filters filename.
+TEMPLATE_FILTERS_FILE_NAME = f"{TEMPLATE_FILTERS_MOD_NAME}.py"
