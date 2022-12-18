@@ -50,7 +50,9 @@ class Theme:
         self._opts = self._resolve_config("opts")
         self._engines = self._resolve_config("engines")
         self._hooks = self._resolve_config("hooks")
-        self._template_filters = self._load_template_filters()
+        self._template_filters = self._load_template_extension(
+            constants.TEMPLATE_FILTER_MARK,
+        )
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name!r}, ...)"
@@ -114,14 +116,14 @@ class Theme:
         return self.path / constants.HOOKS_FILE_NAME
 
     @cached_property
-    def template_filters_module_name(self) -> str:
-        """Module name for theme template filters."""
-        return f"{self.module_name}.{constants.TEMPLATE_FILTERS_MOD_NAME}"
+    def template_extension_module_name(self) -> str:
+        """Module name for theme template extensions."""
+        return f"{self.module_name}.{constants.TEMPLATE_EXTENSIONS_MOD_NAME}"
 
     @cached_property
-    def template_filters_module_path(self) -> Path:
-        """Path to theme template filters."""
-        return self.path / constants.TEMPLATE_FILTERS_FILE_NAME
+    def template_extension_module_path(self) -> Path:
+        """Path to theme template extensions."""
+        return self.path / constants.TEMPLATE_EXTENSIONS_FILE_NAME
 
     @cached_property
     def static_dir(self) -> Path:
@@ -184,23 +186,23 @@ class Theme:
 
         return specs
 
-    @log_method
-    def _load_template_filters(self) -> dict[str, Callable]:
-        """Load custom template filters."""
+    @log_method(with_args=True)
+    def _load_template_extension(self, attr_mark: str) -> dict[str, Callable]:
+        """Load custom template extension functions."""
         try:
-            filters_mod = import_file(
-                self.template_filters_module_path,
-                self.template_filters_module_name,
+            mod = import_file(
+                self.template_extension_module_path,
+                self.template_extension_module_name,
             )
         except FileNotFoundError:
             return {}
         else:
-            filters: dict[str, Callable] = {
+            funcs: dict[str, Callable] = {
                 obj._volt_template_filter: obj
-                for obj in filters_mod.__dict__.values()
-                if callable(obj) and hasattr(obj, constants.TEMPLATE_FILTER_MARK)
+                for obj in mod.__dict__.values()
+                if callable(obj) and hasattr(obj, attr_mark)
             }
-            return filters
+            return funcs
 
     @log_method(with_args=True)
     def _resolve_config(self, key: Literal["engines", "hooks", "opts"]) -> dict:

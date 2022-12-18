@@ -93,10 +93,10 @@ THEME_STATIC_DIR_NAME = f"{STATIC_DIR_NAME}"
 THEME_TEMPLATES_DIR_NAME = "templates"
 
 # Module name for custom template filters.
-TEMPLATE_FILTERS_MOD_NAME = "filters"
+TEMPLATE_EXTENSIONS_MOD_NAME = "template"
 
 # Template filters filename.
-TEMPLATE_FILTERS_FILE_NAME = f"{TEMPLATE_FILTERS_MOD_NAME}.py"
+TEMPLATE_EXTENSIONS_FILE_NAME = f"{TEMPLATE_EXTENSIONS_MOD_NAME}.py"
 
 # Name of attribute to mark template filter functions.
 TEMPLATE_FILTER_MARK = "_volt_template_filter"
