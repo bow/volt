@@ -2,7 +2,7 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from typing import Callable, Optional, ParamSpec, TypeVar
+from typing import overload, Callable, Optional, ParamSpec, TypeVar
 
 from .constants import TEMPLATE_FILTER_MARK
 
@@ -36,5 +36,39 @@ def _make_marker_decorator(
     return func
 
 
-filter = _make_marker_decorator(TEMPLATE_FILTER_MARK)
-test = _make_marker_decorator(TEMPLATE_TEST_MARK)
+@overload
+def filter(__clb: Callable[P, T]) -> Callable[P, T]:
+    ...
+
+
+@overload
+def filter(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    ...
+
+
+# NOTE: We need to do this re-definition since assignment to `filter` does not work
+#       with `@overload`.
+def filter(
+    __clb: Optional[Callable[P, T]] = None,
+    name: Optional[str] = None,
+) -> Callable[P, T] | Callable[[Callable[P, T]], Callable[P, T]]:
+    return _make_marker_decorator(TEMPLATE_FILTER_MARK)(__clb, name)
+
+
+@overload
+def test(__clb: Callable[P, T]) -> Callable[P, T]:
+    ...
+
+
+@overload
+def test(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    ...
+
+
+# NOTE: We need to do this re-definition since assignment to `test` does not work
+#       with `@overload`.
+def test(
+    __clb: Optional[Callable[P, T]] = None,
+    name: Optional[str] = None,
+) -> Callable[P, T] | Callable[[Callable[P, T]], Callable[P, T]]:
+    return _make_marker_decorator(TEMPLATE_FILTER_MARK)(__clb, name)
