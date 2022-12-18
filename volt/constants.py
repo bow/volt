@@ -100,3 +100,6 @@ TEMPLATE_EXTENSIONS_FILE_NAME = f"{TEMPLATE_EXTENSIONS_MOD_NAME}.py"
 
 # Name of attribute to mark template filter functions.
 TEMPLATE_FILTER_MARK = "_volt_template_filter"
+
+# Name of attribute to mark template test functions.
+TEMPLATE_TEST_MARK = "_volt_template_test"

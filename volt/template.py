@@ -37,3 +37,4 @@ def _make_marker_decorator(
 
 
 filter = _make_marker_decorator(TEMPLATE_FILTER_MARK)
+test = _make_marker_decorator(TEMPLATE_TEST_MARK)

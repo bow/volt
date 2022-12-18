@@ -7,7 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
 from types import ModuleType
-from typing import cast, Callable, Literal, Optional, TYPE_CHECKING
+from typing import cast, Any, Callable, Literal, Optional, TYPE_CHECKING
 
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
@@ -167,7 +167,7 @@ class Theme:
         if (mod := self._load_template_extension()) is None:
             return None
 
-        def get(kind: str, mark: str, container: dict[str, Callable]) -> None:
+        def get(kind: str, mark: str, container: dict[str, Any]) -> None:
 
             funcs: dict[str, Callable] = {
                 obj._volt_template_filter: obj
@@ -181,6 +181,7 @@ class Theme:
                 container[ext_name] = ext_func
 
         get("filter", constants.TEMPLATE_FILTER_MARK, env.filters)
+        get("test", constants.TEMPLATE_TEST_MARK, env.tests)
 
         return None
 
