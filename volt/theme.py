@@ -6,6 +6,7 @@ import tomlkit
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
+from types import ModuleType
 from typing import cast, Callable, Literal, Optional, TYPE_CHECKING
 
 import jinja2.exceptions as j2exc
@@ -50,9 +51,6 @@ class Theme:
         self._opts = self._resolve_config("opts")
         self._engines = self._resolve_config("engines")
         self._hooks = self._resolve_config("hooks")
-        self._template_filters = self._load_template_extension(
-            constants.TEMPLATE_FILTER_MARK,
-        )
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name!r}, ...)"
@@ -159,12 +157,43 @@ class Theme:
             auto_reload=True,
             enable_async=True,
         )
-        for filter_name, filter_func in self._template_filters.items():
-            if filter_name in env.filters:
-                raise err.VoltError(f"filter function {filter_name!r} already defined")
-            env.filters[filter_name] = filter_func
+        self._set_template_extensions(env)
 
         return env
+
+    @log_method
+    def _set_template_extensions(self, env: Environment) -> None:
+
+        if (mod := self._load_template_extension()) is None:
+            return None
+
+        def get(kind: str, mark: str, container: dict[str, Callable]) -> None:
+
+            funcs: dict[str, Callable] = {
+                obj._volt_template_filter: obj
+                for obj in mod.__dict__.values()
+                if callable(obj) and hasattr(obj, mark)
+            }
+
+            for ext_name, ext_func in funcs.items():
+                if ext_name in container:
+                    raise err.VoltError(f"{kind} function {ext_name!r} already defined")
+                container[ext_name] = ext_func
+
+        get("filter", constants.TEMPLATE_FILTER_MARK, env.filters)
+
+        return None
+
+    @log_method(with_args=True)
+    def _load_template_extension(self) -> Optional[ModuleType]:
+        """Load custom template extension functions."""
+        try:
+            return import_file(
+                self.template_extension_module_path,
+                self.template_extension_module_name,
+            )
+        except FileNotFoundError:
+            return None
 
     @log_method
     def get_engine_specs(self) -> Optional[list["EngineSpec"]]:
@@ -185,24 +214,6 @@ class Theme:
         ]
 
         return specs
-
-    @log_method(with_args=True)
-    def _load_template_extension(self, attr_mark: str) -> dict[str, Callable]:
-        """Load custom template extension functions."""
-        try:
-            mod = import_file(
-                self.template_extension_module_path,
-                self.template_extension_module_name,
-            )
-        except FileNotFoundError:
-            return {}
-        else:
-            funcs: dict[str, Callable] = {
-                obj._volt_template_filter: obj
-                for obj in mod.__dict__.values()
-                if callable(obj) and hasattr(obj, attr_mark)
-            }
-            return funcs
 
     @log_method(with_args=True)
     def _resolve_config(self, key: Literal["engines", "hooks", "opts"]) -> dict:
