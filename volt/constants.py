@@ -97,3 +97,6 @@ TEMPLATE_FILTERS_MOD_NAME = "filters"
 
 # Template filters filename.
 TEMPLATE_FILTERS_FILE_NAME = f"{TEMPLATE_FILTERS_MOD_NAME}.py"
+
+# Name of attribute to mark template filter functions.
+TEMPLATE_FILTER_MARK = "_volt_template_filter"

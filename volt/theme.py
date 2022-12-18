@@ -6,16 +6,7 @@ import tomlkit
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
-from typing import (
-    cast,
-    overload,
-    Callable,
-    Literal,
-    Optional,
-    ParamSpec,
-    TypeVar,
-    TYPE_CHECKING,
-)
+from typing import cast, Callable, Literal, Optional, TYPE_CHECKING
 
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
@@ -29,7 +20,7 @@ if TYPE_CHECKING:
     from .engines import EngineSpec
 
 
-__all__ = ["template_filter", "Theme"]
+__all__ = ["Theme"]
 
 
 class Theme:
@@ -207,7 +198,7 @@ class Theme:
             filters: dict[str, Callable] = {
                 obj._volt_template_filter: obj
                 for obj in filters_mod.__dict__.values()
-                if callable(obj) and hasattr(obj, _template_filter_mark)
+                if callable(obj) and hasattr(obj, constants.TEMPLATE_FILTER_MARK)
             }
             return filters
 
@@ -273,33 +264,3 @@ def _overlay(base: Optional[dict], mod: Optional[dict]) -> dict:
     func(overlaid, mod or {})
 
     return overlaid
-
-
-T = TypeVar("T")
-P = ParamSpec("P")
-
-_template_filter_mark = "_volt_template_filter"
-
-
-@overload
-def template_filter(__clb: Callable[P, T]) -> Callable[P, T]:
-    ...
-
-
-@overload
-def template_filter(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    ...
-
-
-def template_filter(
-    __clb: Optional[Callable[P, T]] = None,
-    name: Optional[str] = None,
-) -> Callable[P, T] | Callable[[Callable[P, T]], Callable[P, T]]:
-    def decorator(clb: Callable[P, T]) -> Callable[P, T]:
-        setattr(clb, _template_filter_mark, name or clb.__name__)
-        return clb
-
-    if __clb is None:
-        return decorator
-
-    return decorator(__clb)
