@@ -116,7 +116,6 @@ class Markdown2Source(FileSource):
             # TODO: Validate minimal front matter metadata.
             meta={
                 "labels": {},
-                "title": None,
                 "is_draft": is_draft,
                 **fm,
                 **(meta or {}),
@@ -149,7 +148,7 @@ class Markdown2Source(FileSource):
 
     @property
     def title(self) -> str:
-        return cast(str, self.meta["title"])
+        return self.meta.get("title") or self.src.stem
 
     @cached_property
     def pub_time(self) -> Optional[DateTime]:

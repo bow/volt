@@ -101,6 +101,7 @@ def new(
     if (tn := config.theme_name) is not None:
         theme_src_dir = Path(__file__).parent / "themes" / tn
         copytree(src=theme_src_dir, dst=config.themes_dir / tn, dirs_exist_ok=False)
+        (config.sources_dir / "index.md").write_text("# My First Page\nHello, World")
 
     if vcs is None:
         log.debug("skipping vcs initialization as no vcs is requested")
