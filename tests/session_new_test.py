@@ -28,6 +28,7 @@ def test_ok_minimal(tmp_path: Path) -> None:
         description="",
         language=None,
         force=False,
+        theme=None,
         vcs=None,
     )
 
@@ -69,6 +70,7 @@ def test_err_not_empty_no_force(tmp_path: Path) -> None:
             description="",
             language=None,
             force=False,
+            theme=None,
             vcs=None,
         )
 
@@ -95,6 +97,7 @@ def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
             description="",
             language=None,
             force=False,
+            theme=None,
             vcs=None,
         )
         assert u.log_exists(
@@ -137,6 +140,7 @@ def test_ok_inferred_name(tmp_path: Path) -> None:
         description="",
         language=None,
         force=False,
+        theme=None,
         vcs=None,
     )
 
@@ -175,6 +179,7 @@ def test_ok_infer_author_no_git(tmp_path: Path, mocker: MockerFixture) -> None:
         description="",
         language=None,
         force=False,
+        theme=None,
         vcs=None,
     )
 
@@ -224,6 +229,7 @@ def test_ok_infer_author_no_git_user_name(
             description="",
             language=None,
             force=False,
+            theme=None,
             vcs=None,
         )
         run_m.assert_called_once_with(cmd_toks, capture_output=True)
@@ -269,6 +275,7 @@ def test_ok_git_exe_missing(tmp_path: Path, mocker: MockerFixture) -> None:
             description="",
             language=None,
             force=False,
+            theme=None,
             vcs="git",
         )
         assert u.log_exists(
@@ -305,6 +312,7 @@ def test_ok_git_init_fail(tmp_path: Path, mocker: MockerFixture) -> None:
             description="",
             language=None,
             force=False,
+            theme=None,
             vcs="git",
         )
         run_m.assert_any_call(cmd_toks, capture_output=True)
@@ -338,6 +346,7 @@ def test_ok_git_add_fail(tmp_path: Path, mocker: MockerFixture) -> None:
             description="",
             language=None,
             force=False,
+            theme=None,
             vcs="git",
         )
         run_m.assert_any_call(cmd_toks, capture_output=True)
@@ -362,6 +371,7 @@ def test_err_unsupported_vcs(tmp_path: Path) -> None:
             description="",
             language=None,
             force=False,
+            theme=None,
             vcs="subversion",  # type: ignore[arg-type]
         )
 
@@ -386,6 +396,7 @@ def test_ok_infer_lang(tmp_path: Path, mocker: MockerFixture) -> None:
         description="",
         language=None,
         force=False,
+        theme=None,
         vcs=None,
     )
 
@@ -428,6 +439,7 @@ def test_ok_infer_lang_missing(
         description="",
         language=None,
         force=False,
+        theme=None,
         vcs=None,
     )
 

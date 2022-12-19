@@ -43,7 +43,7 @@ def test_new_ok_e2e(has_git: bool) -> None:
         )
 
         config = u.load_project_config(ifs)
-        u.assert_keys_only(config, ["site"])
+        u.assert_keys_only(config, ["site", "theme"])
 
         site_config = config["site"]
         site_config.pop("language", None)
@@ -54,6 +54,9 @@ def test_new_ok_e2e(has_git: bool) -> None:
             "description": "",
         }
 
+        theme_config = config["theme"]
+        assert theme_config == {"name": "ion"}
+
         if has_git:
             proc = sp.run(
                 ["git", "-C", f"{ifs.resolve()}", "status", "--porcelain"],
@@ -62,7 +65,20 @@ def test_new_ok_e2e(has_git: bool) -> None:
             if proc.returncode != 0:
                 return None
             stdout_lines = proc.stdout.decode("utf-8").split("\n")
-            assert sorted(stdout_lines) == ["", "A  .gitignore", "A  volt.toml"]
+            assert sorted(stdout_lines) == [
+                "",
+                *[
+                    f"A  {fn}"
+                    for fn in (
+                        ".gitignore",
+                        "theme/ion/static/assets/style.css",
+                        "theme/ion/templates/base.html.j2",
+                        "theme/ion/templates/page.html.j2",
+                        "theme/ion/theme.toml",
+                        "volt.toml",
+                    )
+                ],
+            ]
 
     return None
 
@@ -87,6 +103,7 @@ def test_new_ok_minimal(mocker: MockerFixture) -> None:
             description="",
             language=None,
             force=False,
+            theme="ion",
             vcs="git",
         )
 
@@ -105,6 +122,7 @@ def test_new_ok_extended(mocker: MockerFixture):
         "--author",
         "Jane Roe",
         "--force",
+        "--no-theme",
         "--vcs",
         "none",
         "custom_path",
@@ -124,5 +142,6 @@ def test_new_ok_extended(mocker: MockerFixture):
             description="",
             language=None,
             force=True,
+            theme=None,
             vcs=None,
         )

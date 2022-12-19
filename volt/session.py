@@ -9,7 +9,7 @@ import time
 from contextlib import suppress
 from locale import getlocale
 from pathlib import Path
-from shutil import which
+from shutil import copytree, which
 from typing import Optional
 
 import click
@@ -41,6 +41,7 @@ def new(
     description: str,
     language: Optional[str],
     force: bool,
+    theme: Optional[str],
     vcs: Optional[_VCS],
     config_file_name: str = constants.CONFIG_FILE_NAME,
 ) -> Path:
@@ -61,6 +62,7 @@ def new(
         locale.
     :param force: Whether to force project creation in nonempty directories or not.
     :param vcs: Version control system to initialize in the newly created project.
+    :param theme: Name of theme to include.
     :param config_file_name: Name of the config file to generate.
 
     :raises ~volt.error.VoltCliError:
@@ -74,13 +76,18 @@ def new(
         project_dir=project_dir,
         name=name,
         url=url,
+        theme=theme,
         description=description,
         authors=authors,
         language=language,
         dir_name_specified=dir_name is not None,
     )
 
-    config = Config(invoc_dir=invoc_dir, project_dir=project_dir)
+    config = Config(
+        invoc_dir=invoc_dir,
+        project_dir=project_dir,
+        user_conf={"theme": {"name": theme}},
+    )
     for dp in (
         config.sources_dir,
         config.static_dir,
@@ -90,6 +97,10 @@ def new(
     with (project_dir / config_file_name).open("w") as fh:
         fh.write("# Volt configuration file\n\n")
         tomlkit.dump(file_config, fh, sort_keys=False)
+
+    if (tn := config.theme_name) is not None:
+        theme_src_dir = Path(__file__).parent / "themes" / tn
+        copytree(src=theme_src_dir, dst=config.themes_dir / tn, dirs_exist_ok=False)
 
     if vcs is None:
         log.debug("skipping vcs initialization as no vcs is requested")
@@ -325,6 +336,7 @@ def _resolve_file_config(
     project_dir: Path,
     name: str,
     url: str,
+    theme: Optional[str],
     description: str,
     authors: list[str],
     language: Optional[str],
@@ -348,7 +360,12 @@ def _resolve_file_config(
     if lang := language or (_infer_lang() or ""):
         site_config["language"] = lang
 
-    return {"site": site_config}
+    config = {"site": site_config}
+
+    if theme is not None:
+        config["theme"] = {"name": theme}
+
+    return config
 
 
 def _infer_lang() -> Optional[str]:

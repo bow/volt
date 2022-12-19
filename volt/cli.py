@@ -266,6 +266,14 @@ def root(
     ),
 )
 @click.option(
+    "--theme/--no-theme",
+    default=True,
+    help=(
+        "If set, include the default 'ion' theme in the newly created project."
+        " Default: set."
+    ),
+)
+@click.option(
     "--vcs",
     type=click.Choice(["none", "git"]),
     default="git",
@@ -285,6 +293,7 @@ def new(
     desc: str,
     lang: Optional[str],
     force: bool,
+    theme: bool,
     vcs: _VCS | Literal["none"],
 ) -> None:
     """Start a new project
@@ -307,6 +316,7 @@ def new(
         description=desc,
         language=lang,
         force=force,
+        theme="ion" if theme else None,
         vcs=vcs if vcs != "none" else None,
     )
     log.info("project created", path=project_dir)
