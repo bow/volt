@@ -347,7 +347,7 @@ def _resolve_file_config(
         name = project_dir.name
 
     site_config: dict[str, str | list[str]] = {
-        "name": name,
+        "name": name.capitalize(),
         "url": url,
         "description": description,
     }

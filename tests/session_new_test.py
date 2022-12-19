@@ -119,7 +119,7 @@ def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
     site_config.pop("language", None)
     assert u.has_and_pop(site_config, "authors")
     assert site_config == {
-        "name": "bar",
+        "name": "Bar",
         "url": "",
         "description": "",
     }
@@ -155,7 +155,7 @@ def test_ok_inferred_name(tmp_path: Path) -> None:
     site_config.pop("language", None)
     assert u.has_and_pop(site_config, "authors")
     assert site_config == {
-        "name": "bar",
+        "name": "Bar",
         "url": "",
         "description": "",
     }
