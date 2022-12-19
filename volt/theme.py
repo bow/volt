@@ -240,23 +240,6 @@ class Theme:
 
         return template
 
-    @log_method(with_args=True)
-    def load_template(self, key: str) -> Template:
-        """Load a theme template with the given key."""
-
-        theme_templates = self.config_defaults["templates"]
-
-        try:
-            template_name = theme_templates[key]
-        except KeyError as e:
-            raise err.VoltResourceError(
-                f"could not find template {key!r} in theme settings"
-            ) from e
-
-        template = self.load_template_file(template_name)
-
-        return template
-
 
 def _overlay(base: Optional[dict], mod: Optional[dict]) -> dict:
 

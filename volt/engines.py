@@ -204,11 +204,11 @@ class Markdown2Engine(Engine):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        template_name = self.opts.pop("template_name", "page")
+        template_name = self.opts.pop("template_name", "page.html.j2")
         try:
-            self.template = self.theme.load_template(template_name)
+            self.template = self.theme.load_template_file(template_name)
         except err.VoltMissingTemplateError:
-            default_fp = Path(__file__).parent / "defaults" / f"{template_name}.html.j2"
+            default_fp = Path(__file__).parent / "defaults" / f"{template_name}"
             self.template = Template(default_fp.read_text())
 
     def create_targets(self) -> Sequence[TemplateTarget]:
