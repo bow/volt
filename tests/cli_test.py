@@ -146,3 +146,19 @@ def test_new_ok_extended(mocker: MockerFixture):
             theme=None,
             vcs=None,
         )
+
+
+def test_build_err_not_project(mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.build")
+    toks = ["build"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        u.assert_dir_empty(ifs)
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code != 0, res.output
+        assert "command 'build' works only within a Volt project"
+
+        sess_func.assert_not_called
