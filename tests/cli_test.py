@@ -8,7 +8,8 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
-from volt import cli
+from volt import cli, constants
+from volt.config import Config
 
 from . import utils as u
 
@@ -162,3 +163,52 @@ def test_build_err_not_project(mocker: MockerFixture) -> None:
         assert "command 'build' works only within a Volt project"
 
         sess_func.assert_not_called
+
+
+def test_build_ok_minimal(mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.build")
+    toks = ["build"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = ifs
+
+        (project_dir / constants.CONFIG_FILE_NAME).touch()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code == 0, res.output
+
+        sess_func.assert_called_once_with(
+            config=Config(invoc_dir=ifs, project_dir=ifs),
+            clean=True,
+        )
+        config = sess_func.call_args.kwargs["config"]
+        assert config.invoc_dir == ifs
+        assert config.project_dir == ifs
+        assert not config.with_drafts
+
+
+def test_build_ok_extended(mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.build")
+    toks = ["-D", "the_project", "build", "--drafts"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = ifs / "the_project"
+        project_dir.mkdir(parents=True, exist_ok=False)
+
+        (project_dir / constants.CONFIG_FILE_NAME).touch()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code == 0, res.output
+
+        sess_func.assert_called_once_with(
+            config=Config(invoc_dir=project_dir, project_dir=project_dir),
+            clean=True,
+        )
+        config = sess_func.call_args.kwargs["config"]
+        assert config.invoc_dir == ifs
+        assert config.project_dir == project_dir
+        assert config.with_drafts

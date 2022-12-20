@@ -354,7 +354,7 @@ def build(
     """
     config = _get_config(ctx.parent, drafts=drafts)
 
-    session.build(config, clean)
+    session.build(config=config, clean=clean)
 
 
 @root.command()
