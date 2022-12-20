@@ -165,6 +165,7 @@ def test_build_ok_e2e(project_dirs: dict[str, Callable]) -> None:
 
         res = runner.invoke(cli.root, toks)
         assert res.exit_code == 0, res.output
+        assert "build completed" in res.output
 
         assert target_dir.exists()
         u.assert_dir_contains_only(target_dir, ["assets", "index.html"])
@@ -186,7 +187,9 @@ def test_build_err_not_project(mocker: MockerFixture) -> None:
         assert res.exit_code != 0, res.output
         assert "command 'build' works only within a Volt project"
 
-        sess_func.assert_not_called
+        u.assert_dir_empty(ifs)
+
+        sess_func.assert_not_called()
 
 
 def test_build_ok_minimal(mocker: MockerFixture) -> None:
