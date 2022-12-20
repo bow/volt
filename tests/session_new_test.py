@@ -461,7 +461,11 @@ def test_ok_infer_lang_missing(
     return None
 
 
-def assert_new_project_layout(project_dir: Path, with_git: bool = True) -> None:
+def assert_new_project_layout(
+    project_dir: Path,
+    with_git: bool = True,
+    theme: Optional[str] = None,
+) -> None:
 
     theme_dir = project_dir / "theme"
     sources_dir = project_dir / "source"
@@ -475,12 +479,13 @@ def assert_new_project_layout(project_dir: Path, with_git: bool = True) -> None:
 
     u.assert_dir_contains_only(project_dir, dir_contents)
 
-    u.assert_dir_empty(theme_dir)
-
-    static_dir = sources_dir / "static"
-    u.assert_dir_contains_only(sources_dir, [static_dir])
-
-    u.assert_dir_empty(static_dir)
+    if theme is not None:
+        u.assert_dir_contains_only(theme_dir, [theme])
+        u.assert_dir_contains_only(sources_dir, ["index.md", "static"])
+    else:
+        u.assert_dir_empty(theme_dir)
+        u.assert_dir_contains_only(sources_dir, ["static"])
+        u.assert_dir_empty(sources_dir / "static")
 
 
 def func_failed_process_for(cmd_toks: list[str]) -> Callable:
