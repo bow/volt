@@ -2,7 +2,9 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
 import subprocess as sp
+from typing import Callable
 from unittest.mock import MagicMock
 
 import pytest
@@ -147,6 +149,28 @@ def test_new_ok_extended(mocker: MockerFixture):
             theme=None,
             vcs=None,
         )
+
+
+def test_build_ok_e2e(project_dirs: dict[str, Callable]) -> None:
+    runner = u.CommandRunner()
+    toks = ["build"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = project_dirs["cli_build_minimal"](ifs)
+        os.chdir(project_dir)
+
+        target_dir = project_dir / constants.PROJECT_TARGET_DIR_NAME
+        assert not target_dir.exists()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code == 0, res.output
+
+        assert target_dir.exists()
+        u.assert_dir_contains_only(target_dir, ["assets", "index.html"])
+        u.assert_dir_contains_only(target_dir / "assets", ["style.css"])
+
+    return None
 
 
 def test_build_err_not_project(mocker: MockerFixture) -> None:
