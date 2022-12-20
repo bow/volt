@@ -17,21 +17,20 @@ def has_git() -> bool:
 
 
 @pytest.fixture
-def isolated_project_dir() -> dict[str, Callable]:
+def isolated_project_dir() -> Callable[[Path, str], ACM[Path]]:
     fixture_dir = Path(__file__).parent / "fixtures"
 
-    def mk_setup(src: Path) -> Callable[[Path], ACM[Path]]:
-        @contextmanager
-        def func(ifs: Path) -> Generator[Path, None, None]:
-            dest = ifs / src.name
-            cwd = Path.cwd()
-            copytree(src, dest, dirs_exist_ok=False)
-            os.chdir(dest)
-            try:
-                yield dest
-            finally:
-                os.chdir(cwd)
+    @contextmanager
+    def func(ifs: Path, name: str) -> Generator[Path, None, None]:
+        src = fixture_dir / name
+        dest = ifs / name
+        copytree(src, dest, dirs_exist_ok=False)
 
-        return func
+        cwd = Path.cwd()
+        os.chdir(dest)
+        try:
+            yield dest
+        finally:
+            os.chdir(cwd)
 
-    return {fp.name: mk_setup(fp) for fp in fixture_dir.iterdir() if fp.is_dir()}
+    return func
