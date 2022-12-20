@@ -147,13 +147,13 @@ def test_new_ok_extended(mocker: MockerFixture):
         )
 
 
-def test_build_ok_e2e(project_dirs: dict[str, Callable]) -> None:
+def test_build_ok_e2e(isolated_project_dir: dict[str, Callable]) -> None:
     runner = u.CommandRunner()
     toks = ["build"]
 
     with runner.isolated_filesystem() as ifs:
 
-        with project_dirs["ok_minimal"](ifs) as project_dir:
+        with isolated_project_dir["ok_minimal"](ifs) as project_dir:
 
             target_dir = project_dir / constants.PROJECT_TARGET_DIR_NAME
             assert not target_dir.exists()

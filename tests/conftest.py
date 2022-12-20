@@ -17,7 +17,7 @@ def has_git() -> bool:
 
 
 @pytest.fixture
-def project_dirs() -> dict[str, Callable]:
+def isolated_project_dir() -> dict[str, Callable]:
     fixture_dir = Path(__file__).parent / "fixtures"
 
     def mk_setup(src: Path) -> Callable[[Path], ACM[Path]]:
