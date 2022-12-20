@@ -127,6 +127,45 @@ def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
     return None
 
 
+def test_ok_no_theme(tmp_path: Path) -> None:
+    u.assert_dir_empty(tmp_path)
+
+    project_dir = session.new(
+        dir_name="foo/bar",
+        invoc_dir=tmp_path,
+        project_dir=tmp_path,
+        name="",
+        url="",
+        authors=[],
+        description="",
+        language=None,
+        force=False,
+        theme="ion",
+        vcs=None,
+    )
+
+    assert project_dir == tmp_path / "foo" / "bar"
+
+    assert_new_project_layout(project_dir, with_git=False, theme="ion")
+
+    config = u.load_project_config(project_dir)
+    u.assert_keys_only(config, ["site", "theme"])
+
+    site_config = config["site"]
+    site_config.pop("language", None)
+    assert u.has_and_pop(site_config, "authors")
+    assert site_config == {
+        "name": "Bar",
+        "url": "",
+        "description": "",
+    }
+
+    theme_config = config["theme"]
+    assert theme_config == {"name": "ion"}
+
+    return None
+
+
 def test_ok_inferred_name(tmp_path: Path) -> None:
     u.assert_dir_empty(tmp_path)
 
