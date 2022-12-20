@@ -26,4 +26,4 @@ def project_dirs() -> dict[str, Callable]:
 
         return func
 
-    return {name: mk_setup(fixture_dir / name) for name in ("cli_build_minimal",)}
+    return {name: mk_setup(fixture_dir / name) for name in ("ok_minimal",)}

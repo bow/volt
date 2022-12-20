@@ -1,5 +1,5 @@
 [site]
-name = "cli_build_minimal"
+name = "ok_minimal"
 
 [theme]
 name = "t"

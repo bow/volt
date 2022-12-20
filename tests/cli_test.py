@@ -154,7 +154,7 @@ def test_build_ok_e2e(project_dirs: dict[str, Callable]) -> None:
 
     with runner.isolated_filesystem() as ifs:
 
-        project_dir = project_dirs["cli_build_minimal"](ifs)
+        project_dir = project_dirs["ok_minimal"](ifs)
         os.chdir(project_dir)
 
         target_dir = project_dir / constants.PROJECT_TARGET_DIR_NAME
