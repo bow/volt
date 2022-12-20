@@ -35,13 +35,10 @@ def test_new_ok_e2e(has_git: bool) -> None:
         u.assert_dir_contains_only(
             ifs,
             [
-                ifs / fn
-                for fn in (
-                    *([".gitignore", ".git"] if has_git else []),
-                    "volt.toml",
-                    "theme",
-                    "source",
-                )
+                *([".gitignore", ".git"] if has_git else []),
+                "volt.toml",
+                "theme",
+                "source",
             ],
         )
 
