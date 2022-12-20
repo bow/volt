@@ -27,7 +27,7 @@ def test_new_ok_e2e(has_git: bool) -> None:
         u.assert_dir_empty(ifs)
 
         res = runner.invoke(cli.root, toks)
-        assert res.exit_code == 0
+        assert res.exit_code == 0, res.output
 
         u.assert_dir_contains_only(
             ifs,
@@ -92,7 +92,7 @@ def test_new_ok_minimal(mocker: MockerFixture) -> None:
     with runner.isolated_filesystem() as ifs:
 
         res = runner.invoke(cli.root, toks)
-        assert res.exit_code == 0
+        assert res.exit_code == 0, res.output
 
         sess_func.assert_called_once_with(
             dir_name=None,
@@ -131,7 +131,7 @@ def test_new_ok_extended(mocker: MockerFixture):
     with runner.isolated_filesystem() as ifs:
 
         res = runner.invoke(cli.root, toks)
-        assert res.exit_code == 0
+        assert res.exit_code == 0, res.output
 
         sess_func.assert_called_once_with(
             dir_name="custom_path",
