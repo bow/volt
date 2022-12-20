@@ -2,9 +2,11 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import os
+from contextlib import contextmanager, AbstractContextManager as ACM
 from pathlib import Path
 from shutil import copytree, which
-from typing import Callable
+from typing import Callable, Generator
 
 import pytest
 
@@ -18,11 +20,17 @@ def has_git() -> bool:
 def project_dirs() -> dict[str, Callable]:
     fixture_dir = Path(__file__).parent / "fixtures"
 
-    def mk_setup(src: Path) -> Callable[[Path], Path]:
-        def func(ifs: Path) -> Path:
+    def mk_setup(src: Path) -> Callable[[Path], ACM[Path]]:
+        @contextmanager
+        def func(ifs: Path) -> Generator[Path, None, None]:
             dest = ifs / src.name
+            cwd = Path.cwd()
             copytree(src, dest, dirs_exist_ok=False)
-            return dest
+            os.chdir(dest)
+            try:
+                yield dest
+            finally:
+                os.chdir(cwd)
 
         return func
 
