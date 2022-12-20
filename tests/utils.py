@@ -63,7 +63,9 @@ def assert_dir_empty(path: Path) -> None:
 def assert_dir_contains_only(path: Path, fps: list[str] | list[Path]) -> None:
     assert path.is_dir()
     contents = sorted(path.iterdir())
-    assert contents == sorted([Path(fp) for fp in fps]), contents
+    assert contents == sorted(
+        [Path(fp) if Path(fp).is_absolute() else (path / fp) for fp in fps]
+    ), contents
 
 
 def load_config(config_fp: Path) -> dict:
