@@ -26,4 +26,4 @@ def project_dirs() -> dict[str, Callable]:
 
         return func
 
-    return {name: mk_setup(fixture_dir / name) for name in ("ok_minimal",)}
+    return {fp.name: mk_setup(fp) for fp in fixture_dir.iterdir() if fp.is_dir()}
