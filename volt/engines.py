@@ -239,16 +239,21 @@ def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTar
     src_rel_len = len(src_relpath.parts)
 
     targets: list[CopyTarget] = []
-    entries = list(os.scandir(src_relpath))
-    while entries:
-        de = entries.pop()
-        if de.is_dir():
-            entries.extend(os.scandir(de))
-        else:
-            dtoks = Path(de.path).parts[src_rel_len:]
-            targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
 
-    return targets
+    try:
+        entries = list(os.scandir(src_relpath))
+    except FileNotFoundError:
+        return targets
+    else:
+        while entries:
+            de = entries.pop()
+            if de.is_dir():
+                entries.extend(os.scandir(de))
+            else:
+                dtoks = Path(de.path).parts[src_rel_len:]
+                targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
+
+        return targets
 
 
 def _calc_relpath(target: Path, ref: Path) -> Path:
