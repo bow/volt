@@ -173,7 +173,7 @@ class Markdown2Source(FileSource):
             url=self.url,
             template=template,
             render_kwargs={
-                "meta": self.meta,
+                "meta": {**self.meta, "url": self.url},
                 "content": self.html,
             },
             src=self.src.relative_to(self.config.project_dir),
