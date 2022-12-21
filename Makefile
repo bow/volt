@@ -74,6 +74,8 @@ $(WHEEL_DEPS_DIR):
 clean:  ## Remove build and test artifacts, including built Docker images.
 	rm -rf build/ dist/ wheels/ \
 			.coverage .coverage.xml .junit.xml htmlcov/ .cache/ .mypy_cache/ .pytest_cache/ \
+			./tests/fixtures/ok_minimal/target \
+			./tests/fixtures/ok_extended/target \
 		&& (docker rmi $(IMG_NAME) 2> /dev/null || true)
 
 

@@ -1,0 +1,8 @@
+[site]
+name = "ok_extended"
+
+[theme]
+name = "h"
+
+[theme.hooks.modify_css]
+enabled = true

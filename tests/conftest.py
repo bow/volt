@@ -34,3 +34,9 @@ def isolated_project_dir() -> Callable[[Path, str], ACM[Path]]:
             os.chdir(cwd)
 
     return func
+
+
+@pytest.fixture
+def project_dirs() -> dict[str, Path]:
+    fixture_dir = Path(__file__).parent / "fixtures"
+    return {fp.name: fp for fp in fixture_dir.iterdir() if fp.is_dir()}
