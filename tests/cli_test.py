@@ -234,3 +234,70 @@ def test_build_ok_extended(mocker: MockerFixture) -> None:
         assert config.invoc_dir == ifs
         assert config.project_dir == project_dir
         assert config.with_drafts
+
+
+def test_serve_ok_minimal(mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.serve")
+    toks = ["serve"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = ifs
+
+        (project_dir / constants.CONFIG_FILE_NAME).touch()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code == 0, res.output
+
+        sess_func.assert_called_once_with(
+            config=Config(invoc_dir=ifs, project_dir=ifs),
+            host=None,
+            port=5050,
+            rebuild=True,
+            pre_build=True,
+            build_clean=True,
+            log_level="info",
+        )
+        config = sess_func.call_args.kwargs["config"]
+        assert config.invoc_dir == ifs
+        assert config.project_dir == ifs
+        assert config.with_drafts
+
+
+def test_serve_ok_extended(mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.serve")
+    toks = [
+        "serve",
+        "-h",
+        "0.0.0.0",
+        "-p",
+        "7070",
+        "--no-drafts",
+        "--no-pre-build",
+        "-q",
+    ]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = ifs
+
+        (project_dir / constants.CONFIG_FILE_NAME).touch()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code == 0, res.output
+
+        sess_func.assert_called_once_with(
+            config=Config(invoc_dir=ifs, project_dir=ifs),
+            host="0.0.0.0",
+            port=7070,
+            rebuild=True,
+            pre_build=False,
+            build_clean=True,
+            log_level="info",
+        )
+        config = sess_func.call_args.kwargs["config"]
+        assert config.invoc_dir == ifs
+        assert config.project_dir == ifs
+        assert not config.with_drafts

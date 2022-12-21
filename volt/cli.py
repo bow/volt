@@ -471,7 +471,15 @@ def serve(
     config = _get_config(ctx.parent, drafts=drafts)
     log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
 
-    session.serve(config, host, port, rebuild, pre_build, clean, log_level)
+    session.serve(
+        config=config,
+        host=host,
+        port=port,
+        rebuild=rebuild,
+        pre_build=pre_build,
+        build_clean=clean,
+        log_level=log_level,
+    )
 
 
 @serve.command("drafts")
