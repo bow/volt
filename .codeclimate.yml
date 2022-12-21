@@ -2,11 +2,16 @@
 version: "2"
 checks:
   argument-count:
-    config:
-      threshold: 8
+    enabled: false
   file-lines:
     enabled: false
+  method-count:
+    enabled: false
+  method-lines:
+    config:
+      threshold: 50
+  method-complexity:
+    config:
+      threshold: 13
 exclude_patterns:
   - "tests/*"
-  - "versioneer.py"
-  - "volt/_version.py"
