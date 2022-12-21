@@ -7,7 +7,7 @@ from typing import overload, Callable, Optional, ParamSpec, TypeVar
 from .constants import TEMPLATE_FILTER_MARK
 
 
-__all__ = ["filter"]
+__all__ = ["filter", "test"]
 
 
 T = TypeVar("T")
