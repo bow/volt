@@ -114,12 +114,7 @@ class Markdown2Source(FileSource):
             body=raw_body,
             src=src,
             # TODO: Validate minimal front matter metadata.
-            meta={
-                "labels": {},
-                "is_draft": is_draft,
-                **fm,
-                **(meta or {}),
-            },
+            meta={**fm, **(meta or {})},
             config=config,
             is_draft=is_draft,
         )
