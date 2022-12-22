@@ -1,6 +1,0 @@
-[theme]
-name = "h"
-
-[theme.hooks.modify_css]
-enabled = true
-modified_css_url = "/assets/modified.css"

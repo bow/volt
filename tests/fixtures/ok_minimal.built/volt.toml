@@ -1,5 +1,1 @@
-[site]
-name = "ok_minimal"
-
-[theme]
-name = "t"
+../ok_minimal/volt.toml
