@@ -2,11 +2,15 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+import time
 import subprocess as sp
-from typing import Callable
+from pathlib import Path
+from threading import Thread
+from typing import Callable, Optional
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from pytest_mock import MockerFixture
 
 from volt import cli, constants
@@ -234,6 +238,49 @@ def test_build_ok_extended(mocker: MockerFixture) -> None:
         assert config.invoc_dir == ifs
         assert config.project_dir == project_dir
         assert config.with_drafts
+
+
+def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
+
+    host = "127.0.0.1"
+    port = u.find_free_port()
+    index_html: Optional[Path] = None
+
+    def serve() -> None:
+        runner = u.CommandRunner()
+        toks = ["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers"]
+
+        with runner.isolated_filesystem() as ifs:
+
+            with isolated_project_dir(ifs, "ok_extended") as project_dir:
+
+                target_dir = project_dir / constants.PROJECT_TARGET_DIR_NAME
+                assert not target_dir.exists()
+
+                nonlocal index_html
+                index_html = target_dir / "index.html"
+
+                runner.invoke(cli.root, toks)
+
+    thread = Thread(target=serve)
+    thread.daemon = True
+    thread.start()
+
+    max_wait_secs = 5.0
+    wait_duration_secs = 0.2
+    waited = 0.0
+    while index_html is None or not index_html.exists():
+        time.sleep(wait_duration_secs)
+        waited += wait_duration_secs
+        if waited > max_wait_secs:
+            pytest.fail(f"expected build result file {index_html} missing")
+
+    r = requests.get(f"http://{host}:{port}", timeout=3)
+
+    assert r.status_code == 200
+    assert "<title>ok_extended</title>" in r.text
+
+    return None
 
 
 def test_serve_ok_minimal(mocker: MockerFixture) -> None:

@@ -2,7 +2,8 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from contextlib import contextmanager
+import socket
+from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any, Generator, Iterable, Optional
 
@@ -98,3 +99,10 @@ def log_exists(items: Iterable[EventDict], **kwargs: Any) -> bool:
         return all(key in item and item[key] == value for key, value in kwargs.items())
 
     return any(pred(item, **kwargs) for item in items)
+
+
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
