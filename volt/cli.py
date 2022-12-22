@@ -442,6 +442,12 @@ def edit(
     is_flag=True,
     help="If set, hide the startup banner. Default: unset.",
 )
+@click.option(
+    "--sig-handlers/--no-sig-handlers",
+    default=True,
+    hidden=True,
+    help="If set, add custom SIGINT and SIGTERM handlers. Default: set.",
+)
 @click.pass_context
 def serve(
     ctx: click.Context,
@@ -452,6 +458,7 @@ def serve(
     drafts: bool,
     clean: bool,
     quiet: bool,
+    sig_handlers: bool,
 ) -> None:
     """Run the development server"""
     if ctx.invoked_subcommand is not None:
@@ -479,6 +486,7 @@ def serve(
         pre_build=pre_build,
         build_clean=clean,
         log_level=log_level,
+        with_sig_handlers=sig_handlers,
     )
 
 

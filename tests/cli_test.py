@@ -258,6 +258,7 @@ def test_serve_ok_minimal(mocker: MockerFixture) -> None:
             pre_build=True,
             build_clean=True,
             log_level="info",
+            with_sig_handlers=True,
         )
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
@@ -296,6 +297,7 @@ def test_serve_ok_extended(mocker: MockerFixture) -> None:
             pre_build=False,
             build_clean=True,
             log_level="info",
+            with_sig_handlers=True,
         )
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs

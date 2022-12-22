@@ -87,7 +87,11 @@ class _RunFile:
 
 
 def make_server(
-    config: Config, host: str, port: int, log_level: str
+    config: Config,
+    host: str,
+    port: int,
+    log_level: str,
+    with_sig_handlers: bool = True,
 ) -> Callable[[], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
 
@@ -142,17 +146,19 @@ def make_server(
     def serve() -> None:
         httpd = ThreadingHTTPServer((host, port), HTTPRequestHandler)
 
-        def signal_handler(signum: int, frame: Any) -> NoReturn:
-            try:
-                httpd.server_close()
-            finally:
-                if signum == signal.SIGINT:
-                    print("", file=sys.stderr, flush=True)
-                log.info(f"dev server stopped ({signal.strsignal(signum)})")
-                raise _VoltServerExit(run_file_path=run_file.path)
+        if with_sig_handlers:
 
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
+            def signal_handler(signum: int, frame: Any) -> NoReturn:
+                try:
+                    httpd.server_close()
+                finally:
+                    if signum == signal.SIGINT:
+                        print("", file=sys.stderr, flush=True)
+                    log.info(f"dev server stopped ({signal.strsignal(signum)})")
+                    raise _VoltServerExit(run_file_path=run_file.path)
+
+            signal.signal(signal.SIGINT, signal_handler)
+            signal.signal(signal.SIGTERM, signal_handler)
 
         log.info("dev server listening", addr=f"http://{host}:{port}")
         httpd.serve_forever()
