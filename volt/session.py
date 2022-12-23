@@ -410,13 +410,6 @@ def _infer_front_matter(query: str, title: Optional[str]) -> str:
     title = " ".join([tok.capitalize() for tok in (title or default_title).split("-")])
     fm["title"] = title
 
-    *section, _ = query.rsplit("/", 1)
-    ns = len(section)
-    if ns == 1:
-        fm["section"] = section[0]
-    elif ns > 1:
-        raise ValueError(f"unexpected query pattern: {query!r}")
-
     strv = "\n".join([f"{k}: {v}" for k, v in fm.items()])
 
     return f"""---\n{strv}\n---"""
