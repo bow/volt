@@ -417,6 +417,35 @@ def test_serve_drafts_ok_extended(mocker: MockerFixture) -> None:
         assert not config.with_drafts
 
 
+def test_edit_ok_e2e(mocker: MockerFixture, isolated_project_dir: Callable) -> None:
+
+    runner = u.CommandRunner()
+    edit_func = mocker.patch("volt.session.click.edit")
+    edit_func.return_value = "edited-contents"
+    toks = ["edit", "--create", "articles", "-n", "quux"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        with isolated_project_dir(ifs, "ok_extended") as project_dir:
+
+            edit_target = project_dir / "source" / "articles" / ".drafts" / "quux.md"
+            assert not edit_target.exists()
+
+            res = runner.invoke(cli.root, toks)
+            assert res.exit_code == 0, res.output
+
+            edit_func.assert_called_once_with(
+                text="---\ntitle: Quux\n---",
+                extension=".md",
+                require_save=False,
+            )
+
+            assert edit_target.exists()
+            assert edit_target.read_text() == "edited-contents"
+
+    return None
+
+
 def test_edit_ok_minimal(
     mocker: MockerFixture,
     isolated_project_dir: Callable,
