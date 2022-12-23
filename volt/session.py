@@ -193,7 +193,7 @@ def edit(
         )
         if contents:
             log.info(
-                f"created new draft at {str(new_fp.relative_to(config.invoc_dir))!r}"
+                f"created new file at {str(new_fp.relative_to(config.invoc_dir))!r}"
             )
             new_fp.write_text(contents)
 
