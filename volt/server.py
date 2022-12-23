@@ -220,7 +220,7 @@ class _BuildHandler(events.RegexMatchingEventHandler):
         ]
         ignore_regexes = [
             f"^{prefix + '/' + constants.PROJECT_TARGET_DIR_NAME + '/'}.+$",
-            f"^{prefix + '/__pycache__'}.+",
+            ".*__pycache__.*",
         ]
         super().__init__(regexes, ignore_regexes, case_sensitive=True)
         self.config = config
