@@ -3,13 +3,19 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import socket
-from contextlib import closing, contextmanager
+import time
+from contextlib import closing, contextmanager, AbstractContextManager as ACM
 from pathlib import Path
-from typing import Any, Generator, Iterable, Optional
+from threading import Thread
+from typing import Any, Callable, Generator, Iterable, Optional
 
+import pytest
 import tomlkit
 from click.testing import CliRunner
 from structlog.types import EventDict
+
+from volt import cli
+from volt.constants import PROJECT_TARGET_DIR_NAME
 
 
 # Layout for test files and directories.
@@ -101,8 +107,64 @@ def log_exists(items: Iterable[EventDict], **kwargs: Any) -> bool:
     return any(pred(item, **kwargs) for item in items)
 
 
-def find_free_port():
+def find_free_port() -> int:
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(("", 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
+
+
+def invoke_isolated_server(
+    isolation_func: Callable[[Path, str], ACM[Path]],
+    project_fixture_name: str,
+    host: str = "127.0.0.1",
+    port: Optional[int] = None,
+    args: Optional[list[str]] = None,
+    startup_timeout: float = 5.0,
+    startup_check_freq: float = 0.2,
+    sentinel_project_file: Path = Path(PROJECT_TARGET_DIR_NAME) / "index.html",
+) -> Path:
+
+    port = port or find_free_port()
+    sentinel_file: Optional[Path] = None
+    project_dir: Optional[Path] = None
+
+    def serve() -> None:
+        nonlocal sentinel_file, project_dir
+
+        runner = CommandRunner()
+        toks = args or ["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers"]
+
+        with runner.isolated_filesystem() as ifs:
+
+            with isolation_func(ifs, project_fixture_name) as pd:
+
+                project_dir = pd
+                sentinel_file = pd / sentinel_project_file
+                assert not sentinel_file.exists()
+
+                runner.invoke(cli.root, toks)
+
+    def start() -> None:
+        nonlocal sentinel_file
+
+        thread = Thread(target=serve)
+        thread.daemon = True
+        thread.start()
+
+        waited = 0.0
+        while sentinel_file is None or not sentinel_file.exists():
+            time.sleep(startup_check_freq)
+            waited += startup_check_freq
+            if waited > startup_timeout:
+                pytest.fail(
+                    f"expected built result file {sentinel_file} still nonexistent"
+                    f" after waiting for {waited:.1f}s"
+                )
+
+    start()
+
+    if project_dir is None:
+        pytest.fail("failed to set isolated project directory")
+
+    return project_dir

@@ -2,11 +2,8 @@
 # Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import time
 import subprocess as sp
-from pathlib import Path
-from threading import Thread
-from typing import Callable, Optional
+from typing import Callable
 from unittest.mock import MagicMock
 
 import pytest
@@ -246,50 +243,20 @@ def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
     host = "127.0.0.1"
     port = u.find_free_port()
     url = f"http://{host}:{port}"
-    index_html: Optional[Path] = None
-
-    def serve() -> None:
-        nonlocal index_html
-
-        runner = u.CommandRunner()
-        toks = ["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers"]
-
-        with runner.isolated_filesystem() as ifs:
-
-            with isolated_project_dir(ifs, "ok_extended") as project_dir:
-
-                target_dir = project_dir / constants.PROJECT_TARGET_DIR_NAME
-                assert not target_dir.exists()
-
-                index_html = target_dir / "index.html"
-
-                runner.invoke(cli.root, toks)
-
-    def start_server() -> None:
-        nonlocal index_html
-
-        thread = Thread(target=serve)
-        thread.daemon = True
-        thread.start()
-
-        max_wait_secs = 5.0
-        wait_duration_secs = 0.2
-        waited = 0.0
-        while index_html is None or not index_html.exists():
-            time.sleep(wait_duration_secs)
-            waited += wait_duration_secs
-            if waited > max_wait_secs:
-                pytest.fail(
-                    f"expected built result file {index_html} still nonexistent"
-                    f" after waiting for {waited:.1f}s"
-                )
+    timeout = 3
 
     with pytest.raises(ConnectionError, match="Connection refused"):
-        requests.get(url, timeout=3)
+        requests.get(url, timeout=timeout)
 
-    start_server()
+    u.invoke_isolated_server(
+        isolated_project_dir,
+        project_fixture_name="ok_extended",
+        host=host,
+        port=port,
+        startup_timeout=5.0,
+    )
 
-    r = requests.get(url, timeout=3)
+    r = requests.get(url, timeout=timeout)
     assert r.status_code == 200
     assert "<title>ok_extended</title>" in r.text
 
