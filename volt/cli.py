@@ -384,9 +384,11 @@ def build(
     ),
 )
 @click.option(
-    "--drafts/--no-drafts",
-    default=True,
-    help="If set, also look for matches in drafts directories.",
+    "-p",
+    "--published",
+    flag_value=True,
+    default=False,
+    help="If set, also look for matches in published directories. Default: unset.",
 )
 @click.pass_context
 def edit(
@@ -394,10 +396,10 @@ def edit(
     name: str,
     create: Optional[str],
     title: str,
-    drafts: bool,
+    published: bool,
 ) -> None:
     """Open a source file in an editor"""
-    config = _get_config(ctx.parent, drafts=drafts)
+    config = _get_config(ctx.parent, drafts=not published)
 
     session.edit(config=config, query=name, create=create, title=title)
 

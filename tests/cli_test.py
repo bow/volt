@@ -481,7 +481,7 @@ def test_edit_ok_extended(
 ) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.edit")
-    toks = ["edit", "--create", "-n", "foo"]
+    toks = ["edit", "--published", "--create", "-n", "foo"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -499,6 +499,6 @@ def test_edit_ok_extended(
             config = sess_func.call_args.kwargs["config"]
             assert config.invoc_dir == project_dir
             assert config.project_dir == project_dir
-            assert config.with_drafts
+            assert not config.with_drafts
 
     return None
