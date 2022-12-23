@@ -332,6 +332,43 @@ def test_serve_ok_extended(mocker: MockerFixture) -> None:
         assert not config.with_drafts
 
 
+def test_serve_drafts_ok_e2e(isolated_project_dir: Callable) -> None:
+
+    host = "127.0.0.1"
+    port = u.find_free_port()
+    url = f"http://{host}:{port}"
+    req_timeout = 3
+
+    project_dir = u.invoke_isolated_server(
+        isolated_project_dir,
+        project_fixture_name="ok_extended",
+        args=["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers", "--no-drafts"],
+        host=host,
+        port=port,
+        startup_timeout=5.0,
+    )
+
+    r_foo = requests.get(f"{url}/foo.html", timeout=req_timeout)
+    assert r_foo.status_code == 200
+    r_bar = requests.get(f"{url}/bar.html", timeout=req_timeout)
+    assert r_bar.status_code == 404
+
+    runner = u.CommandRunner()
+    toks = ["-D", f"{project_dir}", "serve", "drafts"]
+    runner.invoke(cli.root, toks)
+
+    fp = project_dir / constants.PROJECT_TARGET_DIR_NAME / "bar.html"
+    assert u.wait_until_exists(fp)
+
+    r_foo = requests.get(f"{url}/foo.html", timeout=req_timeout)
+    assert r_foo.status_code == 200
+    r_bar = requests.get(f"{url}/bar.html", timeout=req_timeout)
+    assert r_bar.status_code == 200
+    assert "<p>This is bar! It's still in draft.</p>" in r_bar.text
+
+    return None
+
+
 def test_serve_drafts_ok_minimal(mocker: MockerFixture) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.serve_drafts")

@@ -114,6 +114,18 @@ def find_free_port() -> int:
         return s.getsockname()[1]
 
 
+def wait_until_exists(fp: Path, timeout: float = 5.0, freq: float = 0.2) -> bool:
+
+    waited = 0.0
+    while not fp.exists():
+        time.sleep(freq)
+        waited += freq
+        if waited > timeout:
+            return False
+
+    return True
+
+
 def invoke_isolated_server(
     isolation_func: Callable[[Path, str], ACM[Path]],
     project_fixture_name: str,
