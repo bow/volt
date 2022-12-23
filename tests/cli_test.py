@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from pytest_mock import MockerFixture
+from requests.exceptions import ConnectionError
 
 from volt import cli, constants
 from volt.config import Config
@@ -244,6 +245,7 @@ def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
 
     host = "127.0.0.1"
     port = u.find_free_port()
+    url = f"http://{host}:{port}"
     index_html: Optional[Path] = None
 
     def serve() -> None:
@@ -262,6 +264,9 @@ def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
 
                 runner.invoke(cli.root, toks)
 
+    with pytest.raises(ConnectionError, match="Connection refused"):
+        requests.get(url, timeout=3)
+
     thread = Thread(target=serve)
     thread.daemon = True
     thread.start()
@@ -275,7 +280,7 @@ def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
         if waited > max_wait_secs:
             pytest.fail(f"expected build result file {index_html} missing")
 
-    r = requests.get(f"http://{host}:{port}", timeout=3)
+    r = requests.get(url, timeout=3)
 
     assert r.status_code == 200
     assert "<title>ok_extended</title>" in r.text
