@@ -330,3 +330,51 @@ def test_serve_ok_extended(mocker: MockerFixture) -> None:
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
         assert not config.with_drafts
+
+
+def test_serve_drafts_ok_minimal(mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.serve_drafts")
+    toks = ["serve", "drafts"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = ifs
+
+        (project_dir / constants.CONFIG_FILE_NAME).touch()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code == 0, res.output
+
+        sess_func.assert_called_once_with(
+            config=Config(invoc_dir=ifs, project_dir=ifs),
+            value=None,
+        )
+        config = sess_func.call_args.kwargs["config"]
+        assert config.invoc_dir == ifs
+        assert config.project_dir == ifs
+        assert not config.with_drafts
+
+
+def test_serve_drafts_ok_extended(mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.serve_drafts")
+    toks = ["serve", "drafts", "-s"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = ifs
+
+        (project_dir / constants.CONFIG_FILE_NAME).touch()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code == 0, res.output
+
+        sess_func.assert_called_once_with(
+            config=Config(invoc_dir=ifs, project_dir=ifs),
+            value=True,
+        )
+        config = sess_func.call_args.kwargs["config"]
+        assert config.invoc_dir == ifs
+        assert config.project_dir == ifs
+        assert not config.with_drafts
