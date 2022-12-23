@@ -249,6 +249,8 @@ def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
     index_html: Optional[Path] = None
 
     def serve() -> None:
+        nonlocal index_html
+
         runner = u.CommandRunner()
         toks = ["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers"]
 
@@ -259,29 +261,35 @@ def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
                 target_dir = project_dir / constants.PROJECT_TARGET_DIR_NAME
                 assert not target_dir.exists()
 
-                nonlocal index_html
                 index_html = target_dir / "index.html"
 
                 runner.invoke(cli.root, toks)
 
+    def start_server() -> None:
+        nonlocal index_html
+
+        thread = Thread(target=serve)
+        thread.daemon = True
+        thread.start()
+
+        max_wait_secs = 5.0
+        wait_duration_secs = 0.2
+        waited = 0.0
+        while index_html is None or not index_html.exists():
+            time.sleep(wait_duration_secs)
+            waited += wait_duration_secs
+            if waited > max_wait_secs:
+                pytest.fail(
+                    f"expected built result file {index_html} still nonexistent"
+                    f" after waiting for {waited:.1f}s"
+                )
+
     with pytest.raises(ConnectionError, match="Connection refused"):
         requests.get(url, timeout=3)
 
-    thread = Thread(target=serve)
-    thread.daemon = True
-    thread.start()
-
-    max_wait_secs = 5.0
-    wait_duration_secs = 0.2
-    waited = 0.0
-    while index_html is None or not index_html.exists():
-        time.sleep(wait_duration_secs)
-        waited += wait_duration_secs
-        if waited > max_wait_secs:
-            pytest.fail(f"expected build result file {index_html} missing")
+    start_server()
 
     r = requests.get(url, timeout=3)
-
     assert r.status_code == 200
     assert "<title>ok_extended</title>" in r.text
 
