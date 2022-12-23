@@ -358,14 +358,18 @@ def build(
 
 
 @root.command()
-@click.argument("name", type=str, required=True)
+@click.option(
+    "-n", "--name", type=str, required=True, help="Name of file to edit or create."
+)
 @click.option(
     "-c",
     "--create",
-    type=str,
+    is_flag=False,
+    flag_value="",
     default=None,
+    type=str,
     help=(
-        "If set, create a new file in the given section's drafts directory"
+        "If set, create a new file in the given source path's drafts directory"
         " instead of attempting to edit an existing file. Default: unset."
     ),
 )
@@ -395,7 +399,7 @@ def edit(
     """Open a source file in an editor"""
     config = _get_config(ctx.parent, drafts=drafts)
 
-    session.edit(config, name, create, title)
+    session.edit(config=config, query=name, create=create, title=title)
 
 
 @root.group(invoke_without_command=True)

@@ -8,6 +8,7 @@ import subprocess as sp
 import time
 from contextlib import suppress
 from locale import getlocale
+from os.path import commonpath
 from pathlib import Path
 from shutil import copytree, which
 from typing import Optional
@@ -168,7 +169,17 @@ def edit(
     """Open a draft file in an editor."""
 
     if create is not None:
-        fn = Path(config.drafts_dir_name) / create / query
+        fn = (
+            config.sources_dir
+            / create
+            / (config.drafts_dir_name if config.with_drafts else "")
+            / query
+        )
+        # Ensure we only edit files within a project directory.
+        if f"{commonpath([config.project_dir, fn])}" != f"{config.project_dir}":
+            raise err.VoltResourceError(
+                f"inferred edit path {fn} is not located inside the project directory"
+            )
         new_fp = fn.with_suffix(constants.MARKDOWN_EXT)
         new_fp.parent.mkdir(parents=True, exist_ok=True)
         if new_fp.exists():
