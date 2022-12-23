@@ -125,30 +125,36 @@ class _ConsoleLogRenderer:
 
         return logstr
 
-    @staticmethod
-    def _render_event_dict(event_dict: structlog.types.EventDict) -> str:
+    @classmethod
+    def _render_event_dict(cls, event_dict: structlog.types.EventDict) -> str:
 
         keys = event_dict.keys()
         if not keys:
             return ""
 
         rendered = " ·"
-        for key in event_dict.keys():
-            value = event_dict[key]
-            if not isinstance(value, (str, Path)):
-                if isinstance(value, bool):
-                    value = "yes" if value else "no"
-                else:
-                    value = repr(value)
-            else:
-                value = f"{value}"
-                if any(char.isspace() for char in value):
-                    value = f"'{value}'"
+        for key in keys:
+            value = cls._render_value(event_dict[key])
             rendered += style(f" {key}", fg="bright_black")
             rendered += style("=", fg="bright_white")
-            rendered += style(f"{value}", fg="yellow")
+            rendered += style(value, fg="yellow")
 
         return rendered
+
+    @staticmethod
+    def _render_value(value: Any) -> str:
+        str_value = ""
+        match value:
+            case str() | Path():
+                str_value = f"{value}"
+                if any(char.isspace() for char in str_value):
+                    str_value = f"'{str_value}'"
+            case bool():
+                str_value = "yes" if value else "no"
+            case _:
+                str_value = repr(value)
+
+        return str_value
 
     @staticmethod
     def _render_exc_info(exc_info: Any) -> str:
