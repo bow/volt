@@ -46,7 +46,10 @@ jobs:
         if: steps.cache-poetry.outputs.cache-hit != 'true'
 
       - name: Run tests
-        run: make test
+        run: |
+          export PYTHONPYCACHEPREFIX=~/.cache/python/pycache
+          mkdir -p ${PYTHONPYCACHEPREFIX}
+          make test
 
       - name: Upload test report
         if: always()
