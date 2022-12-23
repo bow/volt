@@ -415,3 +415,61 @@ def test_serve_drafts_ok_extended(mocker: MockerFixture) -> None:
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
         assert not config.with_drafts
+
+
+def test_edit_ok_minimal(
+    mocker: MockerFixture,
+    isolated_project_dir: Callable,
+) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.edit")
+    toks = ["edit", "-n", "foo"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        with isolated_project_dir(ifs, "ok_extended") as project_dir:
+
+            res = runner.invoke(cli.root, toks)
+            assert res.exit_code == 0, res.output
+
+            sess_func.assert_called_once_with(
+                config=Config(invoc_dir=project_dir, project_dir=project_dir),
+                query="foo",
+                create=None,
+                title=None,
+            )
+            config = sess_func.call_args.kwargs["config"]
+            assert config.invoc_dir == project_dir
+            assert config.project_dir == project_dir
+            assert config.with_drafts
+
+    return None
+
+
+def test_edit_ok_extended(
+    mocker: MockerFixture,
+    isolated_project_dir: Callable,
+) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.edit")
+    toks = ["edit", "--create", "-n", "foo"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        with isolated_project_dir(ifs, "ok_extended") as project_dir:
+
+            res = runner.invoke(cli.root, toks)
+            assert res.exit_code == 0, res.output
+
+            sess_func.assert_called_once_with(
+                config=Config(invoc_dir=project_dir, project_dir=project_dir),
+                query="foo",
+                create="",
+                title=None,
+            )
+            config = sess_func.call_args.kwargs["config"]
+            assert config.invoc_dir == project_dir
+            assert config.project_dir == project_dir
+            assert config.with_drafts
+
+    return None
