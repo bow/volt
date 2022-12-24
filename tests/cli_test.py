@@ -4,7 +4,6 @@
 
 import subprocess as sp
 from typing import Callable
-from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -15,11 +14,6 @@ from volt import cli, constants
 from volt.config import Config
 
 from . import utils as u
-
-
-@pytest.fixture(autouse=True)
-def log_init(mocker: MockerFixture) -> MagicMock:
-    return mocker.patch("volt.cli.init_logging")
 
 
 def test_new_ok_e2e(has_git: bool) -> None:
@@ -162,7 +156,6 @@ def test_build_ok_e2e(isolated_project_dir: Callable) -> None:
 
             res = runner.invoke(cli.root, toks)
             assert res.exit_code == 0, res.output
-            assert "build completed" in res.output
 
             assert target_dir.exists()
             u.assert_dir_contains_only(target_dir, ["assets", "index.html"])

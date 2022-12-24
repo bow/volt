@@ -198,6 +198,9 @@ def bind_drafts_context(drafts: bool) -> None:
 
 
 def init_logging(log_level: str) -> None:
+    if structlog.is_configured():
+        return None
+
     proc_chain: list[structlog.types.Processor] = [
         merge_contextvars,
         structlog.stdlib.add_log_level,
