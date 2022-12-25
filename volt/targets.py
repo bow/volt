@@ -80,7 +80,7 @@ class TemplateTarget(Target):
 
     def write(self, build_dir: Path) -> None:
         """Render the template and write it to the destination."""
-        content = self.template.render(**self.render_kwargs)
+        content = self.template.render(**{"meta": {}, **self.render_kwargs})
         try:
             (build_dir.joinpath(*self.url_parts)).write_text(content)
         except OSError as e:
