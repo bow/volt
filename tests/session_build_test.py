@@ -70,6 +70,7 @@ def test_ok_extended(
             project_dir=project_dir,
             config_file_name=constants.CONFIG_FILE_NAME,
         )
+        config._with_drafts = False
 
         assert not config.target_dir.exists()
 
@@ -83,8 +84,10 @@ def test_ok_extended(
         target_dir = config.target_dir
         assert target_dir.exists()
 
-        u.assert_dir_contains_only(target_dir, ["assets", "index.html", "foo.html"])
-        u.assert_dir_contains_only(target_dir / "assets", ["modified.css"])
+        u.assert_dir_contains_only(
+            target_dir, ["assets", "gallery", "index.html", "foo.html"]
+        )
+        u.assert_dir_contains_only(target_dir / "assets", ["imgs", "modified.css"])
 
         project_dir_built = project_dirs[f"{fixture_name}.built"]
         target_dir_built = project_dir_built / "target"

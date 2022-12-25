@@ -1,23 +1,19 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    {%- for target in site.select_targets("*.css") %}
-    <link rel="stylesheet" href="{{ target.url }}" />
-    {%- endfor %}
-    <title>{{ (meta.page_title | default(meta.title)) | default(config.name) }}</title>
-  </head>
-  <body>
-    {{ meta | pub_timestamp }}
-    {{- content | indent }}
-    {%- if not meta | is_index %}
+{% extends "base.html.j2" %}
+
+{%- block content %}
+  {{- meta | pub_timestamp }}
+  {{- content | indent }}
+  {%- if not meta | is_index %}
     <a href="/">/</a>
-    {%- else %}
+  {%- else %}
+    <ul>
     {%- for html_target in site.select_targets("*.html") %}
-    {%- if html_target.url != '/index.html' %}
-    <a href="{{ html_target.url }}">{{ html_target.url | basename }}</a>
-    {%- endif %}
+      {%- if html_target.url != '/index.html' %}
+        <li>
+          <a href="{{ html_target.url }}">{{ html_target.url | basename }}</a>
+        </li>
+      {%- endif %}
     {%- endfor %}
-    {%- endif %}
-  </body>
-</html>
+    <ul>
+  {%- endif %}
+{%- endblock %}

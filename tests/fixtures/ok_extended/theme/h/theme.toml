@@ -1,6 +1,13 @@
 [theme]
 name = "h"
 
+[theme.engines.root]
+module = "volt.engines:Markdown2Engine"
+
+[theme.engines.gallery]
+class = "GalleryEngine"
+source = "gallery"
+
 [theme.hooks.modify_css]
 enabled = true
 modified_css_url = "/assets/modified.css"
