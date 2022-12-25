@@ -30,3 +30,5 @@ wheels/
 .DS_STORE
 Thumbs.db
 sandbox/
+
+**/.volt-server.run
