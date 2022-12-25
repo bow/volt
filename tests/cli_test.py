@@ -495,3 +495,25 @@ def test_edit_ok_extended(
             assert not config.with_drafts
 
     return None
+
+
+def test_help_with_xcmd(isolated_project_dir: Callable) -> None:
+    runner = u.CommandRunner()
+
+    with runner.isolated_filesystem() as ifs:
+
+        with isolated_project_dir(ifs, "ok_extended") as project_dir:
+
+            assert (project_dir / "extension" / "cli.py").exists()
+
+            res0 = runner.invoke(cli.root, [])
+            assert res0.exit_code == 0, res0.output
+            assert " xcmd " in res0.output, res0.output
+
+            res1 = runner.invoke(cli.root, ["xcmd"])
+            assert res1.exit_code == 0, res1.output
+            assert " hello-ext " in res1.output, res1.output
+
+            res2 = runner.invoke(cli.root, ["xcmd", "hello-ext"])
+            assert res2.exit_code == 0, res2.output
+            assert "FooBar!" in res2.output, res2.output
