@@ -182,10 +182,10 @@ def test_build_err_not_project(mocker: MockerFixture) -> None:
         sess_func.assert_not_called()
 
 
-def test_build_ok_minimal(mocker: MockerFixture) -> None:
+@pytest.mark.parametrize("toks", [["build"], ["b"]])
+def test_build_ok_minimal(mocker: MockerFixture, toks: list[str]) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.build")
-    toks = ["build"]
 
     with runner.isolated_filesystem() as ifs:
 
