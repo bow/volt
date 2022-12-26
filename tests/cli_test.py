@@ -8,15 +8,17 @@ from typing import Callable
 import pytest
 import requests
 from pytest_mock import MockerFixture
+from pytest_structlog import StructuredLogCapture
 from requests.exceptions import ConnectionError
 
 from volt import cli, constants
 from volt.config import Config
+from volt.error import VoltResourceError
 
 from . import utils as u
 
 
-def test_new_ok_e2e(has_git: bool) -> None:
+def test_new_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
     runner = u.CommandRunner()
     toks = ["new", "-u", "https://site.net"]
 
@@ -79,7 +81,7 @@ def test_new_ok_e2e(has_git: bool) -> None:
     return None
 
 
-def test_new_ok_minimal(mocker: MockerFixture) -> None:
+def test_new_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.new")
     toks = ["new"]
@@ -104,7 +106,7 @@ def test_new_ok_minimal(mocker: MockerFixture) -> None:
         )
 
 
-def test_new_ok_extended(mocker: MockerFixture):
+def test_new_ok_extended(log: StructuredLogCapture, mocker: MockerFixture):
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.new")
     toks = [
@@ -143,7 +145,9 @@ def test_new_ok_extended(mocker: MockerFixture):
         )
 
 
-def test_build_ok_e2e(isolated_project_dir: Callable) -> None:
+def test_build_ok_e2e(
+    log: StructuredLogCapture, isolated_project_dir: Callable
+) -> None:
     runner = u.CommandRunner()
     toks = ["build"]
 
@@ -164,7 +168,9 @@ def test_build_ok_e2e(isolated_project_dir: Callable) -> None:
     return None
 
 
-def test_build_err_not_project(mocker: MockerFixture) -> None:
+def test_build_err_not_project(
+    log: StructuredLogCapture, mocker: MockerFixture
+) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.build")
     toks = ["build"]
@@ -175,7 +181,9 @@ def test_build_err_not_project(mocker: MockerFixture) -> None:
 
         res = runner.invoke(cli.root, toks)
         assert res.exit_code != 0, res.output
-        assert "Command 'build' works only within a Volt project" in res.output
+        assert log.has(
+            "command 'build' works only within a Volt project", level="error"
+        )
 
         u.assert_dir_empty(ifs)
 
@@ -183,7 +191,9 @@ def test_build_err_not_project(mocker: MockerFixture) -> None:
 
 
 @pytest.mark.parametrize("toks", [["build"], ["b"]])
-def test_build_ok_minimal(mocker: MockerFixture, toks: list[str]) -> None:
+def test_build_ok_minimal(
+    log: StructuredLogCapture, mocker: MockerFixture, toks: list[str]
+) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.build")
 
@@ -206,7 +216,7 @@ def test_build_ok_minimal(mocker: MockerFixture, toks: list[str]) -> None:
         assert not config.with_drafts
 
 
-def test_build_ok_extended(mocker: MockerFixture) -> None:
+def test_build_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.build")
     toks = ["-D", "the_project", "build", "--drafts"]
@@ -231,7 +241,9 @@ def test_build_ok_extended(mocker: MockerFixture) -> None:
         assert config.with_drafts
 
 
-def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
+def test_serve_ok_e2e(
+    log: StructuredLogCapture, isolated_project_dir: Callable
+) -> None:
 
     host = "127.0.0.1"
     port = u.find_free_port()
@@ -256,7 +268,7 @@ def test_serve_ok_e2e(isolated_project_dir: Callable) -> None:
     return None
 
 
-def test_serve_ok_minimal(mocker: MockerFixture) -> None:
+def test_serve_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.serve")
     toks = ["serve"]
@@ -286,7 +298,7 @@ def test_serve_ok_minimal(mocker: MockerFixture) -> None:
         assert config.with_drafts
 
 
-def test_serve_ok_extended(mocker: MockerFixture) -> None:
+def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.serve")
     toks = [
@@ -325,7 +337,9 @@ def test_serve_ok_extended(mocker: MockerFixture) -> None:
         assert not config.with_drafts
 
 
-def test_serve_drafts_ok_e2e(isolated_project_dir: Callable) -> None:
+def test_serve_drafts_ok_e2e(
+    log: StructuredLogCapture, isolated_project_dir: Callable
+) -> None:
 
     host = "127.0.0.1"
     port = u.find_free_port()
@@ -362,7 +376,9 @@ def test_serve_drafts_ok_e2e(isolated_project_dir: Callable) -> None:
     return None
 
 
-def test_serve_drafts_ok_minimal(mocker: MockerFixture) -> None:
+def test_serve_drafts_ok_minimal(
+    log: StructuredLogCapture, mocker: MockerFixture
+) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.serve_drafts")
     toks = ["serve", "drafts"]
@@ -386,7 +402,9 @@ def test_serve_drafts_ok_minimal(mocker: MockerFixture) -> None:
         assert not config.with_drafts
 
 
-def test_serve_drafts_ok_extended(mocker: MockerFixture) -> None:
+def test_serve_drafts_ok_extended(
+    log: StructuredLogCapture, mocker: MockerFixture
+) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.serve_drafts")
     toks = ["serve", "drafts", "-s"]
@@ -410,7 +428,9 @@ def test_serve_drafts_ok_extended(mocker: MockerFixture) -> None:
         assert not config.with_drafts
 
 
-def test_edit_ok_e2e(mocker: MockerFixture, isolated_project_dir: Callable) -> None:
+def test_edit_ok_e2e(
+    log: StructuredLogCapture, mocker: MockerFixture, isolated_project_dir: Callable
+) -> None:
 
     runner = u.CommandRunner()
     edit_func = mocker.patch("volt.session.click.edit")
@@ -440,6 +460,7 @@ def test_edit_ok_e2e(mocker: MockerFixture, isolated_project_dir: Callable) -> N
 
 
 def test_edit_ok_minimal(
+    log: StructuredLogCapture,
     mocker: MockerFixture,
     isolated_project_dir: Callable,
 ) -> None:
@@ -469,6 +490,7 @@ def test_edit_ok_minimal(
 
 
 def test_edit_ok_extended(
+    log: StructuredLogCapture,
     mocker: MockerFixture,
     isolated_project_dir: Callable,
 ) -> None:
@@ -497,7 +519,9 @@ def test_edit_ok_extended(
     return None
 
 
-def test_help_with_xcmd(isolated_project_dir: Callable) -> None:
+def test_help_with_xcmd(
+    log: StructuredLogCapture, isolated_project_dir: Callable
+) -> None:
     runner = u.CommandRunner()
 
     with runner.isolated_filesystem() as ifs:
