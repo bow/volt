@@ -190,13 +190,6 @@ class _ConsoleLogRenderer:
         return rendered.removesuffix("\n")
 
 
-def bind_drafts_context(drafts: bool) -> None:
-    if not drafts:
-        return None
-    bind_contextvars(drafts=True)
-    return None
-
-
 def init_logging(log_level: str) -> None:
     if structlog.is_configured():
         return None
