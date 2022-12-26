@@ -190,6 +190,25 @@ def test_build_err_not_project(
         sess_func.assert_not_called()
 
 
+def test_build_err_unexpected(log: StructuredLogCapture, mocker: MockerFixture) -> None:
+    runner = u.CommandRunner()
+    sess_func = mocker.patch("volt.cli.session.build")
+    sess_func.side_effect = VoltResourceError("unexpected!")
+    toks = ["build"]
+
+    with runner.isolated_filesystem() as ifs:
+
+        project_dir = ifs
+
+        (project_dir / constants.CONFIG_FILE_NAME).touch()
+
+        res = runner.invoke(cli.root, toks)
+        assert res.exit_code != 0, res.output
+        assert log.has("unexpected!", level="error")
+
+        sess_func.assert_called_once()
+
+
 @pytest.mark.parametrize("toks", [["build"], ["b"]])
 def test_build_ok_minimal(
     log: StructuredLogCapture, mocker: MockerFixture, toks: list[str]
