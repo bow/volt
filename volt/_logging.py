@@ -15,7 +15,7 @@ import click
 import structlog
 from rich.console import Console
 from rich.traceback import Traceback
-from structlog.contextvars import bind_contextvars, bound_contextvars, merge_contextvars
+from structlog.contextvars import bound_contextvars, merge_contextvars
 
 from .config import _get_exc_style, _get_use_color
 

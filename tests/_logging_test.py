@@ -4,7 +4,6 @@
 
 from pathlib import Path
 
-import pytest
 from pytest import CaptureFixture
 from structlog import get_logger, reset_defaults
 from _pytest.fixtures import SubRequest
