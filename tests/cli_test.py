@@ -175,7 +175,7 @@ def test_build_err_not_project(mocker: MockerFixture) -> None:
 
         res = runner.invoke(cli.root, toks)
         assert res.exit_code != 0, res.output
-        assert "command 'build' works only within a Volt project"
+        assert "Command 'build' works only within a Volt project" in res.output
 
         u.assert_dir_empty(ifs)
 
