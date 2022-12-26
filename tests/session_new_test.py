@@ -8,7 +8,7 @@ from typing import Any, Callable, Optional
 
 import pytest
 from pytest_mock import MockerFixture
-from structlog.testing import capture_logs
+from pytest_structlog import StructuredLogCapture
 
 from . import utils as u
 
@@ -80,34 +80,31 @@ def test_err_not_empty_no_force(tmp_path: Path) -> None:
     return None
 
 
-def test_ok_project_path_abs_conflict(tmp_path: Path) -> None:
+def test_ok_project_path_abs_conflict(
+    tmp_path: Path, log: StructuredLogCapture
+) -> None:
     u.assert_dir_empty(tmp_path)
 
     dir_path = tmp_path.resolve() / "foo" / "bar"
 
-    with capture_logs() as logs:
-        assert logs == []
-        project_dir = session.new(
-            dir_name=f"{dir_path}",
-            invoc_dir=tmp_path,
-            project_dir=tmp_path.resolve() / "bzzt",
-            name="",
-            url="",
-            authors=[],
-            description="",
-            language=None,
-            force=False,
-            theme=None,
-            vcs=None,
-        )
-        assert u.log_exists(
-            logs,
-            event=(
-                "ignoring specified project path as command is invoked with an absolute"
-                " path"
-            ),
-            log_level="warning",
-        )
+    project_dir = session.new(
+        dir_name=f"{dir_path}",
+        invoc_dir=tmp_path,
+        project_dir=tmp_path.resolve() / "bzzt",
+        name="",
+        url="",
+        authors=[],
+        description="",
+        language=None,
+        force=False,
+        theme=None,
+        vcs=None,
+    )
+
+    assert log.has(
+        "ignoring specified project path as command is invoked with an absolute path",
+        level="warning",
+    )
 
     assert project_dir == dir_path
     assert_new_project_layout(project_dir, with_git=False)
@@ -245,6 +242,7 @@ def test_ok_infer_author_no_git(tmp_path: Path, mocker: MockerFixture) -> None:
 def test_ok_infer_author_no_git_user_name(
     tmp_path: Path,
     mocker: MockerFixture,
+    log: StructuredLogCapture,
 ) -> None:
     u.assert_dir_empty(tmp_path)
 
@@ -256,27 +254,25 @@ def test_ok_infer_author_no_git_user_name(
     cmd_toks = [git_exe, "config", "--get", "user.name"]
     run_m.side_effect = func_failed_process_for(cmd_toks)
 
-    with capture_logs() as logs:
-        assert logs == []
-        project_dir = session.new(
-            dir_name=None,
-            invoc_dir=tmp_path,
-            project_dir=tmp_path,
-            name="",
-            url="",
-            authors=[],
-            description="",
-            language=None,
-            force=False,
-            theme=None,
-            vcs=None,
-        )
-        run_m.assert_called_once_with(cmd_toks, capture_output=True)
-        assert u.log_exists(
-            logs,
-            event="no author can be inferred as git returns no 'user.name' value",
-            log_level="warning",
-        )
+    project_dir = session.new(
+        dir_name=None,
+        invoc_dir=tmp_path,
+        project_dir=tmp_path,
+        name="",
+        url="",
+        authors=[],
+        description="",
+        language=None,
+        force=False,
+        theme=None,
+        vcs=None,
+    )
+    run_m.assert_called_once_with(cmd_toks, capture_output=True)
+
+    assert log.has(
+        "no author can be inferred as git returns no 'user.name' value",
+        level="warning",
+    )
 
     assert project_dir == tmp_path
     assert_new_project_layout(project_dir, with_git=False)
@@ -296,39 +292,38 @@ def test_ok_infer_author_no_git_user_name(
     return None
 
 
-def test_ok_git_exe_missing(tmp_path: Path, mocker: MockerFixture) -> None:
+def test_ok_git_exe_missing(
+    tmp_path: Path, mocker: MockerFixture, log: StructuredLogCapture
+) -> None:
     u.assert_dir_empty(tmp_path)
 
     which_m = mocker.patch("volt.session.which")
     which_m.return_value = None
 
-    with capture_logs() as logs:
-        assert logs == []
-        project_dir = session.new(
-            dir_name=None,
-            invoc_dir=tmp_path,
-            project_dir=tmp_path,
-            name="",
-            url="",
-            authors=[],
-            description="",
-            language=None,
-            force=False,
-            theme=None,
-            vcs="git",
-        )
-        assert u.log_exists(
-            logs,
-            event="can not find git executable",
-            log_level="warning",
-        )
+    project_dir = session.new(
+        dir_name=None,
+        invoc_dir=tmp_path,
+        project_dir=tmp_path,
+        name="",
+        url="",
+        authors=[],
+        description="",
+        language=None,
+        force=False,
+        theme=None,
+        vcs="git",
+    )
+
+    assert log.has("can not find git executable", level="warning")
 
     assert_new_project_layout(project_dir, with_git=True)
 
     return None
 
 
-def test_ok_git_init_fail(tmp_path: Path, mocker: MockerFixture) -> None:
+def test_ok_git_init_fail(
+    tmp_path: Path, mocker: MockerFixture, log: StructuredLogCapture
+) -> None:
     u.assert_dir_empty(tmp_path)
 
     which_m = mocker.patch("volt.session.which")
@@ -339,30 +334,31 @@ def test_ok_git_init_fail(tmp_path: Path, mocker: MockerFixture) -> None:
     cmd_toks = [git_exe, "-C", f"{tmp_path.resolve()}", "init"]
     run_m.side_effect = func_failed_process_for(cmd_toks)
 
-    with capture_logs() as logs:
-        assert logs == []
-        project_dir = session.new(
-            dir_name=None,
-            invoc_dir=tmp_path,
-            project_dir=tmp_path,
-            name="",
-            url="",
-            authors=[],
-            description="",
-            language=None,
-            force=False,
-            theme=None,
-            vcs="git",
-        )
-        run_m.assert_any_call(cmd_toks, capture_output=True)
-        assert u.log_exists(logs, event="git init failed", log_level="warning")
+    project_dir = session.new(
+        dir_name=None,
+        invoc_dir=tmp_path,
+        project_dir=tmp_path,
+        name="",
+        url="",
+        authors=[],
+        description="",
+        language=None,
+        force=False,
+        theme=None,
+        vcs="git",
+    )
+    run_m.assert_any_call(cmd_toks, capture_output=True)
+
+    assert log.has("git init failed", level="warning")
 
     assert_new_project_layout(project_dir, with_git=True)
 
     return None
 
 
-def test_ok_git_add_fail(tmp_path: Path, mocker: MockerFixture) -> None:
+def test_ok_git_add_fail(
+    tmp_path: Path, mocker: MockerFixture, log: StructuredLogCapture
+) -> None:
     u.assert_dir_empty(tmp_path)
 
     which_m = mocker.patch("volt.session.which")
@@ -373,23 +369,21 @@ def test_ok_git_add_fail(tmp_path: Path, mocker: MockerFixture) -> None:
     cmd_toks = [git_exe, "-C", f"{tmp_path.resolve()}", "add", "."]
     run_m.side_effect = func_failed_process_for(cmd_toks)
 
-    with capture_logs() as logs:
-        assert logs == []
-        project_dir = session.new(
-            dir_name=None,
-            invoc_dir=tmp_path,
-            project_dir=tmp_path,
-            name="",
-            url="",
-            authors=[],
-            description="",
-            language=None,
-            force=False,
-            theme=None,
-            vcs="git",
-        )
-        run_m.assert_any_call(cmd_toks, capture_output=True)
-        assert u.log_exists(logs, event="git add failed", log_level="warning")
+    project_dir = session.new(
+        dir_name=None,
+        invoc_dir=tmp_path,
+        project_dir=tmp_path,
+        name="",
+        url="",
+        authors=[],
+        description="",
+        language=None,
+        force=False,
+        theme=None,
+        vcs="git",
+    )
+    run_m.assert_any_call(cmd_toks, capture_output=True)
+    assert log.has("git add failed", level="warning")
 
     assert_new_project_layout(project_dir, with_git=True)
 

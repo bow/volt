@@ -7,12 +7,11 @@ import time
 from contextlib import closing, contextmanager, AbstractContextManager as ACM
 from pathlib import Path
 from threading import Thread
-from typing import Any, Callable, Generator, Iterable, Optional
+from typing import Any, Callable, Generator, Optional
 
 import pytest
 import tomlkit
 from click.testing import CliRunner
-from structlog.types import EventDict
 
 from volt import cli
 from volt.constants import PROJECT_TARGET_DIR_NAME
@@ -98,13 +97,6 @@ def has_and_pop(d: dict, key: Any) -> bool:
         return d.pop(key, _sentinel) is not _sentinel
     except KeyError:
         return False
-
-
-def log_exists(items: Iterable[EventDict], **kwargs: Any) -> bool:
-    def pred(item: EventDict, **kwargs: Any) -> bool:
-        return all(key in item and item[key] == value for key, value in kwargs.items())
-
-    return any(pred(item, **kwargs) for item in items)
 
 
 def find_free_port() -> int:

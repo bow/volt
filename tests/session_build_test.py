@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable
 
 import pytest
-from structlog.testing import capture_logs
+from pytest_structlog import StructuredLogCapture
 
 from . import utils as u
 
@@ -19,6 +19,7 @@ def test_ok_minimal(
     tmp_path: Path,
     isolated_project_dir: Callable,
     project_dirs: dict[str, Path],
+    log: StructuredLogCapture,
 ) -> None:
 
     fixture_name = "ok_minimal"
@@ -33,10 +34,8 @@ def test_ok_minimal(
 
         assert not config.target_dir.exists()
 
-        with capture_logs() as logs:
-            assert logs == []
-            site = session.build(config=config)
-            assert u.log_exists(logs, event="build completed", log_level="info")
+        site = session.build(config=config)
+        assert log.has("build completed", level="info")
 
         assert site is not None
 
@@ -59,6 +58,7 @@ def test_ok_extended(
     tmp_path: Path,
     isolated_project_dir: Callable,
     project_dirs: dict[str, Path],
+    log: StructuredLogCapture,
 ) -> None:
 
     fixture_name = "ok_extended"
@@ -74,10 +74,8 @@ def test_ok_extended(
 
         assert not config.target_dir.exists()
 
-        with capture_logs() as logs:
-            assert logs == []
-            site = session.build(config=config)
-            assert u.log_exists(logs, event="build completed", log_level="info")
+        site = session.build(config=config)
+        assert log.has("build completed", level="info")
 
         assert site is not None
 
@@ -102,6 +100,7 @@ def test_ok_extended(
 def test_err_theme_missing(
     tmp_path: Path,
     isolated_project_dir: Callable,
+    log: StructuredLogCapture,
 ) -> None:
 
     with isolated_project_dir(tmp_path, "ok_minimal") as project_dir:
@@ -115,19 +114,14 @@ def test_err_theme_missing(
 
         assert not config.target_dir.exists()
 
-        with capture_logs() as logs:
-            assert logs == []
-            with pytest.raises(
-                err.VoltConfigError,
-                match=f"theme 'foo' not found in {config.themes_dir}",
-            ):
-                session.build(config=config)
-            assert u.log_exists(logs, event="build failed", log_level="error")
-            assert not u.log_exists(
-                logs,
-                event="build failed -- keeping current build",
-                log_level="error",
-            )
+        with pytest.raises(
+            err.VoltConfigError,
+            match=f"theme 'foo' not found in {config.themes_dir}",
+        ):
+            session.build(config=config)
+
+        assert log.has("build failed", level="error")
+        assert not log.has("build failed -- keeping current build", level="error")
 
         assert not config.target_dir.exists()
 
@@ -135,6 +129,7 @@ def test_err_theme_missing(
 def test_err_theme_missing_with_existing_build(
     tmp_path: Path,
     isolated_project_dir: Callable,
+    log: StructuredLogCapture,
 ) -> None:
 
     with isolated_project_dir(tmp_path, "ok_minimal.built") as project_dir:
@@ -148,16 +143,11 @@ def test_err_theme_missing_with_existing_build(
 
         assert config.target_dir.exists()
 
-        with capture_logs() as logs:
-            assert logs == []
-            with pytest.raises(
-                err.VoltConfigError,
-                match=f"theme 'foo' not found in {config.themes_dir}",
-            ):
-                session.build(config=config)
-            assert not u.log_exists(logs, event="build failed", log_level="error")
-            assert u.log_exists(
-                logs,
-                event="build failed -- keeping current build",
-                log_level="error",
-            )
+        with pytest.raises(
+            err.VoltConfigError,
+            match=f"theme 'foo' not found in {config.themes_dir}",
+        ):
+            session.build(config=config)
+
+        assert not log.has("build failed", level="error")
+        assert log.has("build failed -- keeping current build", level="error")
