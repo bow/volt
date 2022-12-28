@@ -241,6 +241,19 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "insipid-sphinx-theme"
+version = "0.3.6"
+description = "An insipid Sphinx theme"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+docutils = ">=0.18"
+jinja2 = ">=2.11"
+sphinx = ">=5"
+
+[[package]]
 name = "jinja2"
 version = "3.1.2"
 description = "A very fast and expressive template engine."
@@ -965,7 +978,7 @@ test = ["pytest (>=3.0.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11"
-content-hash = "8aef31468a134689de8e7bd3a804809cf45abb4ab2cd37a9797b2bd59ed5b461"
+content-hash = "75ded90be8e752b592819eea07cc4cb2dd18b634383fb881d8ec850816ada168"
 
 [metadata.files]
 alabaster = [
@@ -1113,6 +1126,10 @@ imagesize = [
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
+]
+insipid-sphinx-theme = [
+    {file = "insipid-sphinx-theme-0.3.6.tar.gz", hash = "sha256:01097ff2d0dfeaea02c1fdb99e08c6289fb2bb0b7456636eaa54358747883649"},
+    {file = "insipid_sphinx_theme-0.3.6-py3-none-any.whl", hash = "sha256:252957745a48c8c13dfbfd82d212446181aa3e8baa7fc6fe44d7001fec859309"},
 ]
 jinja2 = [
     {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},

@@ -79,6 +79,7 @@ toml = "^0.10.2"
 requests = "^2.28.1"
 types-requests = "^2.28.11.6"
 pytest-structlog = "^0.6"
+insipid-sphinx-theme = "^0.3.6"
 
 [tool.mypy]
 python_version = "3.11"
