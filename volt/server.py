@@ -197,7 +197,7 @@ class _SyncQueue(queue.Queue):
 
 class _BuildObserver(Observer):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)  # type: ignore[no-untyped-call]
         self._event_queue = _SyncQueue()
 
 
@@ -222,7 +222,11 @@ class _BuildHandler(events.RegexMatchingEventHandler):
             f"^{prefix + '/' + constants.PROJECT_TARGET_DIR_NAME + '/'}.+$",
             ".*__pycache__.*",
         ]
-        super().__init__(regexes, ignore_regexes, case_sensitive=True)
+        super().__init__(
+            regexes,
+            ignore_regexes,
+            case_sensitive=True,
+        )  # type: ignore[no-untyped-call]
         self.config = config
         self._build = build_func
 
@@ -296,7 +300,7 @@ class _Rebuilder:
             _BuildHandler(config, build_func),
             config.project_dir_rel,
             recursive=True,
-        )
+        )  # type: ignore[no-untyped-call]
 
     def __enter__(self):  # type: ignore
         return self._observer.start()
