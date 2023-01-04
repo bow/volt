@@ -2,12 +2,13 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+from copy import deepcopy
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
-from typing import cast, Any, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 from urllib.parse import urljoin
 
 import pendulum
@@ -27,9 +28,41 @@ from ..targets import TemplateTarget
 __all__ = ["MarkdownEngine"]
 
 
+DEFAULT_EXTRAS = {
+    "fenced-code-blocks": {
+        "nowrap": False,
+        "full": False,
+        "title": "",
+        "noclasses": False,
+        "classprefix": "",
+        "cssclass": "hl",
+        "csstyles": "",
+        "prestyles": "",
+        "cssfile": "",
+        "noclobber_cssfile": False,
+        "linenos": False,
+        "hl_lines": [],
+        "linenostart": 1,
+        "linenostep": 1,
+        "linenospecial": 0,
+        "nobackground": False,
+        "lineseparator": "\n",
+        "lineanchors": "",
+        "anchorlinenos": False,
+    },
+    "markdown-in-html": True,
+    "header-ids": True,
+    "footnotes": True,
+}
+
+DEFAULT_CONVERTER = Markdown(extras=DEFAULT_EXTRAS).convert
+
+
 class MarkdownEngine(Engine):
 
     """Engine that creates HTML targets using the markdown2 library."""
+
+    default_extras = DEFAULT_EXTRAS
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -40,6 +73,9 @@ class MarkdownEngine(Engine):
             default_fp = Path(__file__).parent / "defaults" / f"{template_name}"
             self.template = Template(default_fp.read_text())
 
+        extras = self._resolve_extras(self.opts.pop("extras", None))
+        self.markdown = Markdown(extras=extras)
+
     def create_targets(self) -> Sequence[TemplateTarget]:
 
         config = self.config
@@ -49,7 +85,10 @@ class MarkdownEngine(Engine):
 
         targets = [
             MarkdownSource.from_path(
-                src=fp, config=config, is_draft=is_draft
+                src=fp,
+                config=config,
+                is_draft=is_draft,
+                converter=self.markdown.convert,
             ).to_template_target(self.template)
             for fp, is_draft in fps
         ]
@@ -60,35 +99,17 @@ class MarkdownEngine(Engine):
         eff_dir = self.source_dir if not drafts else self.source_drafts_dir
         return [(p, drafts) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
 
+    def _resolve_extras(self, configured: Optional[dict] = None) -> dict:
+        extras = deepcopy(self.default_extras)
+        configured = configured or {}
 
-_MD = Markdown(
-    extras={
-        "fenced-code-blocks": {
-            "nowrap": False,
-            "full": False,
-            "title": "",
-            "noclasses": False,
-            "classprefix": "",
-            "cssclass": "hl",
-            "csstyles": "",
-            "prestyles": "",
-            "cssfile": "",
-            "noclobber_cssfile": False,
-            "linenos": False,
-            "hl_lines": [],
-            "linenostart": 1,
-            "linenostep": 1,
-            "linenospecial": 0,
-            "nobackground": False,
-            "lineseparator": "\n",
-            "lineanchors": "",
-            "anchorlinenos": False,
-        },
-        "markdown-in-html": {},
-        "header-ids": {},
-        "footnotes": {},
-    }
-)
+        for k, v in configured.items():
+            if v is False:
+                extras.pop(k, None)
+            else:
+                extras[k] = v
+
+        return extras
 
 
 @dataclass(kw_only=True, eq=False)
@@ -111,11 +132,15 @@ class MarkdownSource:
     # Markdown text of the body, without any metadata.
     body: str
 
+    # Markdown converter.
+    converter: Callable[[str], str]
+
     @classmethod
     def from_path(
         cls,
         src: Path,
         config: Config,
+        converter: Callable[[str], str],
         meta: Optional[dict] = None,
         is_draft: bool = False,
         fm_sep: str = constants.FRONT_MATTER_SEP,
@@ -140,6 +165,7 @@ class MarkdownSource:
             meta={**fm, **(meta or {})},
             config=config,
             is_draft=is_draft,
+            converter=converter,
         )
 
     @cached_property
@@ -187,7 +213,7 @@ class MarkdownSource:
 
     @cached_property
     def html(self) -> str:
-        return cast(str, _MD.convert(self.body))
+        return self.converter(self.body)
 
     def to_template_target(self, template: Template) -> TemplateTarget:
         """Create a :class:`TemplateTarget` instance."""
