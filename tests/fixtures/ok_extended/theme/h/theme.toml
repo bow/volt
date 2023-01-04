@@ -2,7 +2,7 @@
 name = "h"
 
 [theme.engines.root]
-module = "volt.engines:Markdown2Engine"
+module = "volt.engines:MarkdownEngine"
 
 [theme.engines.gallery]
 class = "GalleryEngine"

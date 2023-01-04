@@ -24,7 +24,7 @@ from .config import Config
 from .targets import TemplateTarget
 
 
-__all__ = ["Markdown2Source"]
+__all__ = ["MarkdownSource"]
 
 
 _MD = Markdown(
@@ -58,7 +58,7 @@ _MD = Markdown(
 
 
 @dataclass(kw_only=True, eq=False)
-class Markdown2Source:
+class MarkdownSource:
 
     """A markdown source parsed using the markdown2 library."""
 
@@ -85,7 +85,7 @@ class Markdown2Source:
         meta: Optional[dict] = None,
         is_draft: bool = False,
         fm_sep: str = constants.FRONT_MATTER_SEP,
-    ) -> "Markdown2Source":
+    ) -> "MarkdownSource":
         """Create an instance from a file.
 
         :param src: Path to the source file.

@@ -2,4 +2,4 @@
 name = "ion"
 
 [theme.engines.markdown]
-module = "volt.engines:Markdown2Engine"
+module = "volt.engines:MarkdownEngine"

@@ -10,14 +10,14 @@ from jinja2 import Template
 from .common import Engine
 from .. import error as err
 from ..constants import MARKDOWN_EXT
-from ..sources import Markdown2Source
+from ..sources import MarkdownSource
 from ..targets import TemplateTarget
 
 
-__all__ = ["Markdown2Engine"]
+__all__ = ["MarkdownEngine"]
 
 
-class Markdown2Engine(Engine):
+class MarkdownEngine(Engine):
 
     """Engine that creates HTML targets using the markdown2 library."""
 
@@ -38,7 +38,7 @@ class Markdown2Engine(Engine):
         fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
 
         targets = [
-            Markdown2Source.from_path(
+            MarkdownSource.from_path(
                 src=fp, config=config, is_draft=is_draft
             ).to_template_target(self.template)
             for fp, is_draft in fps
