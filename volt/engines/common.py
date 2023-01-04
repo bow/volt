@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import abc
-import os
 from dataclasses import dataclass, field, InitVar
 from importlib import import_module
 from pathlib import Path
@@ -14,7 +13,7 @@ import structlog
 
 from .. import error as err
 from ..config import Config
-from ..targets import CopyTarget, Target
+from ..targets import Target
 from ..theme import Theme
 from .._import import import_file
 from .._logging import log_method
@@ -156,54 +155,3 @@ class EngineSpec:
         except ValueError:
             raise err.VoltConfigError(f"invalid engine class specifier: {spec!r}")
         return cls_loc, cls_name
-
-
-def _calc_relpath(target: Path, ref: Path) -> Path:
-    """Calculate the target's path relative to the reference.
-
-    :param target: The path to which the relative path will point.
-    :param ref: Reference path.
-
-    :returns: The relative path from ``ref`` to ``to``.
-
-    :raises ValueError: when one of the given input paths is not an absolute
-        path.
-
-    """
-    ref = ref.expanduser()
-    target = target.expanduser()
-    if not ref.is_absolute() or not target.is_absolute():
-        raise ValueError("could not compute relative paths of non-absolute input paths")
-
-    common = Path(os.path.commonpath([ref, target]))
-    common_len = len(common.parts)
-    ref_uniq = ref.parts[common_len:]
-    target_uniq = target.parts[common_len:]
-
-    rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
-
-    return Path(*rel_parts)
-
-
-def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
-    """Gather files from the given start directory recursively as copy targets."""
-
-    src_relpath = _calc_relpath(start_dir, invocation_dir)
-    src_rel_len = len(src_relpath.parts)
-
-    targets: list[CopyTarget] = []
-
-    try:
-        entries = list(os.scandir(src_relpath))
-    except FileNotFoundError:
-        return targets
-    else:
-        while entries:
-            de = entries.pop()
-            if de.is_dir():
-                entries.extend(os.scandir(de))
-            else:
-                dtoks = Path(de.path).parts[src_rel_len:]
-                targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
-
-        return targets
