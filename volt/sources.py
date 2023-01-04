@@ -24,7 +24,7 @@ from .config import Config
 from .targets import TemplateTarget
 
 
-__all__ = ["FileSource", "Markdown2Source", "Source"]
+__all__ = ["Markdown2Source"]
 
 
 _MD = Markdown(
@@ -57,10 +57,13 @@ _MD = Markdown(
 )
 
 
-@dataclass(kw_only=True)
-class Source:
+@dataclass(kw_only=True, eq=False)
+class Markdown2Source:
 
-    """A source for the site content."""
+    """A markdown source parsed using the markdown2 library."""
+
+    # FileSystem path to the source content.
+    src: Path
 
     # Metadata of the content.
     meta: dict
@@ -70,21 +73,6 @@ class Source:
 
     # Whether the content is draft or not.
     is_draft: bool
-
-
-@dataclass(kw_only=True)
-class FileSource(Source):
-
-    """A source on the filesystem for the site content."""
-
-    # FileSystem path to the source content.
-    src: Path
-
-
-@dataclass(kw_only=True, eq=False)
-class Markdown2Source(FileSource):
-
-    """A markdown source parsed using the markdown2 library."""
 
     # Markdown text of the body, without any metadata.
     body: str
