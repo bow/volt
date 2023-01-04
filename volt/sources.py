@@ -52,6 +52,7 @@ _MD = Markdown(
         },
         "markdown-in-html": {},
         "header-ids": {},
+        "footnotes": {},
     }
 )
 
