@@ -11,7 +11,8 @@ from pytest_mock import MockerFixture
 from volt import constants
 from volt.config import Config
 from volt.error import VoltConfigError
-from volt.engines import _calc_relpath, EngineSpec, StaticEngine
+from volt.engines import EngineSpec, StaticEngine
+from volt.engines.common import _calc_relpath
 from volt.theme import Theme
 
 

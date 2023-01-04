@@ -1,4 +1,5 @@
-"""Site engines."""
+"""Common engine functions and classes."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -10,19 +11,13 @@ from pathlib import Path
 from typing import cast, Any, Optional, Sequence, Type
 
 import structlog
-from jinja2 import Template
 
-from . import error as err
-from .config import Config
-from .constants import MARKDOWN_EXT, STATIC_DIR_NAME
-from .sources import Markdown2Source
-from .targets import CopyTarget, Target, TemplateTarget
-from .theme import Theme
-from ._import import import_file
-from ._logging import log_method
-
-
-__all__ = ["Engine", "EngineSpec", "Markdown2Engine", "StaticEngine"]
+from .. import error as err
+from ..config import Config
+from ..targets import CopyTarget, Target
+from ..theme import Theme
+from .._import import import_file
+from .._logging import log_method
 
 
 log = structlog.get_logger(__name__)
@@ -163,99 +158,6 @@ class EngineSpec:
         return cls_loc, cls_name
 
 
-class StaticEngine(Engine):
-
-    """Engine that resolves and copies static files."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        if (kwargs.get("source_dir_name") or STATIC_DIR_NAME) != STATIC_DIR_NAME:
-            raise err.VoltConfigError(
-                f"if specified, 'source' must be {STATIC_DIR_NAME!r} for {self.name}"
-            )
-        kwargs["source_dir_name"] = STATIC_DIR_NAME
-        super().__init__(*args, **kwargs)
-
-    @property
-    def source_drafts_dir(self) -> Path:
-        log.warn(f"drafts directory is not applicable to {self.name}")
-        return self.source_dir
-
-    def create_targets(self) -> Sequence[CopyTarget]:
-        config = self.config
-        theme = self.theme
-
-        targets = {
-            target.url: target
-            for target in _collect_copy_targets(theme.static_dir, config.invoc_dir)
-        }
-
-        for user_target in _collect_copy_targets(config.static_dir, config.invoc_dir):
-            url = user_target.url
-            if url in targets:
-                log.warn("using user-defined target instead of theme target", url=url)
-            targets[url] = user_target
-
-        return list(targets.values())
-
-
-class Markdown2Engine(Engine):
-
-    """Engine that creates HTML targets using the markdown2 library."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        template_name = self.opts.pop("template_name", "page.html.j2")
-        try:
-            self.template = self.theme.load_template_file(template_name)
-        except err.VoltMissingTemplateError:
-            default_fp = Path(__file__).parent / "defaults" / f"{template_name}"
-            self.template = Template(default_fp.read_text())
-
-    def create_targets(self) -> Sequence[TemplateTarget]:
-
-        config = self.config
-        get_sources = self.get_sources
-
-        fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
-
-        targets = [
-            Markdown2Source.from_path(
-                src=fp, config=config, is_draft=is_draft
-            ).to_template_target(self.template)
-            for fp, is_draft in fps
-        ]
-
-        return targets
-
-    def get_sources(self, drafts: bool = False) -> list[tuple[Path, bool]]:
-        eff_dir = self.source_dir if not drafts else self.source_drafts_dir
-        return [(p, drafts) for p in eff_dir.glob(f"*{MARKDOWN_EXT}")]
-
-
-def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
-    """Gather files from the given start directory recursively as copy targets."""
-
-    src_relpath = _calc_relpath(start_dir, invocation_dir)
-    src_rel_len = len(src_relpath.parts)
-
-    targets: list[CopyTarget] = []
-
-    try:
-        entries = list(os.scandir(src_relpath))
-    except FileNotFoundError:
-        return targets
-    else:
-        while entries:
-            de = entries.pop()
-            if de.is_dir():
-                entries.extend(os.scandir(de))
-            else:
-                dtoks = Path(de.path).parts[src_rel_len:]
-                targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
-
-        return targets
-
-
 def _calc_relpath(target: Path, ref: Path) -> Path:
     """Calculate the target's path relative to the reference.
 
@@ -281,3 +183,27 @@ def _calc_relpath(target: Path, ref: Path) -> Path:
     rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
 
     return Path(*rel_parts)
+
+
+def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
+    """Gather files from the given start directory recursively as copy targets."""
+
+    src_relpath = _calc_relpath(start_dir, invocation_dir)
+    src_rel_len = len(src_relpath.parts)
+
+    targets: list[CopyTarget] = []
+
+    try:
+        entries = list(os.scandir(src_relpath))
+    except FileNotFoundError:
+        return targets
+    else:
+        while entries:
+            de = entries.pop()
+            if de.is_dir():
+                entries.extend(os.scandir(de))
+            else:
+                dtoks = Path(de.path).parts[src_rel_len:]
+                targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
+
+        return targets
