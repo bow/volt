@@ -1,5 +1,5 @@
 """Hooks for various events."""
-# Copyright (c) 2012-2022 Wibowo Arindrarto <contact@arindrarto.dev>
+# Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
 import sys
