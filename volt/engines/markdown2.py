@@ -68,7 +68,16 @@ class MarkdownEngine(Engine):
         default_extras: dict = DEFAULT_EXTRAS,
     ) -> Callable[[str], str]:
         resolved_extras = _resolve_extras(extras, default_extras)
-        return cast(Callable[[str], str], Markdown(extras=resolved_extras).convert)
+
+        kwargs: dict = {}
+        if isinstance((fd := resolved_extras.get("footnotes", None)), dict):
+            for k in ("footnote_return_symbol", "footnote_title"):
+                if (v := fd.get(k)) is not None:
+                    kwargs[k] = v
+
+        return cast(
+            Callable[[str], str], Markdown(extras=resolved_extras, **kwargs).convert
+        )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
