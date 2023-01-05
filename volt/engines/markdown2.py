@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Callable, Optional, Sequence
+from typing import cast, Any, Callable, Optional, Sequence
 from urllib.parse import urljoin
 
 import pendulum
@@ -64,6 +64,14 @@ class MarkdownEngine(Engine):
 
     default_extras = DEFAULT_EXTRAS
 
+    @staticmethod
+    def make_converter(
+        extras: Optional[dict] = None,
+        default_extras: dict = DEFAULT_EXTRAS,
+    ) -> Callable[[str], str]:
+        resolved_extras = _resolve_extras(extras, default_extras)
+        return cast(Callable[[str], str], Markdown(extras=resolved_extras).convert)
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         template_name = self.opts.pop("template_name", "page.html.j2")
@@ -73,13 +81,13 @@ class MarkdownEngine(Engine):
             default_fp = Path(__file__).parent / "defaults" / f"{template_name}"
             self.template = Template(default_fp.read_text())
 
-        extras = self._resolve_extras(self.opts.pop("extras", None))
-        self.markdown = Markdown(extras=extras)
+        self.extras = self.opts.pop("extras", None)
 
     def create_targets(self) -> Sequence[TemplateTarget]:
 
         config = self.config
         get_sources = self.get_sources
+        converter = self.make_converter(self.extras)
 
         fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
 
@@ -88,7 +96,7 @@ class MarkdownEngine(Engine):
                 src=fp,
                 config=config,
                 is_draft=is_draft,
-                converter=self.markdown.convert,
+                converter=converter,
             ).to_template_target(self.template)
             for fp, is_draft in fps
         ]
@@ -98,18 +106,6 @@ class MarkdownEngine(Engine):
     def get_sources(self, drafts: bool = False) -> list[tuple[Path, bool]]:
         eff_dir = self.source_dir if not drafts else self.source_drafts_dir
         return [(p, drafts) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
-
-    def _resolve_extras(self, configured: Optional[dict] = None) -> dict:
-        extras = deepcopy(self.default_extras)
-        configured = configured or {}
-
-        for k, v in configured.items():
-            if v is False:
-                extras.pop(k, None)
-            else:
-                extras[k] = v
-
-        return extras
 
 
 @dataclass(kw_only=True, eq=False)
@@ -227,3 +223,16 @@ class MarkdownSource:
             },
             src=self.src.relative_to(self.config.project_dir),
         )
+
+
+def _resolve_extras(extras: Optional[dict], default_extras: dict) -> dict:
+    resolved = deepcopy(default_extras)
+    extras = extras or {}
+
+    for k, v in extras.items():
+        if v is False:
+            resolved.pop(k, None)
+        else:
+            resolved[k] = v
+
+    return resolved
