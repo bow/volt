@@ -55,8 +55,6 @@ DEFAULT_EXTRAS = {
     "footnotes": True,
 }
 
-DEFAULT_CONVERTER = Markdown(extras=DEFAULT_EXTRAS).convert
-
 
 class MarkdownEngine(Engine):
 
