@@ -25,7 +25,7 @@ from ..config import Config
 from ..targets import TemplateTarget
 
 
-__all__ = ["MarkdownEngine"]
+__all__ = ["MarkdownEngine", "MarkdownSource"]
 
 
 class MarkdownEngine(Engine):
