@@ -28,44 +28,41 @@ from ..targets import TemplateTarget
 __all__ = ["MarkdownEngine"]
 
 
-DEFAULT_EXTRAS = {
-    "fenced-code-blocks": {
-        "nowrap": False,
-        "full": False,
-        "title": "",
-        "noclasses": False,
-        "classprefix": "",
-        "cssclass": "hl",
-        "csstyles": "",
-        "prestyles": "",
-        "cssfile": "",
-        "noclobber_cssfile": False,
-        "linenos": False,
-        "hl_lines": [],
-        "linenostart": 1,
-        "linenostep": 1,
-        "linenospecial": 0,
-        "nobackground": False,
-        "lineseparator": "\n",
-        "lineanchors": "",
-        "anchorlinenos": False,
-    },
-    "markdown-in-html": True,
-    "header-ids": True,
-    "footnotes": True,
-}
-
-
 class MarkdownEngine(Engine):
 
     """Engine that creates HTML targets using the markdown2 library."""
 
-    default_extras = DEFAULT_EXTRAS
+    default_extras = {
+        "fenced-code-blocks": {
+            "nowrap": False,
+            "full": False,
+            "title": "",
+            "noclasses": False,
+            "classprefix": "",
+            "cssclass": "hl",
+            "csstyles": "",
+            "prestyles": "",
+            "cssfile": "",
+            "noclobber_cssfile": False,
+            "linenos": False,
+            "hl_lines": [],
+            "linenostart": 1,
+            "linenostep": 1,
+            "linenospecial": 0,
+            "nobackground": False,
+            "lineseparator": "\n",
+            "lineanchors": "",
+            "anchorlinenos": False,
+        },
+        "markdown-in-html": True,
+        "header-ids": True,
+        "footnotes": True,
+    }
 
     @staticmethod
     def make_converter(
         extras: Optional[dict] = None,
-        default_extras: dict = DEFAULT_EXTRAS,
+        default_extras: dict = default_extras,
     ) -> Callable[[str], str]:
         resolved_extras = _resolve_extras(extras, default_extras)
 
