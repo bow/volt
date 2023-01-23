@@ -50,6 +50,7 @@ IMG_TAG    := latest
 endif
 
 WHEEL_DEPS_DIR ?= $(CURDIR)/wheels/deps
+DOCS_DIR := $(CURDIR)/docs
 
 ## Rules ##
 
@@ -86,7 +87,17 @@ clean-pyenv:  ## Remove the created pyenv virtualenv.
 
 .PHONY: docs-html
 docs-html:  ## Build HTML documentation.
-	cd ./docs && make html
+	cd $(DOCS_DIR) && make html
+
+
+.PHONY: docs-html-serve
+docs-html-serve:  ## Build HTML documentation and serve it.
+	@if command -v entr > /dev/null 2>&1; then \
+		find $(DOCS_DIR) -not \( -path "$(DOCS_DIR)/_build" -prune \) \
+			| entr -rcdns '$(MAKE) -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html'; \
+	else \
+		make -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html; \
+	fi
 
 
 .PHONY: env
