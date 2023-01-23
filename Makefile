@@ -84,6 +84,11 @@ clean-pyenv:  ## Remove the created pyenv virtualenv.
 	pyenv virtualenv-delete -f $(VENV_NAME) && rm -f .python-version
 
 
+.PHONY: docs-html
+docs-html:  ## Build HTML documentation.
+	cd ./docs && make html
+
+
 .PHONY: env
 env:  ## Configure a local development environment.
 	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
