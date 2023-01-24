@@ -52,6 +52,9 @@ endif
 WHEEL_DEPS_DIR ?= $(CURDIR)/wheels/deps
 DOCS_DIR := $(CURDIR)/docs
 
+RTD_BUILD_API_URL := https://readthedocs.org/api/v3/projects/volt/versions/latest/builds/
+
+
 ## Rules ##
 
 all: help
@@ -98,6 +101,12 @@ docs-html-serve:  ## Build HTML documentation and serve it.
 	else \
 		make -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html; \
 	fi
+
+
+.PHONY: docs-rtd
+docs-rtd:  ## Trigger ReadTheDocs build.
+	@([ ! -z "$(RTD_TOKEN)" ] || (>&2 echo "error: RTD_TOKEN undefined"; exit 1)) \
+		&& curl -X POST -H "Authorization: Token ${RTD_TOKEN}" $(RTD_BUILD_API_URL)
 
 
 .PHONY: env
