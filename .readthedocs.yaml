@@ -11,6 +11,6 @@ python:
   system_packages: true
 
 sphinx:
-  build: "html"
+  builder: "html"
   configuration: "docs/conf.py"
   fail_on_warning: true
