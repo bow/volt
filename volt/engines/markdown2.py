@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
-from typing import cast, Any, Callable, Optional, Sequence
+from typing import cast, Any, Callable, Optional, Self, Sequence
 from urllib.parse import urljoin
 
 import pendulum
@@ -144,7 +144,7 @@ class MarkdownSource:
         meta: Optional[dict] = None,
         is_draft: bool = False,
         fm_sep: str = constants.FRONT_MATTER_SEP,
-    ) -> "MarkdownSource":
+    ) -> Self:
         """Create an instance from a file.
 
         :param src: Path to the source file.

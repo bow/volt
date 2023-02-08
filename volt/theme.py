@@ -7,7 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
 from types import ModuleType
-from typing import cast, Any, Callable, Literal, Optional, TYPE_CHECKING
+from typing import cast, Any, Callable, Literal, Optional, Self, TYPE_CHECKING
 
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
@@ -30,7 +30,7 @@ class Theme:
 
     @classmethod
     @log_method
-    def from_config(cls, config: Config) -> "Theme":
+    def from_config(cls, config: Config) -> Self:
 
         if config.theme_name is None:
             raise err.VoltConfigError("config defines no theme")

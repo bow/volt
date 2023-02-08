@@ -11,7 +11,7 @@ from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import cast, Any, Callable, NoReturn, Optional
+from typing import cast, Any, Callable, NoReturn, Optional, Self
 
 import structlog
 from click import echo
@@ -38,7 +38,7 @@ class _RunFile:
     DRAFTS_OFF = "no-drafts"
 
     @classmethod
-    def from_config(cls, config: Config, drafts: Optional[bool] = None) -> "_RunFile":
+    def from_config(cls, config: Config, drafts: Optional[bool] = None) -> Self:
         log.debug("creating server run file object from config", drafts=drafts)
         return cls(
             path=config._server_run_path,
@@ -46,7 +46,7 @@ class _RunFile:
         )
 
     @classmethod
-    def from_path(cls, path: Path) -> Optional["_RunFile"]:
+    def from_path(cls, path: Path) -> Optional[Self]:
         with bound_contextvars(path=path):
             log.debug("creating server run file object from existing file")
             if not path.exists():
@@ -68,7 +68,7 @@ class _RunFile:
     def drafts(self) -> bool:
         return self._drafts
 
-    def toggle_drafts(self, value: Optional[bool]) -> "_RunFile":
+    def toggle_drafts(self, value: Optional[bool]) -> Self:
         log.debug("toggling server drafts mode", value=value)
         new_value = value if value is not None else (not self._drafts)
         self._drafts = new_value

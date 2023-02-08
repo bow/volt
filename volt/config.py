@@ -6,7 +6,7 @@ import os
 from collections import UserDict
 from functools import cached_property
 from pathlib import Path
-from typing import cast, Any, Dict, Iterable, Literal, Optional
+from typing import cast, Any, Dict, Iterable, Literal, Optional, Self
 
 import tomlkit
 
@@ -27,7 +27,7 @@ class Config(UserDict):
         start_lookup_dir: Path,
         config_file_name: str = constants.CONFIG_FILE_NAME,
         **kwargs: Any,
-    ) -> Optional["Config"]:
+    ) -> Optional[Self]:
         """Create an instance from within a project directory.
 
         This methods performs an upwards traversal from within the current
@@ -58,7 +58,7 @@ class Config(UserDict):
         project_dir: Path,
         config_file_name: str,
         **kwargs: Any,
-    ) -> "Config":
+    ) -> Self:
         """Create a site configuration from a Volt config file.
 
         :param invoc_dir: Path to the invocation directory.
@@ -238,7 +238,7 @@ class Config(UserDict):
         self,
         drafts: Optional[bool] = None,
         config_file_name: str = constants.CONFIG_FILE_NAME,
-    ) -> "Config":
+    ) -> Self:
         """Reloads the config file."""
         if self._config_path is None:
             raise err.VoltResourceError("could not reload non-file config")
