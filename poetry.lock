@@ -281,7 +281,7 @@ restructuredtext = ["rst2ansi"]
 
 [[package]]
 name = "markdown2"
-version = "2.4.6"
+version = "2.4.7"
 description = "A fast and complete Python implementation of Markdown"
 category = "main"
 optional = false
@@ -976,7 +976,7 @@ test = ["pytest (>=3.0.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11"
-content-hash = "75e81e5c7a3d018abdbf6de196bea54c2547d797e14ce4b4d1b82a808f10164b"
+content-hash = "445a8cb07f54beea06739e8bd1316574c156f53db664370c8adb9a89f32289aa"
 
 [metadata.files]
 alabaster = [
@@ -1224,8 +1224,8 @@ mando = [
     {file = "mando-0.6.4.tar.gz", hash = "sha256:79feb19dc0f097daa64a1243db578e7674909b75f88ac2220f1c065c10a0d960"},
 ]
 markdown2 = [
-    {file = "markdown2-2.4.6-py2.py3-none-any.whl", hash = "sha256:528f978beb3dbcf529a139b6c76f6ac6ecf8bb96c131beab751bb095b3873b58"},
-    {file = "markdown2-2.4.6.tar.gz", hash = "sha256:f65b4dbe1e16591b14fd40bc659b8b58d285eab70c1da21f390294fcdec42bb0"},
+    {file = "markdown2-2.4.7-py2.py3-none-any.whl", hash = "sha256:62156ad2426249a1d1a9059cfe7eab712ff2f397660991b1796c342c19bfa922"},
+    {file = "markdown2-2.4.7.tar.gz", hash = "sha256:dfb52ff4007389567b391ce8fa3cff3dd363d1f282d20205383c6a710f9870d1"},
 ]
 markupsafe = [
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812"},
