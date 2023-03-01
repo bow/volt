@@ -14,7 +14,7 @@ import structlog
 from rich.traceback import install
 from structlog.contextvars import bind_contextvars
 
-from . import __version__, session
+from . import __version__, constants, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
 from .error import VoltCliError, _VoltServerExit
 from ._import import import_file
@@ -390,6 +390,13 @@ def build(
     default=False,
     help="If set, also look for matches in published directories. Default: unset.",
 )
+@click.option(
+    "-e",
+    "--ext",
+    type=str,
+    default=constants.MARKDOWN_EXT,
+    help="The extension of the file to edit / create.",
+)
 @click.pass_context
 def edit(
     ctx: click.Context,
@@ -397,11 +404,12 @@ def edit(
     create: Optional[str],
     title: str,
     published: bool,
+    ext: str,
 ) -> None:
-    """Open a source file in an editor"""
+    """Edit or create a text file in the 'source' directory in an editor"""
     config = _get_config(ctx.parent, drafts=not published)
 
-    session.edit(config=config, query=name, create=create, title=title)
+    session.edit(config=config, query=name, create=create, title=title, ext=ext)
 
 
 @root.group(invoke_without_command=True)

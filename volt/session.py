@@ -182,21 +182,21 @@ def edit(
                 f"inferred edit path {fn} is not located inside the project directory"
             )
         new_fp = fn.with_suffix(ext)
-        new_fp.parent.mkdir(parents=True, exist_ok=True)
+
         if new_fp.exists():
             click.edit(filename=f"{new_fp}")
             return None
 
-        contents = click.edit(
+        if contents := click.edit(
             text=_infer_front_matter(query, title),
             extension=ext,
             require_save=False,
-        )
-        if contents:
+        ):
+            new_fp.parent.mkdir(parents=True, exist_ok=True)
+            new_fp.write_text(contents)
             log.info(
                 f"created new file at {str(new_fp.relative_to(config.invoc_dir))!r}"
             )
-            new_fp.write_text(contents)
 
         return None
 
