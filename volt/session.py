@@ -165,6 +165,7 @@ def edit(
     query: str,
     create: Optional[str] = None,
     title: Optional[str] = None,
+    ext: str = constants.MARKDOWN_EXT,
 ) -> None:
     """Open a draft file in an editor."""
 
@@ -180,7 +181,7 @@ def edit(
             raise err.VoltResourceError(
                 f"inferred edit path {fn} is not located inside the project directory"
             )
-        new_fp = fn.with_suffix(constants.MARKDOWN_EXT)
+        new_fp = fn.with_suffix(ext)
         new_fp.parent.mkdir(parents=True, exist_ok=True)
         if new_fp.exists():
             click.edit(filename=f"{new_fp}")
@@ -188,7 +189,7 @@ def edit(
 
         contents = click.edit(
             text=_infer_front_matter(query, title),
-            extension=constants.MARKDOWN_EXT,
+            extension=ext,
             require_save=False,
         )
         if contents:
@@ -201,7 +202,7 @@ def edit(
 
     match_fp = _get_fuzzy_match(
         query=query,
-        ext=constants.MARKDOWN_EXT,
+        ext=ext,
         start_dir=config.sources_dir,
         ignore_dir_name=None if config.with_drafts else config.drafts_dir_name,
     )
