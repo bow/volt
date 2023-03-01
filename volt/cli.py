@@ -409,7 +409,13 @@ def edit(
     """Edit or create a text file in the 'source' directory in an editor"""
     config = _get_config(ctx.parent, drafts=not published)
 
-    session.edit(config=config, query=name, create=create, title=title, ext=ext)
+    session.edit(
+        config=config,
+        query=name,
+        create=create,
+        title=title,
+        ext=f".{ext}" if not ext.startswith(".") else ext,
+    )
 
 
 @root.group(invoke_without_command=True)
