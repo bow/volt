@@ -499,6 +499,7 @@ def test_edit_ok_minimal(
                 query="foo",
                 create=None,
                 title=None,
+                ext=constants.MARKDOWN_EXT,
             )
             config = sess_func.call_args.kwargs["config"]
             assert config.invoc_dir == project_dir
@@ -515,7 +516,7 @@ def test_edit_ok_extended(
 ) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.edit")
-    toks = ["edit", "--published", "--create", "-n", "foo"]
+    toks = ["edit", "--published", "--create", "-n", "foo", "--ext", "adoc"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -529,6 +530,7 @@ def test_edit_ok_extended(
                 query="foo",
                 create="",
                 title=None,
+                ext=".adoc",
             )
             config = sess_func.call_args.kwargs["config"]
             assert config.invoc_dir == project_dir
