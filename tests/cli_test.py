@@ -454,7 +454,7 @@ def test_edit_ok_e2e(
     runner = u.CommandRunner()
     edit_func = mocker.patch("volt.session.click.edit")
     edit_func.return_value = "edited-contents"
-    toks = ["edit", "--create", "articles", "-n", "quux"]
+    toks = ["edit", "--create", "-d", "articles", "quux"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -485,7 +485,7 @@ def test_edit_ok_minimal(
 ) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.edit")
-    toks = ["edit", "-n", "foo"]
+    toks = ["edit", "foo"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -497,7 +497,8 @@ def test_edit_ok_minimal(
             sess_func.assert_called_once_with(
                 config=Config(invoc_dir=project_dir, project_dir=project_dir),
                 query="foo",
-                create=None,
+                create=False,
+                subdir_name=None,
                 title=None,
                 ext=constants.MARKDOWN_EXT,
             )
@@ -516,7 +517,7 @@ def test_edit_ok_extended(
 ) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.edit")
-    toks = ["edit", "--published", "--create", "-n", "foo", "--ext", "adoc"]
+    toks = ["edit", "--published", "--create", "foo", "--ext", "adoc"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -528,7 +529,8 @@ def test_edit_ok_extended(
             sess_func.assert_called_once_with(
                 config=Config(invoc_dir=project_dir, project_dir=project_dir),
                 query="foo",
-                create="",
+                create=True,
+                subdir_name=None,
                 title=None,
                 ext=".adoc",
             )

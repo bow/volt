@@ -61,7 +61,7 @@ def test_ok_drafts_create_match_new(
         draft_fp = config.sources_dir / ".drafts" / "quux.md"
         assert not draft_fp.exists()
 
-        session.edit(config, query="quux", create="")
+        session.edit(config, query="quux", create=True)
 
         edit_func.assert_called_once_with(
             text="---\ntitle: Quux\n---",
@@ -95,7 +95,7 @@ def test_ok_drafts_create_match_existing(
         assert draft_fp.exists()
         draft_fp_contents = draft_fp.read_text()
 
-        session.edit(config, query="bar", create="")
+        session.edit(config, query="bar", create=False)
 
         edit_func.assert_called_once_with(filename=f"{draft_fp}")
 

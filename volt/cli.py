@@ -358,20 +358,18 @@ def build(
 
 
 @root.command()
+@click.argument("name", type=str, required=True)
 @click.option(
-    "-n", "--name", type=str, required=True, help="Name of file to edit or create."
+    "--create/--no-create",
+    default=False,
+    help="If set, create a new file if the lookup fails. Default: unset.",
 )
 @click.option(
-    "-c",
-    "--create",
-    is_flag=False,
-    flag_value="",
+    "-d",
+    "--source-dir",
     default=None,
     type=str,
-    help=(
-        "If set, create a new file in the given source path's drafts directory"
-        " instead of attempting to edit an existing file. Default: unset."
-    ),
+    help="Where to lookup / create the file",
 )
 @click.option(
     "-t",
@@ -401,7 +399,8 @@ def build(
 def edit(
     ctx: click.Context,
     name: str,
-    create: Optional[str],
+    create: bool,
+    source_dir: Optional[str],
     title: str,
     published: bool,
     ext: str,
@@ -413,6 +412,7 @@ def edit(
         config=config,
         query=name,
         create=create,
+        subdir_name=source_dir,
         title=title,
         ext=f".{ext}" if not ext.startswith(".") else ext,
     )

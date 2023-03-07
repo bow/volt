@@ -163,16 +163,17 @@ def build(config: Config, clean: bool = True) -> Optional[Site]:
 def edit(
     config: Config,
     query: str,
-    create: Optional[str] = None,
+    create: bool = False,
+    subdir_name: Optional[str] = None,
     title: Optional[str] = None,
     ext: str = constants.MARKDOWN_EXT,
 ) -> None:
     """Open a draft file in an editor."""
 
-    if create is not None:
+    if create:
         fn = (
             config.sources_dir
-            / create
+            / (subdir_name or "")
             / (config.drafts_dir_name if config.with_drafts else "")
             / query
         )
@@ -203,7 +204,7 @@ def edit(
     match_fp = _get_fuzzy_match(
         query=query,
         ext=ext,
-        start_dir=config.sources_dir,
+        start_dir=config.sources_dir / (subdir_name or ""),
         ignore_dir_name=None if config.with_drafts else config.drafts_dir_name,
     )
     if match_fp is not None:
