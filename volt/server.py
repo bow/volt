@@ -233,27 +233,32 @@ class _BuildHandler(events.RegexMatchingEventHandler):
     def on_any_event(self, event: Any) -> None:
 
         log_attrs: dict = {}
+        do_build = False
         match type(event):
 
             case events.FileCreatedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="file_created",
                     file=event.src_path.removeprefix("./"),
                 )
 
             case events.FileModifiedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="file_modified",
                     file=event.src_path.removeprefix("./"),
                 )
 
             case events.FileDeletedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="file_deleted",
                     file=event.src_path.removeprefix("./"),
                 )
 
             case events.FileMovedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="file_moved",
                     src=event.src_path.removeprefix("./"),
@@ -261,24 +266,28 @@ class _BuildHandler(events.RegexMatchingEventHandler):
                 )
 
             case events.DirCreatedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="dir_created",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirModifiedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="dir_modified",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirDeletedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="dir_deleted",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirMovedEvent:
+                do_build = True
                 log_attrs = dict(
                     reason="dir_moved",
                     src=event.src_path.removeprefix("./"),
@@ -288,8 +297,9 @@ class _BuildHandler(events.RegexMatchingEventHandler):
             case _:
                 log_attrs = dict(reason="unknown")
 
-        log.info("rebuilding site", **log_attrs)
-        self._build()
+        if do_build:
+            log.info("rebuilding site", **log_attrs)
+            self._build()
         return None
 
 
