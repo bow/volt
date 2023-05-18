@@ -486,7 +486,8 @@ def serve_drafts(
 
 
 @root.command(cls=_ExtensionGroup)
-def xcmd() -> None:
+@click.pass_context
+def xcmd(ctx: click.Context) -> None:
     """Execute custom subcommands
 
     Custom subcommands are Click-decorated functions
