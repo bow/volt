@@ -14,7 +14,7 @@ import structlog
 from rich.traceback import install
 from structlog.contextvars import bind_contextvars
 
-from . import __version__, constants, session
+from . import __version__, session
 from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
 from .error import VoltCliError, _VoltServerExit
 from ._import import import_file
@@ -23,7 +23,6 @@ from ._logging import init_logging
 
 __all__ = [
     "build",
-    "edit",
     "main",
     "new",
     "root",
@@ -355,67 +354,6 @@ def build(
     config = _get_config(ctx.parent, drafts=drafts)
 
     session.build(config=config, clean=clean)
-
-
-@root.command()
-@click.argument("name", type=str, required=True)
-@click.option(
-    "--create/--no-create",
-    default=False,
-    help="If set, create a new file if the lookup fails. Default: unset.",
-)
-@click.option(
-    "-d",
-    "--source-dir",
-    default=None,
-    type=str,
-    help="Where to lookup / create the file",
-)
-@click.option(
-    "-t",
-    "--title",
-    type=str,
-    default=None,
-    help=(
-        "The title attribute of the content file, if a new file is created."
-        " If '--create' is unset, this flag is ignored."
-    ),
-)
-@click.option(
-    "-p",
-    "--published",
-    flag_value=True,
-    default=False,
-    help="If set, also look for matches in published directories. Default: unset.",
-)
-@click.option(
-    "-e",
-    "--ext",
-    type=str,
-    default=constants.MARKDOWN_EXT,
-    help="The extension of the file to edit / create.",
-)
-@click.pass_context
-def edit(
-    ctx: click.Context,
-    name: str,
-    create: bool,
-    source_dir: Optional[str],
-    title: str,
-    published: bool,
-    ext: str,
-) -> None:
-    """Edit or create a text file in the 'source' directory in an editor"""
-    config = _get_config(ctx.parent, drafts=not published)
-
-    session.edit(
-        config=config,
-        query=name,
-        create=create,
-        subdir_name=source_dir,
-        title=title,
-        ext=f".{ext}" if not ext.startswith(".") else ext,
-    )
 
 
 @root.group(invoke_without_command=True)

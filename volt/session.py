@@ -8,17 +8,14 @@ import subprocess as sp
 import time
 from contextlib import suppress
 from locale import getlocale
-from os.path import commonpath
 from pathlib import Path
 from shutil import copytree, which
 from typing import Optional
 
-import click
 import pendulum
 import structlog
 import tomlkit
 from structlog.contextvars import bound_contextvars
-from thefuzz import process
 
 from . import constants, error as err
 from .config import Config, _VCS
@@ -26,7 +23,7 @@ from .server import _Rebuilder, _RunFile, make_server
 from .site import Site
 
 
-__all__ = ["build", "edit", "new", "serve"]
+__all__ = ["build", "new", "serve"]
 
 
 log = structlog.get_logger(__name__)
@@ -160,60 +157,6 @@ def build(config: Config, clean: bool = True) -> Optional[Site]:
     return site
 
 
-def edit(
-    config: Config,
-    query: str,
-    create: bool = False,
-    subdir_name: Optional[str] = None,
-    title: Optional[str] = None,
-    ext: str = constants.MARKDOWN_EXT,
-) -> None:
-    """Open a draft file in an editor."""
-
-    if create:
-        fn = (
-            config.sources_dir
-            / (subdir_name or "")
-            / (config.drafts_dir_name if config.with_drafts else "")
-            / query
-        )
-        # Ensure we only edit files within a project directory.
-        if f"{commonpath([config.project_dir, fn])}" != f"{config.project_dir}":
-            raise err.VoltResourceError(
-                f"inferred edit path {fn} is not located inside the project directory"
-            )
-        new_fp = fn.with_suffix(ext)
-
-        if new_fp.exists():
-            click.edit(filename=f"{new_fp}")
-            return None
-
-        if contents := click.edit(
-            text=_infer_front_matter(query, title),
-            extension=ext,
-            require_save=False,
-        ):
-            new_fp.parent.mkdir(parents=True, exist_ok=True)
-            new_fp.write_text(contents)
-            log.info(
-                f"created new file at {str(new_fp.relative_to(config.invoc_dir))!r}"
-            )
-
-        return None
-
-    match_fp = _get_fuzzy_match(
-        query=query,
-        ext=ext,
-        start_dir=config.sources_dir / (subdir_name or ""),
-        ignore_dir_name=None if config.with_drafts else config.drafts_dir_name,
-    )
-    if match_fp is not None:
-        click.edit(filename=f"{match_fp}")
-        return None
-
-    raise err.VoltResourceError(f"found no matching file for {query!r}")
-
-
 def serve(
     config: Config,
     host: Optional[str],
@@ -264,50 +207,6 @@ def serve_drafts(config: Config, value: Optional[bool]) -> None:
         rf = _RunFile.from_config(config=config, drafts=False)
 
     return rf.toggle_drafts(value).dump()
-
-
-def _get_fuzzy_match(
-    query: str,
-    ext: str,
-    start_dir: Path,
-    ignore_dir_name: Optional[str] = None,
-    cutoff: int = 50,
-) -> Optional[str]:
-    """Return a fuzzy-matched path to a file in one of the given directories"""
-
-    dirs = _walk_dirs(start_dir=start_dir, ignore_dir_name=ignore_dir_name)
-
-    fp_map = {}
-    for d in dirs:
-        fp_map.update({p: f"{p.relative_to(d)}" for p in d.glob(f"*{ext}")})
-
-    _, _, match_fp = process.extractOne(query, fp_map, score_cutoff=cutoff) or (
-        None,
-        None,
-        None,
-    )
-
-    return match_fp
-
-
-def _walk_dirs(start_dir: Path, ignore_dir_name: Optional[str] = None) -> list[Path]:
-    """Return the input directory and all its children directories"""
-
-    todo_dirs = [start_dir]
-    dirs: list[Path] = []
-
-    while todo_dirs:
-        cur_dir = todo_dirs.pop()
-        dirs.append(cur_dir)
-        for entry in os.scandir(cur_dir):
-            if not entry.is_dir():
-                continue
-            p = Path(entry.path)
-            if ignore_dir_name is not None and p.name == ignore_dir_name:
-                continue
-            todo_dirs.append(p)
-
-    return dirs
 
 
 def _resolve_project_dir(
