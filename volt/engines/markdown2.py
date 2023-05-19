@@ -172,11 +172,16 @@ class MarkdownSource:
     def url(self) -> str:
         config = self.config
         url_key = "url"
-        parts = (
-            [part for part in self.meta[url_key].split("/") if part]
-            if self.meta.get(url_key) is not None
-            else [f"{slugify(self.title, replacements=config.slug_replacements)}.html"]
-        )
+        title_key = "title"
+
+        parts: list[str] = [f"{self._slugify(self.src.stem)}.html"]
+
+        if (meta_url := self.meta.get(url_key)) is not None:
+            parts = [part for part in meta_url.split("/") if part]
+
+        elif (meta_title := self.meta.get(title_key)) is not None:
+            parts = [f"{self._slugify(meta_title)}.html"]
+
         ps = [*(self.src.parent.parts[config.num_common_parts :]), *parts]
         if self.is_draft:
             with suppress(IndexError):
@@ -191,8 +196,8 @@ class MarkdownSource:
         return urljoin(self.config.url, self.url)
 
     @property
-    def title(self) -> str:
-        return self.meta.get("title") or self.src.stem
+    def title(self) -> Optional[str]:
+        return self.meta.get("title")
 
     @cached_property
     def pub_time(self) -> Optional[DateTime]:
@@ -227,6 +232,9 @@ class MarkdownSource:
             },
             src=self.src.relative_to(self.config.project_dir),
         )
+
+    def _slugify(self, value: str) -> str:
+        return slugify(value, replacements=self.config.slug_replacements)
 
 
 def _resolve_extras(extras: Optional[dict], default_extras: dict) -> dict:
