@@ -239,10 +239,9 @@ def root(
     "-d",
     "--desc",
     type=str,
-    default="",
+    default=None,
     help=(
         "Site description. If given, the value will be set in the created config file."
-        " Default: empty string."
     ),
 )
 @click.option(
@@ -289,7 +288,7 @@ def new(
     name: str,
     url: str,
     authors: tuple[str],
-    desc: str,
+    desc: Optional[str],
     lang: Optional[str],
     force: bool,
     theme: bool,

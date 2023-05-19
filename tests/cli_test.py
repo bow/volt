@@ -48,7 +48,6 @@ def test_new_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
         assert site_config == {
             "name": "",
             "url": "https://site.net",
-            "description": "",
         }
 
         theme_config = config["theme"]
@@ -98,7 +97,7 @@ def test_new_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> Non
             name="",
             url="",
             authors=[],
-            description="",
+            description=None,
             language=None,
             force=False,
             theme="ion",
@@ -137,7 +136,7 @@ def test_new_ok_extended(log: StructuredLogCapture, mocker: MockerFixture):
             name="custom_name",
             url="",
             authors=["John Doe", "Jane Roe"],
-            description="",
+            description=None,
             language=None,
             force=True,
             theme=None,

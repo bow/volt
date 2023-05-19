@@ -36,7 +36,7 @@ def new(
     name: str,
     url: str,
     authors: list[str],
-    description: str,
+    description: Optional[str],
     language: Optional[str],
     force: bool,
     theme: Optional[str],
@@ -248,7 +248,7 @@ def _resolve_file_config(
     name: str,
     url: str,
     theme: Optional[str],
-    description: str,
+    description: Optional[str],
     authors: list[str],
     language: Optional[str],
     dir_name_specified: bool,
@@ -260,8 +260,10 @@ def _resolve_file_config(
     site_config: dict[str, str | list[str]] = {
         "name": name.capitalize(),
         "url": url,
-        "description": description,
     }
+
+    if description is not None:
+        site_config["description"] = description
 
     if not authors:
         if (author := _infer_author()) is not None:
