@@ -1,21 +1,15 @@
 <!DOCTYPE html>
-<html{% if config.language %} lang="{{ config.language }}"{% endif %}>
+<html>
   <head>
     <meta charset="utf-8">
-    {%- if config.description %}
-    <meta name="description" content="{{ config.description }}">
-    {%- endif %}
-    {%- for author in config.authors %}
-    <meta name="author" content="{{ author }}">
-    {%- endfor %}
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {%- if config.language %}
-    <meta http-equiv="content-language" content="{{ config.language }}">
-    {%- endif %}
     {%- for target in site.select_targets("*.css") %}
     <link rel="stylesheet" href="{{ target.url }}" />
     {%- endfor %}
-    <title>{{ (meta.page_title | default(meta.title)) | default(config.name) }}</title>
+    {%- if meta.title %}
+    <title>{{ config.name }} - {{ meta.title }}</title>
+    {%- else %}
+    <title>{{ config.name }}</title>
+    {%- endif %}
   </head>
   <body>
     {% block content %}{% endblock %}
