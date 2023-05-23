@@ -135,6 +135,11 @@ env:  ## Configure a local development environment.
 	fi
 
 
+.PHONY: env-build
+env-build:  ## Install dependencies required only for building.
+	pip install $(PIP_DEPS)
+
+
 .PHONY: fmt
 fmt:  ## Apply Black.
 	poetry run black -t py311 volt tests
@@ -156,11 +161,6 @@ help:  ## Show this help.
 .PHONY: img
 img:  ## Build and tag the Docker container.
 	docker build --build-arg REVISION=$(GIT_COMMIT)$(GIT_DIRTY) --build-arg BUILD_TIME=$(BUILD_TIME) --tag $(IMG_NAME):$(IMG_TAG) .
-
-
-.PHONY: install-build
-install-build:  ## Install dependencies required only for building.
-	pip install $(PIP_DEPS)
 
 
 .PHONY: lint

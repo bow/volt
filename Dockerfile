@@ -17,7 +17,7 @@ RUN apk add --update --no-cache build-base~=0 make~=4 git~=2 libffi-dev~=3 py3-p
 COPY .git /src/.git
 
 RUN git checkout -- . \
-    && WHEEL_DEPS_DIR=/wheels/deps make install-build build \
+    && WHEEL_DEPS_DIR=/wheels/deps make env-build build \
     && mv dist/*.whl /wheels/
 
 # --- #
