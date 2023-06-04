@@ -28,18 +28,14 @@ class Engine(abc.ABC):
 
     def __init__(
         self,
-        id: str,
         config: Config,
         theme: Theme,
-        source_dir_name: str = "",
         opts: Optional[dict] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        self.id = id
         self.config = config
         self.theme = theme
-        self.source_dir_name = source_dir_name
         self.opts = opts or {}
 
     @property
@@ -50,7 +46,7 @@ class Engine(abc.ABC):
     @property
     def source_dir(self) -> Path:
         """Path to the root source directory for this engine."""
-        return self.config.sources_dir / self.source_dir_name
+        return self.config.sources_dir
 
     @property
     def source_drafts_dir(self) -> Path:
@@ -67,8 +63,6 @@ class EngineSpec:
 
     """Specifications of an engine in the config."""
 
-    id: str
-    source: str
     opts: dict
     config: Config
     theme: Theme
@@ -98,12 +92,11 @@ class EngineSpec:
                 msg = "only one of 'module' or 'class' may be specified"
                 raise err.VoltConfigError(msg)
 
+    @log_method
     def load(self) -> Engine:
         return self.engine(
-            id=self.id,
             config=self.config,
             theme=self.theme,
-            source_dir_name=self.source,
             opts=self.opts,
         )
 

@@ -49,7 +49,7 @@ class Theme:
         self._path = theme_dir
 
         self._opts = self._resolve_config("opts")
-        self._engines = self._resolve_config("engines")
+        self._engine = self._resolve_config("engine")
         self._hooks = self._resolve_config("hooks")
 
     def __repr__(self) -> str:
@@ -66,9 +66,9 @@ class Theme:
         return self._opts
 
     @property
-    def engines(self) -> dict:
-        """Theme engines."""
-        return self._engines
+    def engine(self) -> dict:
+        """Theme engine."""
+        return self._engine
 
     @property
     def hooks(self) -> dict:
@@ -197,27 +197,23 @@ class Theme:
             return None
 
     @log_method
-    def get_engine_specs(self) -> Optional[list["EngineSpec"]]:
+    def get_engine_spec(self) -> Optional["EngineSpec"]:
 
         from .engines import EngineSpec
 
-        specs = [
-            EngineSpec(
-                id=entry_id,
-                config=self.config,
-                theme=self,
-                source=entry.get("source", ""),
-                opts=entry.get("opts", {}),
-                module=entry.get("module", None),
-                klass=entry.get("class", None),
-            )
-            for entry_id, entry in self.engines.items()
-        ]
+        if not self.engine:
+            return None
 
-        return specs
+        return EngineSpec(
+            config=self.config,
+            theme=self,
+            opts=self.engine.get("opts", {}),
+            module=self.engine.get("module", None),
+            klass=self.engine.get("class", None),
+        )
 
     @log_method(with_args=True)
-    def _resolve_config(self, key: Literal["engines", "hooks", "opts"]) -> dict:
+    def _resolve_config(self, key: Literal["engine", "hooks", "opts"]) -> dict:
         """Resolve theme configuration by applying overrides to defaults"""
         return _overlay(
             self.config_defaults.get(key, None),

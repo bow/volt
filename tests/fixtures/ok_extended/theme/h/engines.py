@@ -4,6 +4,7 @@ from typing import Sequence
 
 import yaml
 from volt import Engine, CopyTarget, TemplateTarget
+from volt.engines import MarkdownEngine
 
 
 @dataclass
@@ -18,7 +19,7 @@ class GalleryEngine(Engine):
 
         template = self.theme.load_template_file("image.html.j2")
 
-        for image in self.get_sources(self.source_dir / "imgs.yaml"):
+        for image in self.get_sources():
             copy_target = CopyTarget(
                 src=image.path,
                 url_parts=("assets", "imgs", image.path.name),
@@ -34,13 +35,19 @@ class GalleryEngine(Engine):
             targets.append(copy_target)
             targets.append(template_target)
 
+        md_eng = MarkdownEngine(self.config, self.theme)
+        targets.extend(md_eng.create_targets())
+
         return targets
 
-    def get_sources(self, lists_file_path: Path) -> list[ImageSource]:
+    def get_sources(self) -> list[ImageSource]:
+        imgs_dirname = "gallery"
+        lists_file_path = self.source_dir / imgs_dirname / "imgs.yaml"
+
         with lists_file_path.open() as src:
             return [
                 ImageSource(
-                    path=self.source_dir / entry["filename"],
+                    path=self.source_dir / imgs_dirname / entry["filename"],
                     caption=entry["caption"],
                 )
                 for entry in yaml.safe_load(src)

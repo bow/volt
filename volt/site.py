@@ -27,9 +27,9 @@ import structlog
 
 from . import constants, signals
 from .config import Config
-from .engines import Engine, MarkdownEngine, StaticEngine
+from .engines import Engine, MarkdownEngine
 from .error import VoltResourceError
-from .targets import Target, TemplateTarget
+from .targets import CopyTarget, Target, TemplateTarget
 from .theme import Theme
 from ._import import import_file
 from ._logging import log_method
@@ -242,7 +242,7 @@ class Site:
 
         self.config = config
         self.targets = list[Target]()
-        self.engines = list[Engine]()
+        self.engine: Optional[Engine] = None
 
         self.theme = Theme.from_config(config)
         signals.send(signals.post_site_load_theme, site=self)
@@ -290,7 +290,7 @@ class Site:
 
         self.__load_hooks()
 
-        self.__load_engines()
+        self.__load_engine()
         signals.send(signals.post_site_load_engines, site=self)
 
         self.__collect_targets()
@@ -344,40 +344,38 @@ class Site:
         return None
 
     @log_method
-    def __load_engines(self) -> None:
+    def __load_engine(self) -> None:
 
-        specs = self.theme.get_engine_specs() or []
-
-        log.debug("loading theme engines")
-        engines: list[Engine] = [spec.load() for spec in specs]
-        log.debug("loaded theme engines", engines=[engine.name for engine in engines])
-
-        # Add MarkdownEngine if no engines are loaded.
-        if not engines:
-            log.debug(f"adding {MarkdownEngine.__name__} to loaded engines")
-            engines.append(
-                MarkdownEngine(id="markdown", config=self.config, theme=self.theme)
-            )
-
-        # Add StaticEngine if not already added.
-        if not any(engine.__class__ is StaticEngine for engine in engines):
-            log.debug(f"adding {StaticEngine.__name__} to loaded engines")
-            engines.insert(
-                0,
-                StaticEngine(id="static", config=self.config, theme=self.theme),
-            )
-
-        self.engines = engines
-        log.debug(
-            "loaded all site engines",
-            engines=[engine.name for engine in engines],
+        self.engine = (
+            spec.load()
+            if (spec := self.theme.get_engine_spec()) is not None
+            else MarkdownEngine(config=self.config, theme=self.theme)
         )
 
     @log_method
+    def __create_static_targets(self) -> list[Target]:
+        config = self.config
+        theme = self.theme
+
+        targets = {
+            target.url: target
+            for target in _collect_copy_targets(theme.static_dir, config.invoc_dir)
+        }
+
+        for user_target in _collect_copy_targets(config.static_dir, config.invoc_dir):
+            url = user_target.url
+            if url in targets:
+                log.warn("using user-defined target instead of theme target", url=url)
+            targets[url] = user_target
+
+        return list(targets.values())
+
+    @log_method
     def __collect_targets(self) -> None:
-        self.targets = [
-            target for engine in self.engines for target in engine.create_targets()
-        ]
+        if self.engine is None:
+            return None
+        self.targets = self.__create_static_targets()
+        self.targets.extend(self.engine.create_targets())
         return None
 
     @log_method(with_args=True)
@@ -425,3 +423,54 @@ def _partition_targets(
     matching = filter(pred, iter1)
     rest = filterfalse(pred, iter2)
     return matching, rest
+
+
+def _calc_relpath(target: Path, ref: Path) -> Path:
+    """Calculate the target's path relative to the reference.
+
+    :param target: The path to which the relative path will point.
+    :param ref: Reference path.
+
+    :returns: The relative path from ``ref`` to ``to``.
+
+    :raises ValueError: when one of the given input paths is not an absolute
+        path.
+
+    """
+    ref = ref.expanduser()
+    target = target.expanduser()
+    if not ref.is_absolute() or not target.is_absolute():
+        raise ValueError("could not compute relative paths of non-absolute input paths")
+
+    common = Path(os.path.commonpath([ref, target]))
+    common_len = len(common.parts)
+    ref_uniq = ref.parts[common_len:]
+    target_uniq = target.parts[common_len:]
+
+    rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
+
+    return Path(*rel_parts)
+
+
+def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
+    """Gather files from the given start directory recursively as copy targets."""
+
+    src_relpath = _calc_relpath(start_dir, invocation_dir)
+    src_rel_len = len(src_relpath.parts)
+
+    targets: list[CopyTarget] = []
+
+    try:
+        entries = list(os.scandir(src_relpath))
+    except FileNotFoundError:
+        return targets
+    else:
+        while entries:
+            de = entries.pop()
+            if de.is_dir():
+                entries.extend(os.scandir(de))
+            else:
+                dtoks = Path(de.path).parts[src_rel_len:]
+                targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
+
+        return targets

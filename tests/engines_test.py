@@ -11,8 +11,8 @@ from pytest_mock import MockerFixture
 from volt import constants
 from volt.config import Config
 from volt.error import VoltConfigError
-from volt.engines import EngineSpec, StaticEngine
-from volt.engines.static import _calc_relpath
+from volt.engines import EngineSpec, MarkdownEngine
+from volt.site import _calc_relpath
 from volt.theme import Theme
 
 
@@ -21,20 +21,16 @@ def test_engine_spec_load_ok_module(mocker: MockerFixture) -> None:
     m_theme = mocker.MagicMock()
 
     spec = EngineSpec(
-        id="mock",
         config=m_config,
         theme=m_theme,
-        source="static",
         opts={"foo": 1},
-        module="volt.engines:StaticEngine",
+        module="volt.engines:MarkdownEngine",
         klass=None,
     )
 
     engine = spec.load()
-    assert isinstance(engine, StaticEngine)
-    assert engine.id == "mock"
+    assert isinstance(engine, MarkdownEngine)
     assert engine.opts == {"foo": 1}
-    assert engine.source_dir_name == "static"
     assert engine.config is m_config
     assert engine.theme is m_theme
 
@@ -54,10 +50,8 @@ def test_engine_spec_load_ok_class(
         theme = Theme.from_config(config)
 
         spec = EngineSpec(
-            id="gallery",
             config=config,
             theme=theme,
-            source="gallery",
             opts={"foo": 1},
             module=None,
             klass="GalleryEngine",
@@ -65,9 +59,7 @@ def test_engine_spec_load_ok_class(
 
         engine = spec.load()
         assert engine.__class__.__name__ == "GalleryEngine"
-        assert engine.id == "gallery"
         assert engine.opts == {"foo": 1}
-        assert engine.source_dir_name == "gallery"
         assert engine.config is config
         assert engine.theme is theme
 
@@ -81,10 +73,8 @@ def test_engine_spec_init_err_all_nones(mocker: MockerFixture) -> None:
         VoltConfigError, match="one of 'module' or 'class' must be a valid string value"
     ):
         EngineSpec(
-            id="mock",
             config=m_config,
             theme=m_theme,
-            source="mock",
             opts={"bzzt": True},
             module=None,
             klass=None,
@@ -100,13 +90,11 @@ def test_engine_spec_init_err_all_defined(mocker: MockerFixture) -> None:
         VoltConfigError, match="only one of 'module' or 'class' may be specified"
     ):
         EngineSpec(
-            id="mock",
             config=m_config,
             theme=m_theme,
-            source="mock",
             opts={"bzzt": True},
             module="GalleryEngine",
-            klass="volt.engines:StaticEngine",
+            klass="volt.engines:MarkdownEngine",
         )
 
 
@@ -117,12 +105,10 @@ def test_engine_spec_init_err_invalid_specifier_module(mocker: MockerFixture) ->
 
     with pytest.raises(VoltConfigError, match="invalid engine class specifier"):
         EngineSpec(
-            id="mock",
             config=m_config,
             theme=m_theme,
-            source="mock",
             opts={"bzzt": True},
-            module="volt.engines.StaticEngine",
+            module="volt.engines.MarkdownEngine",
             klass=None,
         )
 
@@ -134,10 +120,8 @@ def test_engine_spec_init_err_missing_module(mocker: MockerFixture) -> None:
 
     with pytest.raises(VoltConfigError, match="not a valid module: foo.bar"):
         EngineSpec(
-            id="mock",
             config=m_config,
             theme=m_theme,
-            source="mock",
             opts={"bzzt": True},
             module="foo.bar:BzztEngine",
             klass=None,
@@ -153,10 +137,8 @@ def test_engine_spec_init_err_missing_in_module(mocker: MockerFixture) -> None:
         VoltConfigError, match="engine 'FooEngine' not found in module 'volt.engines'"
     ):
         EngineSpec(
-            id="mock",
             config=m_config,
             theme=m_theme,
-            source="mock",
             opts={"bzzt": True},
             module="volt.engines:FooEngine",
             klass=None,
@@ -170,10 +152,8 @@ def test_engine_spec_init_err_invalid_specifier_class(mocker: MockerFixture) -> 
 
     with pytest.raises(VoltConfigError, match="invalid engine class specifier"):
         EngineSpec(
-            id="mock",
             config=m_config,
             theme=m_theme,
-            source="mock",
             opts={"bzzt": True},
             module=None,
             klass="is-not-identifier",
@@ -199,10 +179,8 @@ def test_engine_spec_load_err_engines_file_missing(
 
         with pytest.raises(VoltConfigError, match="theme engines file not found"):
             EngineSpec(
-                id="gallery",
                 config=config,
                 theme=theme,
-                source="gallery",
                 opts={"foo": 1},
                 module=None,
                 klass="GalleryEngine",
@@ -225,35 +203,12 @@ def test_engine_spec_load_err_engine_missing(
 
         with pytest.raises(VoltConfigError, match="engine 'ImageEngine' not found"):
             EngineSpec(
-                id="gallery",
                 config=config,
                 theme=theme,
-                source="gallery",
                 opts={"foo": 1},
                 module=None,
                 klass="ImageEngine",
             )
-
-
-def test_engine_spec_load_err_static_engine(mocker: MockerFixture) -> None:
-    m_config = mocker.MagicMock()
-    m_theme = mocker.MagicMock()
-
-    spec = EngineSpec(
-        id="mock",
-        config=m_config,
-        theme=m_theme,
-        source="foo",
-        opts={"foo": 1},
-        module="volt.engines:StaticEngine",
-        klass=None,
-    )
-
-    with pytest.raises(
-        VoltConfigError,
-        match="if specified, 'source' must be 'static' for StaticEngine",
-    ):
-        spec.load()
 
 
 @pytest.mark.parametrize(

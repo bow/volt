@@ -1,12 +1,8 @@
 [theme]
 name = "h"
 
-[theme.engines.root]
-module = "volt.engines:MarkdownEngine"
-
-[theme.engines.gallery]
+[theme.engine]
 class = "GalleryEngine"
-source = "gallery"
 
 [theme.hooks.modify_css]
 enabled = true
