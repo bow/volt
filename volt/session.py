@@ -161,7 +161,7 @@ def serve(
     config: Config,
     host: Optional[str],
     port: int,
-    rebuild: bool,
+    watch: bool,
     pre_build: bool,
     build_clean: bool,
     log_level: str,
@@ -177,7 +177,7 @@ def serve(
     build_with_drafts = config.with_drafts
     serve = make_server(config, eff_host, port, log_level, with_sig_handlers)
 
-    if not rebuild:
+    if not watch:
         serve()
 
     else:

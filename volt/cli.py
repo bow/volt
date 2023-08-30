@@ -365,9 +365,9 @@ def build(
 )
 @click.option("-p", "--port", type=int, default=5050, help="Server port.")
 @click.option(
-    "--rebuild/--no-rebuild",
+    "--watch/--no-watch",
     default=True,
-    help="If set, rebuild site when source files are changed. Default: set.",
+    help="If set, rebuild site when source files change. Default: set.",
 )
 @click.option(
     "--pre-build/--no-pre-build",
@@ -410,7 +410,7 @@ def serve(
     ctx: click.Context,
     host: Optional[str],
     port: int,
-    rebuild: bool,
+    watch: bool,
     pre_build: bool,
     drafts: bool,
     clean: bool,
@@ -439,7 +439,7 @@ def serve(
         config=config,
         host=host,
         port=port,
-        rebuild=rebuild,
+        watch=watch,
         pre_build=pre_build,
         build_clean=clean,
         log_level=log_level,
