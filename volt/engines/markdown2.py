@@ -59,23 +59,6 @@ class MarkdownEngine(Engine):
         "footnotes": True,
     }
 
-    @staticmethod
-    def make_converter(
-        extras: Optional[dict] = None,
-        default_extras: dict = default_extras,
-    ) -> Callable[[str], str]:
-        resolved_extras = _resolve_extras(extras, default_extras)
-
-        kwargs: dict = {}
-        if isinstance((fd := resolved_extras.get("footnotes", None)), dict):
-            for k in ("footnote_return_symbol", "footnote_title"):
-                if (v := fd.get(k)) is not None:
-                    kwargs[k] = v
-
-        return cast(
-            Callable[[str], str], Markdown(extras=resolved_extras, **kwargs).convert
-        )
-
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         template_name = self.opts.pop("template_name", "page.html.j2")
@@ -91,7 +74,6 @@ class MarkdownEngine(Engine):
 
         config = self.config
         get_sources = self.get_sources
-        converter = self.make_converter(self.extras)
 
         fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
 
@@ -100,7 +82,7 @@ class MarkdownEngine(Engine):
                 src=fp,
                 config=config,
                 is_draft=is_draft,
-                converter=converter,
+                converter=self.converter,
             ).to_template_target(self.template)
             for fp, is_draft in fps
         ]
@@ -110,6 +92,20 @@ class MarkdownEngine(Engine):
     def get_sources(self, drafts: bool = False) -> list[tuple[Path, bool]]:
         eff_dir = self.source_dir if not drafts else self.source_drafts_dir
         return [(p, drafts) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
+
+    @cached_property
+    def converter(self) -> Callable[[str], str]:
+        resolved_extras = _resolve_extras(self.extras, self.default_extras)
+
+        kwargs: dict = {}
+        if isinstance((fd := resolved_extras.get("footnotes", None)), dict):
+            for k in ("footnote_return_symbol", "footnote_title"):
+                if (v := fd.get(k)) is not None:
+                    kwargs[k] = v
+
+        return cast(
+            Callable[[str], str], Markdown(extras=resolved_extras, **kwargs).convert
+        )
 
 
 @dataclass(kw_only=True, eq=False)
