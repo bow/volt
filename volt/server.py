@@ -5,22 +5,26 @@
 import queue
 import signal
 import sys
+import socket
 import threading
+import time
 from contextlib import suppress
 from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import cast, Any, Callable, NoReturn, Optional, Self
+from webbrowser import open as open_browser
 
 import structlog
+from blinker import signal as blinker_signal
 from click import echo
 from click._compat import get_text_stderr
 from structlog.contextvars import bound_contextvars
 from watchdog import events
 from watchdog.observers import Observer
 
-from . import __version__, constants
+from . import __version__, constants, signals as blinker_signals
 from .config import Config
 from .error import _VoltServerExit
 from ._logging import style
@@ -30,6 +34,9 @@ __all__ = ["make_server"]
 
 
 log = structlog.get_logger(__name__)
+
+
+_pre_server_serve = blinker_signal("_pre_server_serve")
 
 
 class _RunFile:
@@ -92,7 +99,7 @@ def make_server(
     port: int,
     log_level: str,
     with_sig_handlers: bool = True,
-) -> Callable[[], None]:
+) -> Callable[[bool], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
 
         server_version = f"volt-dev-server/{__version__}"
@@ -143,7 +150,7 @@ def make_server(
     run_file = _RunFile.from_config(config)
     run_file.dump()
 
-    def serve() -> None:
+    def serve(with_open_browser: bool) -> None:
         httpd = ThreadingHTTPServer((host, port), HTTPRequestHandler)
 
         if with_sig_handlers:
@@ -160,10 +167,66 @@ def make_server(
             signal.signal(signal.SIGINT, signal_handler)
             signal.signal(signal.SIGTERM, signal_handler)
 
+        blinker_signals.send(
+            _pre_server_serve,
+            with_open_browser=with_open_browser,
+            host=host,
+            port=port,
+        )
         log.info("dev server listening", addr=f"http://{host}:{port}")
         httpd.serve_forever()
 
     return serve
+
+
+_browser_opened = False
+
+
+@_pre_server_serve.connect
+def _open_browser_handler(
+    _: Any,
+    with_open_browser: bool,
+    host: str,
+    port: int,
+) -> None:
+    if not with_open_browser:
+        return None
+
+    global _browser_opened
+
+    if _browser_opened:
+        return None
+
+    if _wait_ready(host, port):
+        log.debug("opening browser", host=host, port=port)
+        open_browser(f"http://{host}:{port}")
+        _browser_opened = True
+
+    return None
+
+
+def _wait_ready(
+    host: str,
+    port: int,
+    max_attempts: int = 10,
+    wait_per_attempt: float = 0.1,
+) -> bool:
+    with bound_contextvars(host=host, port=port):
+        log.debug("checking if server is ready")
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        num_attempts = 0
+        while num_attempts < max_attempts:
+            num_attempts += 1
+            try:
+                s.connect((host, port))
+                s.close()
+                log.debug("server is ready")
+                return True
+            except OSError:
+                log.debug("waiting for server to be ready", num_attempts=num_attempts)
+                time.sleep(wait_per_attempt)
+
+    return False
 
 
 class _SyncQueue(queue.Queue):

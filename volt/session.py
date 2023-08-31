@@ -162,6 +162,7 @@ def serve(
     host: Optional[str],
     port: int,
     watch: bool,
+    open_browser: bool,
     pre_build: bool,
     build_clean: bool,
     log_level: str,
@@ -178,7 +179,7 @@ def serve(
     serve = make_server(config, eff_host, port, log_level, with_sig_handlers)
 
     if not watch:
-        serve()
+        serve(open_browser)
 
     else:
 
@@ -197,7 +198,7 @@ def serve(
             if pre_build:
                 builder()
             log.debug("starting dev server")
-            serve()
+            serve(open_browser)
 
 
 def serve_drafts(config: Config, value: Optional[bool]) -> None:

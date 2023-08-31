@@ -365,6 +365,14 @@ def build(
 )
 @click.option("-p", "--port", type=int, default=5050, help="Server port.")
 @click.option(
+    "-o",
+    "--open",
+    "open_browser",
+    is_flag=True,
+    default=False,
+    help="If set, open the served URL in a web browser. Default: unset.",
+)
+@click.option(
     "--watch/--no-watch",
     default=True,
     help="If set, rebuild site when source files change. Default: set.",
@@ -410,6 +418,7 @@ def serve(
     ctx: click.Context,
     host: Optional[str],
     port: int,
+    open_browser: bool,
     watch: bool,
     pre_build: bool,
     drafts: bool,
@@ -439,6 +448,7 @@ def serve(
         config=config,
         host=host,
         port=port,
+        open_browser=open_browser,
         watch=watch,
         pre_build=pre_build,
         build_clean=clean,

@@ -304,6 +304,7 @@ def test_serve_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> N
             config=Config(invoc_dir=ifs, project_dir=ifs),
             host=None,
             port=5050,
+            open_browser=False,
             watch=True,
             pre_build=True,
             build_clean=True,
@@ -321,6 +322,7 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
     sess_func = mocker.patch("volt.cli.session.serve")
     toks = [
         "serve",
+        "-o",
         "-h",
         "0.0.0.0",
         "-p",
@@ -343,6 +345,7 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
             config=Config(invoc_dir=ifs, project_dir=ifs),
             host="0.0.0.0",
             port=7070,
+            open_browser=True,
             watch=True,
             pre_build=False,
             build_clean=True,
