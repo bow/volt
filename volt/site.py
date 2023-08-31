@@ -268,7 +268,7 @@ class Site:
             self.__build(clean=clean, build_dir_prefix=build_dir_prefix)
         finally:
             self.__hooks = {}
-            signals._clear()
+            signals._clear_site_signal_receivers()
 
     def select_targets(self, pattern: str) -> list[Target]:
         return [

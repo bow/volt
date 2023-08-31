@@ -24,18 +24,18 @@ post_site_write = signal("post_site_write")
 
 def send(signal: NamedSignal, *args: Any, **kwargs: Any) -> None:
     with bound_contextvars(signal=f"{signal.name}"):
-        log.debug("sending to signal")
+        log.debug("sending signal")
         rvs = signal.send(*args, **kwargs)
-        log.debug("sent to signal", num_receiver=len(rvs))
+        log.debug("sent signal", num_receiver=len(rvs))
     return None
 
 
-def _clear() -> None:
+def _clear_site_signal_receivers() -> None:
     for s in (
         post_site_load_engines,
         post_site_collect_targets,
         pre_site_write,
     ):
-        log.debug("clearing receivers", signal=s.name)
+        log.debug("clearing site signal receivers", signal=s.name)
         s.receivers.clear()
     return None
