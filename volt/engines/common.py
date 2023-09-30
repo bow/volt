@@ -49,9 +49,9 @@ class Engine(abc.ABC):
         return self.config.sources_dir
 
     @property
-    def source_drafts_dir(self) -> Path:
-        """Path to the source drafts directory for this engine."""
-        return self.source_dir / self.config.drafts_dir_name
+    def source_draft_dir(self) -> Path:
+        """Path to the source draft directory for this engine."""
+        return self.source_dir / self.config.draft_dir_name
 
     @abc.abstractmethod
     def create_targets(self) -> Sequence[Target]:

@@ -29,7 +29,7 @@ MARKDOWN_EXT = ".md"
 PROJECT_SOURCES_DIR_NAME = "source"
 
 # Project draft contents directory name.
-PROJECT_DRAFTS_DIR_NAME = ".drafts"
+PROJECT_DRAFT_DIR_NAME = ".draft"
 
 # Project directory name for extension code.
 PROJECT_EXTENSION_DIR_NAME = "extension"

@@ -27,7 +27,7 @@ __all__ = [
     "new",
     "root",
     "serve",
-    "serve_drafts",
+    "serve_draft",
     "xcmd",
 ]
 
@@ -322,9 +322,9 @@ def new(
 
 @root.command()
 @click.option(
-    "--drafts/--no-drafts",
+    "--draft/--no-draft",
     default=False,
-    help="If set, include the drafts directory as a content source. Default: unset.",
+    help="If set, include the source draft directory when building. Default: unset.",
 )
 @click.option(
     "--clean/--no-clean",
@@ -337,7 +337,7 @@ def new(
 @click.pass_context
 def build(
     ctx: click.Context,
-    drafts: bool,
+    draft: bool,
     clean: bool,
 ) -> None:
     """Build the site
@@ -350,7 +350,7 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    config = _get_config(ctx.parent, drafts=drafts)
+    config = _get_config(ctx.parent, draft=draft)
 
     session.build(config=config, clean=clean)
 
@@ -386,12 +386,9 @@ def build(
     ),
 )
 @click.option(
-    "--drafts/--no-drafts",
+    "--draft/--no-draft",
     default=True,
-    help=(
-        "If set, include the drafts directory as a content source when building."
-        " Default: set."
-    ),
+    help="If set, include the source draft directory when building. Default: set.",
 )
 @click.option(
     "--clean/--no-clean",
@@ -421,7 +418,7 @@ def serve(
     open_browser: bool,
     watch: bool,
     pre_build: bool,
-    drafts: bool,
+    draft: bool,
     clean: bool,
     quiet: bool,
     sig_handlers: bool,
@@ -441,7 +438,7 @@ def serve(
             file=sys.stderr,
         )
 
-    config = _get_config(ctx.parent, drafts=drafts)
+    config = _get_config(ctx.parent, draft=draft)
     log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
 
     session.serve(
@@ -457,10 +454,10 @@ def serve(
     )
 
 
-@serve.command("drafts")
-@click.option("-s", "--set", "str_value", flag_value="on", help="Turn on drafts mode.")
+@serve.command("draft")
+@click.option("-s", "--set", "str_value", flag_value="on", help="Turn on draft mode.")
 @click.option(
-    "-u", "--unset", "str_value", flag_value="off", help="Turn off drafts mode."
+    "-u", "--unset", "str_value", flag_value="off", help="Turn off draft mode."
 )
 @click.option(
     "-t",
@@ -469,14 +466,14 @@ def serve(
     flag_value="unspecified",
     default=True,
     hidden=True,
-    help="Toggle currently-set drafts mode.",
+    help="Toggle currently-set draft mode.",
 )
 @click.pass_context
-def serve_drafts(
+def serve_draft(
     ctx: click.Context,
     str_value: Literal["on", "off", "unspecified"],
 ) -> None:
-    """Set or unset drafts mode for a running server.
+    """Set or unset draft mode for a running server.
 
     If neither '-s' or '-u' is specified, this command attempts to toggle the
     currently-set mode, defaulting to '-s' if it fails to do so.
@@ -489,7 +486,7 @@ def serve_drafts(
         value = False
 
     config = _get_config(cast(click.Context, ctx.parent).parent)
-    session.serve_drafts(config=config, value=value)
+    session.serve_draft(config=config, value=value)
 
     return None
 
@@ -505,7 +502,7 @@ def xcmd(ctx: click.Context) -> None:
     """
 
 
-def _get_config(ctx: Optional[click.Context], drafts: Optional[bool] = None) -> Config:
+def _get_config(ctx: Optional[click.Context], draft: Optional[bool] = None) -> Config:
     if ctx is None:
         raise ValueError("missing expected context")
 
@@ -514,5 +511,5 @@ def _get_config(ctx: Optional[click.Context], drafts: Optional[bool] = None) -> 
         raise VoltCliError(
             f"command {ctx.invoked_subcommand!r} works only within a Volt project"
         )
-    config._set_drafts(drafts)
+    config._set_draft(draft)
     return config

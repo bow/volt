@@ -231,13 +231,13 @@ def test_build_ok_minimal(
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_drafts
+        assert not config.with_draft
 
 
 def test_build_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.build")
-    toks = ["-D", "the_project", "build", "--drafts"]
+    toks = ["-D", "the_project", "build", "--draft"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -256,7 +256,7 @@ def test_build_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == project_dir
-        assert config.with_drafts
+        assert config.with_draft
 
 
 def test_serve_ok_e2e(
@@ -314,7 +314,7 @@ def test_serve_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> N
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert config.with_drafts
+        assert config.with_draft
 
 
 def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> None:
@@ -327,7 +327,7 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
         "0.0.0.0",
         "-p",
         "7070",
-        "--no-drafts",
+        "--no-draft",
         "--no-pre-build",
         "-q",
     ]
@@ -355,10 +355,10 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_drafts
+        assert not config.with_draft
 
 
-def test_serve_drafts_ok_e2e(
+def test_serve_draft_ok_e2e(
     log: StructuredLogCapture, isolated_project_dir: Callable
 ) -> None:
 
@@ -370,7 +370,7 @@ def test_serve_drafts_ok_e2e(
     project_dir = u.invoke_isolated_server(
         isolated_project_dir,
         project_fixture_name="ok_extended",
-        args=["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers", "--no-drafts"],
+        args=["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers", "--no-draft"],
         host=host,
         port=port,
         startup_timeout=5.0,
@@ -382,7 +382,7 @@ def test_serve_drafts_ok_e2e(
     assert r_bar.status_code == 404
 
     runner = u.CommandRunner()
-    toks = ["-D", f"{project_dir}", "serve", "drafts"]
+    toks = ["-D", f"{project_dir}", "serve", "draft"]
     runner.invoke(cli.root, toks)
 
     fp = project_dir / constants.PROJECT_TARGET_DIR_NAME / "bar.html"
@@ -397,12 +397,12 @@ def test_serve_drafts_ok_e2e(
     return None
 
 
-def test_serve_drafts_ok_minimal(
+def test_serve_draft_ok_minimal(
     log: StructuredLogCapture, mocker: MockerFixture
 ) -> None:
     runner = u.CommandRunner()
-    sess_func = mocker.patch("volt.cli.session.serve_drafts")
-    toks = ["serve", "drafts"]
+    sess_func = mocker.patch("volt.cli.session.serve_draft")
+    toks = ["serve", "draft"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -420,15 +420,15 @@ def test_serve_drafts_ok_minimal(
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_drafts
+        assert not config.with_draft
 
 
-def test_serve_drafts_ok_extended(
+def test_serve_draft_ok_extended(
     log: StructuredLogCapture, mocker: MockerFixture
 ) -> None:
     runner = u.CommandRunner()
-    sess_func = mocker.patch("volt.cli.session.serve_drafts")
-    toks = ["serve", "drafts", "-s"]
+    sess_func = mocker.patch("volt.cli.session.serve_draft")
+    toks = ["serve", "draft", "-s"]
 
     with runner.isolated_filesystem() as ifs:
 
@@ -446,7 +446,7 @@ def test_serve_drafts_ok_extended(
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_drafts
+        assert not config.with_draft
 
 
 def test_help_with_xcmd(

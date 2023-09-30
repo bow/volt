@@ -70,7 +70,7 @@ def test_ok_extended(
             project_dir=project_dir,
             config_file_name=constants.CONFIG_FILE_NAME,
         )
-        config._with_drafts = False
+        config._with_draft = False
 
         assert not config.target_dir.exists()
 

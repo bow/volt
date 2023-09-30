@@ -86,12 +86,12 @@ class Config(UserDict):
         self,
         invoc_dir: Path,
         project_dir: Path,
-        with_drafts: bool = False,
+        with_draft: bool = False,
         target_dir_name: str = constants.PROJECT_TARGET_DIR_NAME,
         sources_dir_name: str = constants.PROJECT_SOURCES_DIR_NAME,
         themes_dir_name: str = constants.SITE_THEMES_DIR_NAME,
         static_dir_name: str = constants.PROJECT_STATIC_DIR_NAME,
-        drafts_dir_name: str = constants.PROJECT_DRAFTS_DIR_NAME,
+        draft_dir_name: str = constants.PROJECT_DRAFT_DIR_NAME,
         extension_dir_name: str = constants.PROJECT_EXTENSION_DIR_NAME,
         xcmd_file_name: str = constants.XCMD_FILE_NAME,
         xcmd_mod_name: str = constants.PROJECT_CLI_MOD_QUAL_NAME,
@@ -124,7 +124,7 @@ class Config(UserDict):
         self._sources_dir = self._project_dir / sources_dir_name
         self._themes_dir = self._project_dir / themes_dir_name
         self._extension_dir = self._project_dir / extension_dir_name
-        self._drafts_dir_name = drafts_dir_name
+        self._draft_dir_name = draft_dir_name
         self._static_dir = self._project_dir / static_dir_name
         self._xcmd_module_path = self._extension_dir / xcmd_file_name
         self._xcmd_module_name = xcmd_mod_name
@@ -132,7 +132,7 @@ class Config(UserDict):
         self._hooks_module_name = hooks_mod_name
         self._config_path = config_path
 
-        self._with_drafts = with_drafts
+        self._with_draft = with_draft
         self._server_run_path = project_dir / constants.SERVER_RUN_FILE_NAME
 
     @property
@@ -192,9 +192,9 @@ class Config(UserDict):
         return self._themes_dir
 
     @property
-    def drafts_dir_name(self) -> str:
-        """Name of the drafts directory."""
-        return self._drafts_dir_name
+    def draft_dir_name(self) -> str:
+        """Name of the draft directory."""
+        return self._draft_dir_name
 
     @property
     def static_dir(self) -> Path:
@@ -226,9 +226,9 @@ class Config(UserDict):
         return self._hooks_module_name
 
     @property
-    def with_drafts(self) -> bool:
+    def with_draft(self) -> bool:
         """Whether to publish draft contents or not."""
-        return self._with_drafts
+        return self._with_draft
 
     @property
     def in_docker(self) -> bool:
@@ -236,23 +236,23 @@ class Config(UserDict):
 
     def reload(
         self,
-        drafts: Optional[bool] = None,
+        draft: Optional[bool] = None,
         config_file_name: str = constants.CONFIG_FILE_NAME,
     ) -> Self:
         """Reloads the config file."""
         if self._config_path is None:
             raise err.VoltResourceError("could not reload non-file config")
-        reloaded_drafts = drafts if drafts is not None else self.with_drafts
+        reloaded_draft = draft if draft is not None else self.with_draft
         return self.__class__.from_file_name(
             invoc_dir=self.invoc_dir,
             project_dir=self.project_dir,
             config_file_name=config_file_name,
-            with_drafts=reloaded_drafts,
+            with_draft=reloaded_draft,
         )
 
-    def _set_drafts(self, value: Optional[bool]) -> None:
+    def _set_draft(self, value: Optional[bool]) -> None:
         if value is not None:
-            self._with_drafts = value
+            self._with_draft = value
         return None
 
 

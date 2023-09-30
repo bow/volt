@@ -75,7 +75,7 @@ class MarkdownEngine(Engine):
         config = self.config
         get_sources = self.get_sources
 
-        fps = get_sources() + (get_sources(drafts=True) if config.with_drafts else [])
+        fps = get_sources() + (get_sources(draft=True) if config.with_draft else [])
 
         targets = [
             MarkdownSource.from_path(
@@ -89,9 +89,9 @@ class MarkdownEngine(Engine):
 
         return targets
 
-    def get_sources(self, drafts: bool = False) -> list[tuple[Path, bool]]:
-        eff_dir = self.source_dir if not drafts else self.source_drafts_dir
-        return [(p, drafts) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
+    def get_sources(self, draft: bool = False) -> list[tuple[Path, bool]]:
+        eff_dir = self.source_dir if not draft else self.source_draft_dir
+        return [(p, draft) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
 
     @cached_property
     def converter(self) -> Callable[[str], str]:
@@ -181,7 +181,7 @@ class MarkdownSource:
         ps = [*(self.src.parent.parts[config.num_common_parts :]), *parts]
         if self.is_draft:
             with suppress(IndexError):
-                # NOTE: This assumes that the `drafts` folder is located at the same
+                # NOTE: This assumes that the `draft` folder is located at the same
                 #       level as non-draft files.
                 del ps[-2]
 

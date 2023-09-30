@@ -41,15 +41,15 @@ _pre_server_serve = blinker_signal("_pre_server_serve")
 
 class _RunFile:
 
-    DRAFTS_ON = "drafts"
-    DRAFTS_OFF = "no-drafts"
+    DRAFT_ON = "draft"
+    DRAFT_OFF = "no-draft"
 
     @classmethod
-    def from_config(cls, config: Config, drafts: Optional[bool] = None) -> Self:
-        log.debug("creating server run file object from config", drafts=drafts)
+    def from_config(cls, config: Config, draft: Optional[bool] = None) -> Self:
+        log.debug("creating server run file object from config", draft=draft)
         return cls(
             path=config._server_run_path,
-            drafts=drafts if drafts is not None else config.with_drafts,
+            draft=draft if draft is not None else config.with_draft,
         )
 
     @classmethod
@@ -60,31 +60,31 @@ class _RunFile:
                 log.debug("no server run file found")
                 return None
 
-        drafts = path.read_text().strip() == cls.DRAFTS_ON
-        return cls(path, drafts)
+        draft = path.read_text().strip() == cls.DRAFT_ON
+        return cls(path, draft)
 
-    def __init__(self, path: Path, drafts: bool) -> None:
+    def __init__(self, path: Path, draft: bool) -> None:
         self._path = path
-        self._drafts = drafts
+        self._draft = draft
 
     @property
     def path(self) -> Path:
         return self._path
 
     @property
-    def drafts(self) -> bool:
-        return self._drafts
+    def draft(self) -> bool:
+        return self._draft
 
-    def toggle_drafts(self, value: Optional[bool]) -> Self:
-        log.debug("toggling server drafts mode", value=value)
-        new_value = value if value is not None else (not self._drafts)
-        self._drafts = new_value
-        log.debug("toggled server drafts mode", value=self.drafts)
+    def toggle_draft(self, value: Optional[bool]) -> Self:
+        log.debug("toggling server draft mode", value=value)
+        new_value = value if value is not None else (not self._draft)
+        self._draft = new_value
+        log.debug("toggled server draft mode", value=self.draft)
         return self
 
     def dump(self) -> None:
-        log.debug("writing server run file", path=self.path, drafts=self.drafts)
-        self.path.write_text(self.DRAFTS_ON if self.drafts else self.DRAFTS_OFF)
+        log.debug("writing server run file", path=self.path, draft=self.draft)
+        self.path.write_text(self.DRAFT_ON if self.draft else self.DRAFT_OFF)
         return None
 
     def remove(self) -> None:

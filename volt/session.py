@@ -135,7 +135,7 @@ def build(config: Config, clean: bool = True) -> Optional[Site]:
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
-    with bound_contextvars(drafts=config.with_drafts):
+    with bound_contextvars(draft=config.with_draft):
         try:
             site = Site(config)
             site.build(clean=clean)
@@ -175,7 +175,7 @@ def serve(
     elif config.in_docker:
         eff_host = "0.0.0.0"
 
-    build_with_drafts = config.with_drafts
+    build_with_draft = config.with_draft
     serve = make_server(config, eff_host, port, log_level, with_sig_handlers)
 
     if not watch:
@@ -186,10 +186,10 @@ def serve(
         def builder() -> None:
             nonlocal config
             rf = _RunFile.from_path(config._server_run_path)
-            drafts = build_with_drafts if rf is None else rf.drafts
+            draft = build_with_draft if rf is None else rf.draft
             try:
                 # TODO: Only reload config post-init, on config file change.
-                config = config.reload(drafts=drafts)
+                config = config.reload(draft=draft)
                 build(config, build_clean)
             except Exception as e:
                 log.exception(e)
@@ -201,13 +201,13 @@ def serve(
             serve(open_browser)
 
 
-def serve_drafts(config: Config, value: Optional[bool]) -> None:
+def serve_draft(config: Config, value: Optional[bool]) -> None:
     rf = _RunFile.from_path(config._server_run_path)
     if rf is None:
-        # NOTE: Setting 'drafts' to False here since we will toggle it later.
-        rf = _RunFile.from_config(config=config, drafts=False)
+        # NOTE: Setting 'draft' to False here since we will toggle it later.
+        rf = _RunFile.from_config(config=config, draft=False)
 
-    return rf.toggle_drafts(value).dump()
+    return rf.toggle_draft(value).dump()
 
 
 def _resolve_project_dir(
