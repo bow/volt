@@ -25,7 +25,7 @@ from ..config import Config
 from ..outputs import TemplateOutput
 
 
-__all__ = ["MarkdownEngine", "MarkdownSource"]
+__all__ = ["MarkdownEngine", "MarkdownInput"]
 
 
 class MarkdownEngine(Engine):
@@ -73,12 +73,12 @@ class MarkdownEngine(Engine):
     def create_outputs(self) -> Sequence[TemplateOutput]:
 
         config = self.config
-        get_sources = self.get_sources
+        get_inputs = self.get_inputs
 
-        fps = get_sources() + (get_sources(draft=True) if config.with_draft else [])
+        fps = get_inputs() + (get_inputs(draft=True) if config.with_draft else [])
 
         outputs = [
-            MarkdownSource.from_path(
+            MarkdownInput.from_path(
                 src=fp,
                 config=config,
                 is_draft=is_draft,
@@ -89,8 +89,8 @@ class MarkdownEngine(Engine):
 
         return outputs
 
-    def get_sources(self, draft: bool = False) -> list[tuple[Path, bool]]:
-        eff_dir = self.source_dir if not draft else self.source_draft_dir
+    def get_inputs(self, draft: bool = False) -> list[tuple[Path, bool]]:
+        eff_dir = self.contents_dir if not draft else self.contents_draft_dir
         return [(p, draft) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
 
     @cached_property
@@ -109,11 +109,11 @@ class MarkdownEngine(Engine):
 
 
 @dataclass(kw_only=True, eq=False)
-class MarkdownSource:
+class MarkdownInput:
 
-    """A markdown source parsed using the markdown2 library."""
+    """A markdown input parsed using the markdown2 library."""
 
-    # FileSystem path to the source content.
+    # FileSystem path to the file content.
     src: Path
 
     # Metadata of the content.

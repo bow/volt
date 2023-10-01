@@ -75,7 +75,7 @@ class TemplateOutput(Output):
     # Render arguments.
     render_kwargs: dict = field(repr=False)
 
-    # Source of the output.
+    # Input used to generate the template output.
     src: Optional[Path] = field(default=None)
 
     def write(self, build_dir: Path) -> None:
@@ -92,7 +92,7 @@ class TemplateOutput(Output):
 @dataclass(kw_only=True)
 class CopyOutput(Output):
 
-    """An output created by copying another file from the source directory."""
+    """An output created by copying a file from the contents directory."""
 
     # Source of the copy.
     src: Path

@@ -273,7 +273,7 @@ class _BuildHandler(events.RegexMatchingEventHandler):
                 f"^{prefix + '/' + dir_name + '/'}.+$"
                 for dir_name in (
                     constants.PROJECT_EXTENSION_DIR_NAME,
-                    constants.PROJECT_SOURCES_DIR_NAME,
+                    constants.PROJECT_CONTENTS_DIR_NAME,
                     constants.PROJECT_STATIC_DIR_NAME,
                     constants.SITE_THEMES_DIR_NAME,
                 )

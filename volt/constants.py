@@ -22,11 +22,11 @@ STATIC_DIR_NAME = "static"
 # Separator string for text content front matter.
 FRONT_MATTER_SEP = "---\n"
 
-# Extension for Markdown source files.
+# Extension for Markdown content files.
 MARKDOWN_EXT = ".md"
 
-# Project source directory name.
-PROJECT_SOURCES_DIR_NAME = "source"
+# Project contents directory name.
+PROJECT_CONTENTS_DIR_NAME = "contents"
 
 # Project draft contents directory name.
 PROJECT_DRAFT_DIR_NAME = ".draft"
@@ -58,7 +58,7 @@ PROJECT_HOOKS_MOD_QUAL_NAME = f"{PROJECT_EXTENSION_MOD_QUAL_NAME}.{HOOKS_MOD_NAM
 PROJECT_OUTPUT_DIR_NAME = "output"
 
 # Project static directory name.
-PROJECT_STATIC_DIR_NAME = f"{PROJECT_SOURCES_DIR_NAME}/{STATIC_DIR_NAME}"
+PROJECT_STATIC_DIR_NAME = f"{PROJECT_CONTENTS_DIR_NAME}/{STATIC_DIR_NAME}"
 
 # Site theme directory name.
 SITE_THEMES_DIR_NAME = "theme"

@@ -139,7 +139,7 @@ class _Plan:
         """Add an output to the plan.
 
         :param output: A file to be created in the site output directory.
-        :param src_path: The source file of the output, if applicable.
+        :param src_path: The input file used to create the output, if applicable.
 
         :raises ValueError:
             * when the given output's destination path is not a path relative to
@@ -170,7 +170,7 @@ class _Plan:
                         raise ValueError(
                             f"output path {output.url!r}"
                             + (
-                                f" from source {str(src)!r}"
+                                f" from input {str(src)!r}"
                                 if (src := getattr(output, "src", None)) is not None
                                 else ""
                             )

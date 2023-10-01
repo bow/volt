@@ -125,7 +125,7 @@ class Theme:
 
     @cached_property
     def static_dir(self) -> Path:
-        """Path to the site source theme static files."""
+        """Path to the site static files."""
         return self.path / constants.THEME_STATIC_DIR_NAME
 
     @property

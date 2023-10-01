@@ -35,7 +35,7 @@ def test_new_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
                 *([".gitignore", ".git"] if has_git else []),
                 "volt.toml",
                 "theme",
-                "source",
+                "contents",
             ],
         )
 
@@ -67,7 +67,7 @@ def test_new_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
                     f"A  {fn}"
                     for fn in (
                         ".gitignore",
-                        "source/index.md",
+                        "contents/index.md",
                         "theme/ion/static/assets/style.css",
                         "theme/ion/templates/base.html.j2",
                         "theme/ion/templates/page.html.j2",

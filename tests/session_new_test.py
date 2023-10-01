@@ -501,10 +501,10 @@ def assert_new_project_layout(
 ) -> None:
 
     theme_dir = project_dir / "theme"
-    sources_dir = project_dir / "source"
+    contents_dir = project_dir / "contents"
     config_fp = project_dir / "volt.toml"
 
-    dir_contents = [theme_dir, sources_dir, config_fp]
+    dir_contents = [theme_dir, contents_dir, config_fp]
 
     if with_git:
         gitignore = project_dir / ".gitignore"
@@ -514,11 +514,11 @@ def assert_new_project_layout(
 
     if theme is not None:
         u.assert_dir_contains_only(theme_dir, [theme])
-        u.assert_dir_contains_only(sources_dir, ["index.md", "static"])
+        u.assert_dir_contains_only(contents_dir, ["index.md", "static"])
     else:
         u.assert_dir_empty(theme_dir)
-        u.assert_dir_contains_only(sources_dir, ["static"])
-        u.assert_dir_empty(sources_dir / "static")
+        u.assert_dir_contains_only(contents_dir, ["static"])
+        u.assert_dir_empty(contents_dir / "static")
 
 
 def func_failed_process_for(cmd_toks: list[str]) -> Callable:

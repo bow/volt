@@ -324,7 +324,7 @@ def new(
 @click.option(
     "--draft/--no-draft",
     default=False,
-    help="If set, include the source draft directory when building. Default: unset.",
+    help="If set, include the draft directory when building. Default: unset.",
 )
 @click.option(
     "--clean/--no-clean",
@@ -388,7 +388,7 @@ def build(
 @click.option(
     "--draft/--no-draft",
     default=True,
-    help="If set, include the source draft directory when building. Default: set.",
+    help="If set, include the draft directory when building. Default: set.",
 )
 @click.option(
     "--clean/--no-clean",

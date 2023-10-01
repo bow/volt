@@ -88,7 +88,7 @@ class Config(UserDict):
         project_dir: Path,
         with_draft: bool = False,
         output_dir_name: str = constants.PROJECT_OUTPUT_DIR_NAME,
-        sources_dir_name: str = constants.PROJECT_SOURCES_DIR_NAME,
+        contents_dir_name: str = constants.PROJECT_CONTENTS_DIR_NAME,
         themes_dir_name: str = constants.SITE_THEMES_DIR_NAME,
         static_dir_name: str = constants.PROJECT_STATIC_DIR_NAME,
         draft_dir_name: str = constants.PROJECT_DRAFT_DIR_NAME,
@@ -121,7 +121,7 @@ class Config(UserDict):
         self._invoc_dir = invoc_dir
         self._project_dir = project_dir
         self._output_dir = project_dir / output_dir_name
-        self._sources_dir = self._project_dir / sources_dir_name
+        self._contents_dir = self._project_dir / contents_dir_name
         self._themes_dir = self._project_dir / themes_dir_name
         self._extension_dir = self._project_dir / extension_dir_name
         self._draft_dir_name = draft_dir_name
@@ -182,9 +182,9 @@ class Config(UserDict):
         return self._output_dir
 
     @property
-    def sources_dir(self) -> Path:
-        """Path to the site source contents."""
-        return self._sources_dir
+    def contents_dir(self) -> Path:
+        """Path to the site contents."""
+        return self._contents_dir
 
     @property
     def themes_dir(self) -> Path:
@@ -198,7 +198,7 @@ class Config(UserDict):
 
     @property
     def static_dir(self) -> Path:
-        """Path to the site source static files."""
+        """Path to the site contents static files."""
         return self._static_dir
 
     @cached_property

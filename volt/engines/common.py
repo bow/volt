@@ -44,14 +44,14 @@ class Engine(abc.ABC):
         return self.__class__.__name__
 
     @property
-    def source_dir(self) -> Path:
-        """Path to the root source directory for this engine."""
-        return self.config.sources_dir
+    def contents_dir(self) -> Path:
+        """Path to the root contents directory for this engine."""
+        return self.config.contents_dir
 
     @property
-    def source_draft_dir(self) -> Path:
-        """Path to the source draft directory for this engine."""
-        return self.source_dir / self.config.draft_dir_name
+    def contents_draft_dir(self) -> Path:
+        """Path to the content draft directory for this engine."""
+        return self.contents_dir / self.config.draft_dir_name
 
     @abc.abstractmethod
     def create_outputs(self) -> Sequence[Output]:

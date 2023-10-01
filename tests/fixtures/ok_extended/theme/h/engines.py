@@ -8,7 +8,7 @@ from volt.engines import MarkdownEngine
 
 
 @dataclass
-class ImageSource:
+class ImageInput:
     caption: str
     path: Path
 
@@ -19,7 +19,7 @@ class GalleryEngine(Engine):
 
         template = self.theme.load_template_file("image.html.j2")
 
-        for image in self.get_sources():
+        for image in self.get_inputs():
             copy_outputs = CopyOutput(
                 src=image.path,
                 url_parts=("assets", "imgs", image.path.name),
@@ -40,14 +40,14 @@ class GalleryEngine(Engine):
 
         return outputs
 
-    def get_sources(self) -> list[ImageSource]:
+    def get_inputs(self) -> list[ImageInput]:
         imgs_dirname = "gallery"
-        lists_file_path = self.source_dir / imgs_dirname / "imgs.yaml"
+        lists_file_path = self.contents_dir / imgs_dirname / "imgs.yaml"
 
         with lists_file_path.open() as src:
             return [
-                ImageSource(
-                    path=self.source_dir / imgs_dirname / entry["filename"],
+                ImageInput(
+                    path=self.contents_dir / imgs_dirname / entry["filename"],
                     caption=entry["caption"],
                 )
                 for entry in yaml.safe_load(src)
