@@ -22,7 +22,7 @@ from yaml import SafeLoader
 from .common import Engine
 from .. import constants, error as err
 from ..config import Config
-from ..targets import TemplateTarget
+from ..outputs import TemplateOutput
 
 
 __all__ = ["MarkdownEngine", "MarkdownSource"]
@@ -30,7 +30,7 @@ __all__ = ["MarkdownEngine", "MarkdownSource"]
 
 class MarkdownEngine(Engine):
 
-    """Engine that creates HTML targets using the markdown2 library."""
+    """Engine that creates HTML outputs using the markdown2 library."""
 
     default_extras = {
         "fenced-code-blocks": {
@@ -70,24 +70,24 @@ class MarkdownEngine(Engine):
 
         self.extras = self.opts.pop("extras", None)
 
-    def create_targets(self) -> Sequence[TemplateTarget]:
+    def create_outputs(self) -> Sequence[TemplateOutput]:
 
         config = self.config
         get_sources = self.get_sources
 
         fps = get_sources() + (get_sources(draft=True) if config.with_draft else [])
 
-        targets = [
+        outputs = [
             MarkdownSource.from_path(
                 src=fp,
                 config=config,
                 is_draft=is_draft,
                 converter=self.converter,
-            ).to_template_target(self.template)
+            ).to_template_output(self.template)
             for fp, is_draft in fps
         ]
 
-        return targets
+        return outputs
 
     def get_sources(self, draft: bool = False) -> list[tuple[Path, bool]]:
         eff_dir = self.source_dir if not draft else self.source_draft_dir
@@ -216,10 +216,10 @@ class MarkdownSource:
     def html(self) -> str:
         return self.converter(self.body)
 
-    def to_template_target(self, template: Template) -> TemplateTarget:
-        """Create a :class:`TemplateTarget` instance."""
+    def to_template_output(self, template: Template) -> TemplateOutput:
+        """Create a :class:`TemplateOutput` instance."""
 
-        return TemplateTarget(
+        return TemplateOutput(
             url=self.url,
             template=template,
             render_kwargs={

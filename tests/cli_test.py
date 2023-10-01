@@ -154,15 +154,15 @@ def test_build_ok_e2e(
 
         with isolated_project_dir(ifs, "ok_minimal") as project_dir:
 
-            target_dir = project_dir / constants.PROJECT_TARGET_DIR_NAME
-            assert not target_dir.exists()
+            output_dir = project_dir / constants.PROJECT_OUTPUT_DIR_NAME
+            assert not output_dir.exists()
 
             res = runner.invoke(cli.root, toks)
             assert res.exit_code == 0, res.output
 
-            assert target_dir.exists()
-            u.assert_dir_contains_only(target_dir, ["assets", "index.html"])
-            u.assert_dir_contains_only(target_dir / "assets", ["style.css"])
+            assert output_dir.exists()
+            u.assert_dir_contains_only(output_dir, ["assets", "index.html"])
+            u.assert_dir_contains_only(output_dir / "assets", ["style.css"])
 
     return None
 
@@ -385,7 +385,7 @@ def test_serve_draft_ok_e2e(
     toks = ["-D", f"{project_dir}", "serve", "draft"]
     runner.invoke(cli.root, toks)
 
-    fp = project_dir / constants.PROJECT_TARGET_DIR_NAME / "bar.html"
+    fp = project_dir / constants.PROJECT_OUTPUT_DIR_NAME / "bar.html"
     assert u.wait_until_exists(fp)
 
     r_foo = requests.get(f"{url}/foo.html", timeout=req_timeout)

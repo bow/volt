@@ -1,4 +1,4 @@
-"""Site targets."""
+"""Site outputs."""
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -16,19 +16,19 @@ from . import error as err
 
 
 __all__ = [
-    "CopyTarget",
-    "FileTarget",
-    "Target",
-    "TemplateTarget",
+    "CopyOutput",
+    "FileOutput",
+    "Output",
+    "TemplateOutput",
 ]
 
 
 @dataclass(kw_only=True)
-class Target(abc.ABC):
+class Output(abc.ABC):
 
     """A single file created in the site output directory."""
 
-    # Relative URL of the target.
+    # Relative URL of the output.
     url: str
 
     @cached_property
@@ -41,7 +41,7 @@ class Target(abc.ABC):
 
 
 @dataclass(kw_only=True)
-class FileTarget(Target):
+class FileOutput(Output):
 
     """A single file to be written with contents from memory."""
 
@@ -60,14 +60,14 @@ class FileTarget(Target):
                 raise ValueError(f"unexpected content type: '{type(contents)}'")
         except OSError as e:
             raise err.VoltResourceError(
-                f"could not write target {self.url!r}: {e.strerror}"
+                f"could not write output {self.url!r}: {e.strerror}"
             )
 
 
 @dataclass(kw_only=True)
-class TemplateTarget(Target):
+class TemplateOutput(Output):
 
-    """A target created by rendering from a template."""
+    """An output created by rendering from a template."""
 
     # Jinja2 template to use.
     template: Template
@@ -75,7 +75,7 @@ class TemplateTarget(Target):
     # Render arguments.
     render_kwargs: dict = field(repr=False)
 
-    # Source of the target.
+    # Source of the output.
     src: Optional[Path] = field(default=None)
 
     def write(self, build_dir: Path) -> None:
@@ -85,22 +85,22 @@ class TemplateTarget(Target):
             (build_dir.joinpath(*self.url_parts)).write_text(content)
         except OSError as e:
             raise err.VoltResourceError(
-                f"could not write target {self.url!r}: {e.strerror}"
+                f"could not write output {self.url!r}: {e.strerror}"
             )
 
 
 @dataclass(kw_only=True)
-class CopyTarget(Target):
+class CopyOutput(Output):
 
-    """A target created by copying another file from the source directory."""
+    """An output created by copying another file from the source directory."""
 
     # Source of the copy.
     src: Path
 
-    # Path parts / tokens to the target.
+    # Path parts / tokens to the output.
     url_parts: tuple[str, ...]
 
-    # Relative URL of the target.
+    # Relative URL of the output.
     url: str = field(init=False)
 
     def __post_init__(self) -> None:

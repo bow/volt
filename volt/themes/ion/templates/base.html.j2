@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    {%- for target in site.select_targets("*.css") %}
-    <link rel="stylesheet" href="{{ target.url }}" />
+    {%- for output in site.select_outputs("*.css") %}
+    <link rel="stylesheet" href="{{ output.url }}" />
     {%- endfor %}
     {%- if meta.title %}
     <title>{{ config.name }} - {{ meta.title }}</title>

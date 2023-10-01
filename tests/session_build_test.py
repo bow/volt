@@ -32,25 +32,25 @@ def test_ok_minimal(
             config_file_name=constants.CONFIG_FILE_NAME,
         )
 
-        assert not config.target_dir.exists()
+        assert not config.output_dir.exists()
 
         site = session.build(config=config)
         assert log.has("build completed", level="info")
 
         assert site is not None
 
-        target_dir = config.target_dir
-        assert target_dir.exists()
+        output_dir = config.output_dir
+        assert output_dir.exists()
 
-        u.assert_dir_contains_only(target_dir, ["assets", "index.html"])
-        u.assert_dir_contains_only(target_dir / "assets", ["style.css"])
+        u.assert_dir_contains_only(output_dir, ["assets", "index.html"])
+        u.assert_dir_contains_only(output_dir / "assets", ["style.css"])
 
         project_dir_built = project_dirs[f"{fixture_name}.built"]
-        target_dir_built = project_dir_built / "target"
+        output_dir_built = project_dir_built / "output"
 
-        assert cmp(target_dir / "index.html", target_dir_built / "index.html")
+        assert cmp(output_dir / "index.html", output_dir_built / "index.html")
         assert cmp(
-            target_dir / "assets/style.css", target_dir_built / "assets/style.css"
+            output_dir / "assets/style.css", output_dir_built / "assets/style.css"
         )
 
 
@@ -72,28 +72,28 @@ def test_ok_extended(
         )
         config._with_draft = False
 
-        assert not config.target_dir.exists()
+        assert not config.output_dir.exists()
 
         site = session.build(config=config)
         assert log.has("build completed", level="info")
 
         assert site is not None
 
-        target_dir = config.target_dir
-        assert target_dir.exists()
+        output_dir = config.output_dir
+        assert output_dir.exists()
 
         u.assert_dir_contains_only(
-            target_dir, ["assets", "gallery", "index.html", "foo.html"]
+            output_dir, ["assets", "gallery", "index.html", "foo.html"]
         )
-        u.assert_dir_contains_only(target_dir / "assets", ["imgs", "modified.css"])
+        u.assert_dir_contains_only(output_dir / "assets", ["imgs", "modified.css"])
 
         project_dir_built = project_dirs[f"{fixture_name}.built"]
-        target_dir_built = project_dir_built / "target"
+        output_dir_built = project_dir_built / "output"
 
-        assert cmp(target_dir / "index.html", target_dir_built / "index.html")
-        assert cmp(target_dir / "foo.html", target_dir_built / "foo.html")
+        assert cmp(output_dir / "index.html", output_dir_built / "index.html")
+        assert cmp(output_dir / "foo.html", output_dir_built / "foo.html")
         assert cmp(
-            target_dir / "assets/modified.css", target_dir_built / "assets/modified.css"
+            output_dir / "assets/modified.css", output_dir_built / "assets/modified.css"
         )
 
 
@@ -112,7 +112,7 @@ def test_err_theme_missing(
         )
         config._theme_name = "foo"
 
-        assert not config.target_dir.exists()
+        assert not config.output_dir.exists()
 
         with pytest.raises(
             err.VoltConfigError,
@@ -123,7 +123,7 @@ def test_err_theme_missing(
         assert log.has("build failed", level="error")
         assert not log.has("build failed -- keeping current build", level="error")
 
-        assert not config.target_dir.exists()
+        assert not config.output_dir.exists()
 
 
 def test_err_theme_missing_with_existing_build(
@@ -141,7 +141,7 @@ def test_err_theme_missing_with_existing_build(
         )
         config._theme_name = "foo"
 
-        assert config.target_dir.exists()
+        assert config.output_dir.exists()
 
         with pytest.raises(
             err.VoltConfigError,

@@ -105,7 +105,7 @@ def make_server(
         server_version = f"volt-dev-server/{__version__}"
 
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            kwargs["directory"] = f"{config.target_dir}"
+            kwargs["directory"] = f"{config.output_dir}"
             super().__init__(*args, **kwargs)
 
         if log_level in {"warning", "error", "critical"}:
@@ -282,7 +282,7 @@ class _BuildHandler(events.RegexMatchingEventHandler):
             f"^{prefix + '/' + constants.SERVER_RUN_FILE_NAME}$",
         ]
         ignore_regexes = [
-            f"^{prefix + '/' + constants.PROJECT_TARGET_DIR_NAME + '/'}.+$",
+            f"^{prefix + '/' + constants.PROJECT_OUTPUT_DIR_NAME + '/'}.+$",
             ".*__pycache__.*",
         ]
         super().__init__(

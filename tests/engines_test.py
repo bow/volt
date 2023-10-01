@@ -212,31 +212,31 @@ def test_engine_spec_load_err_engine_missing(
 
 
 @pytest.mark.parametrize(
-    "target, ref, exp",
+    "output, ref, exp",
     [
-        # target is the same as ref
+        # output is the same as ref
         (Path("/a"), Path("/a"), Path(".")),
         (Path("/a/b"), Path("/a/b"), Path(".")),
-        # target is a child of ref
+        # output is a child of ref
         (Path("/a/b"), Path("/a"), Path("b")),
         (Path("/a/b/c"), Path("/a/b"), Path("c")),
         (Path("/a/b/c"), Path("/a"), Path("b/c")),
-        # target is a sibling of ref
+        # output is a sibling of ref
         (Path("/b"), Path("/a"), Path("../b")),
         (Path("/a/c"), Path("/a/b"), Path("../c")),
-        # target and ref shares a common parent
+        # output and ref shares a common parent
         (Path("/a/b/c"), Path("/a/d/f"), Path("../../b/c/")),
         (Path("/a/b/c/d"), Path("/a/b/d/x/z/q"), Path("../../../../c/d")),
         (Path("/a/b/c/d/e/f"), Path("/a/x/y/z"), Path("../../../b/c/d/e/f")),
     ],
 )
-def test__calc_relpath_ok(target, ref, exp):
-    obs = _calc_relpath(target, ref)
+def test__calc_relpath_ok(output, ref, exp):
+    obs = _calc_relpath(output, ref)
     assert obs == exp
 
 
 @pytest.mark.parametrize(
-    "target, ref",
+    "output, ref",
     [
         (Path("a"), Path("a/b")),
         (Path("a/b"), Path("a")),
@@ -244,9 +244,9 @@ def test__calc_relpath_ok(target, ref, exp):
         (Path("a"), Path("/a/b")),
     ],
 )
-def test__calc_relpath_fail(target, ref):
+def test__calc_relpath_fail(output, ref):
     with pytest.raises(
         ValueError,
         match="could not compute relative paths of non-absolute input paths",
     ):
-        _calc_relpath(target, ref)
+        _calc_relpath(output, ref)

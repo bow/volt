@@ -29,7 +29,7 @@ from . import constants, signals
 from .config import Config
 from .engines import Engine, MarkdownEngine
 from .error import VoltResourceError
-from .targets import CopyTarget, Target, TemplateTarget
+from .outputs import CopyOutput, Output, TemplateOutput
 from .theme import Theme
 from ._import import import_file
 from ._logging import log_method
@@ -45,27 +45,27 @@ class _PlanNode:
 
     """Node of the :class:`_Plan` tree."""
 
-    __slots__ = ("path", "target", "children", "__dict__")
+    __slots__ = ("path", "output", "children", "__dict__")
 
-    def __init__(self, path: Path, target: Optional[Target] = None) -> None:
+    def __init__(self, path: Path, output: Optional[Output] = None) -> None:
         """Initialize a plan node.
 
         :param path: Path to the node.
-        :param A target to be created in the site output directory.  If set to
-            ``None``, represents a directory. Otherwise, the given value must be
-            a subclass of :class:`Target`.
+        :param output: A file to be created in the site output directory.  If set to
+            ``None``, represents a directory. Otherwise, the given value must bek
+            a subclass of :class:`Output`.
 
         """
         self.path = path
-        self.target = target
+        self.output = output
         self.children: Optional[Dict[str, _PlanNode]] = (
-            None if target is not None else {}
+            None if output is not None else {}
         )
 
     @cached_property
     def is_dir(self) -> bool:
         """Whether the node represents a directory or not."""
-        return self.target is None
+        return self.output is None
 
     def __contains__(self, value: str) -> bool:
         children = self.children or {}
@@ -87,22 +87,22 @@ class _PlanNode:
         latter assumes that all parent directories of the file already exists.
 
         """
-        if self.target is None:
+        if self.output is None:
             (build_dir / self.path).mkdir(parents=True, exist_ok=True)
             return None
 
-        self.target.write(build_dir=build_dir)
+        self.output.write(build_dir=build_dir)
         return None
 
-    def add_child(self, key: str, target: Optional[Target] = None) -> None:
+    def add_child(self, key: str, output: Optional[Output] = None) -> None:
         """Add a child to the node.
 
         If a child with the given key already exists, nothing is done.
 
         :param str key: Key to given child.
-        :param target: A target to be created in the site output directory.
+        :param output: A file to be created in the site output directory.
             If set to ``None``, represents a directory. Otherwise, the given
-            value must be a subclass of :class:`Target`.
+            value must be a subclass of :class:`Output`.
 
         :raises TypeError: if the node represents a directory (does not have
             any children).
@@ -110,12 +110,12 @@ class _PlanNode:
         """
         if not self.is_dir:
             raise TypeError("cannot add children to file node")
-        # TODO: Adjustable behavior for targets with the same dest? For now
+        # TODO: Adjustable behavior for outputs with the same dest? For now
         #       just take the first one.
         children = self.children or {}
         if key in children:
             return
-        children[key] = _PlanNode(self.path / key, target)
+        children[key] = _PlanNode(self.path / key, output)
         self.children = children
 
 
@@ -135,32 +135,32 @@ class _Plan:
         self._root = _PlanNode(out_relpath)
         self._root_path_len = len(out_relpath.parts)
 
-    def add_target(self, target: Target) -> None:
-        """Add a target to the plan.
+    def add_output(self, output: Output) -> None:
+        """Add an output to the plan.
 
-        :param target: A target to be created in the site output directory.
-        :param src_path: The source file of the target, if applicable.
+        :param output: A file to be created in the site output directory.
+        :param src_path: The source file of the output, if applicable.
 
         :raises ValueError:
-            * when the given target's destination path is not a path relative to
+            * when the given output's destination path is not a path relative to
               the working directory.
-            * when the given target's destination path does not start with the
+            * when the given output's destination path does not start with the
               project site destination path.
-            * when the given target's destination path conflicts with an
+            * when the given output's destination path conflicts with an
               existing one
 
         """
-        # Ensure target dest starts with project site_dest
+        # Ensure output dest starts with project site_dest
         prefix_len = self._root_path_len
-        if target.url_parts[:prefix_len] != self._root.path.parts:
+        if output.url_parts[:prefix_len] != self._root.path.parts:
             raise ValueError(
-                "target destination does not start with project site destination"
+                "output destination does not start with project site destination"
             )
 
-        rem_len = len(target.url_parts) - prefix_len
+        rem_len = len(output.url_parts) - prefix_len
         cur = self._root
 
-        for idx, p in enumerate(target.url_parts[prefix_len:], start=1):
+        for idx, p in enumerate(output.url_parts[prefix_len:], start=1):
             try:
                 if idx < rem_len:
                     cur.add_child(p)
@@ -168,25 +168,25 @@ class _Plan:
                 else:
                     if p in cur:
                         raise ValueError(
-                            f"target path {target.url!r}"
+                            f"output path {output.url!r}"
                             + (
                                 f" from source {str(src)!r}"
-                                if (src := getattr(target, "src", None)) is not None
+                                if (src := getattr(output, "src", None)) is not None
                                 else ""
                             )
                             + " already added to the plan"
                         )
-                    cur.add_child(p, target)
+                    cur.add_child(p, output)
             except TypeError:
                 raise ValueError(
-                    f"path of target item {str(cur.path / p)!r}"
+                    f"path of output item {str(cur.path / p)!r}"
                     f" conflicts with {str(cur.path)!r}"
                 ) from None
 
         return None
 
     def fnodes(self) -> Generator[_PlanNode, None, None]:
-        """Yield all file target nodes, depth-first."""
+        """Yield all file output nodes, depth-first."""
 
         # TODO: Maybe compress the paths so we don't have to iterate over all
         #       directory parts?
@@ -201,7 +201,7 @@ class _Plan:
         """Yield the least number of directory nodes required to construct
         the site.
 
-        In other words, yields nodes whose children all represent file targets.
+        In other words, yields nodes whose children all represent file outputs.
 
         """
         nodes = [self._root]
@@ -241,7 +241,7 @@ class Site:
         self.__hooks: dict[str, ModuleType] = {}
 
         self.config = config
-        self.targets = list[Target]()
+        self.outputs = list[Output]()
         self.engine: Optional[Engine] = None
 
         self.theme = Theme.from_config(config)
@@ -270,18 +270,16 @@ class Site:
             self.__hooks = {}
             signals._clear_site_signal_receivers()
 
-    def select_targets(self, pattern: str) -> list[Target]:
-        return [
-            target for target in self.targets if fnmatch.fnmatch(target.url, pattern)
-        ]
+    def select_outputs(self, pattern: str) -> list[Output]:
+        return [item for item in self.outputs if fnmatch.fnmatch(item.url, pattern)]
 
-    def extract_targets(self, pattern: str) -> list[Target]:
-        matching, rest = _partition_targets(
-            self.targets,
+    def extract_outputs(self, pattern: str) -> list[Output]:
+        matching, rest = _partition_outputs(
+            self.outputs,
             lambda t: fnmatch.fnmatch(t.url, pattern),
         )
         rv = list(matching)
-        self.targets = list(rest)
+        self.outputs = list(rest)
         return rv
 
     @log_method(with_args=True)
@@ -293,8 +291,8 @@ class Site:
         self.__load_engine()
         signals.send(signals.post_site_load_engines, site=self)
 
-        self.__collect_targets()
-        signals.send(signals.post_site_collect_targets, site=self)
+        self.__collect_outputs()
+        signals.send(signals.post_site_collect_outputs, site=self)
 
         self.__update_render_kwargs(site=self, config=self.config, theme=self.theme)
 
@@ -353,52 +351,55 @@ class Site:
         )
 
     @log_method
-    def __create_static_targets(self) -> list[Target]:
+    def __create_static_outputs(self) -> list[Output]:
         config = self.config
         theme = self.theme
 
-        targets = {
-            target.url: target
-            for target in _collect_copy_targets(theme.static_dir, config.invoc_dir)
+        outputs = {
+            output.url: output
+            for output in _collect_copy_outputs(theme.static_dir, config.invoc_dir)
         }
 
-        for user_target in _collect_copy_targets(config.static_dir, config.invoc_dir):
-            url = user_target.url
-            if url in targets:
-                log.warn("using user-defined target instead of theme target", url=url)
-            targets[url] = user_target
+        for user_output in _collect_copy_outputs(config.static_dir, config.invoc_dir):
+            url = user_output.url
+            if url in outputs:
+                log.warn(
+                    "overwriting theme static file with user-defined static file",
+                    url=url,
+                )
+            outputs[url] = user_output
 
-        return list(targets.values())
+        return list(outputs.values())
 
     @log_method
-    def __collect_targets(self) -> None:
+    def __collect_outputs(self) -> None:
         if self.engine is None:
             return None
-        self.targets = self.__create_static_targets()
-        self.targets.extend(self.engine.create_targets())
+        self.outputs = self.__create_static_outputs()
+        self.outputs.extend(self.engine.create_outputs())
         return None
 
     @log_method(with_args=True)
     def __write(self, build_dir: Path, clean: bool) -> None:
-        """Write all collected targets under the destination directory."""
+        """Write all collected outputs under the destination directory."""
 
         plan = _Plan()
-        for target in self.targets:
+        for output in self.outputs:
             try:
-                plan.add_target(target)
+                plan.add_output(output)
             except ValueError as e:
                 raise VoltResourceError(f"{e}") from e
 
         plan.write_nodes(build_dir=build_dir)
 
-        target_dir = self.config.target_dir
+        output_dir = self.config.output_dir
         if clean:
-            shutil.rmtree(target_dir, ignore_errors=True)
-        shutil.copytree(src=build_dir, dst=target_dir, dirs_exist_ok=not clean)
+            shutil.rmtree(output_dir, ignore_errors=True)
+        shutil.copytree(src=build_dir, dst=output_dir, dirs_exist_ok=not clean)
         # chmod if inside container to ensure host can use it as if not generated
         # from inside the container.
         if self.config.in_docker:
-            for dp, _, file_names in os.walk(target_dir):
+            for dp, _, file_names in os.walk(output_dir):
                 os.chmod(dp, 0o777)  # nosec: B103
                 for fn in file_names:
                     os.chmod(os.path.join(dp, fn), 0o666)  # nosec: B103
@@ -406,29 +407,29 @@ class Site:
         return None
 
     def __update_render_kwargs(self, **kwargs: Any) -> None:
-        for target in self.targets:
-            if not isinstance(target, TemplateTarget):
+        for output in self.outputs:
+            if not isinstance(output, TemplateOutput):
                 continue
-            target.render_kwargs.update(**kwargs)
+            output.render_kwargs.update(**kwargs)
 
 
 T = TypeVar("T")
 
 
-def _partition_targets(
-    targets: Sequence[T],
+def _partition_outputs(
+    outputs: Sequence[T],
     pred: Callable[[T], bool],
 ) -> tuple[Iterator[T], Iterator[T]]:
-    iter1, iter2 = tee(targets)
+    iter1, iter2 = tee(outputs)
     matching = filter(pred, iter1)
     rest = filterfalse(pred, iter2)
     return matching, rest
 
 
-def _calc_relpath(target: Path, ref: Path) -> Path:
-    """Calculate the target's path relative to the reference.
+def _calc_relpath(output: Path, ref: Path) -> Path:
+    """Calculate the output's path relative to the reference.
 
-    :param target: The path to which the relative path will point.
+    :param output: The path to which the relative path will point.
     :param ref: Reference path.
 
     :returns: The relative path from ``ref`` to ``to``.
@@ -438,32 +439,32 @@ def _calc_relpath(target: Path, ref: Path) -> Path:
 
     """
     ref = ref.expanduser()
-    target = target.expanduser()
-    if not ref.is_absolute() or not target.is_absolute():
+    output = output.expanduser()
+    if not ref.is_absolute() or not output.is_absolute():
         raise ValueError("could not compute relative paths of non-absolute input paths")
 
-    common = Path(os.path.commonpath([ref, target]))
+    common = Path(os.path.commonpath([ref, output]))
     common_len = len(common.parts)
     ref_uniq = ref.parts[common_len:]
-    target_uniq = target.parts[common_len:]
+    output_uniq = output.parts[common_len:]
 
-    rel_parts = ("..",) * (len(ref_uniq)) + target_uniq
+    rel_parts = ("..",) * (len(ref_uniq)) + output_uniq
 
     return Path(*rel_parts)
 
 
-def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTarget]:
-    """Gather files from the given start directory recursively as copy targets."""
+def _collect_copy_outputs(start_dir: Path, invocation_dir: Path) -> list[CopyOutput]:
+    """Gather files from the given start directory recursively as copy outputs."""
 
     src_relpath = _calc_relpath(start_dir, invocation_dir)
     src_rel_len = len(src_relpath.parts)
 
-    targets: list[CopyTarget] = []
+    outputs: list[CopyOutput] = []
 
     try:
         entries = list(os.scandir(src_relpath))
     except FileNotFoundError:
-        return targets
+        return outputs
     else:
         while entries:
             de = entries.pop()
@@ -471,6 +472,6 @@ def _collect_copy_targets(start_dir: Path, invocation_dir: Path) -> list[CopyTar
                 entries.extend(os.scandir(de))
             else:
                 dtoks = Path(de.path).parts[src_rel_len:]
-                targets.append(CopyTarget(src=Path(de.path), url_parts=dtoks))
+                outputs.append(CopyOutput(src=Path(de.path), url_parts=dtoks))
 
-        return targets
+        return outputs

@@ -87,7 +87,7 @@ class Config(UserDict):
         invoc_dir: Path,
         project_dir: Path,
         with_draft: bool = False,
-        target_dir_name: str = constants.PROJECT_TARGET_DIR_NAME,
+        output_dir_name: str = constants.PROJECT_OUTPUT_DIR_NAME,
         sources_dir_name: str = constants.PROJECT_SOURCES_DIR_NAME,
         themes_dir_name: str = constants.SITE_THEMES_DIR_NAME,
         static_dir_name: str = constants.PROJECT_STATIC_DIR_NAME,
@@ -120,7 +120,7 @@ class Config(UserDict):
 
         self._invoc_dir = invoc_dir
         self._project_dir = project_dir
-        self._target_dir = project_dir / target_dir_name
+        self._output_dir = project_dir / output_dir_name
         self._sources_dir = self._project_dir / sources_dir_name
         self._themes_dir = self._project_dir / themes_dir_name
         self._extension_dir = self._project_dir / extension_dir_name
@@ -177,9 +177,9 @@ class Config(UserDict):
         return self._invoc_dir
 
     @property
-    def target_dir(self) -> Path:
+    def output_dir(self) -> Path:
         """Path to the site output directory."""
-        return self._target_dir
+        return self._output_dir
 
     @property
     def sources_dir(self) -> Path:

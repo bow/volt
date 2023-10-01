@@ -46,7 +46,7 @@ def new(
     """Create a new project.
 
     This function may overwrite any preexisting files and or directories
-    in the target working directory.
+    in the target directory path.
 
     :param dir_name: Name of the directory in which the project is created.
     :param invoc_dir: Path to the invocation directory.
@@ -147,9 +147,9 @@ def build(config: Config, clean: bool = True) -> Optional[Site]:
             log.warn("exiting from debugger -- build may be compromised")
         except Exception:
             msg = "build failed"
-            target_dir = config.target_dir
+            output_dir = config.output_dir
             with suppress(Exception):
-                if target_dir.exists() and any(True for _ in target_dir.iterdir()):
+                if output_dir.exists() and any(True for _ in output_dir.iterdir()):
                     msg += " -- keeping current build"
             log.error(msg)
             raise

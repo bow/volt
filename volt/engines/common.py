@@ -13,7 +13,7 @@ import structlog
 
 from .. import error as err
 from ..config import Config
-from ..targets import Target
+from ..outputs import Output
 from ..theme import Theme
 from .._import import import_file
 from .._logging import log_method
@@ -24,7 +24,7 @@ log = structlog.get_logger(__name__)
 
 class Engine(abc.ABC):
 
-    """Object for creating site targets."""
+    """Object for creating site outputs."""
 
     def __init__(
         self,
@@ -54,7 +54,7 @@ class Engine(abc.ABC):
         return self.source_dir / self.config.draft_dir_name
 
     @abc.abstractmethod
-    def create_targets(self) -> Sequence[Target]:
+    def create_outputs(self) -> Sequence[Output]:
         raise NotImplementedError()
 
 

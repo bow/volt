@@ -16,7 +16,7 @@ post_site_load_theme = signal("post_site_load_theme")
 
 post_site_load_engines = signal("post_site_load_engines")
 
-post_site_collect_targets = signal("post_site_collect_targets")
+post_site_collect_outputs = signal("post_site_collect_outputs")
 
 pre_site_write = signal("pre_site_write")
 post_site_write = signal("post_site_write")
@@ -33,7 +33,7 @@ def send(signal: NamedSignal, *args: Any, **kwargs: Any) -> None:
 def _clear_site_signal_receivers() -> None:
     for s in (
         post_site_load_engines,
-        post_site_collect_targets,
+        post_site_collect_outputs,
         pre_site_write,
     ):
         log.debug("clearing site signal receivers", signal=s.name)

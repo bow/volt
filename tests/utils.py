@@ -14,7 +14,7 @@ import tomlkit
 from click.testing import CliRunner
 
 from volt import cli
-from volt.constants import PROJECT_TARGET_DIR_NAME
+from volt.constants import PROJECT_OUTPUT_DIR_NAME
 
 
 # Layout for test files and directories.
@@ -126,7 +126,7 @@ def invoke_isolated_server(
     args: Optional[list[str]] = None,
     startup_timeout: float = 5.0,
     startup_check_freq: float = 0.2,
-    sentinel_project_file: Path = Path(PROJECT_TARGET_DIR_NAME) / "index.html",
+    sentinel_project_file: Path = Path(PROJECT_OUTPUT_DIR_NAME) / "index.html",
 ) -> Path:
 
     port = port or find_free_port()

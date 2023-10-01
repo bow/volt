@@ -7,10 +7,10 @@
     <a href="/">/</a>
   {%- else %}
     <ul>
-    {%- for html_target in site.select_targets("*.html") %}
-      {%- if html_target.url != '/index.html' %}
+    {%- for html_output in site.select_outputs("*.html") %}
+      {%- if html_output.url != '/index.html' %}
         <li>
-          <a href="{{ html_target.url }}">{{ html_target.url | basename }}</a>
+          <a href="{{ html_output.url }}">{{ html_output.url | basename }}</a>
         </li>
       {%- endif %}
     {%- endfor %}

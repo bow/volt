@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from volt import site, Target
+from volt import site, Output
 
 
-class MockTarget(Target):
+class MockOutput(Output):
     def __init__(self, dest=None) -> None:
         self.url = dest if dest is not None else "site/out.html"
 
@@ -17,17 +17,17 @@ class MockTarget(Target):
         return None
 
 
-def test_site_node_no_target():
+def test_site_node_no_output():
     p = Path("/fs")
     sn = site._PlanNode(p)
     assert sn.path == p
-    assert sn.target is None
+    assert sn.output is None
     assert sn.children == {}
     assert sn.is_dir
 
     assert "key" not in sn
     assert list(iter(sn)) == []
-    c1 = MockTarget()
+    c1 = MockOutput()
     sn.add_child("key", c1)
     assert "key" in sn
     children = list(iter(sn))
@@ -35,24 +35,24 @@ def test_site_node_no_target():
 
     child = children.pop()
     assert child.path == p.joinpath("key")
-    assert child.target == c1
+    assert child.output == c1
     assert child.children is None
     assert not child.is_dir
 
 
-def test_site_node_with_target():
+def test_site_node_with_output():
     p = Path("/fs")
-    t = MockTarget()
-    sn = site._PlanNode(p, target=t)
+    o = MockOutput()
+    sn = site._PlanNode(p, output=o)
     assert sn.path == p
-    assert sn.target == t
+    assert sn.output == o
     assert sn.children is None
     assert not sn.is_dir
 
     assert "key" not in sn
     assert list(iter(sn)) == []
     with pytest.raises(TypeError, match="cannot add children to file node"):
-        sn.add_child("test", MockTarget())
+        sn.add_child("test", MockOutput())
     assert "key" not in sn
     assert list(iter(sn)) == []
 
@@ -60,16 +60,16 @@ def test_site_node_with_target():
 def test_site_node_add_children_existing_key():
     p = Path("/fs")
     sn = site._PlanNode(p)
-    c1 = MockTarget("s/1")
-    c2 = MockTarget("s/2")
+    c1 = MockOutput("s/1")
+    c2 = MockOutput("s/2")
     sn.add_child("key", c1)
     sn.add_child("key", c2)
     assert len(list(iter(sn))) == 1
-    assert list(iter(sn))[0].target == c1
+    assert list(iter(sn))[0].output == c1
 
 
 @pytest.mark.parametrize(
-    "targets, dpaths, fpaths",
+    "outputs, dpaths, fpaths",
     [
         ([], [], []),
         (
@@ -94,10 +94,10 @@ def test_site_node_add_children_existing_key():
         ),
     ],
 )
-def test_site_plan_ok(targets, dpaths, fpaths):
+def test_site_plan_ok(outputs, dpaths, fpaths):
     sp = site._Plan()
-    for target in targets:
-        res = sp.add_target(MockTarget(target))
+    for output in outputs:
+        res = sp.add_output(MockOutput(output))
         assert res is None
 
     assert sorted([n.path for n in sp.dnodes()]) == (
@@ -109,17 +109,17 @@ def test_site_plan_ok(targets, dpaths, fpaths):
 
 
 @pytest.mark.parametrize(
-    "target1, target2, exp_msg",
+    "output1, output2, exp_msg",
     [
         (
             "site/a",
             "site/a/b",
-            "path of target item 'site/a/b' conflicts with 'site/a'",
+            "path of output item 'site/a/b' conflicts with 'site/a'",
         ),
     ],
 )
-def test_site_plan_fail(target1, target2, exp_msg):
+def test_site_plan_fail(output1, output2, exp_msg):
     sp = site._Plan()
-    sp.add_target(MockTarget(target1))
+    sp.add_output(MockOutput(output1))
     with pytest.raises(ValueError, match=exp_msg):
-        sp.add_target(MockTarget(target2))
+        sp.add_output(MockOutput(output2))

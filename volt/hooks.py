@@ -13,7 +13,7 @@ __all__ = [
     "log",
     "post_site_load_theme",
     "post_site_load_engines",
-    "post_site_collect_targets",
+    "post_site_collect_outputs",
     "pre_site_write",
     "post_site_write",
 ]
@@ -51,7 +51,7 @@ post_site_load_theme = s.post_site_load_theme.connect
 
 post_site_load_engines = s.post_site_load_engines.connect
 
-post_site_collect_targets = s.post_site_collect_targets.connect
+post_site_collect_outputs = s.post_site_collect_outputs.connect
 
 pre_site_write = s.pre_site_write.connect
 post_site_write = s.post_site_write.connect

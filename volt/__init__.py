@@ -11,8 +11,8 @@ from single_source import get_version
 
 from .config import Config  # noqa: F401
 from .engines import Engine, MarkdownEngine  # noqa: F401
+from .outputs import CopyOutput, FileOutput, Output, TemplateOutput  # noqa: F401
 from .site import Site  # noqa: F401
-from .targets import CopyTarget, FileTarget, Target, TemplateTarget  # noqa: F401
 from .theme import Theme  # noqa: F401
 
 NAME = "volt"

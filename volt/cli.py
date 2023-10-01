@@ -258,9 +258,9 @@ def root(
     "--force",
     is_flag=True,
     help=(
-        "If set, volt may overwrite files and/or directories in the project directory."
-        " Otherwise, the command will fail if any files and/or directories exist in"
-        " the target directory."
+        "If set, volt may overwrite files and/or directories within the target path."
+        " Otherwise, the command will fail if any files and/or directories already"
+        " exist in the target path."
     ),
 )
 @click.option(
@@ -330,7 +330,7 @@ def new(
     "--clean/--no-clean",
     default=True,
     help=(
-        "If set, the target site directory will be removed prior to site"
+        "If set, the output site directory will be removed prior to site"
         " building. Default: set."
     ),
 )
@@ -394,7 +394,7 @@ def build(
     "--clean/--no-clean",
     default=True,
     help=(
-        "If set, the target site directory will be removed prior to site"
+        "If set, the output site directory will be removed prior to site"
         " building. Default: set."
     ),
 )
