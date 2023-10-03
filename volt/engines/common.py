@@ -54,7 +54,7 @@ class Engine(abc.ABC):
         return self.contents_dir / self.config.draft_dir_name
 
     @abc.abstractmethod
-    def create_outputs(self) -> Sequence[Output]:
+    def prepare_outputs(self) -> Sequence[Output]:
         raise NotImplementedError()
 
 

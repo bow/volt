@@ -351,7 +351,7 @@ class Site:
         )
 
     @log_method
-    def __create_static_outputs(self) -> list[Output]:
+    def __prepare_static_outputs(self) -> list[Output]:
         config = self.config
         theme = self.theme
 
@@ -375,8 +375,8 @@ class Site:
     def __collect_outputs(self) -> None:
         if self.engine is None:
             return None
-        self.outputs = self.__create_static_outputs()
-        self.outputs.extend(self.engine.create_outputs())
+        self.outputs = self.__prepare_static_outputs()
+        self.outputs.extend(self.engine.prepare_outputs())
         return None
 
     @log_method(with_args=True)

@@ -25,7 +25,7 @@ from ..config import Config
 from ..outputs import TemplateOutput
 
 
-__all__ = ["MarkdownEngine", "MarkdownInput"]
+__all__ = ["MarkdownEngine", "MarkdownSource"]
 
 
 class MarkdownEngine(Engine):
@@ -70,16 +70,16 @@ class MarkdownEngine(Engine):
 
         self.extras = self.opts.pop("extras", None)
 
-    def create_outputs(self) -> Sequence[TemplateOutput]:
+    def prepare_outputs(self) -> Sequence[TemplateOutput]:
 
         config = self.config
-        get_inputs = self.get_inputs
+        read_sources = self.read_sources
 
-        fps = get_inputs() + (get_inputs(draft=True) if config.with_draft else [])
+        fps = read_sources() + (read_sources(draft=True) if config.with_draft else [])
 
         outputs = [
-            MarkdownInput.from_path(
-                src=fp,
+            MarkdownSource.from_path(
+                path=fp,
                 config=config,
                 is_draft=is_draft,
                 converter=self.converter,
@@ -89,7 +89,7 @@ class MarkdownEngine(Engine):
 
         return outputs
 
-    def get_inputs(self, draft: bool = False) -> list[tuple[Path, bool]]:
+    def read_sources(self, draft: bool = False) -> list[tuple[Path, bool]]:
         eff_dir = self.contents_dir if not draft else self.contents_draft_dir
         return [(p, draft) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
 
@@ -109,12 +109,12 @@ class MarkdownEngine(Engine):
 
 
 @dataclass(kw_only=True, eq=False)
-class MarkdownInput:
+class MarkdownSource:
 
     """A markdown input parsed using the markdown2 library."""
 
     # FileSystem path to the file content.
-    src: Path
+    path: Path
 
     # Metadata of the content.
     meta: dict
@@ -134,7 +134,7 @@ class MarkdownInput:
     @classmethod
     def from_path(
         cls,
-        src: Path,
+        path: Path,
         config: Config,
         converter: Callable[[str], str],
         meta: Optional[dict] = None,
@@ -149,14 +149,14 @@ class MarkdownInput:
         :param fm_sep: String for separating the markdown front matter.
 
         ."""
-        raw_text = src.read_text()
+        raw_text = path.read_text()
         *top, raw_body = raw_text.split(fm_sep, 2)
         raw_fm = [item for item in top if item]
         fm = {} if not raw_fm else yaml.load(raw_fm[0].strip(), Loader=SafeLoader)
 
         return cls(
             body=raw_body,
-            src=src,
+            path=path,
             # TODO: Validate minimal front matter metadata.
             meta={**fm, **(meta or {})},
             config=config,
@@ -170,7 +170,7 @@ class MarkdownInput:
         url_key = "url"
         title_key = "title"
 
-        parts: list[str] = [f"{self._slugify(self.src.stem)}.html"]
+        parts: list[str] = [f"{self._slugify(self.path.stem)}.html"]
 
         if (meta_url := self.meta.get(url_key)) is not None:
             parts = [part for part in meta_url.split("/") if part]
@@ -178,7 +178,7 @@ class MarkdownInput:
         elif (meta_title := self.meta.get(title_key)) is not None:
             parts = [f"{self._slugify(meta_title)}.html"]
 
-        ps = [*(self.src.parent.parts[config.num_common_parts :]), *parts]
+        ps = [*(self.path.parent.parts[config.num_common_parts :]), *parts]
         if self.is_draft:
             with suppress(IndexError):
                 # NOTE: This assumes that the `draft` folder is located at the same
@@ -199,7 +199,7 @@ class MarkdownInput:
     def pub_time(self) -> Optional[DateTime]:
         value = self.meta.get("pub_time", None)
         exc = err.VoltResourceError(
-            f"value {value!r} in {str(self.src)!r} is not a valid datetime"
+            f"value {value!r} in {str(self.path)!r} is not a valid datetime"
         )
         if value is None:
             return value
@@ -226,7 +226,7 @@ class MarkdownInput:
                 "meta": {**self.meta, "url": self.url},
                 "content": self.html,
             },
-            src=self.src.relative_to(self.config.project_dir),
+            src=self.path.relative_to(self.config.project_dir),
         )
 
     def _slugify(self, value: str) -> str:
