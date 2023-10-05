@@ -25,7 +25,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Setup poetry cache
         uses: actions/cache@v3
@@ -33,7 +33,7 @@ jobs:
         with:
           path: ~/.virtualenvs
           # yamllint disable-line rule:line-length
-          key: ${{runner.os}}-${{ env.pythonLocation }}-3.11-v3-${{ hashFiles('**/poetry.lock') }}
+          key: ${{runner.os}}-${{ env.pythonLocation }}-3.12-v3-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install and configure dependencies
         run: |
@@ -89,7 +89,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Setup poetry cache
         uses: actions/cache@v3
