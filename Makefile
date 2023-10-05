@@ -27,7 +27,7 @@ PYTHON_VERSION := 3.11.0
 VENV_NAME ?= $(APP_NAME)-dev
 
 # Non-pyproject.toml dependencies.
-PIP_DEPS := poetry==1.2.2 poetry-dynamic-versioning==0.19.0 twine==4.0.1
+PIP_DEPS := poetry==1.6.1 poetry-dynamic-versioning==1.1.0 twine==4.0.2
 
 # Non-pyproject.toml dev dependencies.
 PIP_DEV_DEPS := pre-commit
@@ -119,7 +119,6 @@ env:  ## Configure a local development environment.
 			&& . "$(shell pyenv root)/versions/$(VENV_NAME)/bin/activate" \
 			&& pip install --upgrade pip && pyenv rehash \
 			&& pip install $(PIP_DEPS) $(PIP_DEV_DEPS) && pyenv rehash \
-			&& poetry config experimental.new-installer false \
 			&& poetry config virtualenvs.create false \
 			&& poetry install && pyenv rehash \
 			&& pre-commit install && pyenv rehash \
@@ -127,7 +126,6 @@ env:  ## Configure a local development environment.
 	else \
 		printf "Configuring a local, bare dev environment ...\n" >&2 \
 			&& pip install $(PIP_DEPS) $(PIP_DEV_DEPS) \
-			&& poetry config experimental.new-installer false \
 			&& poetry config virtualenvs.create false \
 			&& poetry install \
 			&& pre-commit install \
