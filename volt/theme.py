@@ -31,7 +31,6 @@ class Theme:
     @classmethod
     @log_method
     def from_config(cls, config: Config) -> Self:
-
         if config.theme_name is None:
             raise err.VoltConfigError("config defines no theme")
 
@@ -163,12 +162,10 @@ class Theme:
 
     @log_method
     def _set_template_extensions(self, env: Environment) -> None:
-
         if (mod := self._load_template_extension()) is None:
             return None
 
         def get(kind: str, mark: str, container: dict[str, Any]) -> None:
-
             funcs: dict[str, Callable] = {
                 obj._volt_template_filter: obj
                 for obj in mod.__dict__.values()
@@ -198,7 +195,6 @@ class Theme:
 
     @log_method
     def get_engine_spec(self) -> Optional["EngineSpec"]:
-
         from .engines import EngineSpec
 
         if not self.engine:
@@ -238,7 +234,6 @@ class Theme:
 
 
 def _overlay(base: Optional[dict], mod: Optional[dict]) -> dict:
-
     _nonexistent = object()
 
     def func(overlaid: dict, mod: dict) -> None:

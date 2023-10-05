@@ -40,7 +40,6 @@ _pre_server_serve = blinker_signal("_pre_server_serve")
 
 
 class _RunFile:
-
     DRAFT_ON = "draft"
     DRAFT_OFF = "no-draft"
 
@@ -101,7 +100,6 @@ def make_server(
     with_sig_handlers: bool = True,
 ) -> Callable[[bool], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
-
         server_version = f"volt-dev-server/{__version__}"
 
         def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -244,7 +242,6 @@ class _SyncQueue(queue.Queue):
         block: bool = True,
         timeout: Optional[float] = None,
     ) -> None:
-
         if not self._putlock.acquire(blocking=False):
             return
 
@@ -266,7 +263,6 @@ class _BuildObserver(Observer):
 
 class _BuildHandler(events.RegexMatchingEventHandler):
     def __init__(self, config: Config, build_func: Callable) -> None:
-
         prefix = f"{config.project_dir_rel}".replace(".", r"\.")
         regexes = [
             *[
@@ -294,10 +290,8 @@ class _BuildHandler(events.RegexMatchingEventHandler):
         self._build = build_func
 
     def on_any_event(self, event: Any) -> None:
-
         log_attrs: dict = {}
         match type(event):
-
             case events.FileCreatedEvent:
                 log_attrs = dict(
                     reason="file_created",

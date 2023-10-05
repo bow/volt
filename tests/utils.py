@@ -35,7 +35,6 @@ class CommandRunner(CliRunner):
             yield root
 
     def _create_files(self, root: Path, layout: Optional[DirLayout]) -> None:
-
         if layout is None:
             return None
 
@@ -107,7 +106,6 @@ def find_free_port() -> int:
 
 
 def wait_until_exists(fp: Path, timeout: float = 5.0, freq: float = 0.2) -> bool:
-
     waited = 0.0
     while not fp.exists():
         time.sleep(freq)
@@ -128,7 +126,6 @@ def invoke_isolated_server(
     startup_check_freq: float = 0.2,
     sentinel_project_file: Path = Path(PROJECT_OUTPUT_DIR_NAME) / "index.html",
 ) -> Path:
-
     port = port or find_free_port()
     sentinel_file: Optional[Path] = None
     project_dir: Optional[Path] = None
@@ -140,9 +137,7 @@ def invoke_isolated_server(
         toks = args or ["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers"]
 
         with runner.isolated_filesystem() as ifs:
-
             with isolation_func(ifs, project_fixture_name) as pd:
-
                 project_dir = pd
                 sentinel_file = pd / sentinel_project_file
                 assert not sentinel_file.exists()

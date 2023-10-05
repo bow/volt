@@ -76,7 +76,6 @@ class EngineSpec:
         klass: Optional[str],
     ) -> None:
         match (module, klass):
-
             case (m, None) if isinstance(m, str):
                 self.engine = self._load_engine_module(m)
 

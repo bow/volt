@@ -76,7 +76,6 @@ def log_method(
 
 @dataclass
 class _LogLabel:
-
     bg: str
     text: str
 
@@ -108,7 +107,6 @@ class _ConsoleLogRenderer:
         _name: str,
         event_dict: structlog.types.EventDict,
     ) -> str:
-
         level = event_dict.pop("level", "notset")
         label = _level_styles.get(level, _default_style)
         logstr = f"{label.styled} "
@@ -127,7 +125,6 @@ class _ConsoleLogRenderer:
 
     @classmethod
     def _render_event_dict(cls, event_dict: structlog.types.EventDict) -> str:
-
         keys = event_dict.keys()
         if not keys:
             return ""

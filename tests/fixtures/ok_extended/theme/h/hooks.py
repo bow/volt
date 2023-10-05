@@ -3,7 +3,6 @@ from volt import hooks, CopyOutput, FileOutput, Site
 
 @hooks.pre_site_write
 def modify_css(_, site: Site) -> None:
-
     theme = site.theme
     hook_config = theme.get_hook_config(hooks.name())
 

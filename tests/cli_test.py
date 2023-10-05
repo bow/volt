@@ -23,7 +23,6 @@ def test_new_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
     toks = ["new", "-u", "https://site.net"]
 
     with runner.isolated_filesystem() as ifs:
-
         u.assert_dir_empty(ifs)
 
         res = runner.invoke(cli.root, toks)
@@ -86,7 +85,6 @@ def test_new_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> Non
     toks = ["new"]
 
     with runner.isolated_filesystem() as ifs:
-
         res = runner.invoke(cli.root, toks)
         assert res.exit_code == 0, res.output
 
@@ -125,7 +123,6 @@ def test_new_ok_extended(log: StructuredLogCapture, mocker: MockerFixture):
         "custom_path",
     ]
     with runner.isolated_filesystem() as ifs:
-
         res = runner.invoke(cli.root, toks)
         assert res.exit_code == 0, res.output
 
@@ -151,9 +148,7 @@ def test_build_ok_e2e(
     toks = ["build"]
 
     with runner.isolated_filesystem() as ifs:
-
         with isolated_project_dir(ifs, "ok_minimal") as project_dir:
-
             output_dir = project_dir / constants.PROJECT_OUTPUT_DIR_NAME
             assert not output_dir.exists()
 
@@ -175,7 +170,6 @@ def test_build_err_not_project(
     toks = ["build"]
 
     with runner.isolated_filesystem() as ifs:
-
         u.assert_dir_empty(ifs)
 
         res = runner.invoke(cli.root, toks)
@@ -196,7 +190,6 @@ def test_build_err_unexpected(log: StructuredLogCapture, mocker: MockerFixture) 
     toks = ["build"]
 
     with runner.isolated_filesystem() as ifs:
-
         project_dir = ifs
 
         (project_dir / constants.CONFIG_FILE_NAME).touch()
@@ -216,7 +209,6 @@ def test_build_ok_minimal(
     sess_func = mocker.patch("volt.cli.session.build")
 
     with runner.isolated_filesystem() as ifs:
-
         project_dir = ifs
 
         (project_dir / constants.CONFIG_FILE_NAME).touch()
@@ -240,7 +232,6 @@ def test_build_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
     toks = ["-D", "the_project", "build", "--draft"]
 
     with runner.isolated_filesystem() as ifs:
-
         project_dir = ifs / "the_project"
         project_dir.mkdir(parents=True, exist_ok=False)
 
@@ -262,7 +253,6 @@ def test_build_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
 def test_serve_ok_e2e(
     log: StructuredLogCapture, isolated_project_dir: Callable
 ) -> None:
-
     host = "127.0.0.1"
     port = u.find_free_port()
     url = f"http://{host}:{port}"
@@ -292,7 +282,6 @@ def test_serve_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> N
     toks = ["serve"]
 
     with runner.isolated_filesystem() as ifs:
-
         project_dir = ifs
 
         (project_dir / constants.CONFIG_FILE_NAME).touch()
@@ -333,7 +322,6 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
     ]
 
     with runner.isolated_filesystem() as ifs:
-
         project_dir = ifs
 
         (project_dir / constants.CONFIG_FILE_NAME).touch()
@@ -361,7 +349,6 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
 def test_serve_draft_ok_e2e(
     log: StructuredLogCapture, isolated_project_dir: Callable
 ) -> None:
-
     host = "127.0.0.1"
     port = u.find_free_port()
     url = f"http://{host}:{port}"
@@ -405,7 +392,6 @@ def test_serve_draft_ok_minimal(
     toks = ["serve", "draft"]
 
     with runner.isolated_filesystem() as ifs:
-
         project_dir = ifs
 
         (project_dir / constants.CONFIG_FILE_NAME).touch()
@@ -431,7 +417,6 @@ def test_serve_draft_ok_extended(
     toks = ["serve", "draft", "-s"]
 
     with runner.isolated_filesystem() as ifs:
-
         project_dir = ifs
 
         (project_dir / constants.CONFIG_FILE_NAME).touch()
@@ -455,9 +440,7 @@ def test_help_with_xcmd(
     runner = u.CommandRunner()
 
     with runner.isolated_filesystem() as ifs:
-
         with isolated_project_dir(ifs, "ok_extended") as project_dir:
-
             assert (project_dir / "extension" / "cli.py").exists()
 
             res0 = runner.invoke(cli.root, [])

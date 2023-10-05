@@ -39,9 +39,7 @@ def test_engine_spec_load_ok_class(
     tmp_path: Path,
     isolated_project_dir: Callable,
 ) -> None:
-
     with isolated_project_dir(tmp_path, "ok_extended") as project_dir:
-
         config = Config.from_file_name(
             invoc_dir=project_dir,
             project_dir=project_dir,
@@ -65,7 +63,6 @@ def test_engine_spec_load_ok_class(
 
 
 def test_engine_spec_init_err_all_nones(mocker: MockerFixture) -> None:
-
     m_config = mocker.MagicMock()
     m_theme = mocker.MagicMock()
 
@@ -82,7 +79,6 @@ def test_engine_spec_init_err_all_nones(mocker: MockerFixture) -> None:
 
 
 def test_engine_spec_init_err_all_defined(mocker: MockerFixture) -> None:
-
     m_config = mocker.MagicMock()
     m_theme = mocker.MagicMock()
 
@@ -99,7 +95,6 @@ def test_engine_spec_init_err_all_defined(mocker: MockerFixture) -> None:
 
 
 def test_engine_spec_init_err_invalid_specifier_module(mocker: MockerFixture) -> None:
-
     m_config = mocker.MagicMock()
     m_theme = mocker.MagicMock()
 
@@ -114,7 +109,6 @@ def test_engine_spec_init_err_invalid_specifier_module(mocker: MockerFixture) ->
 
 
 def test_engine_spec_init_err_missing_module(mocker: MockerFixture) -> None:
-
     m_config = mocker.MagicMock()
     m_theme = mocker.MagicMock()
 
@@ -129,7 +123,6 @@ def test_engine_spec_init_err_missing_module(mocker: MockerFixture) -> None:
 
 
 def test_engine_spec_init_err_missing_in_module(mocker: MockerFixture) -> None:
-
     m_config = mocker.MagicMock()
     m_theme = mocker.MagicMock()
 
@@ -146,7 +139,6 @@ def test_engine_spec_init_err_missing_in_module(mocker: MockerFixture) -> None:
 
 
 def test_engine_spec_init_err_invalid_specifier_class(mocker: MockerFixture) -> None:
-
     m_config = mocker.MagicMock()
     m_theme = mocker.MagicMock()
 
@@ -164,9 +156,7 @@ def test_engine_spec_load_err_engines_file_missing(
     tmp_path: Path,
     isolated_project_dir: Callable,
 ) -> None:
-
     with isolated_project_dir(tmp_path, "ok_extended") as project_dir:
-
         config = Config.from_file_name(
             invoc_dir=project_dir,
             project_dir=project_dir,
@@ -191,9 +181,7 @@ def test_engine_spec_load_err_engine_missing(
     tmp_path: Path,
     isolated_project_dir: Callable,
 ) -> None:
-
     with isolated_project_dir(tmp_path, "ok_extended") as project_dir:
-
         config = Config.from_file_name(
             invoc_dir=project_dir,
             project_dir=project_dir,

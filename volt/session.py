@@ -106,7 +106,6 @@ def new(
         return project_dir
 
     with bound_contextvars(vcs=vcs, project_dir=project_dir):
-
         log.debug("initializing vcs")
         match vcs:
             case "git":
@@ -168,7 +167,6 @@ def serve(
     log_level: str,
     with_sig_handlers: bool,
 ) -> None:
-
     eff_host = "127.0.0.1"
     if host is not None:
         eff_host = host
@@ -216,7 +214,6 @@ def _resolve_project_dir(
     dir_name: Optional[str],
     force: bool,
 ) -> Path:
-
     dir_name_specified = dir_name is not None
     dir_name_abs = dir_name is not None and os.path.isabs(dir_name)
     project_dir_specified = invoc_dir != project_dir
@@ -254,7 +251,6 @@ def _resolve_file_config(
     language: Optional[str],
     dir_name_specified: bool,
 ) -> dict:
-
     if not name and dir_name_specified:
         name = project_dir.name
 
@@ -320,7 +316,6 @@ def _infer_front_matter(query: str, title: Optional[str]) -> str:
 
 
 def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
-
     gitignore = project_dir / ".gitignore"
     gitignore.write_text(f"# Volt server run file\n{constants.SERVER_RUN_FILE_NAME}")
 

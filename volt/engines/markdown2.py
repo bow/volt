@@ -71,7 +71,6 @@ class MarkdownEngine(Engine):
         self.extras = self.opts.pop("extras", None)
 
     def prepare_outputs(self) -> Sequence[TemplateOutput]:
-
         config = self.config
         read_sources = self.read_sources
 

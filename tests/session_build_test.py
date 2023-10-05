@@ -21,11 +21,9 @@ def test_ok_minimal(
     project_dirs: dict[str, Path],
     log: StructuredLogCapture,
 ) -> None:
-
     fixture_name = "ok_minimal"
 
     with isolated_project_dir(tmp_path, fixture_name) as project_dir:
-
         config = Config.from_file_name(
             invoc_dir=project_dir,
             project_dir=project_dir,
@@ -60,11 +58,9 @@ def test_ok_extended(
     project_dirs: dict[str, Path],
     log: StructuredLogCapture,
 ) -> None:
-
     fixture_name = "ok_extended"
 
     with isolated_project_dir(tmp_path, fixture_name) as project_dir:
-
         config = Config.from_file_name(
             invoc_dir=project_dir,
             project_dir=project_dir,
@@ -102,9 +98,7 @@ def test_err_theme_missing(
     isolated_project_dir: Callable,
     log: StructuredLogCapture,
 ) -> None:
-
     with isolated_project_dir(tmp_path, "ok_minimal") as project_dir:
-
         config = Config.from_file_name(
             invoc_dir=project_dir,
             project_dir=project_dir,
@@ -131,9 +125,7 @@ def test_err_theme_missing_with_existing_build(
     isolated_project_dir: Callable,
     log: StructuredLogCapture,
 ) -> None:
-
     with isolated_project_dir(tmp_path, "ok_minimal.built") as project_dir:
-
         config = Config.from_file_name(
             invoc_dir=project_dir,
             project_dir=project_dir,

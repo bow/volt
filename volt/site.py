@@ -317,7 +317,6 @@ class Site:
 
     @log_method
     def __load_hook(self, kind: Literal["project", "theme"]) -> None:
-
         config = self.config
 
         fp = config.hooks_module_path
@@ -343,7 +342,6 @@ class Site:
 
     @log_method
     def __load_engine(self) -> None:
-
         self.engine = (
             spec.load()
             if (spec := self.theme.get_engine_spec()) is not None

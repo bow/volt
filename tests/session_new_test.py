@@ -499,7 +499,6 @@ def assert_new_project_layout(
     with_git: bool = True,
     theme: Optional[str] = None,
 ) -> None:
-
     theme_dir = project_dir / "theme"
     contents_dir = project_dir / "contents"
     config_fp = project_dir / "volt.toml"
