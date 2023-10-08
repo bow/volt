@@ -311,18 +311,6 @@ def _infer_author(stdout_encoding: str = "utf-8") -> Optional[str]:
     return author
 
 
-def _infer_front_matter(query: str, title: Optional[str]) -> str:
-    fm = {}
-    default_title = Path(query).stem
-
-    title = " ".join([tok.capitalize() for tok in (title or default_title).split("-")])
-    fm["title"] = title
-
-    strv = "\n".join([f"{k}: {v}" for k, v in fm.items()])
-
-    return f"""---\n{strv}\n---"""
-
-
 def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
     gitignore = project_dir / ".gitignore"
     gitignore.write_text(f"# Volt server run file\n{constants.SERVER_RUN_FILE_NAME}")
