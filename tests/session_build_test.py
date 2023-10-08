@@ -32,7 +32,7 @@ def test_ok_minimal(
 
         assert not config.output_dir.exists()
 
-        site = session.build(config=config, with_draft=False)
+        site = session.build(config=config, with_draft=False, clean=True)
         assert log.has("build completed", level="info")
 
         assert site is not None
@@ -69,7 +69,7 @@ def test_ok_extended(
 
         assert not config.output_dir.exists()
 
-        site = session.build(config=config, with_draft=False)
+        site = session.build(config=config, with_draft=False, clean=True)
         assert log.has("build completed", level="info")
 
         assert site is not None
@@ -111,7 +111,7 @@ def test_err_theme_missing(
             err.VoltConfigError,
             match=f"theme 'foo' not found in {config.themes_dir}",
         ):
-            session.build(config=config, with_draft=False)
+            session.build(config=config, with_draft=False, clean=True)
 
         assert log.has("build failed", level="error")
         assert not log.has("build failed -- keeping current build", level="error")
@@ -138,7 +138,7 @@ def test_err_theme_missing_with_existing_build(
             err.VoltConfigError,
             match=f"theme 'foo' not found in {config.themes_dir}",
         ):
-            session.build(config=config, with_draft=False)
+            session.build(config=config, with_draft=False, clean=True)
 
         assert not log.has("build failed", level="error")
         assert log.has("build failed -- keeping current build", level="error")

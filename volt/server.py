@@ -93,9 +93,9 @@ def make_server(
     config: Config,
     host: str,
     port: int,
-    log_level: str,
     with_draft: bool,
-    with_sig_handlers: bool = True,
+    with_sig_handlers: bool,
+    log_level: str,
 ) -> Callable[[bool], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
         server_version = f"volt-dev-server/{__version__}"

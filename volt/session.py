@@ -55,12 +55,12 @@ def new(
     :param url: URL of the static site, to be put inside the generated config file.
     :param description: Description of the site, to be put inside the generated
         config file.
-    :param description: Language of the site, to be put inside the generated
+    :param language: Language of the site, to be put inside the generated
         config file. If set to ``None``, the value will be inferred from the system
         locale.
     :param force: Whether to force project creation in nonempty directories or not.
-    :param vcs: Version control system to initialize in the newly created project.
     :param theme: Name of theme to include.
+    :param vcs: Version control system to initialize in the newly created project.
     :param config_file_name: Name of the config file to generate.
 
     :raises ~volt.error.VoltCliError:
@@ -118,11 +118,7 @@ def new(
     return project_dir
 
 
-def build(
-    config: Config,
-    with_draft: bool,
-    clean: bool = True,
-) -> Optional[Site]:
+def build(config: Config, with_draft: bool, clean: bool) -> Optional[Site]:
     """Build the site.
 
     This function may overwrite and/or remove any preexisting files
@@ -166,12 +162,12 @@ def serve(
     host: Optional[str],
     port: int,
     with_draft: bool,
-    watch: bool,
     open_browser: bool,
-    pre_build: bool,
+    watch: bool,
     build_clean: bool,
-    log_level: str,
+    pre_build: bool,
     with_sig_handlers: bool,
+    log_level: str,
 ) -> None:
     eff_host = "127.0.0.1"
     if host is not None:
@@ -180,12 +176,12 @@ def serve(
         eff_host = "0.0.0.0"
 
     serve = make_server(
-        config,
-        eff_host,
-        port,
-        log_level,
-        with_draft,
-        with_sig_handlers,
+        config=config,
+        host=eff_host,
+        port=port,
+        with_draft=with_draft,
+        with_sig_handlers=with_sig_handlers,
+        log_level=log_level,
     )
 
     if not watch:

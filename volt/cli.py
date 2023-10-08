@@ -364,6 +364,11 @@ def build(
 )
 @click.option("-p", "--port", type=int, default=5050, help="Server port.")
 @click.option(
+    "--draft/--no-draft",
+    default=True,
+    help="If set, include the draft directory when building. Default: set.",
+)
+@click.option(
     "-o",
     "--open",
     "open_browser",
@@ -377,24 +382,19 @@ def build(
     help="If set, rebuild site when source files change. Default: set.",
 )
 @click.option(
-    "--pre-build/--no-pre-build",
-    default=True,
-    help=(
-        "If set, build site before starting server. This value is ignored"
-        " if '--build' is unset. Default: set."
-    ),
-)
-@click.option(
-    "--draft/--no-draft",
-    default=True,
-    help="If set, include the draft directory when building. Default: set.",
-)
-@click.option(
     "--clean/--no-clean",
     default=True,
     help=(
         "If set, the output site directory will be removed prior to site"
         " building. Default: set."
+    ),
+)
+@click.option(
+    "--pre-build/--no-pre-build",
+    default=True,
+    help=(
+        "If set, build site before starting server. This value is ignored"
+        " if '--build' is unset. Default: set."
     ),
 )
 @click.option(
@@ -414,11 +414,11 @@ def serve(
     ctx: click.Context,
     host: Optional[str],
     port: int,
+    draft: bool,
     open_browser: bool,
     watch: bool,
-    pre_build: bool,
-    draft: bool,
     clean: bool,
+    pre_build: bool,
     quiet: bool,
     sig_handlers: bool,
 ) -> None:
@@ -447,10 +447,10 @@ def serve(
         with_draft=draft,
         open_browser=open_browser,
         watch=watch,
-        pre_build=pre_build,
         build_clean=clean,
-        log_level=log_level,
+        pre_build=pre_build,
         with_sig_handlers=sig_handlers,
+        log_level=log_level,
     )
 
 

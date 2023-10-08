@@ -260,7 +260,7 @@ class Site:
     def build(
         self,
         with_draft: bool,
-        clean: bool = True,
+        clean: bool,
         build_dir_prefix: str = constants.BUILD_DIR_PREFIX,
     ) -> None:
         """Build the static site in the destination directory."""
