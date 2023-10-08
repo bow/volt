@@ -70,27 +70,26 @@ class MarkdownEngine(Engine):
 
         self.extras = self.opts.pop("extras", None)
 
-    def prepare_outputs(self) -> Sequence[TemplateOutput]:
-        config = self.config
-        read_sources = self.read_sources
-
-        fps = read_sources() + (read_sources(draft=True) if config.with_draft else [])
-
-        outputs = [
+    def prepare_outputs(self, with_draft: bool) -> Sequence[TemplateOutput]:
+        return [
             MarkdownSource.from_path(
                 path=fp,
-                config=config,
+                config=self.config,
                 is_draft=is_draft,
                 converter=self.converter,
             ).to_template_output(self.template)
-            for fp, is_draft in fps
+            for fp, is_draft in self.read_sources(with_draft)
         ]
 
-        return outputs
+    def read_sources(self, with_draft: bool) -> list[tuple[Path, bool]]:
+        config = self.config
+        ext = f"*{constants.MARKDOWN_EXT}"
 
-    def read_sources(self, draft: bool = False) -> list[tuple[Path, bool]]:
-        eff_dir = self.contents_dir if not draft else self.contents_draft_dir
-        return [(p, draft) for p in eff_dir.glob(f"*{constants.MARKDOWN_EXT}")]
+        sources = [(p, False) for p in config.contents_dir.glob(ext)]
+        if with_draft:
+            sources.extend([(p, True) for p in config.draft_contents_dir.glob(ext)])
+
+        return sources
 
     @cached_property
     def converter(self) -> Callable[[str], str]:

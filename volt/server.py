@@ -44,12 +44,9 @@ class _RunFile:
     DRAFT_OFF = "no-draft"
 
     @classmethod
-    def from_config(cls, config: Config, draft: Optional[bool] = None) -> Self:
+    def from_config(cls, config: Config, draft: bool) -> Self:
         log.debug("creating server run file object from config", draft=draft)
-        return cls(
-            path=config._server_run_path,
-            draft=draft if draft is not None else config.with_draft,
-        )
+        return cls(path=config._server_run_path, draft=draft)
 
     @classmethod
     def from_path(cls, path: Path) -> Optional[Self]:
@@ -97,6 +94,7 @@ def make_server(
     host: str,
     port: int,
     log_level: str,
+    with_draft: bool,
     with_sig_handlers: bool = True,
 ) -> Callable[[bool], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -145,7 +143,7 @@ def make_server(
             # overrides parent log_error to reduce noise.
             pass
 
-    run_file = _RunFile.from_config(config)
+    run_file = _RunFile.from_config(config, with_draft)
     run_file.dump()
 
     def serve(with_open_browser: bool) -> None:
@@ -270,7 +268,10 @@ class _BuildHandler(events.RegexMatchingEventHandler):
                 for dir_name in (
                     constants.PROJECT_EXTENSION_DIR_NAME,
                     constants.PROJECT_CONTENTS_DIR_NAME,
-                    constants.PROJECT_STATIC_DIR_NAME,
+                    (
+                        f"{constants.PROJECT_CONTENTS_DIR_NAME}"
+                        f"/{constants.PROJECT_STATIC_DIR_NAME}"
+                    ),
                     constants.SITE_THEMES_DIR_NAME,
                 )
             ],

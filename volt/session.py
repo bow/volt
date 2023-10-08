@@ -118,13 +118,18 @@ def new(
     return project_dir
 
 
-def build(config: Config, clean: bool = True) -> Optional[Site]:
+def build(
+    config: Config,
+    with_draft: bool,
+    clean: bool = True,
+) -> Optional[Site]:
     """Build the site.
 
     This function may overwrite and/or remove any preexisting files
     and or directories.
 
     :param config: Site configuration.
+    :param with_draft: Whether draft contents are included in the build or not.
     :param clean: Whether to remove the entire site output directory prior
         to building, or not.
 
@@ -134,10 +139,10 @@ def build(config: Config, clean: bool = True) -> Optional[Site]:
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
-    with bound_contextvars(draft=config.with_draft):
+    with bound_contextvars(draft=with_draft):
         try:
             site = Site(config)
-            site.build(clean=clean)
+            site.build(with_draft=with_draft, clean=clean)
             log.info(
                 "build completed",
                 duration=f"{(time.monotonic() - start_time):.2f}s",
@@ -160,6 +165,7 @@ def serve(
     config: Config,
     host: Optional[str],
     port: int,
+    with_draft: bool,
     watch: bool,
     open_browser: bool,
     pre_build: bool,
@@ -173,8 +179,14 @@ def serve(
     elif config.in_docker:
         eff_host = "0.0.0.0"
 
-    build_with_draft = config.with_draft
-    serve = make_server(config, eff_host, port, log_level, with_sig_handlers)
+    serve = make_server(
+        config,
+        eff_host,
+        port,
+        log_level,
+        with_draft,
+        with_sig_handlers,
+    )
 
     if not watch:
         serve(open_browser)
@@ -184,11 +196,11 @@ def serve(
         def builder() -> None:
             nonlocal config
             rf = _RunFile.from_path(config._server_run_path)
-            draft = build_with_draft if rf is None else rf.draft
+            draft = with_draft if rf is None else rf.draft
             try:
                 # TODO: Only reload config post-init, on config file change.
-                config = config.reload(draft=draft)
-                build(config, build_clean)
+                config = config.reload()
+                build(config, with_draft=draft, clean=build_clean)
             except Exception as e:
                 log.exception(e)
 

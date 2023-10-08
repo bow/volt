@@ -14,7 +14,9 @@ class ImageSource:
 
 
 class GalleryEngine(Engine):
-    def prepare_outputs(self) -> Sequence[TemplateOutput | CopyOutput]:
+    def prepare_outputs(
+        self, with_draft: bool
+    ) -> Sequence[TemplateOutput | CopyOutput]:
         outputs: list[TemplateOutput | CopyOutput] = []
 
         template = self.theme.load_template_file("image.html.j2")
@@ -36,7 +38,7 @@ class GalleryEngine(Engine):
             outputs.append(template_outputs)
 
         md_eng = MarkdownEngine(self.config, self.theme)
-        outputs.extend(md_eng.prepare_outputs())
+        outputs.extend(md_eng.prepare_outputs(with_draft))
 
         return outputs
 

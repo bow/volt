@@ -48,13 +48,8 @@ class Engine(abc.ABC):
         """Path to the root contents directory for this engine."""
         return self.config.contents_dir
 
-    @property
-    def contents_draft_dir(self) -> Path:
-        """Path to the content draft directory for this engine."""
-        return self.contents_dir / self.config.draft_dir_name
-
     @abc.abstractmethod
-    def prepare_outputs(self) -> Sequence[Output]:
+    def prepare_outputs(self, with_draft: bool) -> Sequence[Output]:
         raise NotImplementedError()
 
 

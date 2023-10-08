@@ -218,12 +218,12 @@ def test_build_ok_minimal(
 
         sess_func.assert_called_once_with(
             config=Config(invoc_dir=ifs, project_dir=ifs),
+            with_draft=False,
             clean=True,
         )
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_draft
 
 
 def test_build_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> None:
@@ -242,12 +242,12 @@ def test_build_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
 
         sess_func.assert_called_once_with(
             config=Config(invoc_dir=project_dir, project_dir=project_dir),
+            with_draft=True,
             clean=True,
         )
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == project_dir
-        assert config.with_draft
 
 
 def test_serve_ok_e2e(
@@ -293,6 +293,7 @@ def test_serve_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> N
             config=Config(invoc_dir=ifs, project_dir=ifs),
             host=None,
             port=5050,
+            with_draft=True,
             open_browser=False,
             watch=True,
             pre_build=True,
@@ -303,7 +304,6 @@ def test_serve_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> N
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert config.with_draft
 
 
 def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> None:
@@ -333,6 +333,7 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
             config=Config(invoc_dir=ifs, project_dir=ifs),
             host="0.0.0.0",
             port=7070,
+            with_draft=False,
             open_browser=True,
             watch=True,
             pre_build=False,
@@ -343,7 +344,6 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_draft
 
 
 def test_serve_draft_ok_e2e(
@@ -406,7 +406,6 @@ def test_serve_draft_ok_minimal(
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_draft
 
 
 def test_serve_draft_ok_extended(
@@ -431,7 +430,6 @@ def test_serve_draft_ok_extended(
         config = sess_func.call_args.kwargs["config"]
         assert config.invoc_dir == ifs
         assert config.project_dir == ifs
-        assert not config.with_draft
 
 
 def test_help_with_xcmd(

@@ -349,9 +349,9 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    config = _get_config(ctx.parent, draft=draft)
+    config = _get_config(ctx.parent)
 
-    session.build(config=config, clean=clean)
+    session.build(config=config, with_draft=draft, clean=clean)
 
 
 @root.group(invoke_without_command=True)
@@ -437,13 +437,14 @@ def serve(
             file=sys.stderr,
         )
 
-    config = _get_config(ctx.parent, draft=draft)
+    config = _get_config(ctx.parent)
     log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
 
     session.serve(
         config=config,
         host=host,
         port=port,
+        with_draft=draft,
         open_browser=open_browser,
         watch=watch,
         pre_build=pre_build,
@@ -501,7 +502,7 @@ def xcmd(ctx: click.Context) -> None:
     """
 
 
-def _get_config(ctx: Optional[click.Context], draft: Optional[bool] = None) -> Config:
+def _get_config(ctx: Optional[click.Context]) -> Config:
     if ctx is None:
         raise ValueError("missing expected context")
 
@@ -510,5 +511,5 @@ def _get_config(ctx: Optional[click.Context], draft: Optional[bool] = None) -> C
         raise VoltCliError(
             f"command {ctx.invoked_subcommand!r} works only within a Volt project"
         )
-    config._set_draft(draft)
+
     return config

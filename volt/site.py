@@ -259,13 +259,18 @@ class Site:
     @log_method(with_args=True)
     def build(
         self,
+        with_draft: bool,
         clean: bool = True,
         build_dir_prefix: str = constants.BUILD_DIR_PREFIX,
     ) -> None:
         """Build the static site in the destination directory."""
 
         try:
-            self.__build(clean=clean, build_dir_prefix=build_dir_prefix)
+            self.__build(
+                with_draft=with_draft,
+                clean=clean,
+                build_dir_prefix=build_dir_prefix,
+            )
         finally:
             self.__hooks = {}
             signals._clear_site_signal_receivers()
@@ -283,7 +288,7 @@ class Site:
         return rv
 
     @log_method(with_args=True)
-    def __build(self, clean: bool, build_dir_prefix: str) -> None:
+    def __build(self, with_draft: bool, clean: bool, build_dir_prefix: str) -> None:
         """Build the static site in the destination directory."""
 
         self.__load_hooks()
@@ -291,7 +296,7 @@ class Site:
         self.__load_engine()
         signals.send(signals.post_site_load_engines, site=self)
 
-        self.__collect_outputs()
+        self.__collect_outputs(with_draft=with_draft)
         signals.send(signals.post_site_collect_outputs, site=self)
 
         self.__update_render_kwargs(site=self, config=self.config, theme=self.theme)
@@ -349,7 +354,7 @@ class Site:
         )
 
     @log_method
-    def __prepare_static_outputs(self) -> list[Output]:
+    def __prepare_static_outputs(self, with_draft: bool) -> list[Output]:
         config = self.config
         theme = self.theme
 
@@ -367,14 +372,31 @@ class Site:
                 )
             outputs[url] = user_output
 
+        if with_draft:
+            for draft_output in _collect_copy_outputs(
+                config.draft_static_dir,
+                config.invoc_dir,
+            ):
+                url = draft_output.url
+                if url in outputs:
+                    log.warn(
+                        "overwriting static file with its draft version",
+                        url=url,
+                    )
+                outputs[url] = user_output
+
         return list(outputs.values())
 
     @log_method
-    def __collect_outputs(self) -> None:
+    def __collect_outputs(self, with_draft: bool) -> None:
         if self.engine is None:
             return None
-        self.outputs = self.__prepare_static_outputs()
-        self.outputs.extend(self.engine.prepare_outputs())
+
+        self.outputs = [
+            *self.__prepare_static_outputs(with_draft),
+            *self.engine.prepare_outputs(with_draft),
+        ]
+
         return None
 
     @log_method(with_args=True)
