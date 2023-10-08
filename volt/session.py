@@ -135,7 +135,7 @@ def build(config: Config, with_draft: bool, clean: bool) -> Optional[Site]:
     start_time = time.monotonic()
     config["build_time"] = pendulum.now()
 
-    with bound_contextvars(draft=with_draft):
+    with bound_contextvars(with_draft=with_draft):
         try:
             site = Site(config)
             site.build(with_draft=with_draft, clean=clean)
