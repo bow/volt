@@ -87,13 +87,23 @@ class MarkdownEngine(Engine):
             src_dirs.append(self.config.draft_contents_dir)
 
         return [
+            src.to_template_output(self.template)
+            for src_dir in src_dirs
+            for src in self.read_sources(src_dir)
+        ]
+
+    def read_sources(
+        self,
+        base_dir: Path,
+        recursive: bool = False,
+    ) -> Sequence["MarkdownSource"]:
+        return [
             MarkdownSource.from_path(
                 path=fp,
                 config=self.config,
                 converter=self.converter,
-            ).to_template_output(self.template)
-            for src_dir in src_dirs
-            for fp in self.get_source_paths(src_dir)
+            )
+            for fp in self.get_source_paths(base_dir)
         ]
 
     @cached_property
