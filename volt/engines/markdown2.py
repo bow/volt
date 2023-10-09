@@ -193,9 +193,9 @@ class MarkdownSource:
         ps = [*(self.path.parent.parts[config.num_common_parts :]), *parts]
         if self.is_draft:
             with suppress(IndexError):
-                # NOTE: This assumes that the `draft` folder is located at the same
-                #       level as non-draft files.
-                del ps[-2]
+                # NOTE: This assumes that the `.draft` folder is located just below
+                #       the contents dir.
+                del ps[0]
 
         return f"/{'/'.join(ps)}"
 
