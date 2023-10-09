@@ -99,6 +99,12 @@ warn_unreachable = true
 allow_untyped_globals = false
 strict_equality = true
 
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+exclude = '/(\.eggs|\.git|\.mypy_cache|\.tox|\.venv|_build|build|dist)/'
+
 [tool.coverage.run]
 branch = true
 source = ["volt"]
