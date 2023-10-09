@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime as dt
 from functools import cached_property
 from pathlib import Path
-from typing import cast, Any, Callable, Optional, Self, Sequence
+from typing import cast, Any, Callable, Generator, Optional, Self, Sequence
 from urllib.parse import urljoin
 
 import pendulum
@@ -59,6 +59,17 @@ class MarkdownEngine(Engine):
         "footnotes": True,
     }
 
+    @staticmethod
+    def get_source_paths(
+        base_dir: Path,
+        recursive: bool = False,
+        ext: str = constants.MARKDOWN_EXT,
+    ) -> Generator[Path, None, None]:
+        pattern = f"*{ext}"
+        if recursive:
+            return base_dir.rglob(pattern)
+        return base_dir.glob(pattern)
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         template_name = self.opts.pop("template_name", "page.html.j2")
@@ -82,7 +93,7 @@ class MarkdownEngine(Engine):
                 converter=self.converter,
             ).to_template_output(self.template)
             for src_dir in src_dirs
-            for fp in src_dir.glob(f"*{constants.MARKDOWN_EXT}")
+            for fp in self.get_source_paths(src_dir)
         ]
 
     @cached_property
