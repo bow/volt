@@ -71,25 +71,19 @@ class MarkdownEngine(Engine):
         self.extras = self.opts.pop("extras", None)
 
     def prepare_outputs(self, with_draft: bool) -> Sequence[TemplateOutput]:
+        src_dirs = [self.config.contents_dir]
+        if with_draft:
+            src_dirs.append(self.config.draft_contents_dir)
+
         return [
             MarkdownSource.from_path(
                 path=fp,
                 config=self.config,
-                is_draft=is_draft,
                 converter=self.converter,
             ).to_template_output(self.template)
-            for fp, is_draft in self.read_sources(with_draft)
+            for src_dir in src_dirs
+            for fp in src_dir.glob(f"*{constants.MARKDOWN_EXT}")
         ]
-
-    def read_sources(self, with_draft: bool) -> list[tuple[Path, bool]]:
-        config = self.config
-        ext = f"*{constants.MARKDOWN_EXT}"
-
-        sources = [(p, False) for p in config.contents_dir.glob(ext)]
-        if with_draft:
-            sources.extend([(p, True) for p in config.draft_contents_dir.glob(ext)])
-
-        return sources
 
     @cached_property
     def converter(self) -> Callable[[str], str]:
@@ -136,7 +130,6 @@ class MarkdownSource:
         config: Config,
         converter: Callable[[str], str],
         meta: Optional[dict] = None,
-        is_draft: bool = False,
         fm_sep: str = constants.FRONT_MATTER_SEP,
     ) -> Self:
         """Create an instance from a file.
@@ -158,7 +151,7 @@ class MarkdownSource:
             # TODO: Validate minimal front matter metadata.
             meta={**fm, **(meta or {})},
             config=config,
-            is_draft=is_draft,
+            is_draft=f"{path}".startswith(f"{config.draft_contents_dir}"),
             converter=converter,
         )
 
