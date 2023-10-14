@@ -164,10 +164,10 @@ def test_engine_spec_load_err_engines_file_missing(
         )
         theme = Theme.from_config(config)
 
-        assert theme.engines_module_path.exists()
-        theme.engines_module_path.unlink()
+        assert theme.engine_module_path.exists()
+        theme.engine_module_path.unlink()
 
-        with pytest.raises(VoltConfigError, match="theme engines file not found"):
+        with pytest.raises(VoltConfigError, match="theme engine file not found"):
             EngineSpec(
                 config=config,
                 theme=theme,

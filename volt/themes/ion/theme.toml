@@ -1,5 +1,5 @@
 [theme]
 name = "ion"
 
-[theme.engines.markdown]
+[theme.engine.markdown]
 module = "volt.engines:MarkdownEngine"

@@ -93,14 +93,14 @@ class Theme:
         return f"{constants.THEME_ROOT_MOD_QUAL_NAME}.{self.name}"
 
     @cached_property
-    def engines_module_name(self) -> str:
+    def engine_module_name(self) -> str:
         """Module name for theme engines."""
         return f"{self.module_name}.{constants.ENGINES_MOD_NAME}"
 
     @cached_property
-    def engines_module_path(self) -> Path:
+    def engine_module_path(self) -> Path:
         """Path to theme engines."""
-        return self.path / constants.ENGINES_FILE_NAME
+        return self.path / constants.ENGINE_FILE_NAME
 
     @cached_property
     def hooks_module_name(self) -> str:

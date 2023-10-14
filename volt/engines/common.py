@@ -119,11 +119,11 @@ class EngineSpec:
         if not name.isidentifier():
             raise err.VoltConfigError(f"invalid engine class specifier: {name!r}")
 
-        fp = theme.engines_module_path
+        fp = theme.engine_module_path
         if not fp.exists():
-            raise err.VoltConfigError("theme engines file not found")
+            raise err.VoltConfigError("theme engine file not found")
 
-        mod_name = theme.engines_module_name
+        mod_name = theme.engine_module_name
 
         log.debug("loading file as module", path=fp, module=mod_name)
         mod = import_file(fp, mod_name)

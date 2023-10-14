@@ -77,11 +77,11 @@ SERVER_RUN_FILE_NAME = ".volt-server.run"
 # Root module name for the theme.
 THEME_ROOT_MOD_QUAL_NAME = f"{PROJECT_MOD_QUAL_NAME}.{SITE_THEMES_DIR_NAME}"
 
-# Theme engines module name.
-ENGINES_MOD_NAME = "engines"
+# Theme engine module name.
+ENGINES_MOD_NAME = "engine"
 
 # File name for theme engines.
-ENGINES_FILE_NAME = f"{ENGINES_MOD_NAME}.py"
+ENGINE_FILE_NAME = f"{ENGINES_MOD_NAME}.py"
 
 # Theme base settings file name.
 THEME_SETTINGS_FILE_NAME = "theme.toml"
