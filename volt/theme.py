@@ -200,12 +200,21 @@ class Theme:
         if not self.engine:
             return None
 
+        opts = self.engine.get("opts", {})
+        mod = self.engine.get("module", None)
+        cls = self.engine.get("class", None)
+
+        # If opts exist but no engines are specified, assume that we are using
+        # the default MarkdownEngine.
+        if opts and mod is None and cls is None:
+            mod = "volt.engines:MarkdownEngine"
+
         return EngineSpec(
             config=self.config,
             theme=self,
-            opts=self.engine.get("opts", {}),
-            module=self.engine.get("module", None),
-            klass=self.engine.get("class", None),
+            opts=opts,
+            module=mod,
+            klass=cls,
         )
 
     @log_method(with_args=True)
