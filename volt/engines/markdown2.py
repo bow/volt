@@ -80,6 +80,7 @@ class MarkdownEngine(Engine):
             self.template = Template(default_fp.read_text())
 
         self.extras = self.opts.pop("extras", None)
+        self.recursive = self.opts.pop("recursive", False)
 
     def prepare_outputs(self, with_draft: bool) -> Sequence[TemplateOutput]:
         src_dirs = [self.config.contents_dir]
@@ -95,7 +96,6 @@ class MarkdownEngine(Engine):
     def read_sources(
         self,
         base_dir: Path,
-        recursive: bool = False,
     ) -> Sequence["MarkdownSource"]:
         return [
             MarkdownSource.from_path(
@@ -103,7 +103,7 @@ class MarkdownEngine(Engine):
                 config=self.config,
                 converter=self.converter,
             )
-            for fp in self.get_source_paths(base_dir)
+            for fp in self.get_source_paths(base_dir, recursive=self.recursive)
         ]
 
     @cached_property
