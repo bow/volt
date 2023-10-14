@@ -52,8 +52,8 @@ class _PlanNode:
 
         :param path: Path to the node.
         :param output: A file to be created in the site output directory.  If set to
-            ``None``, represents a directory. Otherwise, the given value must bek
-            a subclass of :class:`Output`.
+            ``None``, represents a directory. Otherwise, the given value must be
+            an :class:`Output` instance.
 
         """
         self.path = path
