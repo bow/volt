@@ -15,7 +15,5 @@ repos:
     hooks:
       - id: debug-statements
         name: "Ensure debugger no debug statements exist"
-      - id: end-of-file-fixer
-        name: "Ensure uniform file endings"
       - id: trailing-whitespace
         name: "Remove trailing whitespaces"
