@@ -172,7 +172,7 @@ lint-types:  ## Lint the type hints.
 
 .PHONY: lint-style
 lint-style:  ## Lint style conventions.
-	poetry run flake8 --statistics volt tests && poetry run black -t py312 --check .
+	poetry run flake8 --statistics volt tests && poetry run black -t py312 --check volt tests
 
 
 .PHONY: lint-metrics
