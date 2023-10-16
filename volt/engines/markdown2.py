@@ -7,8 +7,9 @@ from contextlib import suppress
 from dataclasses import dataclass
 from datetime import datetime as dt
 from functools import cached_property
+from itertools import chain
 from pathlib import Path
-from typing import cast, Any, Callable, Generator, Optional, Self, Sequence
+from typing import cast, Any, Callable, Iterator, Optional, Self, Sequence
 from urllib.parse import urljoin
 
 import pendulum
@@ -59,17 +60,6 @@ class MarkdownEngine(Engine):
         "footnotes": True,
     }
 
-    @staticmethod
-    def get_source_paths(
-        base_dir: Path,
-        recursive: bool = False,
-        ext: str = constants.MARKDOWN_EXT,
-    ) -> Generator[Path, None, None]:
-        pattern = f"*{ext}"
-        if recursive:
-            return base_dir.rglob(pattern)
-        return base_dir.glob(pattern)
-
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         template_name = self.opts.pop("template_name", "page.html.j2")
@@ -83,28 +73,73 @@ class MarkdownEngine(Engine):
         self.recursive = self.opts.pop("recursive", False)
 
     def prepare_outputs(self, with_draft: bool) -> Sequence[TemplateOutput]:
-        src_dirs = [self.config.contents_dir]
-        if with_draft:
-            src_dirs.append(self.config.draft_contents_dir)
-
         return [
             src.to_template_output(self.template)
-            for src_dir in src_dirs
-            for src in self.read_sources(src_dir)
+            for src in self.read_sources(with_draft)
         ]
 
     def read_sources(
         self,
-        base_dir: Path,
+        with_draft: bool,
+        contents_lookup_dirname: str = "",
     ) -> Sequence["MarkdownSource"]:
+        rec = self.recursive
+        config = self.config
+        base_contents_dir = config.contents_dir / contents_lookup_dirname
+        base_drafts_dir = config.draft_contents_dir / contents_lookup_dirname
+
+        source_paths: Iterator[Path]
+        if with_draft:
+            if rec:
+                source_paths = self.iter_md_paths(base_contents_dir, recursive=True)
+            else:
+                source_paths = (
+                    sp
+                    for base_dir in (base_contents_dir, base_drafts_dir)
+                    for sp in self.iter_md_paths(base_dir, recursive=False)
+                )
+        else:
+            if rec:
+                # Exclude .drafts tree, i.e. start from all top-level dirs
+                # except .drafts.
+                base_dirs = (
+                    dp
+                    for dp in base_contents_dir.iterdir()
+                    if dp.is_dir() and dp.name != config.draft_dir_name
+                )
+                source_paths = chain(
+                    (
+                        sp
+                        for base_dir in base_dirs
+                        for sp in self.iter_md_paths(base_dir, recursive=True)
+                    ),
+                    (
+                        sp
+                        for sp in self.iter_md_paths(base_contents_dir, recursive=False)
+                    ),
+                )
+            else:
+                source_paths = self.iter_md_paths(base_contents_dir, recursive=False)
+
         return [
             MarkdownSource.from_path(
                 path=fp,
                 config=self.config,
                 converter=self.converter,
             )
-            for fp in self.get_source_paths(base_dir, recursive=self.recursive)
+            for fp in source_paths
         ]
+
+    @staticmethod
+    def iter_md_paths(
+        base_dir: Path,
+        recursive: bool = False,
+        ext: str = constants.MARKDOWN_EXT,
+    ) -> Iterator[Path]:
+        pattern = f"*{ext}"
+        if recursive:
+            return base_dir.rglob(pattern)
+        return base_dir.glob(pattern)
 
     @cached_property
     def converter(self) -> Callable[[str], str]:

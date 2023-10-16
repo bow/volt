@@ -21,7 +21,7 @@ class GalleryEngine(Engine):
 
         template = self.theme.load_template_file("image.html.j2")
 
-        for image in self.read_sources():
+        for image in self.list_img_sources():
             copy_outputs = CopyOutput(
                 src=image.path,
                 url_parts=("assets", "imgs", image.path.name),
@@ -42,7 +42,7 @@ class GalleryEngine(Engine):
 
         return outputs
 
-    def read_sources(self) -> list[ImageSource]:
+    def list_img_sources(self) -> list[ImageSource]:
         imgs_dirname = "gallery"
         lists_file_path = self.contents_dir / imgs_dirname / "imgs.yaml"
 
