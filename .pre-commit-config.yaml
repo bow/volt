@@ -5,11 +5,6 @@ repos:
     hooks:
       - id: black
         name: "Apply Black"
-        language_version: python3
-        args: [
-          "--target-version", "py312",
-          "--exclude", '/(\.eggs|\.git|\.mypy_cache|\.tox|\.venv|_build|build|dist)/',
-        ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.3.0
     hooks:
