@@ -14,6 +14,8 @@ class ImageSource:
 
 
 class GalleryEngine(Engine):
+    markdown_engine_cls = MarkdownEngine
+
     def prepare_outputs(
         self, with_draft: bool
     ) -> Sequence[TemplateOutput | CopyOutput]:
@@ -37,7 +39,11 @@ class GalleryEngine(Engine):
             outputs.append(copy_outputs)
             outputs.append(template_outputs)
 
-        md_eng = MarkdownEngine(self.config, self.theme)
+        md_eng = MarkdownEngine(
+            self.config,
+            self.theme,
+            opts=self.opts.pop("markdown", None),
+        )
         outputs.extend(md_eng.prepare_outputs(with_draft))
 
         return outputs

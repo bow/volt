@@ -6,3 +6,6 @@ name = "h"
 
 [theme.hooks.modify_css]
 enabled = true
+
+[theme.engine.opts.markdown]
+recursive = true

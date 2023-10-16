@@ -78,9 +78,10 @@ def test_ok_extended(
         assert output_dir.exists()
 
         u.assert_dir_contains_only(
-            output_dir, ["assets", "gallery", "index.html", "foo.html"]
+            output_dir, ["assets", "gallery", "nested", "index.html", "foo.html"]
         )
         u.assert_dir_contains_only(output_dir / "assets", ["imgs", "modified.css"])
+        u.assert_dir_contains_only(output_dir / "nested", ["post.html"])
 
         project_dir_built = project_dirs[f"{fixture_name}.built"]
         output_dir_built = project_dir_built / "output"
@@ -89,6 +90,9 @@ def test_ok_extended(
         assert cmp(output_dir / "foo.html", output_dir_built / "foo.html")
         assert cmp(
             output_dir / "assets/modified.css", output_dir_built / "assets/modified.css"
+        )
+        assert cmp(
+            output_dir / "nested/post.html", output_dir_built / "nested/post.html"
         )
 
 
