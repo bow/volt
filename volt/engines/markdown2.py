@@ -72,6 +72,17 @@ class MarkdownEngine(Engine):
         self.extras = self.opts.pop("extras", None)
         self.recursive = self.opts.pop("recursive", False)
 
+    @staticmethod
+    def iter_md_paths(
+        base_dir: Path,
+        recursive: bool = False,
+        ext: str = constants.MARKDOWN_EXT,
+    ) -> Iterator[Path]:
+        pattern = f"*{ext}"
+        if recursive:
+            return base_dir.rglob(pattern)
+        return base_dir.glob(pattern)
+
     def prepare_outputs(self, with_draft: bool) -> Sequence[TemplateOutput]:
         return [
             src.to_template_output(self.template)
@@ -127,17 +138,6 @@ class MarkdownEngine(Engine):
             MarkdownSource.from_path(path=fp, config=config, converter=converter)
             for fp in source_paths
         ]
-
-    @staticmethod
-    def iter_md_paths(
-        base_dir: Path,
-        recursive: bool = False,
-        ext: str = constants.MARKDOWN_EXT,
-    ) -> Iterator[Path]:
-        pattern = f"*{ext}"
-        if recursive:
-            return base_dir.rglob(pattern)
-        return base_dir.glob(pattern)
 
     def _make_converter(self) -> Callable[[str], str]:
         resolved_extras = _resolve_extras(self.extras, self.default_extras)
