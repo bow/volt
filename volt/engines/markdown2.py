@@ -121,12 +121,10 @@ class MarkdownEngine(Engine):
             else:
                 source_paths = self.iter_md_paths(base_contents_dir, recursive=False)
 
+        converter = self._make_converter()
+
         return [
-            MarkdownSource.from_path(
-                path=fp,
-                config=self.config,
-                converter=self.converter,
-            )
+            MarkdownSource.from_path(path=fp, config=config, converter=converter)
             for fp in source_paths
         ]
 
@@ -141,8 +139,7 @@ class MarkdownEngine(Engine):
             return base_dir.rglob(pattern)
         return base_dir.glob(pattern)
 
-    @cached_property
-    def converter(self) -> Callable[[str], str]:
+    def _make_converter(self) -> Callable[[str], str]:
         resolved_extras = _resolve_extras(self.extras, self.default_extras)
 
         kwargs: dict = {}
