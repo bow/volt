@@ -94,17 +94,27 @@ class MarkdownEngine(Engine):
         with_draft: bool,
         contents_lookup_dirname: str = "",
     ) -> Sequence["MarkdownSource"]:
+        converter = self._make_converter()
+        return [
+            MarkdownSource.from_path(path=fp, config=self.config, converter=converter)
+            for fp in self._iter_source_paths(with_draft, contents_lookup_dirname)
+        ]
+
+    def _iter_source_paths(
+        self,
+        with_draft: bool,
+        contents_lookup_dirname: str = "",
+    ) -> Iterator[Path]:
         rec = self.recursive
         config = self.config
         base_contents_dir = config.contents_dir / contents_lookup_dirname
         base_drafts_dir = config.draft_contents_dir / contents_lookup_dirname
 
-        source_paths: Iterator[Path]
         if with_draft:
             if rec:
-                source_paths = self.iter_md_paths(base_contents_dir, recursive=True)
+                return self.iter_md_paths(base_contents_dir, recursive=True)
             else:
-                source_paths = (
+                return (
                     sp
                     for base_dir in (base_contents_dir, base_drafts_dir)
                     for sp in self.iter_md_paths(base_dir, recursive=False)
@@ -118,7 +128,7 @@ class MarkdownEngine(Engine):
                     for dp in base_contents_dir.iterdir()
                     if dp.is_dir() and dp.name != config.draft_dir_name
                 )
-                source_paths = chain(
+                return chain(
                     (
                         sp
                         for base_dir in base_dirs
@@ -130,14 +140,7 @@ class MarkdownEngine(Engine):
                     ),
                 )
             else:
-                source_paths = self.iter_md_paths(base_contents_dir, recursive=False)
-
-        converter = self._make_converter()
-
-        return [
-            MarkdownSource.from_path(path=fp, config=config, converter=converter)
-            for fp in source_paths
-        ]
+                return self.iter_md_paths(base_contents_dir, recursive=False)
 
     def _make_converter(self) -> Callable[[str], str]:
         resolved_extras = _resolve_extras(self.extras, self.default_extras)
