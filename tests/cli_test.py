@@ -367,6 +367,8 @@ def test_serve_draft_ok_e2e(
     assert r_foo.status_code == 200
     r_bar = requests.get(f"{url}/bar.html", timeout=req_timeout)
     assert r_bar.status_code == 404
+    r_too = requests.get(f"{url}/nested/here/too.html", timeout=req_timeout)
+    assert r_too.status_code == 404
 
     runner = u.CommandRunner()
     toks = ["-D", f"{project_dir}", "serve", "draft"]
@@ -380,6 +382,9 @@ def test_serve_draft_ok_e2e(
     r_bar = requests.get(f"{url}/bar.html", timeout=req_timeout)
     assert r_bar.status_code == 200
     assert "<p>This is bar! It's still in draft.</p>" in r_bar.text
+    r_too = requests.get(f"{url}/nested/here/too.html", timeout=req_timeout)
+    assert r_too.status_code == 200
+    assert "<p>Deep inside</p>" in r_too.text
 
     return None
 
