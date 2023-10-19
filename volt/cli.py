@@ -354,7 +354,7 @@ def build(
     session.build(config=config, with_draft=draft, clean=clean)
 
 
-@root.group(invoke_without_command=True)
+@root.group(invoke_without_command=True, cls=_RootGroup)
 @click.option(
     "-h",
     "--host",

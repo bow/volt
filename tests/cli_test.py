@@ -2,6 +2,7 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+from itertools import product
 import subprocess as sp
 from typing import Callable
 
@@ -389,12 +390,17 @@ def test_serve_draft_ok_e2e(
     return None
 
 
+@pytest.mark.parametrize(
+    "toks",
+    list(product(["serve", "s"], ["draft", "d"])),
+)
 def test_serve_draft_ok_minimal(
-    log: StructuredLogCapture, mocker: MockerFixture
+    log: StructuredLogCapture,
+    mocker: MockerFixture,
+    toks: list[str],
 ) -> None:
     runner = u.CommandRunner()
     sess_func = mocker.patch("volt.cli.session.serve_draft")
-    toks = ["serve", "draft"]
 
     with runner.isolated_filesystem() as ifs:
         project_dir = ifs
