@@ -105,42 +105,49 @@ class MarkdownEngine(Engine):
         with_draft: bool,
         contents_lookup_dirname: str = "",
     ) -> Iterator[Path]:
-        rec = self.recursive
-        config = self.config
-        base_contents_dir = config.contents_dir / contents_lookup_dirname
-        base_drafts_dir = config.draft_contents_dir / contents_lookup_dirname
-
         if with_draft:
-            if rec:
-                return self.iter_md_paths(base_contents_dir, recursive=True)
-            else:
-                return (
-                    sp
-                    for base_dir in (base_contents_dir, base_drafts_dir)
-                    for sp in self.iter_md_paths(base_dir, recursive=False)
-                )
-        else:
-            if rec:
-                # Exclude .drafts tree, i.e. start from all top-level dirs
-                # except .drafts.
-                base_dirs = (
+            return self._iter_source_paths_with_draft(contents_lookup_dirname)
+        return self._iter_source_paths_no_draft(contents_lookup_dirname)
+
+    def _iter_source_paths_with_draft(
+        self,
+        contents_lookup_dirname: str = "",
+    ) -> Iterator[Path]:
+        base_contents_dir = self.config.contents_dir / contents_lookup_dirname
+        base_drafts_dir = self.config.draft_contents_dir / contents_lookup_dirname
+
+        if not self.recursive:
+            return (
+                sp
+                for base_dir in (base_contents_dir, base_drafts_dir)
+                for sp in self.iter_md_paths(base_dir, recursive=False)
+            )
+
+        return self.iter_md_paths(base_contents_dir, recursive=True)
+
+    def _iter_source_paths_no_draft(
+        self,
+        contents_lookup_dirname: str = "",
+    ) -> Iterator[Path]:
+        base_contents_dir = self.config.contents_dir / contents_lookup_dirname
+
+        if not self.recursive:
+            return self.iter_md_paths(base_contents_dir, recursive=False)
+
+        return chain(
+            # Exclude .drafts tree, i.e. start from all top-level dirs
+            # except .drafts.
+            (
+                sp
+                for base_dir in (
                     dp
                     for dp in base_contents_dir.iterdir()
-                    if dp.is_dir() and dp.name != config.draft_dir_name
+                    if dp.is_dir() and dp.name != self.config.draft_dir_name
                 )
-                return chain(
-                    (
-                        sp
-                        for base_dir in base_dirs
-                        for sp in self.iter_md_paths(base_dir, recursive=True)
-                    ),
-                    (
-                        sp
-                        for sp in self.iter_md_paths(base_contents_dir, recursive=False)
-                    ),
-                )
-            else:
-                return self.iter_md_paths(base_contents_dir, recursive=False)
+                for sp in self.iter_md_paths(base_dir, recursive=True)
+            ),
+            (sp for sp in self.iter_md_paths(base_contents_dir, recursive=False)),
+        )
 
     def _make_converter(self) -> Callable[[str], str]:
         resolved_extras = _resolve_extras(self.extras, self.default_extras)
