@@ -141,7 +141,8 @@ class Theme:
     def config_defaults(self) -> dict:
         """Default theme configurations."""
         with self.config_defaults_path.open("r") as src:
-            return cast(dict, tomlkit.load(src)).get("theme", {})
+            defaults = tomlkit.load(src).get("theme", {})
+        return cast(dict, defaults)
 
     @cached_property
     def templates_dir(self) -> Path:
