@@ -405,6 +405,16 @@ def build(
     help="If set, hide the startup banner. Default: unset.",
 )
 @click.option(
+    "--no-build",
+    is_flag=True,
+    default=False,
+    help=(
+        "A shorthand for setting both '--no-pre-build' and '--no-watch'."
+        " If set, both 'pre-build' and 'watch' flag values are ignored."
+        " Default: unset."
+    ),
+)
+@click.option(
     "--sig-handlers/--no-sig-handlers",
     default=True,
     hidden=True,
@@ -421,6 +431,7 @@ def serve(
     clean: bool,
     pre_build: bool,
     quiet: bool,
+    no_build: bool,
     sig_handlers: bool,
 ) -> None:
     """Run the development server"""
@@ -441,6 +452,10 @@ def serve(
     config = _get_config(ctx.parent)
     log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
     log_color = cast(bool, cast(click.Context, ctx.parent).params["log_color"])
+
+    if no_build:
+        watch = False
+        pre_build = False
 
     session.serve(
         config=config,
