@@ -300,6 +300,7 @@ def test_serve_ok_minimal(log: StructuredLogCapture, mocker: MockerFixture) -> N
             pre_build=True,
             build_clean=True,
             log_level="info",
+            log_color=True,
             with_sig_handlers=True,
         )
         config = sess_func.call_args.kwargs["config"]
@@ -340,6 +341,7 @@ def test_serve_ok_extended(log: StructuredLogCapture, mocker: MockerFixture) -> 
             pre_build=False,
             build_clean=True,
             log_level="info",
+            log_color=True,
             with_sig_handlers=True,
         )
         config = sess_func.call_args.kwargs["config"]

@@ -96,6 +96,7 @@ def make_server(
     with_draft: bool,
     with_sig_handlers: bool,
     log_level: str,
+    log_color: bool,
 ) -> Callable[[bool], None]:
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
         server_version = f"volt-dev-server/{__version__}"
@@ -135,7 +136,10 @@ def make_server(
             size: str | int = "-",
         ) -> Any:
             ts = dt.now().strftime("%H:%M:%S.%f")
-            fmt = '%30s | %%s · %%s "%%s"' % style(ts, fg="bright_black")
+            if log_color:
+                fmt = '%30s | %%s · %%s "%%s"' % style(ts, fg="bright_black")
+            else:
+                fmt = '%21s - %%s · %%s "%%s"' % style(ts, fg="bright_black")
             method, path = self.requestline[:-9].split(" ", 1)
             self.log_message(fmt, method, cast(HTTPStatus, code), path)
 

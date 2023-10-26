@@ -168,6 +168,7 @@ def serve(
     pre_build: bool,
     with_sig_handlers: bool,
     log_level: str,
+    log_color: bool,
 ) -> None:
     eff_host = "127.0.0.1"
     if host is not None:
@@ -182,6 +183,7 @@ def serve(
         with_draft=with_draft,
         with_sig_handlers=with_sig_handlers,
         log_level=log_level,
+        log_color=log_color,
     )
 
     if not watch:

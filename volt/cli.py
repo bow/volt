@@ -164,6 +164,7 @@ def root(
     _set_exc_style(exc_style)
 
     _set_use_color(color)
+    ctx.params["log_color"] = color
 
     init_logging(log_level)
     ctx.params["log_level"] = log_level
@@ -439,6 +440,7 @@ def serve(
 
     config = _get_config(ctx.parent)
     log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
+    log_color = cast(bool, cast(click.Context, ctx.parent).params["log_color"])
 
     session.serve(
         config=config,
@@ -451,6 +453,7 @@ def serve(
         pre_build=pre_build,
         with_sig_handlers=sig_handlers,
         log_level=log_level,
+        log_color=log_color,
     )
 
 
@@ -489,6 +492,12 @@ def serve_draft(
     session.serve_draft(config=config, value=value)
 
     return None
+
+
+@root.group(cls=_RootGroup)
+@click.pass_context
+def theme(ctx: click.Context) -> None:
+    """Work with site themes"""
 
 
 @root.command(cls=_ExtensionGroup)

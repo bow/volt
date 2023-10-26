@@ -83,7 +83,7 @@ class _LogLabel:
     def styled(self) -> str:
         if _get_use_color():
             return style(f" {self.text} ", fg=self.bg, bold=True, reverse=True)
-        return f"◆ {self.text} |"
+        return f"{self.text} |"
 
 
 _level_styles = {
