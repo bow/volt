@@ -533,10 +533,10 @@ def _get_config(ctx: Optional[click.Context], depth: int) -> Config:
     if ctx is None:
         raise ValueError("missing expected context")
 
-    target_ctx: Optional[Config] = ctx
+    target_ctx = ctx
     for d in range(depth):
         if (parent_ctx := getattr(target_ctx, "parent", None)) is None:
-            raise ValueError(f"missing expected parent context at depth {depth-d}")
+            raise ValueError(f"missing expected parent context at depth {depth - d}")
         target_ctx = parent_ctx
 
     config = cast(Optional[Config], target_ctx.params.get("config"))
