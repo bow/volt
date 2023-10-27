@@ -92,7 +92,7 @@ class _ExtensionGroup(click.Group):
         return mod
 
     def list_commands(self, ctx: click.Context) -> list[str]:
-        config = _get_config(ctx.parent)
+        config = _get_config(ctx, depth=1)
 
         if (mod := self.import_xcmd(config)) is None:
             return []
@@ -110,7 +110,7 @@ class _ExtensionGroup(click.Group):
         return rv
 
     def get_command(self, ctx: click.Context, name: str) -> Any:
-        config = _get_config(ctx.parent)
+        config = _get_config(ctx, depth=1)
         self.import_xcmd(config)
         return self.commands.get(name)
 
@@ -350,7 +350,7 @@ def build(
     directory is specified, no repeated lookups will be performed.
 
     """
-    config = _get_config(ctx.parent)
+    config = _get_config(ctx, depth=1)
 
     session.build(config=config, with_draft=draft, clean=clean)
 
@@ -452,7 +452,7 @@ def serve(
             file=sys.stderr,
         )
 
-    config = _get_config(ctx.parent)
+    config = _get_config(ctx, depth=1)
     log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
     log_color = cast(bool, cast(click.Context, ctx.parent).params["log_color"])
 
@@ -506,7 +506,7 @@ def serve_draft(
     elif str_value == "off":
         value = False
 
-    config = _get_config(cast(click.Context, ctx.parent).parent)
+    config = _get_config(ctx, depth=2)
     session.serve_draft(config=config, value=value)
 
     return None
@@ -529,14 +529,21 @@ def xcmd(ctx: click.Context) -> None:
     """
 
 
-def _get_config(ctx: Optional[click.Context]) -> Config:
+def _get_config(ctx: Optional[click.Context], depth: int) -> Config:
     if ctx is None:
         raise ValueError("missing expected context")
 
-    config = cast(Optional[Config], ctx.params.get("config"))
+    target_ctx: Optional[Config] = ctx
+    for d in range(depth):
+        if (parent_ctx := getattr(target_ctx, "parent", None)) is None:
+            raise ValueError(f"missing expected parent context at depth {depth-d}")
+        target_ctx = parent_ctx
+
+    config = cast(Optional[Config], target_ctx.params.get("config"))
     if config is None:
         raise VoltCliError(
-            f"command {ctx.invoked_subcommand!r} works only within a Volt project"
+            f"command {target_ctx.invoked_subcommand!r} works only within a"
+            " Volt project"
         )
 
     return config
