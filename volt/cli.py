@@ -380,7 +380,10 @@ def build(
 @click.option(
     "--watch/--no-watch",
     default=True,
-    help="If set, rebuild site when source files change. Default: set.",
+    help=(
+        "If set, rebuild site when source files change. This flag is ignored"
+        " if '--no-build' is set. Default: set."
+    ),
 )
 @click.option(
     "--clean/--no-clean",
@@ -394,8 +397,8 @@ def build(
     "--pre-build/--no-pre-build",
     default=True,
     help=(
-        "If set, build site before starting server. This value is ignored"
-        " if '--build' is unset. Default: set."
+        "If set, build site before starting server. This flag is ignored"
+        " if '--no-build' is set. Default: set."
     ),
 )
 @click.option(
