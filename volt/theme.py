@@ -4,6 +4,7 @@
 
 import tomlkit
 from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
 from functools import cached_property
 from types import ModuleType
@@ -21,7 +22,33 @@ if TYPE_CHECKING:
     from .engines import EngineSpec
 
 
-__all__ = ["Theme"]
+__all__ = ["Theme", "ThemeSource"]
+
+
+@dataclass
+class ThemeSource:
+
+    """Where the theme is stored"""
+
+    # Filesystem path to the theme.
+    path: Path
+
+    @classmethod
+    def from_raw(cls, value: Any, themes_dir: Path) -> Self:
+        match value:
+            case str():
+                theme_dir = themes_dir / value
+                if not theme_dir.exists():
+                    raise err.VoltConfigError(
+                        f"theme {value!r} not found in {themes_dir}"
+                    )
+                return cls(path=theme_dir)
+
+            case None:
+                raise err.VoltConfigError("config defines no theme")
+
+            case _:
+                raise NotImplementedError("non-string theme sources is not supported")
 
 
 class Theme:
@@ -31,22 +58,12 @@ class Theme:
     @classmethod
     @log_method
     def from_config(cls, config: Config) -> Self:
-        if config.theme_source is None:
-            raise err.VoltConfigError("config defines no theme")
+        source = ThemeSource.from_raw(config.theme_source, config.themes_dir)
+        return cls(source=source, site_config=config)
 
-        return cls(source=config.theme_source, site_config=config)
-
-    def __init__(self, source: str, site_config: Config) -> None:
+    def __init__(self, source: ThemeSource, site_config: Config) -> None:
         self._source = source
         self._config = site_config
-
-        theme_dir = site_config.themes_dir / self.source
-        if not theme_dir.exists():
-            raise err.VoltConfigError(
-                f"theme {self.source!r} not found in {site_config.themes_dir}"
-            )
-        self._path = theme_dir
-
         self._opts = self._resolve_config("opts")
         self._engine = self._resolve_config("engine")
         self._hooks = self._resolve_config("hooks")
@@ -55,7 +72,7 @@ class Theme:
         return f"{self.__class__.__name__}(name={self.source!r}, ...)"
 
     @property
-    def source(self) -> str:
+    def source(self) -> ThemeSource:
         """Theme source."""
         return self._source
 
@@ -82,10 +99,10 @@ class Theme:
         """Check whether the given hook is enabled."""
         return self.get_hook_config(name).get("enabled") or False
 
-    @property
+    @cached_property
     def path(self) -> Path:
         """Path to the theme directory."""
-        return self._path
+        return self._source.path
 
     @cached_property
     def module_name(self) -> str:
