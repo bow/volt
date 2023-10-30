@@ -84,7 +84,7 @@ def new(
     config = Config(
         invoc_dir=invoc_dir,
         project_dir=project_dir,
-        user_conf={"theme": {"name": theme}},
+        user_conf={"theme": {"source": theme}},
     )
     for dp in (
         config.contents_dir,
@@ -96,7 +96,7 @@ def new(
         fh.write("# Volt configuration file\n\n")
         tomlkit.dump(file_config, fh, sort_keys=False)
 
-    if (tn := config.theme_name) is not None:
+    if (tn := config.theme_source) is not None:
         theme_src_dir = Path(__file__).parent / "themes" / tn
         copytree(src=theme_src_dir, dst=config.themes_dir / tn, dirs_exist_ok=False)
         (config.contents_dir / "index.md").write_text("# My First Page\nHello, World")

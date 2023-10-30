@@ -31,19 +31,19 @@ class Theme:
     @classmethod
     @log_method
     def from_config(cls, config: Config) -> Self:
-        if config.theme_name is None:
+        if config.theme_source is None:
             raise err.VoltConfigError("config defines no theme")
 
-        return cls(name=config.theme_name, site_config=config)
+        return cls(source=config.theme_source, site_config=config)
 
-    def __init__(self, name: str, site_config: Config) -> None:
-        self._name = name
+    def __init__(self, source: str, site_config: Config) -> None:
+        self._source = source
         self._config = site_config
 
-        theme_dir = site_config.themes_dir / self.name
+        theme_dir = site_config.themes_dir / self.source
         if not theme_dir.exists():
             raise err.VoltConfigError(
-                f"theme {self.name!r} not found in {site_config.themes_dir}"
+                f"theme {self.source!r} not found in {site_config.themes_dir}"
             )
         self._path = theme_dir
 
@@ -52,12 +52,12 @@ class Theme:
         self._hooks = self._resolve_config("hooks")
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name={self.name!r}, ...)"
+        return f"{self.__class__.__name__}(name={self.source!r}, ...)"
 
     @property
-    def name(self) -> str:
-        """Theme name."""
-        return self._name
+    def source(self) -> str:
+        """Theme source."""
+        return self._source
 
     @property
     def opts(self) -> dict:
@@ -90,7 +90,7 @@ class Theme:
     @cached_property
     def module_name(self) -> str:
         """Module name of the theme."""
-        return f"{constants.THEME_ROOT_MOD_QUAL_NAME}.{self.name}"
+        return f"{constants.THEME_ROOT_MOD_QUAL_NAME}.{self.source}"
 
     @cached_property
     def engine_module_name(self) -> str:

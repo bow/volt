@@ -107,7 +107,7 @@ def test_err_theme_missing(
             project_dir=project_dir,
             config_file_name=constants.CONFIG_FILE_NAME,
         )
-        config._theme_name = "foo"
+        config._theme_source = "foo"
 
         assert not config.output_dir.exists()
 
@@ -134,7 +134,7 @@ def test_err_theme_missing_with_existing_build(
             project_dir=project_dir,
             config_file_name=constants.CONFIG_FILE_NAME,
         )
-        config._theme_name = "foo"
+        config._theme_source = "foo"
 
         assert config.output_dir.exists()
 

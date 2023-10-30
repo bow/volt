@@ -2,7 +2,7 @@
 name = "ok_extended"
 
 [theme]
-name = "h"
+source = "h"
 
 [theme.hooks.modify_css]
 enabled = true

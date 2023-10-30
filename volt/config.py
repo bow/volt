@@ -112,7 +112,7 @@ class Config(UserDict):
         )
 
         theme_config = uc.pop("theme", {}) or {}
-        self._theme_name = theme_config.pop("name", None) or None
+        self._theme_source = theme_config.pop("source", None) or None
         self._theme_overrides = theme_config
 
         super().__init__(site_config, **kwargs)
@@ -150,9 +150,9 @@ class Config(UserDict):
         return self._url
 
     @property
-    def theme_name(self) -> Optional[str]:
-        """Name of theme in use."""
-        return self._theme_name
+    def theme_source(self) -> Optional[str]:
+        """Source of theme in use."""
+        return self._theme_source
 
     @property
     def theme_overrides(self) -> dict:
