@@ -105,6 +105,16 @@ class Theme:
         return self._source.path
 
     @cached_property
+    def name(self) -> Optional[str]:
+        """Theme name."""
+        return self.config_defaults.get("name")
+
+    @cached_property
+    def description(self) -> Optional[str]:
+        """Theme description."""
+        return self.config_defaults.get("description")
+
+    @cached_property
     def module_name(self) -> str:
         """Module name of the theme."""
         return f"{constants.THEME_ROOT_MOD_QUAL_NAME}.{self.source}"
