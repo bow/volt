@@ -164,7 +164,7 @@ def root(
     _set_exc_style(exc_style)
 
     _set_use_color(color)
-    ctx.params["log_color"] = color
+    ctx.params["color"] = color
 
     init_logging(log_level)
     ctx.params["log_level"] = log_level
@@ -454,7 +454,7 @@ def serve(
 
     config = _get_config(ctx, depth=1)
     log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
-    log_color = cast(bool, cast(click.Context, ctx.parent).params["log_color"])
+    color = cast(bool, cast(click.Context, ctx.parent).params["color"])
 
     if no_build:
         watch = False
@@ -471,7 +471,7 @@ def serve(
         pre_build=pre_build,
         with_sig_handlers=sig_handlers,
         log_level=log_level,
-        log_color=log_color,
+        log_color=color,
     )
 
 
