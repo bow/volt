@@ -83,20 +83,30 @@ class MarkdownEngine(Engine):
             return base_dir.rglob(pattern)
         return base_dir.glob(pattern)
 
-    def prepare_outputs(self, with_draft: bool) -> Sequence[TemplateOutput]:
+    def prepare_outputs(
+        self,
+        with_draft: bool,
+        meta: Optional[dict] = None,
+    ) -> Sequence[TemplateOutput]:
         return [
             src.to_template_output(self.template)
-            for src in self.read_sources(with_draft)
+            for src in self.read_sources(with_draft, meta=meta)
         ]
 
     def read_sources(
         self,
         with_draft: bool,
         contents_lookup_dirname: str = "",
+        meta: Optional[dict] = None,
     ) -> Sequence["MarkdownSource"]:
         converter = self._make_converter()
         return [
-            MarkdownSource.from_path(path=fp, config=self.config, converter=converter)
+            MarkdownSource.from_path(
+                path=fp,
+                config=self.config,
+                converter=converter,
+                meta=meta,
+            )
             for fp in self._iter_source_paths(with_draft, contents_lookup_dirname)
         ]
 
