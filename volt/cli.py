@@ -453,8 +453,8 @@ def serve(
         )
 
     config = _get_config(ctx, depth=1)
-    log_level = cast(str, cast(click.Context, ctx.parent).params["log_level"])
-    color = cast(bool, cast(click.Context, ctx.parent).params["color"])
+    log_level: str = _get_param(ctx, "log_level", depth=1)
+    color: bool = _get_param(ctx, "color", depth=1)
 
     if no_build:
         watch = False
@@ -540,6 +540,11 @@ def _get_ctx(starting_ctx: Optional[click.Context], depth: int) -> click.Context
         target_ctx = parent_ctx
 
     return target_ctx
+
+
+def _get_param(ctx: Optional[click.Context], name: str, depth: int) -> Any:
+    target_ctx = _get_ctx(ctx, depth)
+    return target_ctx.params.get(name)
 
 
 def _get_config(ctx: Optional[click.Context], depth: int) -> Config:
