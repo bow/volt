@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 import yaml
 from volt import Engine, CopyOutput, TemplateOutput
@@ -17,7 +17,10 @@ class GalleryEngine(Engine):
     markdown_engine_cls = MarkdownEngine
 
     def prepare_outputs(
-        self, with_draft: bool
+        self,
+        with_draft: bool,
+        *args: Any,
+        **kwargs: Any,
     ) -> Sequence[TemplateOutput | CopyOutput]:
         outputs: list[TemplateOutput | CopyOutput] = []
 

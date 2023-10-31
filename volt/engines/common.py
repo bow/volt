@@ -49,7 +49,12 @@ class Engine(abc.ABC):
         return self.config.contents_dir
 
     @abc.abstractmethod
-    def prepare_outputs(self, with_draft: bool) -> Sequence[Output]:
+    def prepare_outputs(
+        self,
+        with_draft: bool,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Sequence[Output]:
         raise NotImplementedError()
 
 
