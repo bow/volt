@@ -529,16 +529,21 @@ def xcmd(ctx: click.Context) -> None:
     """
 
 
-def _get_config(ctx: Optional[click.Context], depth: int) -> Config:
-    if ctx is None:
+def _get_ctx(starting_ctx: Optional[click.Context], depth: int) -> click.Context:
+    if starting_ctx is None:
         raise ValueError("missing expected context")
 
-    target_ctx = ctx
+    target_ctx = starting_ctx
     for d in range(depth):
         if (parent_ctx := getattr(target_ctx, "parent", None)) is None:
             raise ValueError(f"missing expected parent context at depth {depth - d}")
         target_ctx = parent_ctx
 
+    return target_ctx
+
+
+def _get_config(ctx: Optional[click.Context], depth: int) -> Config:
+    target_ctx = _get_ctx(ctx, depth)
     config = cast(Optional[Config], target_ctx.params.get("config"))
     if config is None:
         raise VoltCliError(
