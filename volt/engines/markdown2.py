@@ -86,11 +86,12 @@ class MarkdownEngine(Engine):
     def prepare_outputs(
         self,
         with_draft: bool,
-        meta: Optional[dict] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> Sequence[TemplateOutput]:
         return [
             src.to_template_output(self.template)
-            for src in self.read_sources(with_draft, meta=meta)
+            for src in self.read_sources(with_draft, meta=kwargs.get("meta", None))
         ]
 
     def read_sources(
