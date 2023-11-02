@@ -88,29 +88,8 @@ clean-pyenv:  ## Remove the created pyenv virtualenv.
 	pyenv virtualenv-delete -f $(VENV_NAME) && rm -f .python-version
 
 
-.PHONY: docs-html
-docs-html:  ## Build HTML documentation.
-	cd $(DOCS_DIR) && make html
-
-
-.PHONY: docs-html-serve
-docs-html-serve:  ## Build HTML documentation and serve it.
-	@if command -v entr > /dev/null 2>&1; then \
-		find $(DOCS_DIR) -not \( -path "$(DOCS_DIR)/_build" -prune \) \
-			| entr -rcdns '$(MAKE) -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html'; \
-	else \
-		make -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html; \
-	fi
-
-
-.PHONY: docs-rtd
-docs-rtd:  ## Trigger ReadTheDocs build.
-	@([ ! -z "$(RTD_TOKEN)" ] || (>&2 echo "error: RTD_TOKEN undefined"; exit 1)) \
-		&& curl -X POST -H "Authorization: Token ${RTD_TOKEN}" $(RTD_BUILD_API_URL)
-
-
-.PHONY: env
-env:  ## Configure a local development environment.
+.PHONY: dev
+dev:  ## Configure a local development environment.
 	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
 		printf "Configuring a local dev environment using pyenv ...\n" >&2 \
 			&& pyenv install -s "$(PYTHON_VERSION)" \
@@ -131,6 +110,27 @@ env:  ## Configure a local development environment.
 			&& pre-commit install \
 			&& printf "Done.\n" >&2; \
 	fi
+
+
+.PHONY: docs-html
+docs-html:  ## Build HTML documentation.
+	cd $(DOCS_DIR) && make html
+
+
+.PHONY: docs-html-serve
+docs-html-serve:  ## Build HTML documentation and serve it.
+	@if command -v entr > /dev/null 2>&1; then \
+		find $(DOCS_DIR) -not \( -path "$(DOCS_DIR)/_build" -prune \) \
+			| entr -rcdns '$(MAKE) -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html'; \
+	else \
+		make -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html; \
+	fi
+
+
+.PHONY: docs-rtd
+docs-rtd:  ## Trigger ReadTheDocs build.
+	@([ ! -z "$(RTD_TOKEN)" ] || (>&2 echo "error: RTD_TOKEN undefined"; exit 1)) \
+		&& curl -X POST -H "Authorization: Token ${RTD_TOKEN}" $(RTD_BUILD_API_URL)
 
 
 .PHONY: fmt
