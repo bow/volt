@@ -176,7 +176,7 @@ def test_build_err_not_project(
         res = runner.invoke(cli.root, toks)
         assert res.exit_code != 0, res.output
         assert log.has(
-            "command 'build' works only within a Volt project", level="error"
+            "command 'build' works only within a volt project", level="error"
         )
 
         u.assert_dir_empty(ifs)

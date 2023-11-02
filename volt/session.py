@@ -93,7 +93,7 @@ def new(
     ):
         dp.mkdir(parents=True, exist_ok=True)
     with (project_dir / config_file_name).open("w") as fh:
-        fh.write("# Volt configuration file\n\n")
+        fh.write("# volt configuration file\n\n")
         tomlkit.dump(file_config, fh, sort_keys=False)
 
     if (tn := config.theme_source) is not None:
@@ -315,7 +315,7 @@ def _infer_author(stdout_encoding: str = "utf-8") -> Optional[str]:
 
 def _initialize_git(project_dir: Path, stream_encoding: str = "utf-8") -> bool:
     gitignore = project_dir / ".gitignore"
-    gitignore.write_text(f"# Volt server run file\n{constants.SERVER_RUN_FILE_NAME}")
+    gitignore.write_text(f"# volt server run file\n{constants.SERVER_RUN_FILE_NAME}")
 
     if (git_exe := which("git")) is None:
         log.warn("can not find git executable")

@@ -33,12 +33,12 @@ Added
   ``widgets.py`` in the project root directory.
 
 * New feature: logging
-  Users can now log their entire Volt run and log their custom engines, plugins, or widgets.
+  Users can now log their entire ``volt`` run and log their custom engines, plugins, or widgets.
 
 * New command: ``volt ext``
   ``volt ext`` creates template files for writing custom engine, plugin, or widget, in the root
   project directory. It can also be used to copy builtin engines/plugins/widgets into the
-  user's Volt project directory.
+  user's ``volt`` project directory.
 
 * New settings:
 
@@ -83,7 +83,7 @@ Fixed
 
 * ``volt serve`` now only runs ``volt gen`` once
 
-* All Volt commands work from anywhere inside a Volt project directory now
+* All ``volt`` commands work from anywhere inside a project directory now
 
 
 ..
@@ -126,7 +126,7 @@ Fixed
 
 * Windows terminal output does not display ANSI color codes anymore.
 
-* Volt server regeneration now works if ``voltconf.py`` is changed.
+* ``volt`` server regeneration now works if ``voltconf.py`` is changed.
 
 
 ..
@@ -139,4 +139,4 @@ Fixed
 Added
 ^^^^^
 
-* First Volt release
+* First ``volt`` release

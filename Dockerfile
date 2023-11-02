@@ -3,7 +3,7 @@
 # Copyright (c) 2022-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# This file is part of Volt <https://github.com/bow/volt>.
+# This file is part of volt <https://github.com/bow/volt>.
 
 FROM python:3.12.0-alpine AS builder
 

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Volt"
+name = "volt"
 version = "0.0.0"  # Placeholder version.
 description = "Extensible static site generator"
 authors = ["Wibowo Arindrarto <contact@arindrarto.dev>"]

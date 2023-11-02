@@ -59,7 +59,7 @@ class Config(UserDict):
         config_file_name: str,
         **kwargs: Any,
     ) -> Self:
-        """Create a site configuration from a Volt config file.
+        """Create a site configuration from a volt config file.
 
         :param invoc_dir: Path to the invocation directory.
         :param project_dir: Path to the project working directory.

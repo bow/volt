@@ -22,7 +22,7 @@ log = get_logger(__name__)
 
 class VoltError(Exception):
 
-    """Base Volt exception class."""
+    """Base volt exception class."""
 
 
 class VoltCliError(VoltError, ClickException):

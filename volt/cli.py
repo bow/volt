@@ -47,7 +47,7 @@ def main() -> None:
         with suppress(Exception):
             e.run_file_path.unlink()
     else:
-        log.debug("Volt completed successfully")
+        log.debug("volt completed successfully")
 
 
 # Taken from:
@@ -553,7 +553,7 @@ def _get_config(ctx: Optional[click.Context], depth: int) -> Config:
     if config is None:
         raise VoltCliError(
             f"command {target_ctx.invoked_subcommand!r} works only within a"
-            " Volt project"
+            " volt project"
         )
 
     return config
