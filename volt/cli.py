@@ -518,6 +518,18 @@ def theme(ctx: click.Context) -> None:
     """Work with site themes"""
 
 
+@theme.command("show")
+@click.pass_context
+def theme_show(ctx: click.Context) -> None:
+    """Show details about the active theme"""
+    config = _get_config(ctx, depth=2)
+    color: bool = _get_param(ctx, "color", depth=2)
+
+    session.theme_show(config, with_color=color)
+
+    return None
+
+
 @root.command(cls=_ExtensionGroup)
 @click.pass_context
 def xcmd(ctx: click.Context) -> None:

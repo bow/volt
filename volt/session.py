@@ -15,11 +15,13 @@ from typing import Optional
 import pendulum
 import structlog
 import tomlkit
+from click import style
 from structlog.contextvars import bound_contextvars
 
 from . import constants, error as err
 from .config import Config, _VCS
 from .server import _Rebuilder, _RunFile, make_server
+from .theme import Theme
 from .site import Site
 
 
@@ -216,6 +218,30 @@ def serve_draft(config: Config, value: Optional[bool]) -> None:
         rf = _RunFile.from_config(config=config, draft=False)
 
     return rf.toggle_draft(value).dump()
+
+
+def theme_show(config: Config, with_color: bool) -> None:
+    theme = Theme.from_config(config)
+    path = theme.source.path.relative_to(  # type: ignore[call-arg]
+        config.invoc_dir,
+        walk_up=True,
+    )
+    name = theme.name or "<unnamed>"
+    desc = theme.description or "<undescribed>"
+
+    info = ""
+    if with_color:
+        name_v = style(f"{name}", fg="cyan", bold=True)
+        desc_v = style(f"{desc}", fg="yellow")
+        path_v = style(f"{path}", fg="magenta")
+        padding = " " * len(name)
+        info = f"{name_v} • {desc_v}\n{padding} • {path_v}"
+    else:
+        info = f"Name   : {name}\nDesc   : {desc}\nSource : {path}"
+
+    print(info)
+
+    return None
 
 
 def _resolve_project_dir(
