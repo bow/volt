@@ -135,12 +135,12 @@ class Theme:
     @cached_property
     def template_extension_module_name(self) -> str:
         """Module name for theme template extensions."""
-        return f"{self.module_name}.{constants.TEMPLATE_EXTENSIONS_MOD_NAME}"
+        return f"{self.module_name}.{constants.TEMPLATE_FUNCTIONS_MOD_NAME}"
 
     @cached_property
     def template_extension_module_path(self) -> Path:
         """Path to theme template extensions."""
-        return self.path / constants.TEMPLATE_EXTENSIONS_FILE_NAME
+        return self.path / constants.TEMPLATE_FUNCTIONS_FILE_NAME
 
     @cached_property
     def static_dir(self) -> Path:
