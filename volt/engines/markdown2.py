@@ -62,15 +62,17 @@ class MarkdownEngine(Engine):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        template_name = self.opts.pop("template_name", "page.html.j2")
+        # TODO: How to best expose and configure this?
+        template_name = "page.html.j2"
         try:
             self.template = self.theme.load_template_file(template_name)
         except err.VoltMissingTemplateError:
             default_fp = Path(__file__).parent / "defaults" / f"{template_name}"
             self.template = Template(default_fp.read_text())
 
-        self.extras = self.opts.pop("extras", None)
-        self.recursive = self.opts.pop("recursive", False)
+        markdown_opts = self.theme.opts.get("markdown") or {}
+        self.recursive = markdown_opts.pop("recursive", False)
+        self.extras = markdown_opts
 
     @staticmethod
     def iter_md_paths(

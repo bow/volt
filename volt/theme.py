@@ -65,7 +65,6 @@ class Theme:
         self._source = source
         self._config = site_config
         self._opts = self._resolve_opts()
-        self._engine_config = self._resolve_engine_opts()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.source!r}, ...)"
@@ -79,11 +78,6 @@ class Theme:
     def opts(self) -> dict:
         """Theme options."""
         return self._opts
-
-    @property
-    def engine_config(self) -> dict:
-        """Theme engine config."""
-        return self._engine_config
 
     @property
     def hooks(self) -> dict:
@@ -229,22 +223,21 @@ class Theme:
     def get_engine_spec(self) -> Optional["EngineSpec"]:
         from .engines import EngineSpec
 
-        if not self.engine_config:
+        engine_config = self.manifest.get("engine", None) or None
+        if not engine_config:
             return None
 
-        opts = self.engine_config.get("opts", {})
-        mod = self.engine_config.get("module", None)
-        cls = self.engine_config.get("class", None)
+        mod = engine_config.get("module", None)
+        cls = engine_config.get("class", None)
 
-        # If opts exist but no engines are specified, assume that we are using
+        # If no engines are specified, assume that we are using
         # the default MarkdownEngine.
-        if opts and mod is None and cls is None:
+        if mod is None and cls is None:
             mod = "volt.engines:MarkdownEngine"
 
         return EngineSpec(
             config=self.config,
             theme=self,
-            opts=opts,
             module=mod,
             klass=cls,
         )
@@ -252,14 +245,6 @@ class Theme:
     @log_method(with_args=True)
     def _resolve_opts(self) -> dict:
         return _overlay(self.defaults, self.config.theme_overrides.get("overrides"))
-
-    @log_method(with_args=True)
-    def _resolve_engine_opts(self) -> dict:
-        """Resolve theme configuration by applying overrides to defaults"""
-        return _overlay(
-            self.manifest.get("engine", None),
-            self.config.theme_overrides.get("engine", None),
-        )
 
     @log_method(with_args=True)
     def load_template_file(self, name: str) -> Template:

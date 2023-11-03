@@ -23,14 +23,12 @@ def test_engine_spec_load_ok_module(mocker: MockerFixture) -> None:
     spec = EngineSpec(
         config=m_config,
         theme=m_theme,
-        opts={"foo": 1},
         module="volt.engines:MarkdownEngine",
         klass=None,
     )
 
     engine = spec.load()
     assert isinstance(engine, MarkdownEngine)
-    assert engine.opts == {"foo": 1}
     assert engine.config is m_config
     assert engine.theme is m_theme
 
@@ -50,14 +48,12 @@ def test_engine_spec_load_ok_class(
         spec = EngineSpec(
             config=config,
             theme=theme,
-            opts={"foo": 1},
             module=None,
             klass="GalleryEngine",
         )
 
         engine = spec.load()
         assert engine.__class__.__name__ == "GalleryEngine"
-        assert engine.opts == {"foo": 1}
         assert engine.config is config
         assert engine.theme is theme
 
@@ -72,7 +68,6 @@ def test_engine_spec_init_err_all_nones(mocker: MockerFixture) -> None:
         EngineSpec(
             config=m_config,
             theme=m_theme,
-            opts={"bzzt": True},
             module=None,
             klass=None,
         )
@@ -88,7 +83,6 @@ def test_engine_spec_init_err_all_defined(mocker: MockerFixture) -> None:
         EngineSpec(
             config=m_config,
             theme=m_theme,
-            opts={"bzzt": True},
             module="GalleryEngine",
             klass="volt.engines:MarkdownEngine",
         )
@@ -102,7 +96,6 @@ def test_engine_spec_init_err_invalid_specifier_module(mocker: MockerFixture) ->
         EngineSpec(
             config=m_config,
             theme=m_theme,
-            opts={"bzzt": True},
             module="volt.engines.MarkdownEngine",
             klass=None,
         )
@@ -116,7 +109,6 @@ def test_engine_spec_init_err_missing_module(mocker: MockerFixture) -> None:
         EngineSpec(
             config=m_config,
             theme=m_theme,
-            opts={"bzzt": True},
             module="foo.bar:BzztEngine",
             klass=None,
         )
@@ -132,7 +124,6 @@ def test_engine_spec_init_err_missing_in_module(mocker: MockerFixture) -> None:
         EngineSpec(
             config=m_config,
             theme=m_theme,
-            opts={"bzzt": True},
             module="volt.engines:FooEngine",
             klass=None,
         )
@@ -146,7 +137,6 @@ def test_engine_spec_init_err_invalid_specifier_class(mocker: MockerFixture) -> 
         EngineSpec(
             config=m_config,
             theme=m_theme,
-            opts={"bzzt": True},
             module=None,
             klass="is-not-identifier",
         )
@@ -171,7 +161,6 @@ def test_engine_spec_load_err_engines_file_missing(
             EngineSpec(
                 config=config,
                 theme=theme,
-                opts={"foo": 1},
                 module=None,
                 klass="GalleryEngine",
             )
@@ -193,7 +182,6 @@ def test_engine_spec_load_err_engine_missing(
             EngineSpec(
                 config=config,
                 theme=theme,
-                opts={"foo": 1},
                 module=None,
                 klass="ImageEngine",
             )

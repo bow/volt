@@ -1,8 +1,6 @@
 [theme]
 name = "h"
-
-[theme.engine]
-class = "GalleryEngine"
+engine = { class = "GalleryEngine" }
 
 [theme.defaults.hooks.modify_css]
 enabled = true

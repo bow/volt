@@ -4,8 +4,8 @@ name = "ok_extended"
 [theme]
 source = "h"
 
-[theme.defaults.hooks.modify_css]
+[theme.overrides.hooks.modify_css]
 enabled = true
 
-[theme.engine.opts.markdown]
+[theme.overrides.markdown]
 recursive = true

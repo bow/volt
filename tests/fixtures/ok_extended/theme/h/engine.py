@@ -42,11 +42,7 @@ class GalleryEngine(Engine):
             outputs.append(copy_outputs)
             outputs.append(template_outputs)
 
-        md_eng = MarkdownEngine(
-            self.config,
-            self.theme,
-            opts=self.opts.pop("markdown", None),
-        )
+        md_eng = MarkdownEngine(self.config, self.theme)
         outputs.extend(md_eng.prepare_outputs(with_draft))
 
         return outputs

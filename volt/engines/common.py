@@ -30,13 +30,11 @@ class Engine(abc.ABC):
         self,
         config: Config,
         theme: Theme,
-        opts: Optional[dict] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         self.config = config
         self.theme = theme
-        self.opts = opts or {}
 
     @property
     def name(self) -> str:
@@ -63,7 +61,6 @@ class EngineSpec:
 
     """Specifications of an engine in the config."""
 
-    opts: dict
     config: Config
     theme: Theme
     engine: Type[Engine] = field(init=False)
@@ -93,11 +90,7 @@ class EngineSpec:
 
     @log_method
     def load(self) -> Engine:
-        return self.engine(
-            config=self.config,
-            theme=self.theme,
-            opts=self.opts,
-        )
+        return self.engine(config=self.config, theme=self.theme)
 
     @log_method(with_args=True)
     def _load_engine_module(self, mod_spec: str) -> Type[Engine]:
