@@ -4,7 +4,7 @@ name = "ok_extended"
 [theme]
 source = "h"
 
-[theme.hooks.modify_css]
+[theme.defaults.hooks.modify_css]
 enabled = true
 
 [theme.engine.opts.markdown]

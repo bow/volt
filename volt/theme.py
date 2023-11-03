@@ -66,7 +66,6 @@ class Theme:
         self._config = site_config
         self._opts = self._resolve_opts()
         self._engine = self._resolve_config("engine")
-        self._hooks = self._resolve_config("hooks")
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.source!r}, ...)"
@@ -89,7 +88,7 @@ class Theme:
     @property
     def hooks(self) -> dict:
         """Theme hooks."""
-        return self._hooks
+        return self.opts.get("hooks", {}) or {}
 
     def get_hook_config(self, name: str) -> dict:
         """Retrieve config for the given hook."""
@@ -255,7 +254,7 @@ class Theme:
         return _overlay(self.defaults, self.config.theme_overrides.get("overrides"))
 
     @log_method(with_args=True)
-    def _resolve_config(self, key: Literal["engine", "hooks"]) -> dict:
+    def _resolve_config(self, key: Literal["engine"]) -> dict:
         """Resolve theme configuration by applying overrides to defaults"""
         return _overlay(
             self.manifest.get(key, None),
