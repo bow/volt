@@ -252,7 +252,7 @@ class Theme:
 
     @log_method(with_args=True)
     def _resolve_opts(self) -> dict:
-        return _overlay(self.manifest, self.config.theme_overrides)
+        return _overlay(self.defaults, self.config.theme_overrides.get("overrides"))
 
     @log_method(with_args=True)
     def _resolve_config(self, key: Literal["engine", "hooks"]) -> dict:
