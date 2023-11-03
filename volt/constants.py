@@ -84,7 +84,7 @@ ENGINES_MOD_NAME = "engine"
 ENGINE_FILE_NAME = f"{ENGINES_MOD_NAME}.py"
 
 # Theme base settings file name.
-THEME_SETTINGS_FILE_NAME = "theme.toml"
+THEME_MANIFEST_FILE_NAME = "theme.toml"
 
 # Site theme static directory name.
 THEME_STATIC_DIR_NAME = f"{STATIC_DIR_NAME}"

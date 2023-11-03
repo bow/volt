@@ -64,7 +64,7 @@ class Theme:
     def __init__(self, source: ThemeSource, site_config: Config) -> None:
         self._source = source
         self._config = site_config
-        self._opts = self._resolve_config("opts")
+        self._opts = self._resolve_opts()
         self._engine = self._resolve_config("engine")
         self._hooks = self._resolve_config("hooks")
 
@@ -107,12 +107,12 @@ class Theme:
     @cached_property
     def name(self) -> Optional[str]:
         """Theme name."""
-        return self.config_defaults.get("name")
+        return self.manifest.get("name")
 
     @cached_property
     def description(self) -> Optional[str]:
         """Theme description."""
-        return self.config_defaults.get("description")
+        return self.manifest.get("description")
 
     @cached_property
     def module_name(self) -> str:
@@ -160,16 +160,21 @@ class Theme:
         return self._config
 
     @cached_property
-    def config_defaults_path(self) -> Path:
-        """Path to theme default configurations."""
-        return self.path / constants.THEME_SETTINGS_FILE_NAME
+    def manifest_path(self) -> Path:
+        """Path to theme manifest."""
+        return self.path / constants.THEME_MANIFEST_FILE_NAME
 
     @cached_property
-    def config_defaults(self) -> dict:
-        """Default theme configurations."""
-        with self.config_defaults_path.open("r") as src:
-            defaults = tomlkit.load(src).get("theme", {})
-        return cast(dict, defaults)
+    def manifest(self) -> dict:
+        """Theme manifest contents."""
+        with self.manifest_path.open("r") as src:
+            manifest = tomlkit.load(src).get("theme", {})
+        return cast(dict, manifest)
+
+    @cached_property
+    def defaults(self) -> dict:
+        """Theme defaults."""
+        return self.manifest.get("defaults", {}) or {}
 
     @cached_property
     def templates_dir(self) -> Path:
@@ -246,10 +251,14 @@ class Theme:
         )
 
     @log_method(with_args=True)
-    def _resolve_config(self, key: Literal["engine", "hooks", "opts"]) -> dict:
+    def _resolve_opts(self) -> dict:
+        return _overlay(self.manifest, self.config.theme_overrides)
+
+    @log_method(with_args=True)
+    def _resolve_config(self, key: Literal["engine", "hooks"]) -> dict:
         """Resolve theme configuration by applying overrides to defaults"""
         return _overlay(
-            self.config_defaults.get(key, None),
+            self.manifest.get(key, None),
             self.config.theme_overrides.get(key, None),
         )
 
