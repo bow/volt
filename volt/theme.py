@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from functools import cached_property
 from types import ModuleType
-from typing import cast, Any, Callable, Literal, Optional, Self, TYPE_CHECKING
+from typing import cast, Any, Callable, Optional, Self, TYPE_CHECKING
 
 import jinja2.exceptions as j2exc
 from jinja2 import Environment, FileSystemLoader, Template
@@ -65,7 +65,7 @@ class Theme:
         self._source = source
         self._config = site_config
         self._opts = self._resolve_opts()
-        self._engine = self._resolve_config("engine")
+        self._engine_config = self._resolve_engine_opts()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.source!r}, ...)"
@@ -81,9 +81,9 @@ class Theme:
         return self._opts
 
     @property
-    def engine(self) -> dict:
-        """Theme engine."""
-        return self._engine
+    def engine_config(self) -> dict:
+        """Theme engine config."""
+        return self._engine_config
 
     @property
     def hooks(self) -> dict:
@@ -229,12 +229,12 @@ class Theme:
     def get_engine_spec(self) -> Optional["EngineSpec"]:
         from .engines import EngineSpec
 
-        if not self.engine:
+        if not self.engine_config:
             return None
 
-        opts = self.engine.get("opts", {})
-        mod = self.engine.get("module", None)
-        cls = self.engine.get("class", None)
+        opts = self.engine_config.get("opts", {})
+        mod = self.engine_config.get("module", None)
+        cls = self.engine_config.get("class", None)
 
         # If opts exist but no engines are specified, assume that we are using
         # the default MarkdownEngine.
@@ -254,11 +254,11 @@ class Theme:
         return _overlay(self.defaults, self.config.theme_overrides.get("overrides"))
 
     @log_method(with_args=True)
-    def _resolve_config(self, key: Literal["engine"]) -> dict:
+    def _resolve_engine_opts(self) -> dict:
         """Resolve theme configuration by applying overrides to defaults"""
         return _overlay(
-            self.manifest.get(key, None),
-            self.config.theme_overrides.get(key, None),
+            self.manifest.get("engine", None),
+            self.config.theme_overrides.get("engine", None),
         )
 
     @log_method(with_args=True)
