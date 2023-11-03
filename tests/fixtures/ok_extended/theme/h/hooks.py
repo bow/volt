@@ -6,7 +6,7 @@ def modify_css(_, site: Site) -> None:
     theme = site.theme
     hook_config = theme.get_hook_config(hooks.name())
 
-    modified_css_url = hook_config["modified_css_url"]
+    min_url = hook_config["minified_url"]
 
     if not theme.hook_enabled(hooks.name()):
         hooks.log().debug("skipping disabled hook")
@@ -32,7 +32,7 @@ def modify_css(_, site: Site) -> None:
 
     modified = "\n".join([output.src.read_text() for output in css_outputs])
     modified += "\np { color: DarkRed; }"
-    modified_output = FileOutput(url=modified_css_url, contents=modified)
+    modified_output = FileOutput(url=min_url, contents=modified)
     site.outputs.append(modified_output)
 
     return None

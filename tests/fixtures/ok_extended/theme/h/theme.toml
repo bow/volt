@@ -6,4 +6,4 @@ class = "GalleryEngine"
 
 [theme.defaults.hooks.modify_css]
 enabled = true
-modified_css_url = "/assets/modified.css"
+minified_url = "/assets/modified.css"
