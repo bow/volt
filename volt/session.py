@@ -226,21 +226,35 @@ def theme_show(config: Config, with_color: bool) -> None:
         config.invoc_dir,
         walk_up=True,
     )
-    name = theme.name or "<unnamed>"
-    desc = theme.description or "<undescribed>"
+    name = theme.name or "<unnamed-theme>"
 
     info_lines: list[str]
     if with_color:
-        name_v = style(f"{name}", fg="cyan", bold=True)
-        desc_v = style(f"{desc}", fg="yellow")
-        path_v = style(f"{path}", fg="magenta")
+        name_v = style(f" {name} ", fg="black", bg="cyan", bold=True)
+        path_v = style(f"{path}", fg="bright_black")
+        desc_v = (
+            style(f"{theme.description}", fg="yellow")
+            if theme.description is not None
+            else ""
+        )
         kw = len(name)
-        info_lines = [f"{name_v} • {desc_v}"] + [f"{'':<{kw}} • {v}" for v in (path_v,)]
+        info_lines = [f"{name_v}"] + [
+            f" • {v}"
+            for v in (
+                desc_v,
+                path_v,
+            )
+            if v
+        ]
     else:
         pairs = {
-            "Name": name,
-            "Desc": desc,
-            "Source": path,
+            k: v
+            for k, v in {
+                "Name": name,
+                "Desc": theme.description,
+                "Source": path,
+            }.items()
+            if v is not None
         }
         kw = max([len(k) for k in pairs])
         info_lines = [f"{k:<{kw}} : {v}" for k, v in pairs.items()]
