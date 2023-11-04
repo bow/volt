@@ -108,6 +108,11 @@ class Theme:
         return self.manifest.get("description")
 
     @cached_property
+    def authors(self) -> list[str]:
+        """Theme authors."""
+        return cast(list[str], self.manifest.get("authors", []))
+
+    @cached_property
     def module_name(self) -> str:
         """Module name of the theme."""
         return f"{constants.THEME_ROOT_MOD_QUAL_NAME}.{self.source}"

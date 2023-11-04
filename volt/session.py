@@ -237,11 +237,15 @@ def theme_show(config: Config, with_color: bool) -> None:
             if theme.description is not None
             else ""
         )
+        authors_v = (
+            style(f"{', '.join(theme.authors)}", fg="blue") if theme.authors else ""
+        )
         kw = len(name)
         info_lines = [f"{name_v}"] + [
             f" • {v}"
             for v in (
                 desc_v,
+                authors_v,
                 path_v,
             )
             if v
@@ -252,6 +256,7 @@ def theme_show(config: Config, with_color: bool) -> None:
             for k, v in {
                 "Name": name,
                 "Desc": theme.description,
+                "Authors": ", ".join(theme.authors),
                 "Source": path,
             }.items()
             if v is not None
