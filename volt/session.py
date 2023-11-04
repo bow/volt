@@ -228,45 +228,55 @@ def theme_show(config: Config, with_color: bool) -> None:
     )
     name = theme.name or "<unnamed-theme>"
 
-    info_lines: list[str]
-    if with_color:
-        name_v = style(f" {name} ", fg="black", bg="cyan", bold=True)
-        path_v = style(f"{path}", fg="bright_black")
-        desc_v = (
-            style(f"{theme.description}", fg="yellow")
-            if theme.description is not None
-            else ""
-        )
-        authors_v = (
-            style(f"{', '.join(theme.authors)}", fg="blue") if theme.authors else ""
-        )
-        kw = len(name)
-        info_lines = [f"{name_v}"] + [
-            f" • {v}"
-            for v in (
-                desc_v,
-                authors_v,
-                path_v,
-            )
-            if v
-        ]
-    else:
-        pairs = {
-            k: v
-            for k, v in {
-                "Name": name,
-                "Desc": theme.description,
-                "Authors": ", ".join(theme.authors),
-                "Source": path,
-            }.items()
-            if v is not None
-        }
-        kw = max([len(k) for k in pairs])
-        info_lines = [f"{k:<{kw}} : {v}" for k, v in pairs.items()]
+    value = (
+        _theme_show_color(theme, name, path)
+        if with_color
+        else _theme_show_no_color(theme, name, path)
+    )
 
-    print("\n".join(info_lines))
+    print(value)
 
     return None
+
+
+def _theme_show_color(theme: Theme, name: str, path: Path) -> str:
+    name_v = style(f" {name} ", fg="black", bg="cyan", bold=True)
+    path_v = style(f"{path}", fg="bright_black")
+    desc_v = (
+        style(f"{theme.description}", fg="yellow")
+        if theme.description is not None
+        else ""
+    )
+    authors_v = style(f"{', '.join(theme.authors)}", fg="blue") if theme.authors else ""
+
+    info_lines = [f"{name_v}"] + [
+        f" • {v}"
+        for v in (
+            desc_v,
+            authors_v,
+            path_v,
+        )
+        if v
+    ]
+
+    return "\n".join(info_lines)
+
+
+def _theme_show_no_color(theme: Theme, name: str, path: Path) -> str:
+    pairs = {
+        k: v
+        for k, v in {
+            "Name": name,
+            "Desc": theme.description,
+            "Authors": ", ".join(theme.authors),
+            "Source": path,
+        }.items()
+        if v
+    }
+    kw = max([len(k) for k in pairs])
+    info_lines = [f"{k:<{kw}} : {v}" for k, v in pairs.items()]
+
+    return "\n".join(info_lines)
 
 
 def _resolve_project_dir(
