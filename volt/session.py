@@ -229,17 +229,23 @@ def theme_show(config: Config, with_color: bool) -> None:
     name = theme.name or "<unnamed>"
     desc = theme.description or "<undescribed>"
 
-    info = ""
+    info_lines: list[str]
     if with_color:
         name_v = style(f"{name}", fg="cyan", bold=True)
         desc_v = style(f"{desc}", fg="yellow")
         path_v = style(f"{path}", fg="magenta")
-        padding = " " * len(name)
-        info = f"{name_v} • {desc_v}\n{padding} • {path_v}"
+        kw = len(name)
+        info_lines = [f"{name_v} • {desc_v}"] + [f"{'':<{kw}} • {v}" for v in (path_v,)]
     else:
-        info = f"Name   : {name}\nDesc   : {desc}\nSource : {path}"
+        pairs = {
+            "Name": name,
+            "Desc": desc,
+            "Source": path,
+        }
+        kw = max([len(k) for k in pairs])
+        info_lines = [f"{k:<{kw}} : {v}" for k, v in pairs.items()]
 
-    print(info)
+    print("\n".join(info_lines))
 
     return None
 
