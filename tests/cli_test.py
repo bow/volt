@@ -78,7 +78,7 @@ def test_new_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
         }
 
         theme_config = config["theme"]
-        assert theme_config == {"name": "ion"}
+        assert theme_config == {"source": "ion"}
 
         if has_git:
             proc = sp.run(

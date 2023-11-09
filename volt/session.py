@@ -344,7 +344,7 @@ def _resolve_file_config(
     config = {"site": site_config}
 
     if theme is not None:
-        config["theme"] = {"name": theme}
+        config["theme"] = {"source": theme}
 
     return config
 
