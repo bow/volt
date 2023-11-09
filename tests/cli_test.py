@@ -19,6 +19,33 @@ from volt.error import VoltResourceError
 from . import utils as u
 
 
+def test_new_then_build_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
+    runner = u.CommandRunner()
+    toks_new = ["new", "-u", "https://site.com"]
+    toks_build = ["build"]
+
+    with runner.isolated_filesystem() as ifs:
+        u.assert_dir_empty(ifs)
+
+        res_new = runner.invoke(cli.root, toks_new)
+        assert res_new.exit_code == 0, res_new.output
+
+        paths_new = [
+            *([".gitignore", ".git"] if has_git else []),
+            "volt.toml",
+            "theme",
+            "contents",
+        ]
+        u.assert_dir_contains_only(ifs, paths_new)
+
+        res_build = runner.invoke(cli.root, toks_build)
+        assert res_build.exit_code == 0, res_build.output
+
+        u.assert_dir_contains_only(ifs, paths_new + ["output"])
+        u.assert_dir_contains_only(ifs / "output", ["assets", "index.html"])
+        u.assert_dir_contains_only(ifs / "output" / "assets", ["style.css"])
+
+
 def test_new_ok_e2e(log: StructuredLogCapture, has_git: bool) -> None:
     runner = u.CommandRunner()
     toks = ["new", "-u", "https://site.net"]
