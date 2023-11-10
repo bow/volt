@@ -1,0 +1,32 @@
+version: 2
+
+updates:
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "01:00"
+      timezone: "Europe/Copenhagen"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+    reviewers:
+      - "bow"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "01:00"
+      timezone: "Europe/Copenhagen"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "ci"
+    reviewers:
+      - "bow"
