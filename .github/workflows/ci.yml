@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v3
@@ -53,7 +53,7 @@ jobs:
 
       - name: Upload test report
         if: always()
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         with:
           check_name: Test report
           report_paths: '**/.junit.xml'
@@ -84,7 +84,7 @@ jobs:
             rule: scan-sec-deps
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v3
@@ -118,19 +118,19 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Ensure all git history is cloned, so we can infer the correct version in Docker.
           fetch-depth: 0
 
       - name: Setup docker buildx
         if: github.event_name != 'pull_request'
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Extract metadata for image
         if: github.event_name != 'pull_request'
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ghcr.io/${{ github.repository }}
@@ -169,7 +169,7 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Ensure all git history is cloned, so we can infer the correct version in Docker.
           fetch-depth: 0
