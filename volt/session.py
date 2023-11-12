@@ -217,7 +217,10 @@ def serve_draft(config: Config, value: Optional[bool]) -> None:
         # NOTE: Setting 'draft' to False here since we will toggle it later.
         rf = _RunFile.from_config(config=config, draft=False)
 
-    return rf.toggle_draft(value).dump()
+    rf.toggle_draft(value).dump()
+    log.info("Draft mode set", value=f"{'on' if rf.draft else 'off'}")
+
+    return None
 
 
 def theme_show(config: Config, with_color: bool) -> None:
