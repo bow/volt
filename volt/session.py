@@ -225,7 +225,7 @@ def serve_draft(config: Config, value: Optional[bool]) -> None:
 
 def theme_show(config: Config, with_color: bool) -> None:
     theme = Theme.from_config(config)
-    path = theme.source.path.relative_to(  # type: ignore[call-arg]
+    path = theme.source.path.relative_to(
         config.invoc_dir,
         walk_up=True,
     )
