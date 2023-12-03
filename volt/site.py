@@ -275,6 +275,15 @@ class Site:
             self.__hooks = {}
             signals._clear_site_signal_receivers()
 
+    def has_output(self, pattern: str) -> bool:
+        return (
+            next(
+                (item for item in self.outputs if fnmatch.fnmatch(item.url, pattern)),
+                None,
+            )
+            is not None
+        )
+
     def select_outputs(self, pattern: str) -> list[Output]:
         return [item for item in self.outputs if fnmatch.fnmatch(item.url, pattern)]
 
