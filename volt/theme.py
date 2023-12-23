@@ -22,28 +22,20 @@ if TYPE_CHECKING:
     from .engines import EngineSpec
 
 
-__all__ = ["Theme", "ThemeSource"]
+__all__ = ["Theme"]
 
 
 @dataclass
-class ThemeSource:
+class LocalPathThemeSpec:
 
-    """Config theme source"""
+    """Local path-based theme specifications"""
 
     # Filesystem path to the theme.
     path: Path
 
     @classmethod
-    def from_raw(cls, value: Any, themes_dir: Path) -> Self:
+    def from_dict(cls, value: Any, themes_dir: Path) -> Self:
         match value:
-            case str():
-                theme_dir = themes_dir / value
-                if not theme_dir.exists():
-                    raise err.VoltConfigError(
-                        f"theme {value!r} not found in {themes_dir}"
-                    )
-                return cls(path=theme_dir)
-
             case dict():
                 raw_value = value.get("local") or None
                 if raw_value is None:
@@ -54,7 +46,17 @@ class ThemeSource:
                 raise err.VoltConfigError("config defines no theme")
 
             case _:
-                raise NotImplementedError("non-string theme sources is not supported")
+                raise NotImplementedError("non-local theme sources is not supported")
+
+    def __post_init__(self):
+        if not self.path.exists():
+            raise err.VoltConfigError(f"local theme '{self.path.name}' not found")
+
+        if not (self.path / constants.THEME_MANIFEST_FILE_NAME).exists():
+            raise err.VoltConfigError(
+                f"manifest file {constants.THEME_MANIFEST_FILE_NAME!r}"
+                f" not found for local theme '{self.path.name}'"
+            )
 
 
 class Theme:
@@ -64,11 +66,11 @@ class Theme:
     @classmethod
     @log_method
     def from_config(cls, config: Config) -> Self:
-        source = ThemeSource.from_raw(config.theme_source, config.themes_dir)
-        return cls(source=source, site_config=config)
+        spec = LocalPathThemeSpec.from_dict(config.theme_source, config.themes_dir)
+        return cls(spec=spec, site_config=config)
 
-    def __init__(self, source: ThemeSource, site_config: Config) -> None:
-        self._source = source
+    def __init__(self, spec: LocalPathThemeSpec, site_config: Config) -> None:
+        self._spec = spec
         self._config = site_config
         self._opts = self._resolve_opts()
 
@@ -76,9 +78,9 @@ class Theme:
         return f"{self.__class__.__name__}(name={self.source!r}, ...)"
 
     @property
-    def source(self) -> ThemeSource:
+    def source(self) -> Path:
         """Theme source."""
-        return self._source
+        return self._spec.path
 
     @property
     def opts(self) -> dict:
@@ -101,7 +103,7 @@ class Theme:
     @cached_property
     def path(self) -> Path:
         """Path to the theme directory."""
-        return self._source.path
+        return self._spec.path
 
     @cached_property
     def name(self) -> Optional[str]:

@@ -107,13 +107,13 @@ def test_err_theme_missing(
             project_dir=project_dir,
             config_file_name=constants.CONFIG_FILE_NAME,
         )
-        config._theme_source = "foo"
+        config._theme_source = {"local": "foo"}
 
         assert not config.output_dir.exists()
 
         with pytest.raises(
             err.VoltConfigError,
-            match=f"theme 'foo' not found in {config.themes_dir}",
+            match=f"local theme 'foo' not found",
         ):
             session.build(config=config, with_draft=False, clean=True)
 
@@ -134,13 +134,13 @@ def test_err_theme_missing_with_existing_build(
             project_dir=project_dir,
             config_file_name=constants.CONFIG_FILE_NAME,
         )
-        config._theme_source = "foo"
+        config._theme_source = {"local": "foo"}
 
         assert config.output_dir.exists()
 
         with pytest.raises(
             err.VoltConfigError,
-            match=f"theme 'foo' not found in {config.themes_dir}",
+            match=f"local theme 'foo' not found",
         ):
             session.build(config=config, with_draft=False, clean=True)
 

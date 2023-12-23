@@ -1,5 +1,5 @@
 [site]
 name = "ok_minimal"
 
-[theme]
-source = "t"
+[theme.source]
+local = "t"
