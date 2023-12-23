@@ -344,10 +344,10 @@ def _resolve_file_config(
     if lang := language or (_infer_lang() or ""):
         site_config["language"] = lang
 
-    config = {"site": site_config}
+    config: dict = {"site": site_config}
 
     if theme is not None:
-        config["theme"] = {"source": theme}
+        config["theme"] = {"source": {"local": theme}}
 
     return config
 

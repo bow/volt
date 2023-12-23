@@ -28,7 +28,7 @@ __all__ = ["Theme", "ThemeSource"]
 @dataclass
 class ThemeSource:
 
-    """Where the theme is stored"""
+    """Config theme source"""
 
     # Filesystem path to the theme.
     path: Path
@@ -43,6 +43,12 @@ class ThemeSource:
                         f"theme {value!r} not found in {themes_dir}"
                     )
                 return cls(path=theme_dir)
+
+            case dict():
+                raw_value = value.get("local") or None
+                if raw_value is None:
+                    raise err.VoltConfigError("missing required key 'local'")
+                return cls(path=themes_dir / raw_value)
 
             case None:
                 raise err.VoltConfigError("config defines no theme")

@@ -158,7 +158,7 @@ def test_ok_no_theme(tmp_path: Path) -> None:
     }
 
     theme_config = config["theme"]
-    assert theme_config == {"source": "ion"}
+    assert theme_config == {"source": {"local": "ion"}}
 
     return None
 
