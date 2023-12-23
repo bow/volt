@@ -48,7 +48,7 @@ class LocalPathThemeSpec:
             case _:
                 raise NotImplementedError("non-local theme sources is not supported")
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.path.exists():
             raise err.VoltConfigError(f"local theme '{self.path.name}' not found")
 

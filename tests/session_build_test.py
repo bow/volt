@@ -113,7 +113,7 @@ def test_err_theme_missing(
 
         with pytest.raises(
             err.VoltConfigError,
-            match=f"local theme 'foo' not found",
+            match="local theme 'foo' not found",
         ):
             session.build(config=config, with_draft=False, clean=True)
 
@@ -140,7 +140,7 @@ def test_err_theme_missing_with_existing_build(
 
         with pytest.raises(
             err.VoltConfigError,
-            match=f"local theme 'foo' not found",
+            match="local theme 'foo' not found",
         ):
             session.build(config=config, with_draft=False, clean=True)
 
