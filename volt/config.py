@@ -150,7 +150,7 @@ class Config(UserDict):
         return self._url
 
     @property
-    def theme_source(self) -> Optional[str]:
+    def theme_source(self) -> Optional[dict]:
         """Source of theme in use."""
         return self._theme_source
 
