@@ -173,7 +173,7 @@ def make_server(
             host=host,
             port=port,
         )
-        log.info("dev server listening", addr=f"http://{host}:{port}")
+        log.info("dev server listening", url=f"http://{host}:{port}")
         httpd.serve_forever()
 
     return serve
