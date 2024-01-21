@@ -57,7 +57,7 @@ urllib3 = "^2.0.6"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
 bandit = "^1.7.5"
-flake8 = "^6.1.0"
+flake8 = "^7.0.0"
 mypy = "^1.7.1"
 mypy-extensions = "^1.0.0"
 pytest-cov = "^4.1.0"
