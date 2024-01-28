@@ -1,4 +1,5 @@
 """Logging-related functionalities."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -31,13 +32,11 @@ P = ParamSpec("P")
 
 
 @overload
-def log_method(__clb: Callable[P, T]) -> Callable[P, T]:
-    ...
+def log_method(__clb: Callable[P, T]) -> Callable[P, T]: ...
 
 
 @overload
-def log_method(*, with_args: bool) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    ...
+def log_method(*, with_args: bool) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
 
 
 def log_method(

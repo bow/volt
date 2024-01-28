@@ -1,4 +1,5 @@
 """Template functions."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -37,13 +38,11 @@ def _make_marker_decorator(
 
 
 @overload
-def filter(__clb: Callable[P, T]) -> Callable[P, T]:
-    ...
+def filter(__clb: Callable[P, T]) -> Callable[P, T]: ...
 
 
 @overload
-def filter(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    ...
+def filter(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
 
 
 # NOTE: We need to do this re-definition since assignment to `filter` does not work
@@ -56,13 +55,11 @@ def filter(
 
 
 @overload
-def test(__clb: Callable[P, T]) -> Callable[P, T]:
-    ...
+def test(__clb: Callable[P, T]) -> Callable[P, T]: ...
 
 
 @overload
-def test(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    ...
+def test(*, name: str) -> Callable[[Callable[P, T]], Callable[P, T]]: ...
 
 
 # NOTE: We need to do this re-definition since assignment to `test` does not work

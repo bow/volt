@@ -1,4 +1,5 @@
 """Configuration handling."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -17,7 +18,6 @@ __all__ = ["Config"]
 
 
 class Config(UserDict):
-
     """Container for site-level configuration values."""
 
     @classmethod

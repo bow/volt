@@ -1,4 +1,5 @@
 """Markdown engine based on markdown2."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -30,7 +31,6 @@ __all__ = ["MarkdownEngine", "MarkdownSource"]
 
 
 class MarkdownEngine(Engine):
-
     """Engine that creates HTML outputs using the markdown2 library."""
 
     default_extras = {
@@ -178,7 +178,6 @@ class MarkdownEngine(Engine):
 
 @dataclass(kw_only=True, eq=False)
 class MarkdownSource:
-
     """A markdown input parsed using the markdown2 library."""
 
     # FileSystem path to the file content.

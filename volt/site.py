@@ -1,4 +1,5 @@
 """Site-level functions and classes."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -42,7 +43,6 @@ log = structlog.get_logger(__name__)
 
 
 class _PlanNode:
-
     """Node of the :class:`_Plan` tree."""
 
     __slots__ = ("path", "output", "children", "__dict__")
@@ -120,7 +120,6 @@ class _PlanNode:
 
 
 class _Plan:
-
     """The file and directory layout of the final built site.
 
     A plan is essentially an n-ary tree whose nodes represent either directories or
@@ -228,7 +227,6 @@ class _Plan:
 
 
 class Site:
-
     """The static site."""
 
     def __init__(self, config: Config) -> None:

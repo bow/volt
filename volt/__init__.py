@@ -5,6 +5,7 @@
     :license: BSD-3-Clause
 
 """
+
 from pathlib import Path
 
 from single_source import get_version

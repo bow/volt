@@ -1,4 +1,5 @@
 """Development server."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -230,7 +231,6 @@ def _wait_ready(
 
 
 class _SyncQueue(queue.Queue):
-
     """A queue of size=1 that drops events sent to it while it processes tasks"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

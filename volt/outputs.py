@@ -1,4 +1,5 @@
 """Site outputs."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -25,7 +26,6 @@ __all__ = [
 
 @dataclass(kw_only=True)
 class Output(abc.ABC):
-
     """A single file created in the site output directory."""
 
     # Relative URL of the output.
@@ -42,7 +42,6 @@ class Output(abc.ABC):
 
 @dataclass(kw_only=True)
 class FileOutput(Output):
-
     """A single file to be written with contents from memory."""
 
     contents: str | bytes
@@ -66,7 +65,6 @@ class FileOutput(Output):
 
 @dataclass(kw_only=True)
 class TemplateOutput(Output):
-
     """An output created by rendering from a template."""
 
     # Jinja2 template to use.
@@ -91,7 +89,6 @@ class TemplateOutput(Output):
 
 @dataclass(kw_only=True)
 class CopyOutput(Output):
-
     """An output created by copying a file from the contents directory."""
 
     # Source of the copy.

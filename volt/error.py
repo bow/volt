@@ -1,4 +1,5 @@
 """Error handling and custom exceptions."""
+
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -21,12 +22,10 @@ log = get_logger(__name__)
 
 
 class VoltError(Exception):
-
     """Base volt exception class."""
 
 
 class VoltCliError(VoltError, ClickException):
-
     """Exceptions displayed as error messages to users."""
 
     def show(self, _: Optional[IO[Any]] = None) -> None:
@@ -34,22 +33,18 @@ class VoltCliError(VoltError, ClickException):
 
 
 class VoltConfigError(VoltCliError):
-
     """Raised for errors related to configuration values."""
 
 
 class VoltResourceError(VoltConfigError):
-
     """Raised for errors when loading resources."""
 
 
 class VoltMissingTemplateError(VoltResourceError):
-
     """Raised for errors when loading templates."""
 
 
 class _VoltServerExit(SystemExit):
-
     """Raised to indicate the development server exiting."""
 
     def __init__(self, run_file_path: Path, *args: Any, **kwargs: Any) -> None:

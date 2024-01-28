@@ -23,7 +23,6 @@ log = structlog.get_logger(__name__)
 
 
 class Engine(abc.ABC):
-
     """Object for creating site outputs."""
 
     def __init__(
@@ -58,7 +57,6 @@ class Engine(abc.ABC):
 
 @dataclass(eq=True, repr=True)
 class EngineSpec:
-
     """Specifications of an engine in the config."""
 
     config: Config
