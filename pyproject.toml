@@ -76,7 +76,7 @@ pytest-mock = "^3.11.1"
 toml = "^0.10.2"
 requests = "^2.31.0"
 types-requests = "^2.31.0.20240125"
-pytest-structlog = "^0.6"
+pytest-structlog = "^0.7"
 insipid-sphinx-theme = "^0.4.2"
 platformdirs = "<4.0.0"
 
