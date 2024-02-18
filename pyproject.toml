@@ -55,7 +55,7 @@ tomlkit = "^0.12.1"
 urllib3 = "^2.0.6"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+pytest = "^8.0.1"
 bandit = "^1.7.7"
 flake8 = "^7.0.0"
 mypy = "^1.7.1"
