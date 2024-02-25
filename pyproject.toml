@@ -52,7 +52,7 @@ structlog = "^24.1.0"
 blinker = "^1.6.2"
 rich = "^13.6.0"
 tomlkit = "^0.12.1"
-urllib3 = "^2.0.6"
+urllib3 = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.1"
