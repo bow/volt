@@ -5,7 +5,7 @@
 #
 # This file is part of volt <https://github.com/bow/volt>.
 
-FROM python:3.12.0-alpine AS builder
+FROM python:3.12.2-alpine AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 ENV PIP_NO_CACHE_DIR=on
@@ -22,7 +22,7 @@ RUN git checkout -- . \
 
 # --- #
 
-FROM python:3.12.0-alpine
+FROM python:3.12.2-alpine
 
 ARG REVISION
 ARG BUILD_TIME
