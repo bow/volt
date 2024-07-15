@@ -296,6 +296,8 @@ class _BuildHandler(events.RegexMatchingEventHandler):
 
     def on_any_event(self, event: Any) -> None:
         log_attrs: dict = {}
+        # Possibly related in the ignores:
+        # https://github.com/python/mypy/issues/12770
         match type(event):
             case events.FileCreatedEvent:
                 log_attrs = dict(
@@ -304,44 +306,44 @@ class _BuildHandler(events.RegexMatchingEventHandler):
                 )
 
             case events.FileModifiedEvent:
-                log_attrs = dict(
+                log_attrs = dict(  # type: ignore[unreachable]
                     reason="file_modified",
                     file=event.src_path.removeprefix("./"),
                 )
 
             case events.FileDeletedEvent:
-                log_attrs = dict(
+                log_attrs = dict(  # type: ignore[unreachable]
                     reason="file_deleted",
                     file=event.src_path.removeprefix("./"),
                 )
 
             case events.FileMovedEvent:
-                log_attrs = dict(
+                log_attrs = dict(  # type: ignore[unreachable]
                     reason="file_moved",
                     src=event.src_path.removeprefix("./"),
                     dest=event.dest_path.removeprefix("./"),
                 )
 
             case events.DirCreatedEvent:
-                log_attrs = dict(
+                log_attrs = dict(  # type: ignore[unreachable]
                     reason="dir_created",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirModifiedEvent:
-                log_attrs = dict(
+                log_attrs = dict(  # type: ignore[unreachable]
                     reason="dir_modified",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirDeletedEvent:
-                log_attrs = dict(
+                log_attrs = dict(  # type: ignore[unreachable]
                     reason="dir_deleted",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirMovedEvent:
-                log_attrs = dict(
+                log_attrs = dict(  # type: ignore[unreachable]
                     reason="dir_moved",
                     src=event.src_path.removeprefix("./"),
                     dest=event.dest_path.removeprefix("./"),
