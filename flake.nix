@@ -2,7 +2,7 @@
   description = "Nix flake for Volt";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/24.05";
     flake-utils.url = "github:numtide/flake-utils/b1d9ab70662946ef0850d488da1c9019f3a9752a";
     poetry2nix.url = "github:bow/poetry2nix/feature/more-build-overrides";
   };
@@ -16,12 +16,20 @@
       in
       {
         packages = {
-          default = p2n.mkPoetryApplication { projectDir = self; };
+          default = p2n.mkPoetryApplication {
+            projectDir = self;
+            python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+          };
         };
         devShells = {
           default = pkgs.mkShellNoCC {
             packages = [
-              (p2n.mkPoetryEnv { projectDir = self; })
+              (
+                p2n.mkPoetryEnv {
+                  projectDir = self;
+                  python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+                }
+              )
               pkgs.poetry
             ];
           };
