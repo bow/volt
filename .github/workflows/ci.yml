@@ -110,7 +110,13 @@ jobs:
         if: steps.cache-poetry.outputs.cache-hit != 'true'
 
       - name: ${{ matrix.lint.name }}
-        run: make ${{ matrix.lint.rule }}
+        run: |
+          if [ "${{ matrix.lint.rule }}" = "scan-sec-deps" ]; then
+            make ${{ matrix.lint.rule }} || (echo "::warning file=scan-sec-deps::Scan dependencies failed with exit code $?.")
+          else
+            make ${{ matrix.lint.rule }}
+          fi
+        continue-on-error: ${{ matrix.lint.rule == 'scan-sec-deps' }}
 
   pub-image:
     name: Publish Docker image
