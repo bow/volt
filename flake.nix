@@ -29,7 +29,7 @@
                   projectDir = self;
                   python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
                   editablePackageSources = {
-                    volt = ./.;
+                    volt = builtins.getEnv "PWD";
                   };
                 }
               )
