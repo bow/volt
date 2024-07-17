@@ -34,6 +34,7 @@
                 }
               )
               pkgs.poetry
+              pkgs.python312Packages.poetry-dynamic-versioning
             ];
           };
         };
