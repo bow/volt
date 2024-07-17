@@ -27,7 +27,7 @@ PYTHON_VERSION := 3.12.2
 VENV_NAME ?= $(APP_NAME)-dev
 
 # Non-pyproject.toml dependencies.
-PIP_DEPS := poetry==1.7.1 poetry-dynamic-versioning==1.2.0 twine==4.0.2
+PIP_DEPS := poetry==1.7.1 poetry-dynamic-versioning==1.2.0 twine==5.1.1
 
 # Non-pyproject.toml dev dependencies.
 PIP_DEV_DEPS := pre-commit
