@@ -28,6 +28,9 @@
                 p2n.mkPoetryEnv {
                   projectDir = self;
                   python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+                  editablePackageSources = {
+                    volt = ./.;
+                  };
                 }
               )
               pkgs.poetry
