@@ -25,9 +25,10 @@ docs/_build
 .idea/
 
 # others #
+.direnv/
 .todo
 .env
-.envrc
+.envrc-private
 .DS_STORE
 Thumbs.db
 sandbox/
