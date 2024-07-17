@@ -1442,13 +1442,13 @@ testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jar
 
 [[package]]
 name = "single-source"
-version = "0.3.0"
+version = "0.4.0"
 description = "Access to the project version in Python code for PEP 621-style projects"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "single-source-0.3.0.tar.gz", hash = "sha256:b12705af958ca99d56ea9ce40bd9cc749378f4fe7ad03b1f9067e29daceef27d"},
-    {file = "single_source-0.3.0-py3-none-any.whl", hash = "sha256:7bc87168ced50f638b6ab0cda4cc1ce9e80ee0e1220014397050d336d021a597"},
+    {file = "single_source-0.4.0-py3-none-any.whl", hash = "sha256:38880b16e6e0ca2e012f85dc3820eb31999ace5f1d9a588395ea38f8bd0775f5"},
+    {file = "single_source-0.4.0.tar.gz", hash = "sha256:7917aa113bda60072f01952e2966cd7247f0ec16fe52a1555f3c066b553e98b4"},
 ]
 
 [[package]]
@@ -1832,4 +1832,4 @@ test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "5ea39101066a86f2e681154ae213933cee43f1a937d8ad0334145f0d52b86553"
+content-hash = "6de83dfa0fa99490b95e6b64f8d7a1a0ca231f658f420a96d751a88014c26eed"
