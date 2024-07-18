@@ -32,6 +32,11 @@
               pkgs.poetry
               pythonPackages.poetry-dynamic-versioning
             ];
+            # Without this, changes made in main source is only reflected when running
+            # commands from  the projectDir, not in any of its subdirectories.
+            shellHook = ''
+              PYTHONPATH=$PWD:$PYTHONPATH
+            '';
           };
         };
       }
