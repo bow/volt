@@ -2,7 +2,7 @@
   description = "Nix flake for Volt";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/9355fa86e6f27422963132c2c9aeedb0fb963d93";
     flake-utils.url = "github:numtide/flake-utils/b1d9ab70662946ef0850d488da1c9019f3a9752a";
     poetry2nix.url = "github:bow/poetry2nix/feature/more-build-overrides";
   };
@@ -12,15 +12,10 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        p2n = poetry2nix.lib.mkPoetry2Nix { pkgs = pkgs; };
+        pythonPackages = pkgs.python312Packages;
+        p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
       in
       {
-        packages = {
-          default = p2n.mkPoetryApplication {
-            projectDir = self;
-            python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-          };
-        };
         devShells = {
           default = pkgs.mkShellNoCC {
             packages = [
@@ -28,13 +23,14 @@
                 p2n.mkPoetryEnv {
                   projectDir = self;
                   python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-                  editablePackageSources = {
-                    volt = builtins.getEnv "PWD";
-                  };
+                  editablePackageSources = { volt = builtins.getEnv "PWD"; };
+                  overrides = p2n.overrides.withDefaults (final: prev: {
+                    mypy = prev.mypy.override { preferWheel = true; };
+                  });
                 }
               )
               pkgs.poetry
-              pkgs.python312Packages.poetry-dynamic-versioning
+              pythonPackages.poetry-dynamic-versioning
             ];
           };
         };
