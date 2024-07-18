@@ -14,6 +14,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
         pythonPackages = pkgs.python312Packages;
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
+        curDir = builtins.getEnv "PWD";
       in
       {
         devShells = {
@@ -21,9 +22,9 @@
             packages = [
               (
                 p2n.mkPoetryEnv {
-                  projectDir = self;
+                  projectDir = curDir;
                   python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-                  editablePackageSources = { volt = builtins.getEnv "PWD"; };
+                  editablePackageSources = { volt = curDir; };
                   overrides = p2n.overrides.withDefaults (final: prev: {
                     mypy = prev.mypy.override { preferWheel = true; };
                   });
@@ -35,7 +36,7 @@
             # Without this, changes made in main source is only reflected when running
             # commands from  the projectDir, not in any of its subdirectories.
             shellHook = ''
-              PYTHONPATH=$PWD:$PYTHONPATH
+              PYTHONPATH=${curDir}:$PYTHONPATH
             '';
           };
         };
