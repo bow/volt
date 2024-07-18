@@ -34,7 +34,7 @@ volt = "volt.cli:main"
 enable = true
 vcs = "git"
 style = "semver"
-pattern = "^v?(?P<base>\\d+\\.\\d+\\.\\d+)"
+pattern = "^v?(?P<base>\\d+\\.\\d+\\.\\d+)(-?((?P<stage>[a-zA-Z]+)\\.?(?P<revision>\\d+)?))?(\\+(?P<tagged_metadata>.+))?$"
 
 [tool.poetry.dependencies]
 python = "^3.12"  # NOTE: Keep in-sync with flake.nix.
