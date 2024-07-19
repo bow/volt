@@ -48,6 +48,9 @@
                   };
                 })
                 (pkgs.poetry.withPlugins (_ps: [ pythonPackages.poetry-dynamic-versioning ]))
+                pkgs.nixfmt-rfc-style
+                pkgs.deadnix
+                pkgs.statix
               ];
               # Without this, changes made in main source is only reflected when running
               # commands from  the projectDir, not in any of its subdirectories.
