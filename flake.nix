@@ -13,44 +13,45 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
-        curDir = builtins.getEnv "PWD";
+        python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+        pythonPackages = pkgs.python312Packages;
+        # Using wheel since mypy compilation is too long and it is only a dev/test dependency.
+        overrides = p2n.overrides.withDefaults (final: prev: {
+          mypy = prev.mypy.override { preferWheel = true; };
+        });
       in
       {
         packages = {
-          default = p2n.mkPoetryApplication {
-            projectDir = self;
-            python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-            overrides = p2n.overrides.withDefaults (final: prev: {
-              mypy = prev.mypy.override { preferWheel = true; };
-            });
-          };
+          default = p2n.mkPoetryApplication { inherit overrides python; projectDir = self; };
         };
-        devShells = {
-          default = pkgs.mkShellNoCC {
-            packages = [
-              (
-                p2n.mkPoetryEnv {
-                  projectDir = curDir;
-                  python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-                  editablePackageSources = { volt = curDir; };
-                  overrides = p2n.overrides.withDefaults (final: prev: {
-                    mypy = prev.mypy.override { preferWheel = true; };
-                  });
-                }
-              )
-              (
-                pkgs.poetry.withPlugins (ps:
-                  [ pkgs.python312Packages.poetry-dynamic-versioning ]
-                )
-              )
-            ];
-            # Without this, changes made in main source is only reflected when running
-            # commands from  the projectDir, not in any of its subdirectories.
-            shellHook = ''
-              export PYTHONPATH=${curDir}:$PYTHONPATH
-            '';
+        devShells =
+          let
+            curDir = builtins.getEnv "PWD";
+          in
+          {
+            default =
+              pkgs.mkShellNoCC {
+                packages = [
+                  (
+                    p2n.mkPoetryEnv {
+                      inherit overrides python;
+                      projectDir = curDir;
+                      editablePackageSources = { volt = curDir; };
+                    }
+                  )
+                  (
+                    pkgs.poetry.withPlugins (ps:
+                      [ pythonPackages.poetry-dynamic-versioning ]
+                    )
+                  )
+                ];
+                # Without this, changes made in main source is only reflected when running
+                # commands from  the projectDir, not in any of its subdirectories.
+                shellHook = ''
+                  export PYTHONPATH=${curDir}:$PYTHONPATH
+                '';
+              };
           };
-        };
       }
     );
 }
