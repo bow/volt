@@ -27,27 +27,33 @@
         );
       in
       {
-        packages = {
-          default = p2n.mkPoetryApplication {
-            inherit overrides python;
-            projectDir = self;
+        packages =
+          let
+            app = p2n.mkPoetryApplication {
+              inherit overrides python;
+              projectDir = self;
+            };
+          in
+          {
+            default = app;
           };
-        };
         devShells =
           let
             curDir = builtins.getEnv "PWD";
+            poetry = pkgs.poetry.withPlugins (_ps: [ pythonPackages.poetry-dynamic-versioning ]);
+            devEnv = p2n.mkPoetryEnv {
+              inherit overrides python;
+              projectDir = curDir;
+              editablePackageSources = {
+                volt = curDir;
+              };
+            };
           in
           {
             default = pkgs.mkShellNoCC {
               packages = [
-                (p2n.mkPoetryEnv {
-                  inherit overrides python;
-                  projectDir = curDir;
-                  editablePackageSources = {
-                    volt = curDir;
-                  };
-                })
-                (pkgs.poetry.withPlugins (_ps: [ pythonPackages.poetry-dynamic-versioning ]))
+                devEnv
+                poetry
                 pkgs.nixfmt-rfc-style
                 pkgs.deadnix
                 pkgs.statix
