@@ -12,7 +12,6 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        pythonPackages = pkgs.python312Packages;
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
         curDir = builtins.getEnv "PWD";
       in
@@ -30,8 +29,11 @@
                   });
                 }
               )
-              pkgs.poetry
-              pythonPackages.poetry-dynamic-versioning
+              (
+                pkgs.poetry.withPlugins (ps:
+                  [ pkgs.python312Packages.poetry-dynamic-versioning ]
+                )
+              )
             ];
             # Without this, changes made in main source is only reflected when running
             # commands from  the projectDir, not in any of its subdirectories.
