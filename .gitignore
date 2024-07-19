@@ -25,6 +25,7 @@ docs/_build
 .idea/
 
 # others #
+result
 .direnv/
 .todo
 .env

@@ -16,6 +16,15 @@
         curDir = builtins.getEnv "PWD";
       in
       {
+        packages = {
+          default = p2n.mkPoetryApplication {
+            projectDir = self;
+            python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+            overrides = p2n.overrides.withDefaults (final: prev: {
+              mypy = prev.mypy.override { preferWheel = true; };
+            });
+          };
+        };
         devShells = {
           default = pkgs.mkShellNoCC {
             packages = [
