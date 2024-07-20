@@ -43,10 +43,11 @@
             default = pkgs.mkShellNoCC {
               packages = [
                 devEnv
-                poetry
-                pkgs.nixfmt-rfc-style
                 pkgs.deadnix
+                pkgs.nixfmt-rfc-style
+                pkgs.pre-commit
                 pkgs.statix
+                poetry
               ];
               # Without this, changes made in main source is only reflected when running
               # commands from  the projectDir, not in any of its subdirectories.
