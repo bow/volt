@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "volt"
-version = "0.0.0"  # Placeholder version.
+version = "0.0.dev0"  # Placeholder version.
 description = "Extensible static site generator"
 authors = ["Wibowo Arindrarto <contact@arindrarto.dev>"]
 readme = "README.md"
