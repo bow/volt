@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "volt"
-version = "0.0.dev0"  # Placeholder version.
+version = "0.0.dev0"  # In-development version.
 description = "Extensible static site generator"
 authors = ["Wibowo Arindrarto <contact@arindrarto.dev>"]
 readme = "README.md"
@@ -47,7 +47,6 @@ marshmallow = "^3.20.1"
 markdown2 = "^2.4.10"
 python-slugify = "^8.0.4"
 watchdog = "2.2.1"  # Pinned. Later versions cause intermittent 'serve draft' test failures.
-single-source = "^0.4.0"
 structlog = "^24.1.0"
 blinker = "^1.6.2"
 rich = "^13.6.0"
