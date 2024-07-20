@@ -33,9 +33,16 @@
               inherit overrides python;
               projectDir = self;
             };
+            imgTag = if app.version != "0.0.dev0" then app.version else "latest";
           in
           {
             default = app;
+            dockerArchive = pkgs.dockerTools.buildImage {
+              name = "ghcr.io/bow/${app.pname}";
+              tag = imgTag;
+              copyToRoot = [ app ];
+              config.Entrypoint = [ "/bin/${app.pname}" ];
+            };
           };
         devShells =
           let
