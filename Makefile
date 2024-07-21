@@ -167,17 +167,17 @@ lint:  lint-types lint-style lint-metrics  ## Lint the code.
 
 .PHONY: lint-types
 lint-types:  ## Lint the type hints.
-	poetry run mypy volt tests
+	mypy volt tests
 
 
 .PHONY: lint-style
 lint-style:  ## Lint style conventions.
-	poetry run flake8 --statistics volt tests && poetry run black -t py312 --check volt tests
+	flake8 --statistics volt tests && poetry run black -t py312 --check volt tests
 
 
 .PHONY: lint-metrics
 lint-metrics:  ## Lint various metrics.
-	poetry run radon cc --total-average --show-closures --show-complexity --min C volt
+	radon cc --total-average --show-closures --show-complexity --min C volt
 
 
 .PHONY: scan-sec
@@ -186,14 +186,14 @@ scan-sec: scan-sec-ast scan-sec-deps  ## Perform all security analyses.
 
 .PHONY: scan-sec-ast
 scan-sec-ast:  ## Perform static security analysis on the AST.
-	poetry run bandit -r crimson
+	bandit -r crimson
 
 
 .PHONY: scan-sec-deps
 scan-sec-deps:  ## Scan dependencies for reported vulnerabilities.
-	poetry export --without-hashes -f requirements.txt -o /dev/stdout | poetry run safety check --full-report --stdin
+	poetry export --without-hashes -f requirements.txt -o /dev/stdout | safety check --full-report --stdin
 
 
 .PHONY: test
 test:  ## Run the test suite.
-	poetry run py.test --junitxml=.junit.xml --cov=volt --cov-report=term-missing --cov-report=xml:.coverage.xml --cov-report=html:htmlcov volt tests
+	py.test --junitxml=.junit.xml --cov=volt --cov-report=term-missing --cov-report=xml:.coverage.xml --cov-report=html:htmlcov volt tests
