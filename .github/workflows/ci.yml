@@ -34,7 +34,7 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Run tests
-        run: nix-develop .#ci --command make test
+        run: nix develop .#ci --command make test
 
       - name: Upload test report
         if: always()
