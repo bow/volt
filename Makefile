@@ -177,7 +177,7 @@ lint-style:  ## Lint style conventions.
 
 .PHONY: lint-metrics
 lint-metrics:  ## Lint various metrics.
-	radon cc --total-average --show-closures --show-complexity --min C volt
+	python -m radon cc --total-average --show-closures --show-complexity --min C volt
 
 
 .PHONY: scan-sec
