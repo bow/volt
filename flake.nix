@@ -19,43 +19,43 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
-        python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-        pythonPackages = pkgs.python312Packages;
-        # Using wheel since mypy compilation is too long and it is only a dev/test dependency.
         overrides = p2n.overrides.withDefaults (
+          # Using wheel since mypy compilation is too long and it is only a dev/test dependency.
           _final: prev: { mypy = prev.mypy.override { preferWheel = true; }; }
         );
+        python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+        pythonPkgs = pkgs.python312Packages;
+        pythonEnv = p2n.mkPoetryEnv rec {
+          inherit overrides python;
+          projectDir = self;
+          editablePackageSources = {
+            volt = projectDir;
+          };
+        };
+        shellPkgs = with pkgs; [
+          pythonEnv
+          deadnix
+          nixfmt-rfc-style
+          pre-commit
+          statix
+          (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
+        ];
       in
       {
-        devShells =
-          let
-            curDir = builtins.getEnv "PWD";
-            poetry = pkgs.poetry.withPlugins (_ps: [ pythonPackages.poetry-dynamic-versioning ]);
-            devEnv = p2n.mkPoetryEnv {
-              inherit overrides python;
-              projectDir = curDir;
-              editablePackageSources = {
-                volt = curDir;
-              };
-            };
-          in
-          {
-            default = pkgs.mkShellNoCC {
-              packages = [
-                devEnv
-                pkgs.deadnix
-                pkgs.nixfmt-rfc-style
-                pkgs.pre-commit
-                pkgs.statix
-                poetry
-              ];
-              # Without this, changes made in main source is only reflected when running
-              # commands from  the projectDir, not in any of its subdirectories.
-              shellHook = ''
-                export PYTHONPATH=${curDir}:$PYTHONPATH
-              '';
-            };
-          };
+        devShells = rec {
+          ci = pkgs.mkShellNoCC { packages = shellPkgs; };
+          default = ci.overrideAttrs (
+            _final: prev: {
+              # Set PYTHONPATH so that changes made in source tree is reflected from
+              # wherever we are running commands, not just when we are in source root.
+              shellHook =
+                prev.shellHook
+                + ''
+                  export PYTHONPATH=${builtins.getEnv "PWD"}:$PYTHONPATH
+                '';
+            }
+          );
+        };
         packages =
           let
             app = p2n.mkPoetryApplication {
