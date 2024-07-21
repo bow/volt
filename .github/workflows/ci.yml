@@ -30,7 +30,7 @@ jobs:
       - name: Install Cachix
         uses: cachix/cachix-action@v15
         with:
-          name: volt-cache
+          name: bow
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Run tests
