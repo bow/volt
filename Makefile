@@ -46,7 +46,7 @@ dev:  ## Configure local development environment with nix and direnv.
 
 .PHONY: docs-html
 docs-html:  ## Build HTML documentation.
-	cd $(DOCS_DIR) && make html
+	cd $(DOCS_DIR) && LC_ALL=C.UTF_8 make html
 
 
 .PHONY: docs-html-serve
