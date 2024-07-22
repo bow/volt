@@ -118,13 +118,14 @@ jobs:
         run: nix develop --command poetry dynamic-versioning
 
       - name: Build and push image to registry
-        run: |
-          nix build .#dockerArchiveStreamer && ./result
+        run: >
+          nix build .#dockerArchiveStreamer
+          && ./result
           | gzip --fast
           | skopeo copy
-            --dest-creds ${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}
-            docker-archive:/dev/stdin
-            docker://ghcr.io/${{ github.repository }}
+          --dest-creds ${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}
+          docker-archive:/dev/stdin
+          docker://ghcr.io/${{ github.repository }}
 
   pub-docs:
     name: Publish documentation
