@@ -78,7 +78,7 @@ help:  ## Show this help.
 
 
 .PHONY: img
-img:  ## Build the docker container and load into daemon.
+img:  ## Build a docker image and load it into a running daemon.
 	nix build .#dockerArchiveStreamer && ./result | docker image load
 
 
