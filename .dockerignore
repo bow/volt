@@ -25,5 +25,8 @@ lib64
 **/htmlcov
 .python-version
 .cache
+**/.direnv
+.envrc
+.envrc-private
 **/*.sif
 **/*.simg
