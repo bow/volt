@@ -37,6 +37,7 @@
           deadnix
           nixfmt-rfc-style
           pre-commit
+          skopeo
           statix
           (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
         ];
@@ -73,7 +74,7 @@
           {
             default = app;
             dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
-            dockerArchiveStream = pkgs.dockerTools.streamLayeredImage imgAttrs;
+            dockerArchiveStreamer = pkgs.dockerTools.streamLayeredImage imgAttrs;
           };
       }
     );
