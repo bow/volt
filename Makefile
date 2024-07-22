@@ -5,72 +5,17 @@
 #
 # This file is part of volt <https://github.com/bow/volt>.
 
-# Cross-platform adjustments.
-SYS := $(shell uname 2> /dev/null)
-ifeq ($(SYS),Linux)
-GREP_EXE := grep
-DATE_EXE := date
-else ifeq ($(SYS),Darwin)
-GREP_EXE := ggrep
-DATE_EXE := gdate
-else
-$(error Unsupported development platform)
-endif
-
-# Application name.
 APP_NAME := volt
-
-# Latest version of supported Python.
-PYTHON_VERSION := 3.12.2
-
-# Name of virtualenv for development.
-VENV_NAME ?= $(APP_NAME)-dev
-
-# Non-pyproject.toml dependencies.
-PIP_DEPS := poetry==1.7.1 poetry-dynamic-versioning==1.2.0
-
-# Non-pyproject.toml dev dependencies.
-PIP_DEV_DEPS := pre-commit
-
-## Toggle for dev setup with pyenv.
-WITH_PYENV ?= 1
-
-# Various build info.
-GIT_TAG    := $(shell git describe --tags --always --dirty 2> /dev/null || echo "untagged")
-GIT_COMMIT := $(shell git rev-parse --quiet --verify HEAD || echo "?")
-GIT_DIRTY  := $(shell test -n "$(shell git status --porcelain)" && echo "-dirty" || true)
-BUILD_TIME := $(shell $(DATE_EXE) -u '+%Y-%m-%dT%H:%M:%SZ')
-IS_RELEASE := $(shell ((echo "${GIT_TAG}" | $(GREP_EXE) -qE "^v?[0-9]+\.[0-9]+\.[0-9]+$$") && echo '1') || true)
-
-IMG_NAME   := ghcr.io/bow/$(APP_NAME)
-ifeq ($(IS_RELEASE),1)
-IMG_TAG    := $(GIT_TAG)
-else
-IMG_TAG    := latest
-endif
-
-WHEEL_DEPS_DIR ?= $(CURDIR)/wheels/deps
 DOCS_DIR := $(CURDIR)/docs
-
 RTD_BUILD_API_URL := https://readthedocs.org/api/v3/projects/volt/versions/latest/builds/
 
-
-## Rules ##
 
 all: help
 
 
 .PHONY: build
-build: build-deps  ## Build wheel and source dist.
+build:  ## Build wheel and source dist.
 	poetry build
-
-.PHONY: build-deps
-build-deps: | $(WHEEL_DEPS_DIR)  ## Build wheels of dependencies.
-	poetry export --without dev --without-hashes -f requirements.txt -o /dev/stdout | \
-		pip wheel -r /dev/stdin --wheel-dir=$(WHEEL_DEPS_DIR)
-
-$(WHEEL_DEPS_DIR):
-	mkdir -p $@
 
 
 .PHONY: clean
@@ -83,32 +28,19 @@ clean:  ## Remove build and test artifacts, including built Docker images.
 		&& (docker rmi $(IMG_NAME) 2> /dev/null || true)
 
 
-.PHONY: clean-pyenv
-clean-pyenv:  ## Remove the created pyenv virtualenv.
-	pyenv virtualenv-delete -f $(VENV_NAME) && rm -f .python-version
-
-
 .PHONY: dev
-dev:  ## Configure a local development environment.
-	@if command -v pyenv virtualenv > /dev/null 2>&1 && [ "$(WITH_PYENV)" == "1" ]; then \
-		printf "Configuring a local dev environment using pyenv ...\n" >&2 \
-			&& pyenv install -s "$(PYTHON_VERSION)" \
-			&& pyenv virtualenv -f "$(PYTHON_VERSION)" "$(VENV_NAME)" \
-			&& printf "%s\n%s" "$(VENV_NAME)" "$(PYTHON_VERSION)" > .python-version \
-			&& . "$(shell pyenv root)/versions/$(VENV_NAME)/bin/activate" \
-			&& pip install --upgrade pip && pyenv rehash \
-			&& pip install $(PIP_DEPS) $(PIP_DEV_DEPS) && pyenv rehash \
-			&& poetry config virtualenvs.create false \
-			&& poetry install && pyenv rehash \
-			&& pre-commit install && pyenv rehash \
+dev:  ## Configure local development environment with nix and direnv.
+	@if command -v nix-env > /dev/null && command -v direnv > /dev/null; then \
+		printf "Configuring a local dev environment and setting up git pre-commit hooks...\n" >&2 \
+			&& direnv allow . > /dev/null \
+			&& DIRENV_LOG_FORMAT="" direnv exec $(CURDIR) pre-commit install \
 			&& printf "Done.\n" >&2; \
+	elif command -v nix-env > /dev/null; then \
+		printf "Error: direnv seems to be unconfigured or missing\n" >&2 && exit 1; \
+	elif command -v direnv > /dev/null; then \
+		printf "Error: nix seems to be unconfigured or missing\n" >&2 && exit 1; \
 	else \
-		printf "Configuring a local, bare dev environment ...\n" >&2 \
-			&& pip install $(PIP_DEPS) $(PIP_DEV_DEPS) \
-			&& poetry config virtualenvs.create false \
-			&& poetry install \
-			&& pre-commit install \
-			&& printf "Done.\n" >&2; \
+		printf "Error: both direnv and nix seem to be unconfigured and/or missing" >&2 && exit 1; \
 	fi
 
 
@@ -125,12 +57,6 @@ docs-html-serve:  ## Build HTML documentation and serve it.
 	else \
 		make -B docs-html && python -m http.server -d $(DOCS_DIR)/_build/html; \
 	fi
-
-
-.PHONY: docs-rtd
-docs-rtd:  ## Trigger ReadTheDocs build.
-	@([ ! -z "$(RTD_TOKEN)" ] || (>&2 echo "error: RTD_TOKEN undefined"; exit 1)) \
-		&& curl -X POST -H "Authorization: Token ${RTD_TOKEN}" $(RTD_BUILD_API_URL)
 
 
 .PHONY: fmt
@@ -152,13 +78,8 @@ help:  ## Show this help.
 
 
 .PHONY: img
-img:  ## Build and tag the Docker container.
-	docker build --build-arg REVISION=$(GIT_COMMIT)$(GIT_DIRTY) --build-arg BUILD_TIME=$(BUILD_TIME) --tag $(IMG_NAME):$(IMG_TAG) .
-
-
-.PHONY: install-build
-install-build:  ## Install dependencies required only for building.
-	pip install $(PIP_DEPS)
+img:  ## Build the docker container and load into daemon.
+	nix build .#dockerArchiveStreamer && ./result | docker image load
 
 
 .PHONY: lint
