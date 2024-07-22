@@ -36,6 +36,7 @@
           pythonEnv
           curl
           deadnix
+          entr
           nixfmt-rfc-style
           pre-commit
           skopeo
