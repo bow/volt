@@ -34,6 +34,7 @@
         };
         shellPkgs = with pkgs; [
           pythonEnv
+          curl
           deadnix
           nixfmt-rfc-style
           pre-commit
