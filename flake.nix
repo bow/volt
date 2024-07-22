@@ -37,6 +37,7 @@
           curl
           deadnix
           entr
+          gnugrep
           nixfmt-rfc-style
           pre-commit
           skopeo
