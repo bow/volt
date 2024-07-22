@@ -98,9 +98,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          # Ensure all git history is cloned, so we can infer the correct version for tagging.
-          fetch-depth: 0
 
       - name: Install Nix
         uses: cachix/install-nix-action@v27
