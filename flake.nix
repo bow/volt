@@ -44,8 +44,18 @@
           statix
           (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
         ];
+        app = p2n.mkPoetryApplication {
+          inherit overrides python;
+          projectDir = self;
+        };
       in
       {
+        apps = {
+          default = {
+            type = "app";
+            program = "${app}/bin/${app.pname}";
+          };
+        };
         devShells = rec {
           ci = pkgs.mkShellNoCC { packages = shellPkgs; };
           default = ci.overrideAttrs (
@@ -62,10 +72,6 @@
         };
         packages =
           let
-            app = p2n.mkPoetryApplication {
-              inherit overrides python;
-              projectDir = self;
-            };
             imgTag = if app.version != "0.0.dev0" then app.version else "latest";
             imgAttrs = {
               name = "ghcr.io/bow/${app.pname}";
