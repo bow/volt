@@ -66,13 +66,13 @@ fmt:  ## Apply Black.
 
 .PHONY: help
 help:  ## Show this help.
-	$(eval PADLEN=$(shell $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+	$(eval PADLEN=$(shell grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| cut -d':' -f1 \
 		| awk '{cur = length($$0); lengths[cur] = lengths[cur] $$0 ORS; max=(cur > max ? cur : max)} END {printf "%s", max}' \
 		|| (true && echo 0)))
-	@($(GREP_EXE) --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
+	@(grep --version > /dev/null 2>&1 || (>&2 "error: GNU grep not installed"; exit 1)) \
 		&& printf "\033[36m◉ %s dev console\033[0m\n" "$(APP_NAME)" >&2 \
-		&& $(GREP_EXE) -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+		&& grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 			| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m» \033[33m%-*s\033[0m \033[36m· \033[0m%s\n", $(PADLEN), $$1, $$2}' \
 			| sort
 
