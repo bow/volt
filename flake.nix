@@ -63,15 +63,17 @@
               projectDir = self;
             };
             imgTag = if app.version != "0.0.dev0" then app.version else "latest";
-          in
-          {
-            default = app;
-            dockerArchive = pkgs.dockerTools.buildLayeredImage {
+            imgAttrs = {
               name = "ghcr.io/bow/${app.pname}";
               tag = imgTag;
               contents = [ app ];
               config.Entrypoint = [ "/bin/${app.pname}" ];
             };
+          in
+          {
+            default = app;
+            dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
+            dockerArchiveStream = pkgs.dockerTools.streamLayeredImage imgAttrs;
           };
       }
     );
