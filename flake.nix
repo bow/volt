@@ -4,7 +4,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/9355fa86e6f27422963132c2c9aeedb0fb963d93";
     flake-utils.url = "github:numtide/flake-utils/b1d9ab70662946ef0850d488da1c9019f3a9752a";
-    poetry2nix.url = "github:bow/poetry2nix/feature/more-build-overrides";
+    poetry2nix = {
+      url = "github:bow/poetry2nix/feature/more-build-overrides";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   outputs =
