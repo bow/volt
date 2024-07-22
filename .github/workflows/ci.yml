@@ -113,6 +113,14 @@ jobs:
           name: bow
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
+      - name: Set image tag
+        run: >
+          if [ "${{ github.ref_type }}" = "tag" ] && [ -n "${{ github.ref_name }}" ]; then
+            echo "IMG_TAG=$(echo ${{ github.ref_name }} | sed 's/^v//')" >> ${GITHUB_ENV}
+          else
+            echo "IMG_TAG=latest" >> ${GITHUB_ENV}
+          fi
+
       - name: Update pyproject.toml version with
         if: github.ref_type == 'tag' && github.ref_name != ''
         run: nix develop --command poetry dynamic-versioning
@@ -125,7 +133,7 @@ jobs:
           | skopeo copy
           --dest-creds ${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}
           docker-archive:/dev/stdin
-          docker://ghcr.io/${{ github.repository }}
+          docker://ghcr.io/${{ github.repository }}:${IMG_TAG}
 
   pub-docs:
     name: Publish documentation
