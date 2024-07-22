@@ -66,10 +66,10 @@
           in
           {
             default = app;
-            dockerArchive = pkgs.dockerTools.buildImage {
+            dockerArchive = pkgs.dockerTools.buildLayeredImage {
               name = "ghcr.io/bow/${app.pname}";
               tag = imgTag;
-              copyToRoot = [ app ];
+              contents = [ app ];
               config.Entrypoint = [ "/bin/${app.pname}" ];
             };
           };
