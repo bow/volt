@@ -114,7 +114,7 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Update pyproject.toml version with
-        if: gitub.ref_type == 'tag' && github.ref_name != ''
+        if: github.ref_type == 'tag' && github.ref_name != ''
         run: nix develop --command poetry dynamic-versioning
 
       - name: Build and push image to registry
