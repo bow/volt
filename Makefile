@@ -135,7 +135,7 @@ docs-rtd:  ## Trigger ReadTheDocs build.
 
 .PHONY: fmt
 fmt:  ## Apply Black.
-	poetry run black -t py312 volt tests
+	black -t py312 volt tests
 
 
 .PHONY: help
@@ -172,7 +172,7 @@ lint-types:  ## Lint the type hints.
 
 .PHONY: lint-style
 lint-style:  ## Lint style conventions.
-	flake8 --statistics volt tests && poetry run black -t py312 --check volt tests
+	flake8 --statistics volt tests && black -t py312 --check volt tests
 
 
 .PHONY: lint-metrics
