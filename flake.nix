@@ -23,6 +23,11 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
+        overrides = p2n.overrides.withDefaults (
+          # Using wheel since mypy compilation is too long and it is only a dev/test dependency.
+          _final: prev: { mypy = prev.mypy.override { preferWheel = true; }; }
+        );
+        projectDir = self;
         python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
         pythonPkgs = pkgs.python312Packages;
         shellPkgs = with pkgs; [
@@ -36,14 +41,8 @@
           statix
           (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
         ];
-        app = p2n.mkPoetryApplication {
-          inherit python;
-          projectDir = self;
-          overrides = p2n.overrides.withDefaults (
-            # Using wheel since mypy compilation is too long and it is only a dev/test dependency.
-            _final: prev: { mypy = prev.mypy.override { preferWheel = true; }; }
-          );
-        };
+        app = p2n.mkPoetryApplication { inherit overrides projectDir python; };
+        ciEnv = p2n.mkPoetryEnv { inherit overrides projectDir python; };
       in
       {
         apps = {
@@ -53,7 +52,7 @@
           };
         };
         devShells = {
-          ci = pkgs.mkShellNoCC { packages = shellPkgs ++ [ app ]; };
+          ci = pkgs.mkShellNoCC { packages = shellPkgs ++ [ ciEnv ]; };
           default = pkgs.mkShellNoCC rec {
             nativeBuildInputs = with pkgs; [
               python
