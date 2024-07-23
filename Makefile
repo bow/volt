@@ -44,6 +44,11 @@ dev:  ## Configure local development environment with nix and direnv.
 	fi
 
 
+.PHONY: dev-reset
+dev-reset:  ## Resets the local development environment.
+	rm -rf .venv .direnv && direnv reload
+
+
 .PHONY: docs-html
 docs-html:  ## Build HTML documentation.
 	cd $(DOCS_DIR) && LC_ALL=C.UTF_8 make html
