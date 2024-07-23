@@ -30,19 +30,7 @@
         projectDir = self;
         python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
         pythonPkgs = pkgs.python312Packages;
-        shellPkgs = with pkgs; [
-          curl
-          deadnix
-          entr
-          gnugrep
-          nixfmt-rfc-style
-          pre-commit
-          skopeo
-          statix
-          (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
-        ];
         app = p2n.mkPoetryApplication { inherit overrides projectDir python; };
-        ciEnv = p2n.mkPoetryEnv { inherit overrides projectDir python; };
       in
       {
         apps = {
@@ -51,32 +39,48 @@
             program = "${app}/bin/${app.pname}";
           };
         };
-        devShells = {
-          ci = pkgs.mkShellNoCC { packages = shellPkgs ++ [ ciEnv ]; };
-          default = pkgs.mkShellNoCC rec {
-            nativeBuildInputs = with pkgs; [
+        devShells =
+          let
+            devPackages = with pkgs; [
+              curl
+              deadnix
+              entr
+              gnugrep
+              nixfmt-rfc-style
+              pre-commit
+              skopeo
+              statix
+              (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
+            ];
+            devNativeBuildInputs = with pkgs; [
               python
               pythonPkgs.venvShellHook
-              taglib
-              openssl
               git
               libxml2
               libxslt
               libzip
+              taglib
+              openssl
               zlib
             ];
-            packages = shellPkgs;
-            venvDir = "./.venv";
-            postVenvCreation = ''
-              unset SOURCE_DATE_EPOCH
-              poetry env use ${venvDir}/bin/python
-              poetry install
-            '';
-            postShellHook = ''
-              unset SOURCE_DATE_EPOCH
-            '';
+            ciEnv = p2n.mkPoetryEnv { inherit overrides projectDir python; };
+          in
+          {
+            ci = pkgs.mkShellNoCC { packages = devPackages ++ [ ciEnv ]; };
+            default = pkgs.mkShellNoCC rec {
+              nativeBuildInputs = devNativeBuildInputs;
+              packages = devPackages;
+              venvDir = "./.venv";
+              postVenvCreation = ''
+                unset SOURCE_DATE_EPOCH
+                poetry env use ${venvDir}/bin/python
+                poetry install
+              '';
+              postShellHook = ''
+                unset SOURCE_DATE_EPOCH
+              '';
+            };
           };
-        };
         packages =
           let
             imgTag = if app.version != "0.0.dev0" then app.version else "latest";
