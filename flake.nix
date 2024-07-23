@@ -81,7 +81,18 @@
               name = "ghcr.io/bow/${app.pname}";
               tag = imgTag;
               contents = [ app ];
-              config.Entrypoint = [ "/bin/${app.pname}" ];
+              config = {
+                Entrypoint = [ "/bin/${app.pname}" ];
+                Labels = {
+                  "org.opencontainers.image.title" = "${app.pname}";
+                  "org.opencontainers.image.revision" =
+                    with builtins;
+                    let
+                      revFile = "${self}/.rev";
+                    in
+                    if pathExists revFile then (readFile revFile) else "";
+                };
+              };
             };
           in
           {
