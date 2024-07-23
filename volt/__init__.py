@@ -7,7 +7,7 @@
 """
 
 from pathlib import Path
-from importlib.metadata import version
+from importlib.metadata import version, PackageNotFoundError
 
 
 from .config import Config  # noqa: F401
@@ -21,6 +21,9 @@ NAME = "volt"
 __author__ = "Wibowo Arindrarto"
 __contact__ = "contact@arindrarto.dev"
 __homepage__ = "https://github.com/bow/volt"
-__version__ = version(__name__)
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:
+    __version__ = "0.0.dev0"
 
-del Path, version
+del PackageNotFoundError, Path, version
