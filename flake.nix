@@ -21,16 +21,18 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
-        p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
-        overrides = p2n.overrides.withDefaults (
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ poetry2nix.overlays.default ];
+        };
+        overrides = pkgs.poetry2nix.overrides.withDefaults (
           # Using wheel since mypy compilation is too long and it is only a dev/test dependency.
           _final: prev: { mypy = prev.mypy.override { preferWheel = true; }; }
         );
         projectDir = self;
         python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
         pythonPkgs = pkgs.python312Packages;
-        app = p2n.mkPoetryApplication { inherit overrides projectDir python; };
+        app = pkgs.poetry2nix.mkPoetryApplication { inherit overrides projectDir python; };
       in
       {
         apps = {
@@ -63,7 +65,7 @@
               openssl
               zlib
             ];
-            ciEnv = p2n.mkPoetryEnv { inherit overrides projectDir python; };
+            ciEnv = pkgs.poetry2nix.mkPoetryEnv { inherit overrides projectDir python; };
           in
           {
             ci = pkgs.mkShellNoCC { packages = devPackages ++ [ ciEnv ]; };
