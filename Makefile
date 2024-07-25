@@ -25,7 +25,7 @@ clean:  ## Remove build and test artifacts, including built Docker images.
 			./tests/fixtures/ok_minimal/target \
 			./tests/fixtures/ok_extended/target \
 			result \
-		&& (docker rmi $(IMG_NAME) 2> /dev/null || true)
+		&& (docker rmi ghcr.io/bow/$(APP_NAME) 2> /dev/null || true)
 
 
 .PHONY: dev
