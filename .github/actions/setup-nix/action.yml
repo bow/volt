@@ -1,0 +1,25 @@
+name: Setup Nix and Cachix
+
+description: Checkout the repository, setup nix, and setup cachix
+
+inputs:
+  nix_path:
+    default: nixpkgs=flake:nixpkgs
+  cachix_name:
+    default: bow
+  cachix_auth_token:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      uses: cachix/install-nix-action@v27
+      with:
+        nix_path: ${{ inputs.nix_path }}
+
+    - name: Install Cachix
+      uses: cachix/cachix-action@v15
+      with:
+        name: ${{ inputs.cachix_name }}
+        authToken: '${{ inputs.cachix_auth_token }}'

@@ -22,16 +22,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v27
+      - name: Set up Nix
+        uses: ./.github/actions/setup-nix
         with:
-          nix_path: nixpkgs=flake:nixpkgs
-
-      - name: Install Cachix
-        uses: cachix/cachix-action@v15
-        with:
-          name: bow
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Run tests
         run: nix develop .#ci --command make test
@@ -71,16 +65,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v27
+      - name: Set up Nix
+        uses: ./.github/actions/setup-nix
         with:
-          nix_path: nixpkgs=flake:nixpkgs
-
-      - name: Install Cachix
-        uses: cachix/cachix-action@v15
-        with:
-          name: bow
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: ${{ matrix.lint.name }}
         run: |
@@ -99,16 +87,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v27
+      - name: Set up Nix
+        uses: ./.github/actions/setup-nix
         with:
-          nix_path: nixpkgs=flake:nixpkgs
-
-      - name: Install Cachix
-        uses: cachix/cachix-action@v15
-        with:
-          name: bow
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Set image tag
         run: >
@@ -143,16 +125,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v27
+      - name: Set up Nix
+        uses: ./.github/actions/setup-nix
         with:
-          nix_path: nixpkgs=flake:nixpkgs
-
-      - name: Install Cachix
-        uses: cachix/cachix-action@v15
-        with:
-          name: bow
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Push to ReadTheDocs
         env:
