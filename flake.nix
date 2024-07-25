@@ -88,6 +88,7 @@
           };
         packages =
           let
+            readFileOr = (path: default: with builtins; if pathExists path then (readFile path) else default);
             imgTag = if app.version != "0.0.dev0" then app.version else "latest";
             imgAttrs = rec {
               name = "ghcr.io/bow/${app.pname}";
@@ -96,12 +97,7 @@
               config = {
                 Entrypoint = [ "/bin/${app.pname}" ];
                 Labels = {
-                  "org.opencontainers.image.revision" =
-                    with builtins;
-                    let
-                      revFile = "${self}/.rev";
-                    in
-                    if pathExists revFile then (readFile revFile) else "";
+                  "org.opencontainers.image.revision" = readFileOr "${self}/.rev" "";
                   "org.opencontainers.image.source" = "https://github.com/bow/${app.pname}";
                   "org.opencontainers.image.title" = "${app.pname}";
                   "org.opencontainers.image.url" = "https://${name}";
