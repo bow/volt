@@ -110,9 +110,9 @@
             };
           in
           {
-            default = app;
             dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
             dockerArchiveStreamer = pkgs.dockerTools.streamLayeredImage imgAttrs;
+            local = app;
           };
       }
     );
