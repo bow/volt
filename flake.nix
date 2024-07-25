@@ -44,15 +44,18 @@
         devShells =
           let
             devPackages = with pkgs; [
-              curl
+              # python-only
+              (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
+              # nix-only
               deadnix
+              nixfmt-rfc-style
+              statix
+              # others
+              curl
               entr
               gnugrep
-              nixfmt-rfc-style
               pre-commit
               skopeo
-              statix
-              (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
             ];
             devNativeBuildInputs = with pkgs; [
               python
