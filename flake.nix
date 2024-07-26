@@ -31,7 +31,6 @@
         );
         projectDir = self;
         python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-        pythonPkgs = pkgs.python312Packages;
         app = pkgs.poetry2nix.mkPoetryApplication { inherit overrides projectDir python; };
       in
       {
@@ -45,7 +44,7 @@
           let
             devPackages = with pkgs; [
               # python-only
-              (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
+              (poetry.withPlugins (_ps: [ python.pkgs.poetry-dynamic-versioning ]))
               # nix-only
               deadnix
               nixfmt-rfc-style
@@ -57,17 +56,7 @@
               pre-commit
               skopeo
             ];
-            devNativeBuildInputs = with pkgs; [
-              python
-              pythonPkgs.venvShellHook
-              git
-              libxml2
-              libxslt
-              libzip
-              taglib
-              openssl
-              zlib
-            ];
+            devNativeBuildInputs = [ (python.withPackages (ps: [ ps.venvShellHook ])) ];
             ciEnv = pkgs.poetry2nix.mkPoetryEnv { inherit overrides projectDir python; };
           in
           {
