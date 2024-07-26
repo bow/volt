@@ -1217,13 +1217,13 @@ dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
 name = "pytest-structlog"
-version = "0.9"
+version = "1.1"
 description = "Structured logging assertions"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "pytest_structlog-0.9-py3-none-any.whl", hash = "sha256:3ded576ac38234f57ad9d8995f9be5bf7533f5279088c2ef6214a4e66a51e5ff"},
-    {file = "pytest_structlog-0.9.tar.gz", hash = "sha256:3401e1c785a3c8e9ff7cd51652364f64d3c502e5fe78d8f3df1a10f55914288a"},
+    {file = "pytest_structlog-1.1-py3-none-any.whl", hash = "sha256:928475948f886bc027f1550dccb892fb46bfb8bb1ddb0c44ab4fa3c5b3f3079a"},
+    {file = "pytest_structlog-1.1.tar.gz", hash = "sha256:440123b0a7f93482383995b3fb796ed8c1b9a37edf405683a34774993ef09543"},
 ]
 
 [package.dependencies]
@@ -1909,4 +1909,4 @@ test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "89c3959a4161fcaaeaf7b16c0950563343c5a01ba3aac7682463b6bbc8d9c703"
+content-hash = "53413ce9352be42b3bd2bf0ceb41b0ebc47086df2cc691790a38ae16b9839706"
