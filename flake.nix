@@ -3,10 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/9355fa86e6f27422963132c2c9aeedb0fb963d93";
-    nixpkgs-python = {
-      url = "github:cachix/nixpkgs-python";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     flake-utils.url = "github:numtide/flake-utils/b1d9ab70662946ef0850d488da1c9019f3a9752a";
     poetry2nix = {
       url = "github:bow/poetry2nix/feature/more-build-overrides";
@@ -19,7 +15,6 @@
     {
       self,
       nixpkgs,
-      nixpkgs-python,
       flake-utils,
       poetry2nix,
     }:
@@ -35,8 +30,8 @@
           _final: prev: { mypy = prev.mypy.override { preferWheel = true; }; }
         );
         projectDir = self;
-        pythonVersion = "3.12.4"; # NOTE: Keep in-sync with pyproject.toml.
-        python = nixpkgs-python.packages.${system}.${pythonVersion};
+        python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+        pythonPkgs = pkgs.python312Packages;
         app = pkgs.poetry2nix.mkPoetryApplication { inherit overrides projectDir python; };
       in
       {
@@ -50,7 +45,7 @@
           let
             devPackages = with pkgs; [
               # python-only
-              (poetry.withPlugins (_ps: [ python312Packages.poetry-dynamic-versioning ]))
+              (poetry.withPlugins (_ps: [ pythonPkgs.poetry-dynamic-versioning ]))
               # nix-only
               deadnix
               nixfmt-rfc-style
@@ -62,7 +57,17 @@
               pre-commit
               skopeo
             ];
-            devNativeBuildInputs = [ (python.withPackages (ps: [ ps.venvShellHook ])) ];
+            devNativeBuildInputs = with pkgs; [
+              python
+              pythonPkgs.venvShellHook
+              git
+              libxml2
+              libxslt
+              libzip
+              taglib
+              openssl
+              zlib
+            ];
             ciEnv = pkgs.poetry2nix.mkPoetryEnv { inherit overrides projectDir python; };
           in
           {
