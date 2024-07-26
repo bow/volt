@@ -27,6 +27,6 @@ updates:
     commit-message:
       prefix: "chore"
     labels:
-      - "ci"
+      - "build"
     reviewers:
       - "bow"
