@@ -15,7 +15,6 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "b1d9ab70662946ef0850d488da1c9019f3a9752a",
         "type": "github"
       }
     },
@@ -51,8 +50,8 @@
       },
       "original": {
         "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
-        "rev": "2122a9b35b35719ad9a395fe783eabb092df01b1",
         "type": "github"
       }
     },
@@ -69,16 +68,16 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1721164310,
-        "narHash": "sha256-BmLSfVQWLmioZFDmgxDuJbTe2bxYG79eFypdYWT1WUM=",
+        "lastModified": 1722002229,
+        "narHash": "sha256-x8jt/z7oY9RIjnTW76D1OD1ZUMfM8nGY/Wiaj8g21fg=",
         "owner": "bow",
         "repo": "poetry2nix",
-        "rev": "d94772add8dd7fe689bf5eedd9736ab4cc19cb0a",
+        "rev": "94a626fbf355d403509657e43ed9ff3dd6544a5d",
         "type": "github"
       },
       "original": {
         "owner": "bow",
-        "ref": "feature/more-build-overrides",
+        "ref": "personal/overrides",
         "repo": "poetry2nix",
         "type": "github"
       }

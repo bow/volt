@@ -2,10 +2,10 @@
   description = "Nix flake for Volt";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/2122a9b35b35719ad9a395fe783eabb092df01b1";
-    flake-utils.url = "github:numtide/flake-utils/b1d9ab70662946ef0850d488da1c9019f3a9752a";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
     poetry2nix = {
-      url = "github:bow/poetry2nix/feature/more-build-overrides";
+      url = "github:bow/poetry2nix/personal/overrides";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
