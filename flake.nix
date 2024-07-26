@@ -78,6 +78,7 @@
               '';
             };
           };
+        formatter = pkgs.nixfmt-rfc-style;
         packages =
           let
             readFileOr = (path: default: with builtins; if pathExists path then (readFile path) else default);
