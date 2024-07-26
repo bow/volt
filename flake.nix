@@ -56,7 +56,10 @@
               pre-commit
               skopeo
             ];
-            devNativeBuildInputs = [ (python.withPackages (ps: [ ps.venvShellHook ])) ];
+            devNativeBuildInputs = [
+              python
+              python.pkgs.venvShellHook
+            ];
             ciEnv = pkgs.poetry2nix.mkPoetryEnv { inherit overrides projectDir python; };
           in
           {
