@@ -74,6 +74,8 @@ toml = "^0"
 pytest-structlog = "^1"
 insipid-sphinx-theme = "^0.4.2"
 types-pyyaml = "^6"
+requests = "^2.32.3"
+types-requests = "^2.32.0.20240712"
 
 [tool.mypy]
 python_version = "3.12"
