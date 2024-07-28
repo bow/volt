@@ -71,11 +71,8 @@ types-python-slugify = "^8"
 sphinx = "^7"
 pytest-mock = "^3"
 toml = "^0"
-requests = "^2.31.0"
-types-requests = "^2.31.0.20240125"
 pytest-structlog = "^1"
 insipid-sphinx-theme = "^0.4.2"
-platformdirs = "<4.0.0"
 types-pyyaml = "^6"
 
 [tool.mypy]
