@@ -21,11 +21,9 @@ packages = [
     { include = "volt" },
     { include = "tests", format = "sdist" },
 ]
-include = [
-    "CHANGELOG.rst",
-    "README.md",
-    "LICENSE",
-]
+
+[tool.poetry.urls]
+changelog = "https://github.com/bow/volt/blob/master/CHANGELOG.rst"
 
 [tool.poetry.scripts]
 volt = "volt.cli:main"
