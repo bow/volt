@@ -53,7 +53,7 @@ watchdog = "2.2.1"  # Pinned. Later versions cause intermittent 'serve draft' te
 
 [tool.poetry.group.dev.dependencies]
 bandit = "~1"
-black = "24.8.0"
+black = "24.10.0"
 flake8 = "~7"
 flake8-polyfill = "~1"
 insipid-sphinx-theme = "~0"
