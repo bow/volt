@@ -66,7 +66,7 @@ docs-html-serve:  ## Build HTML documentation and serve it.
 
 .PHONY: fmt
 fmt:  ## Apply Black.
-	black -t py312 volt tests
+	black -t py312 src/volt tests
 
 
 .PHONY: help
@@ -93,17 +93,17 @@ lint:  lint-types lint-style lint-metrics  ## Lint the code.
 
 .PHONY: lint-types
 lint-types:  ## Lint the type hints.
-	mypy volt tests
+	mypy src/volt tests
 
 
 .PHONY: lint-style
 lint-style:  ## Lint style conventions.
-	flake8 --statistics volt tests && black -t py312 --check volt tests
+	flake8 --statistics src/volt tests && black -t py312 --check src/volt tests
 
 
 .PHONY: lint-metrics
 lint-metrics:  ## Lint various metrics.
-	python -m radon cc --total-average --show-closures --show-complexity --min C volt
+	python -m radon cc --total-average --show-closures --show-complexity --min C src/volt
 
 
 .PHONY: scan-sec
@@ -122,4 +122,4 @@ scan-sec-deps:  ## Scan dependencies for reported vulnerabilities.
 
 .PHONY: test
 test:  ## Run the test suite.
-	py.test --junitxml=.junit.xml --cov=volt --cov-report=term-missing --cov-report=xml:.coverage.xml --cov-report=html:htmlcov volt tests
+	py.test --junitxml=.junit.xml --cov=src/volt --cov-report=term-missing --cov-report=xml:.coverage.xml --cov-report=html:htmlcov src/volt tests

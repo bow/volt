@@ -4,105 +4,108 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    poetry2nix = {
-      url = "github:bow/poetry2nix/personal/overrides";
+    pyproject-nix = {
+      url = "github:pyproject-nix/pyproject.nix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
+    };
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    pyproject-build-systems = {
+      url = "github:pyproject-nix/build-system-pkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.uv2nix.follows = "uv2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      flake-utils,
-      poetry2nix,
-    }:
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    uv2nix,
+    pyproject-nix,
+    pyproject-build-systems,
+    ...
+  }:
     flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ poetry2nix.overlays.default ];
-        };
-        overrides = pkgs.poetry2nix.overrides.withDefaults (
-          # Using wheel since mypy compilation is too long and it is only a dev/test dependency.
-          _final: prev: { mypy = prev.mypy.override { preferWheel = true; }; }
-        );
-        projectDir = self;
+      system: let
+        pkgs = import nixpkgs {inherit system;};
+        nixTools = with pkgs; [alejandra deadnix statix];
+        pyTools = with pkgs; [black ruff uv];
         python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
-        app = pkgs.poetry2nix.mkPoetryApplication { inherit overrides projectDir python; };
-      in
-      {
+        devPkgs = [python] ++ (with pkgs; [curl just pre-commit skopeo]);
+
+        workspace = uv2nix.lib.workspace.loadWorkspace {workspaceRoot = ./.;};
+        overlay = workspace.mkPyprojectOverlay {sourcePreference = "wheel";};
+        pythonSet = (pkgs.callPackage pyproject-nix.build.packages {inherit python;}).overrideScope (
+          nixpkgs.lib.composeManyExtensions [pyproject-build-systems.overlays.default overlay]
+        );
+        venvAll = pythonSet.mkVirtualEnv "volt-env-all" workspace.deps.all;
+        app = (pkgs.callPackages pyproject-nix.build.util {}).mkApplication {
+          venv = venvAll;
+          package = pythonSet.volt;
+        };
+      in {
         apps = {
           default = {
             type = "app";
-            program = "${app}/bin/${app.pname}";
+            program = "${venvAll}/bin/${app.pname}";
           };
         };
-        devShells =
-          let
-            devPackages = with pkgs; [
-              # python-only
-              (poetry.withPlugins (_ps: [ python.pkgs.poetry-dynamic-versioning ]))
-              # nix-only
-              deadnix
-              nixfmt-rfc-style
-              statix
-              # others
-              curl
-              entr
-              gnugrep
-              pre-commit
-              skopeo
-            ];
-            devNativeBuildInputs = [
-              python
-              python.pkgs.venvShellHook
-            ];
-            ciEnv = pkgs.poetry2nix.mkPoetryEnv { inherit overrides projectDir python; };
-          in
-          {
-            ci = pkgs.mkShellNoCC { packages = devPackages ++ [ ciEnv ]; };
-            default = pkgs.mkShellNoCC rec {
-              nativeBuildInputs = devNativeBuildInputs;
-              packages = devPackages;
-              venvDir = "./.venv";
-              postVenvCreation = ''
-                unset SOURCE_DATE_EPOCH
-                poetry env use ${venvDir}/bin/python
-                poetry install
-              '';
-              postShellHook = ''
-                unset SOURCE_DATE_EPOCH
-              '';
+        devShells = {
+          ci = pkgs.mkShellNoCC {packages = devPkgs ++ pyTools ++ [venvAll];};
+          default = pkgs.mkShell rec {
+            nativeBuildInputs = [python.pkgs.venvShellHook];
+            packages = devPkgs ++ pyTools ++ nixTools;
+            env = {
+              UV_PYTHON_DOWNLOADS = "never";
+              UV_PYTHON = "${venvDir}/bin/python";
             };
+            venvDir = "./.venv";
+            postVenvCreation = ''
+              unset SOURCE_DATE_EPOCH
+              . ${venvDir}/bin/activate
+              uv sync --all-groups --active --locked
+            '';
+            postShellHook = ''
+              unset SOURCE_DATE_EPOCH
+              unset PYTHONPATH
+            '';
           };
-        formatter = pkgs.nixfmt-rfc-style;
-        packages =
-          let
-            readFileOr = (path: default: with builtins; if pathExists path then (readFile path) else default);
-            imgTag = if app.version != "0.0.dev0" then app.version else "latest";
-            imgAttrs = rec {
-              name = "ghcr.io/bow/${app.pname}";
-              tag = imgTag;
-              contents = [ app ];
-              config = {
-                Entrypoint = [ "/bin/${app.pname}" ];
-                Labels = {
-                  "org.opencontainers.image.revision" = readFileOr "${self}/.rev" "";
-                  "org.opencontainers.image.source" = "https://github.com/bow/${app.pname}";
-                  "org.opencontainers.image.title" = "${app.pname}";
-                  "org.opencontainers.image.url" = "https://${name}";
-                };
+        };
+        formatter = pkgs.alejandra;
+        packages = let
+          readFileOr = path: default:
+            with builtins;
+              if pathExists path
+              then (readFile path)
+              else default;
+          imgTag =
+            if app.version != "0.0.dev0"
+            then app.version
+            else "latest";
+          imgAttrs = rec {
+            name = "ghcr.io/bow/${app.pname}";
+            tag = imgTag;
+            contents = [app];
+            config = {
+              Entrypoint = ["/bin/${app.pname}"];
+              Labels = {
+                "org.opencontainers.image.revision" = readFileOr "${self}/.rev" "";
+                "org.opencontainers.image.source" = "https://github.com/bow/${app.pname}";
+                "org.opencontainers.image.title" = "${app.pname}";
+                "org.opencontainers.image.url" = "https://${name}";
               };
             };
-          in
-          {
-            dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
-            dockerArchiveStreamer = pkgs.dockerTools.streamLayeredImage imgAttrs;
-            local = app;
           };
+        in {
+          default = venvAll;
+          dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
+          dockerArchiveStreamer = pkgs.dockerTools.streamLayeredImage imgAttrs;
+        };
       }
     );
 }
