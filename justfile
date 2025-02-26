@@ -102,7 +102,7 @@ scan-sec-ast:
 
 # Scan dependencies for reported vulnerabilities.
 scan-sec-deps:
-    poetry export --without-hashes -f requirements.txt -o /dev/stdout | safety check --full-report --stdin
+    uv export --no-hashes | safety check --full-report --stdin
 
 # Run the test suite.
 test:
