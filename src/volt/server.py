@@ -9,12 +9,13 @@ import socket
 import sys
 import threading
 import time
+from collections.abc import Callable
 from contextlib import suppress
 from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Callable, NoReturn, Optional, Self, cast
+from typing import Any, NoReturn, Optional, Self, cast
 from webbrowser import open as open_browser
 
 import structlog
@@ -138,9 +139,9 @@ def make_server(
         ) -> Any:
             ts = dt.now().strftime("%H:%M:%S.%f")
             if log_color:
-                fmt = '%30s | %%s · %%s "%%s"' % style(ts, fg="bright_black")
+                fmt = '%30s | %%s · %%s "%%s"' % style(ts, fg="bright_black")  # noqa
             else:
-                fmt = '%21s - %%s · %%s "%%s"' % style(ts, fg="bright_black")
+                fmt = '%21s - %%s · %%s "%%s"' % style(ts, fg="bright_black")  # noqa
             method, path = self.requestline[:-9].split(" ", 1)
             self.log_message(fmt, method, cast(HTTPStatus, code), path)
 

@@ -3,11 +3,12 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+from collections.abc import Callable
 from copy import deepcopy
 from functools import cached_property
 from pathlib import Path
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Optional, Self, cast
+from typing import TYPE_CHECKING, Any, Optional, Self, cast
 
 import jinja2.exceptions as j2exc
 import tomlkit

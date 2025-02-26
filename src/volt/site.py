@@ -7,19 +7,15 @@ import fnmatch
 import os
 import shutil
 import tempfile
+from collections.abc import Callable, Generator, Iterator, Sequence
 from functools import cached_property
 from itertools import filterfalse, tee
 from pathlib import Path
 from types import ModuleType
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Generator,
-    Iterator,
     Literal,
     Optional,
-    Sequence,
     TypeVar,
     cast,
 )
@@ -57,7 +53,7 @@ class _PlanNode:
         """
         self.path = path
         self.output = output
-        self.children: Optional[Dict[str, _PlanNode]] = (
+        self.children: Optional[dict[str, _PlanNode]] = (
             None if output is not None else {}
         )
 
@@ -162,7 +158,7 @@ class _Plan:
             try:
                 if idx < rem_len:
                     cur.add_child(p)
-                    cur = cast(Dict[str, _PlanNode], cur.children)[p]
+                    cur = cast(dict[str, _PlanNode], cur.children)[p]
                 else:
                     if p in cur:
                         raise ValueError(

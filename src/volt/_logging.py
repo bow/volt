@@ -6,11 +6,12 @@
 import io
 import sys
 import traceback
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Any, Callable, Optional, ParamSpec, TypeVar, overload
+from typing import Any, Optional, ParamSpec, TypeVar, overload
 
 import click
 import structlog

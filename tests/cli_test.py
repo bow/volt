@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import subprocess as sp
+from collections.abc import Callable
 from itertools import product
-from typing import Callable
 
 import pytest
 import requests

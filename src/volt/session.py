@@ -99,13 +99,11 @@ def new(
         fh.write("# volt configuration file\n\n")
         tomlkit.dump(file_config, fh, sort_keys=False)
 
-    if (ts := config.theme_source) is not None:
-        if (tn := ts.get("local", None)) is not None:
-            theme_src_dir = Path(__file__).parent / "themes" / tn
-            copytree(src=theme_src_dir, dst=config.themes_dir / tn, dirs_exist_ok=False)
-            (config.contents_dir / "index.md").write_text(
-                "# My First Page\nHello, World"
-            )
+    ts = config.theme_source
+    if ts is not None and (tn := ts.get("local", None)) is not None:
+        theme_src_dir = Path(__file__).parent / "themes" / tn
+        copytree(src=theme_src_dir, dst=config.themes_dir / tn, dirs_exist_ok=False)
+        (config.contents_dir / "index.md").write_text("# My First Page\nHello, World")
 
     if vcs is None:
         log.debug("skipping vcs initialization as no vcs is requested")
@@ -340,9 +338,8 @@ def _resolve_file_config(
     if description is not None:
         site_config["description"] = description
 
-    if not authors:
-        if (author := _infer_author()) is not None:
-            authors.append(author)
+    if not authors and (author := _infer_author()) is not None:
+        authors.append(author)
     site_config["authors"] = authors
 
     if lang := language or (_infer_lang() or ""):

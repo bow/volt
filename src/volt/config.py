@@ -5,9 +5,10 @@
 
 import os
 from collections import UserDict
+from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Dict, Iterable, Literal, Optional, Self, cast
+from typing import Any, Literal, Optional, Self, cast
 
 import tomlkit
 
@@ -72,7 +73,7 @@ class Config(UserDict):
         """
         config_path = project_dir / config_file_name
         with config_path.open() as src:
-            user_conf = cast(Dict[str, Any], tomlkit.load(src))
+            user_conf = cast(dict[str, Any], tomlkit.load(src))
 
         return cls(
             invoc_dir=invoc_dir,

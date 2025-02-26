@@ -3,6 +3,7 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import suppress
 from copy import deepcopy
 from dataclasses import dataclass
@@ -10,7 +11,7 @@ from datetime import datetime as dt
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from typing import Any, Callable, Iterator, Optional, Self, Sequence, cast
+from typing import Any, Optional, Self, cast
 from urllib.parse import urljoin
 
 import pendulum
@@ -93,7 +94,7 @@ class MarkdownEngine(Engine):
     ) -> Sequence[TemplateOutput]:
         return [
             src.to_template_output(self.template)
-            for src in self.read_sources(with_draft, meta=kwargs.get("meta", None))
+            for src in self.read_sources(with_draft, meta=kwargs.get("meta"))
         ]
 
     def read_sources(

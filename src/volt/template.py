@@ -3,7 +3,8 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from typing import Callable, Optional, ParamSpec, TypeVar, overload
+from collections.abc import Callable
+from typing import Optional, ParamSpec, TypeVar, overload
 
 from .constants import TEMPLATE_FILTER_MARK
 

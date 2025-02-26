@@ -3,9 +3,10 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+from collections.abc import Callable
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import pytest
 from pytest_mock import MockerFixture

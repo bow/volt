@@ -4,10 +4,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import abc
+from collections.abc import Sequence
 from dataclasses import InitVar, dataclass, field
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Optional, Sequence, Type, cast
+from typing import Any, Optional, cast
 
 import structlog
 
@@ -60,7 +61,7 @@ class EngineSpec:
 
     config: Config
     theme: Theme
-    engine: Type[Engine] = field(init=False)
+    engine: type[Engine] = field(init=False)
     module: InitVar[Optional[str]]
     klass: InitVar[Optional[str]]
 
@@ -90,7 +91,7 @@ class EngineSpec:
         return self.engine(config=self.config, theme=self.theme)
 
     @log_method(with_args=True)
-    def _load_engine_module(self, mod_spec: str) -> Type[Engine]:
+    def _load_engine_module(self, mod_spec: str) -> type[Engine]:
         mod_name, cls_name = self._parse_class_spec(mod_spec)
 
         try:
@@ -99,7 +100,7 @@ class EngineSpec:
             raise err.VoltConfigError(f"not a valid module: {mod_name}") from e
 
         try:
-            return cast(Type[Engine], getattr(mod, cls_name))
+            return cast(type[Engine], getattr(mod, cls_name))
         except AttributeError as e:
             raise err.VoltConfigError(
                 f"engine {cls_name!r} not found in module {mod_name!r}"
@@ -110,7 +111,7 @@ class EngineSpec:
         self,
         theme: Theme,
         name: str,
-    ) -> Type[Engine]:
+    ) -> type[Engine]:
         if not name.isidentifier():
             raise err.VoltConfigError(f"invalid engine class specifier: {name!r}")
 
@@ -124,7 +125,7 @@ class EngineSpec:
         mod = import_file(fp, mod_name)
 
         try:
-            return cast(Type[Engine], getattr(mod, name))
+            return cast(type[Engine], getattr(mod, name))
         except AttributeError as e:
             raise err.VoltConfigError(
                 f"engine {name!r} not found in file {str(fp)!r}"
@@ -135,5 +136,6 @@ class EngineSpec:
         try:
             cls_loc, cls_name = spec.rsplit(":", 1)
         except ValueError:
-            raise err.VoltConfigError(f"invalid engine class specifier: {spec!r}")
+            msg = f"invalid engine class specifier: {spec!r}"
+            raise err.VoltConfigError(msg) from ValueError
         return cls_loc, cls_name

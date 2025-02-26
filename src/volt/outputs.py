@@ -57,9 +57,8 @@ class FileOutput(Output):
             else:
                 raise ValueError(f"unexpected content type: '{type(contents)}'")
         except OSError as e:
-            raise err.VoltResourceError(
-                f"could not write output {self.url!r}: {e.strerror}"
-            )
+            msg = f"could not write output {self.url!r}: {e.strerror}"
+            raise err.VoltResourceError(msg) from e
 
 
 @dataclass(kw_only=True)
@@ -81,9 +80,8 @@ class TemplateOutput(Output):
         try:
             (build_dir.joinpath(*self.url_parts)).write_text(content)
         except OSError as e:
-            raise err.VoltResourceError(
-                f"could not write output {self.url!r}: {e.strerror}"
-            )
+            msg = f"could not write output {self.url!r}: {e.strerror}"
+            raise err.VoltResourceError(msg) from e
 
 
 @dataclass(kw_only=True)
@@ -115,8 +113,7 @@ class CopyOutput(Output):
             try:
                 shutil.copy2(str_src, str_dest)
             except OSError as e:
-                raise err.VoltResourceError(
-                    f"could not copy {str_src!r} to {str_dest!r}: {e.strerror}"
-                )
+                msg = f"could not copy {str_src!r} to {str_dest!r}: {e.strerror}"
+                raise err.VoltResourceError(msg) from e
 
         return None

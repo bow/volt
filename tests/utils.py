@@ -5,11 +5,12 @@
 
 import socket
 import time
+from collections.abc import Callable, Generator
 from contextlib import AbstractContextManager as ACM
 from contextlib import closing, contextmanager
 from pathlib import Path
 from threading import Thread
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Optional
 
 import pytest
 import tomlkit

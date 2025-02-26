@@ -3,9 +3,9 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
+from collections.abc import Callable
 from filecmp import cmp
 from pathlib import Path
-from typing import Callable
 
 import pytest
 from pytest_structlog import StructuredLogCapture
