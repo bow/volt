@@ -28,7 +28,7 @@ jobs:
           cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Run tests
-        run: nix develop .#ci --command make test
+        run: nix develop .#ci --command just test
 
       - name: Upload test report
         if: always()
@@ -73,9 +73,9 @@ jobs:
       - name: ${{ matrix.lint.name }}
         run: |
           if [ "${{ matrix.lint.rule }}" = "scan-sec-deps" ]; then
-            nix develop .#ci --command make ${{ matrix.lint.rule }} || (echo "::warning file=scan-sec-deps::Scan dependencies failed with exit code $?.")
+            nix develop .#ci --command just ${{ matrix.lint.rule }} || (echo "::warning file=scan-sec-deps::Scan dependencies failed with exit code $?.")
           else
-            nix develop .#ci --command make ${{ matrix.lint.rule }}
+            nix develop .#ci --command just ${{ matrix.lint.rule }}
           fi
         continue-on-error: ${{ matrix.lint.rule == 'scan-sec-deps' }}
 

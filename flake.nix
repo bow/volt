@@ -67,8 +67,8 @@
             venvDir = "./.venv";
             postVenvCreation = ''
               unset SOURCE_DATE_EPOCH
-              . ${venvDir}/bin/activate
               uv sync --all-groups --active --locked
+              . ${venvDir}/bin/activate
             '';
             postShellHook = ''
               unset SOURCE_DATE_EPOCH
