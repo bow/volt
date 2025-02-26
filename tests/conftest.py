@@ -4,7 +4,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
-from contextlib import contextmanager, AbstractContextManager as ACM
+from contextlib import AbstractContextManager as ACM
+from contextlib import contextmanager
 from pathlib import Path
 from shutil import copytree, which
 from typing import Callable, Generator

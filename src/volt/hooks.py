@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import sys
-import structlog
 from typing import Any
 
-from . import signals as s
+import structlog
 
+from . import signals as s
 
 __all__ = [
     "log",

@@ -6,9 +6,8 @@
 
 """
 
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from importlib.metadata import version, PackageNotFoundError
-
 
 from .config import Config  # noqa: F401
 from .engines import Engine, MarkdownEngine  # noqa: F401

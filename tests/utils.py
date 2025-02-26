@@ -5,7 +5,8 @@
 
 import socket
 import time
-from contextlib import closing, contextmanager, AbstractContextManager as ACM
+from contextlib import AbstractContextManager as ACM
+from contextlib import closing, contextmanager
 from pathlib import Path
 from threading import Thread
 from typing import Any, Callable, Generator, Optional
@@ -16,7 +17,6 @@ from click.testing import CliRunner
 
 from volt import cli
 from volt.constants import PROJECT_OUTPUT_DIR_NAME
-
 
 # Layout for test files and directories.
 DirLayout = dict[Path | str, str | bytes | Optional["DirLayout"]]

@@ -8,7 +8,7 @@ from contextlib import suppress
 from pathlib import Path
 from platform import platform
 from types import ModuleType
-from typing import cast, Any, Literal, Optional
+from typing import Any, Literal, Optional, cast
 
 import click
 import structlog
@@ -16,11 +16,10 @@ from rich.traceback import install
 from structlog.contextvars import bind_contextvars
 
 from . import __version__, session
-from .config import Config, _set_exc_style, _set_use_color, _ExcStyle, _VCS
-from .error import VoltCliError, _VoltServerExit
 from ._import import import_file
 from ._logging import init_logging
-
+from .config import _VCS, Config, _ExcStyle, _set_exc_style, _set_use_color
+from .error import VoltCliError, _VoltServerExit
 
 __all__ = [
     "build",

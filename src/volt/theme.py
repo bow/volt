@@ -3,20 +3,21 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import tomlkit
 from copy import deepcopy
-from pathlib import Path
 from functools import cached_property
+from pathlib import Path
 from types import ModuleType
-from typing import cast, Any, Callable, Optional, Self, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Optional, Self, cast
 
 import jinja2.exceptions as j2exc
+import tomlkit
 from jinja2 import Environment, FileSystemLoader, Template
 
-from . import constants, error as err
-from .config import Config
-from ._logging import log_method
+from . import constants
+from . import error as err
 from ._import import import_file
+from ._logging import log_method
+from .config import Config
 
 if TYPE_CHECKING:
     from .engines import EngineSpec

@@ -3,14 +3,14 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from copy import deepcopy
 from contextlib import suppress
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime as dt
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from typing import cast, Any, Callable, Iterator, Optional, Self, Sequence
+from typing import Any, Callable, Iterator, Optional, Self, Sequence, cast
 from urllib.parse import urljoin
 
 import pendulum
@@ -21,11 +21,11 @@ from pendulum.datetime import DateTime
 from slugify import slugify
 from yaml import SafeLoader
 
-from .common import Engine
-from .. import constants, error as err
+from .. import constants
+from .. import error as err
 from ..config import Config
 from ..outputs import TemplateOutput
-
+from .common import Engine
 
 __all__ = ["MarkdownEngine", "MarkdownSource"]
 

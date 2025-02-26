@@ -3,8 +3,8 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from itertools import product
 import subprocess as sp
+from itertools import product
 from typing import Callable
 
 import pytest

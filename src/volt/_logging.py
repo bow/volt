@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from functools import wraps
 from logging.config import dictConfig
 from pathlib import Path
-from typing import overload, Any, Callable, Optional, ParamSpec, TypeVar
+from typing import Any, Callable, Optional, ParamSpec, TypeVar, overload
 
 import click
 import structlog

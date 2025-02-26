@@ -7,7 +7,6 @@ import pytest
 
 from volt.theme import _overlay
 
-
 # Values to check for overlay test.
 _values = (
     1,

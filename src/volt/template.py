@@ -3,10 +3,9 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-from typing import overload, Callable, Optional, ParamSpec, TypeVar
+from typing import Callable, Optional, ParamSpec, TypeVar, overload
 
 from .constants import TEMPLATE_FILTER_MARK
-
 
 __all__ = ["filter", "test"]
 

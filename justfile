@@ -67,8 +67,9 @@ docs-html-serve:
         make -B docs-html && python -m http.server -d {{docs-dir}}/_build/html; \
     fi
 
-# Apply black.
+# Reorder imports with ruff then apply black.
 fmt:
+    ruff check --select I --fix
     black -t py312 {{src-dir}} {{test-dir}}
 
 # Build a docker image and load it into a running daemon.

@@ -19,12 +19,12 @@ import tomlkit
 from click import style
 from structlog.contextvars import bound_contextvars
 
-from . import constants, error as err
-from .config import Config, _VCS
+from . import constants
+from . import error as err
+from .config import _VCS, Config
 from .server import _Rebuilder, _RunFile, make_server
-from .theme import Theme
 from .site import Site
-
+from .theme import Theme
 
 __all__ = ["build", "new", "serve"]
 

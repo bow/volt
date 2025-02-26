@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from volt import site, Output
+from volt import Output, site
 
 
 class MockOutput(Output):

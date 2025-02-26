@@ -5,8 +5,8 @@
 
 import queue
 import signal
-import sys
 import socket
+import sys
 import threading
 import time
 from contextlib import suppress
@@ -14,7 +14,7 @@ from datetime import datetime as dt
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import cast, Any, Callable, NoReturn, Optional, Self
+from typing import Any, Callable, NoReturn, Optional, Self, cast
 from webbrowser import open as open_browser
 
 import structlog
@@ -25,11 +25,11 @@ from structlog.contextvars import bound_contextvars
 from watchdog import events
 from watchdog.observers import Observer
 
-from . import __version__, constants, signals as blinker_signals
+from . import __version__, constants
+from . import signals as blinker_signals
+from ._logging import style
 from .config import Config
 from .error import _VoltServerExit
-from ._logging import style
-
 
 __all__ = ["make_server"]
 

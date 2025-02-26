@@ -7,12 +7,12 @@ import os
 from collections import UserDict
 from functools import cached_property
 from pathlib import Path
-from typing import cast, Any, Dict, Iterable, Literal, Optional, Self
+from typing import Any, Dict, Iterable, Literal, Optional, Self, cast
 
 import tomlkit
 
-from . import constants, error as err
-
+from . import constants
+from . import error as err
 
 __all__ = ["Config"]
 

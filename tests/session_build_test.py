@@ -10,10 +10,11 @@ from typing import Callable
 import pytest
 from pytest_structlog import StructuredLogCapture
 
-from . import utils as u
-
-from volt import constants, error as err, session
+from volt import constants, session
+from volt import error as err
 from volt.config import Config
+
+from . import utils as u
 
 
 def test_ok_minimal(

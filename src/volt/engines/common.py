@@ -4,20 +4,19 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import abc
-from dataclasses import dataclass, field, InitVar
+from dataclasses import InitVar, dataclass, field
 from importlib import import_module
 from pathlib import Path
-from typing import cast, Any, Optional, Sequence, Type
+from typing import Any, Optional, Sequence, Type, cast
 
 import structlog
 
 from .. import error as err
+from .._import import import_file
+from .._logging import log_method
 from ..config import Config
 from ..outputs import Output
 from ..theme import Theme
-from .._import import import_file
-from .._logging import log_method
-
 
 log = structlog.get_logger(__name__)
 

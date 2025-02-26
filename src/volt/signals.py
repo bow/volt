@@ -6,9 +6,8 @@
 from typing import Any
 
 import structlog
-from blinker import signal, NamedSignal
+from blinker import NamedSignal, signal
 from structlog.contextvars import bound_contextvars
-
 
 log = structlog.get_logger(__name__)
 

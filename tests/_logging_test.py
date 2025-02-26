@@ -5,12 +5,12 @@
 
 from pathlib import Path
 
+from _pytest.fixtures import SubRequest
 from pytest import CaptureFixture
 from structlog import get_logger, reset_defaults
-from _pytest.fixtures import SubRequest
 
-from volt.config import _set_exc_style
 from volt._logging import init_logging
+from volt.config import _set_exc_style
 
 
 def test_log_setup(request: SubRequest, capsys: CaptureFixture[str]) -> None:

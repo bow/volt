@@ -1,4 +1,4 @@
-from volt import hooks, CopyOutput, FileOutput, Site
+from volt import CopyOutput, FileOutput, Site, hooks
 
 
 @hooks.pre_site_write

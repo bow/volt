@@ -5,16 +5,15 @@
 
 import abc
 import filecmp
-from functools import cached_property
 import shutil
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
 from jinja2 import Template
 
 from . import error as err
-
 
 __all__ = [
     "CopyOutput",

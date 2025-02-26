@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from pathlib import Path
-from typing import Any, IO, Optional
+from typing import IO, Any, Optional
 
 from click import ClickException
 from structlog import get_logger

@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import yaml
-from volt import Engine, CopyOutput, TemplateOutput
+
+from volt import CopyOutput, Engine, TemplateOutput
 from volt.engines import MarkdownEngine
 
 
