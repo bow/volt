@@ -73,7 +73,8 @@ fmt:
 
 # Build a docker image and load it into a running daemon.
 img:
-    nix build .#dockerArchiveStreamer && ./result | docker image load
+    nix build .#dockerArchiveStreamer
+    ./result | docker image load
 
 # Lint the code.
 lint: lint-types lint-style lint-metrics
@@ -84,7 +85,8 @@ lint-types:
 
 # Lint style conventions.
 lint-style:
-    flake8 --statistics {{src-dir}} {{test-dir}} && black -t py312 --check {{src-dir}} {{test-dir}}
+    ruff check {{src-dir}}
+    black -t py312 --check {{src-dir}} {{test-dir}}
 
 # Lint various metrics.
 lint-metrics:
