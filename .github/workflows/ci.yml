@@ -57,7 +57,7 @@ jobs:
             rule: lint-types
           - name: Lint other metrics
             rule: lint-metrics
-          - name: Scan AST security
+          - name: Scan AST
             rule: scan-sec-ast
           - name: Scan dependencies
             rule: scan-sec-deps

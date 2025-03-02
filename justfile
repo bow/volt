@@ -97,7 +97,7 @@ scan-sec: scan-sec-ast scan-sec-deps
 
 # Perform static security analysis on the AST.
 scan-sec-ast:
-    bandit -r {{src-dir}}
+    bandit -c pyproject.toml -r {{src-dir}}
 
 # Scan dependencies for reported vulnerabilities.
 scan-sec-deps:
