@@ -79,6 +79,7 @@ package = true
 
 [tool.ruff]
 line-length = 88
+exclude = ["dist", "sandbox"]
 
 [tool.ruff.lint]
 select = [

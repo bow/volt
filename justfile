@@ -69,7 +69,7 @@ docs-html-serve:
 
 # Reorder imports with ruff then apply black.
 fmt:
-    ruff check --select I --fix
+    ruff check --fix
     black -t py312 {{src-dir}} {{test-dir}}
 
 # Build a docker image and load it into a running daemon.
