@@ -7,11 +7,11 @@
 # This file is part of volt <https://github.com/bow/volt>.
 
 app-id   := 'volt'
-src-dir  := 'src' / 'volt'
+src-dir  := 'src' / app-id
 test-dir := 'tests'
 docs-dir := 'docs'
 
-rtd-build-api-url := 'https://readthedocs.org/api/v3/projects/volt/versions/latest/builds/'
+rtd-build-api-url := "https://readthedocs.org/api/v3/projects/{{app-id}}/versions/latest/builds/"
 
 # Show this help and exit.
 default:
@@ -29,7 +29,6 @@ clean:
         ./{{test-dir}}/fixtures/ok_extended/target \
         result
     @docker rmi ghcr.io/bow/{{app-id}} 2> /dev/null || true
-
 
 # Set local development environment with nix and direnv.
 dev:
@@ -60,11 +59,11 @@ docs-html:
 # Build HTML documentation and serve it.
 docs-html-serve:
     #!/usr/bin/env bash
-    if command -v entr > /dev/null 2>&1; then \
+    if command -v entr > /dev/null 2>&1; then
         find {{docs-dir}} -not \( -path "{{docs-dir}}/_build" -prune \) \
-            | entr -rcdns '$(MAKE) -B docs-html && python -m http.server -d {{docs-dir}}/_build/html'; \
-    else \
-        make -B docs-html && python -m http.server -d {{docs-dir}}/_build/html; \
+            | entr -rcdns '$(MAKE) -B docs-html && python -m http.server -d {{docs-dir}}/_build/html'
+    else
+        make -B docs-html && python -m http.server -d {{docs-dir}}/_build/html
     fi
 
 # Reorder imports with ruff then apply black.
@@ -98,7 +97,7 @@ scan-sec: scan-sec-ast scan-sec-deps
 
 # Perform static security analysis on the AST.
 scan-sec-ast:
-    bandit -r volt
+    bandit -r {{src-dir}}
 
 # Scan dependencies for reported vulnerabilities.
 scan-sec-deps:
