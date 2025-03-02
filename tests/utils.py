@@ -30,7 +30,7 @@ class CommandRunner(CliRunner):
         layout: Optional[DirLayout] = None,
         *args: Any,
         **kwargs: Any,
-    ) -> Generator[Path, None, None]:
+    ) -> Generator[Path]:
         with super().isolated_filesystem(*args, **kwargs) as fs:
             root = Path(fs)
             self._create_files(root, layout)

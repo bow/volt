@@ -11,7 +11,7 @@ src-dir  := 'src' / app-id
 test-dir := 'tests'
 docs-dir := 'docs'
 
-python-ver        := 'py312'
+python-ver        := 'py313'
 rtd-build-api-url := "https://readthedocs.org/api/v3/projects/{{app-id}}/versions/latest/builds/"
 
 # Show this help and exit.

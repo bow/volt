@@ -23,7 +23,7 @@ def isolated_project_dir() -> Callable[[Path, str], ACM[Path]]:
     fixture_dir = Path(__file__).parent / "fixtures"
 
     @contextmanager
-    def func(ifs: Path, name: str) -> Generator[Path, None, None]:
+    def func(ifs: Path, name: str) -> Generator[Path]:
         src = fixture_dir / name
         dest = ifs / name
         copytree(src, dest, dirs_exist_ok=False)

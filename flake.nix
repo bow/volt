@@ -35,7 +35,7 @@
         pkgs = import nixpkgs {inherit system;};
         nixTools = with pkgs; [alejandra deadnix statix];
         pyTools = with pkgs; [black ruff uv];
-        python = pkgs.python312; # NOTE: Keep in-sync with pyproject.toml.
+        python = pkgs.python313; # NOTE: Keep in-sync with pyproject.toml.
         devPkgs = [python] ++ (with pkgs; [curl just pre-commit skopeo]);
 
         workspace = uv2nix.lib.workspace.loadWorkspace {workspaceRoot = ./.;};

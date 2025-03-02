@@ -179,7 +179,7 @@ class _Plan:
 
         return None
 
-    def fnodes(self) -> Generator[_PlanNode, None, None]:
+    def fnodes(self) -> Generator[_PlanNode]:
         """Yield all file output nodes, depth-first."""
 
         # TODO: Maybe compress the paths so we don't have to iterate over all
@@ -191,7 +191,7 @@ class _Plan:
             if not cur.is_dir:
                 yield cur
 
-    def dnodes(self) -> Generator[_PlanNode, None, None]:
+    def dnodes(self) -> Generator[_PlanNode]:
         """Yield the least number of directory nodes required to construct
         the site.
 
