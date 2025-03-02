@@ -11,6 +11,7 @@ src-dir  := 'src' / app-id
 test-dir := 'tests'
 docs-dir := 'docs'
 
+python-ver        := 'py312'
 rtd-build-api-url := "https://readthedocs.org/api/v3/projects/{{app-id}}/versions/latest/builds/"
 
 # Show this help and exit.
@@ -33,17 +34,17 @@ clean:
 # Set local development environment with nix and direnv.
 dev:
     #!/usr/bin/env bash
-    if command -v nix-env > /dev/null && command -v direnv > /dev/null; then \
+    if command -v nix-env > /dev/null && command -v direnv > /dev/null; then
         printf "Configuring a local dev environment and setting up git pre-commit hooks...\n" >&2 \
             && direnv allow . > /dev/null \
             && DIRENV_LOG_FORMAT="" direnv exec {{justfile_directory()}} pre-commit install \
-            && printf "Done.\n" >&2; \
-    elif command -v nix-env > /dev/null; then \
-        printf "Error: direnv seems to be unconfigured or missing\n" >&2 && exit 1; \
-    elif command -v direnv > /dev/null; then \
-        printf "Error: nix seems to be unconfigured or missing\n" >&2 && exit 1; \
-    else \
-        printf "Error: both direnv and nix seem to be unconfigured and/or missing" >&2 && exit 1; \
+            && printf "Done.\n" >&2
+    elif command -v nix-env > /dev/null; then
+        printf "Error: direnv seems to be unconfigured or missing\n" >&2 && exit 1
+    elif command -v direnv > /dev/null; then
+        printf "Error: nix seems to be unconfigured or missing\n" >&2 && exit 1
+    else
+        printf "Error: both direnv and nix seem to be unconfigured and/or missing" >&2 && exit 1
     fi
 
 # Reset local development environment.
@@ -69,7 +70,7 @@ docs-html-serve:
 # Reorder imports with ruff then apply black.
 fmt:
     ruff check --fix
-    black -t py312 {{src-dir}} {{test-dir}}
+    black -t {{python-ver}} {{src-dir}} {{test-dir}}
 
 # Build a docker image and load it into a running daemon.
 img:
@@ -86,7 +87,7 @@ lint-types:
 # Lint style conventions.
 lint-style:
     ruff check
-    black -t py312 --check {{src-dir}} {{test-dir}}
+    black -t {{python-ver}} --check {{src-dir}} {{test-dir}}
 
 # Lint various metrics.
 lint-metrics:
