@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import bdb
+import datetime
 import os
 import subprocess as sp
 import time
@@ -13,7 +14,6 @@ from pathlib import Path
 from shutil import copytree, which
 from typing import Optional
 
-import pendulum
 import structlog
 import tomlkit
 from click import style
@@ -137,7 +137,7 @@ def build(config: Config, with_draft: bool, clean: bool) -> Optional[Site]:
     site: Optional[Site] = None
 
     start_time = time.monotonic()
-    config["build_time"] = pendulum.now()
+    config["build_time"] = datetime.datetime.now()
 
     with bound_contextvars(with_draft=with_draft):
         try:

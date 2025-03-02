@@ -14,11 +14,9 @@ from pathlib import Path
 from typing import Any, Optional, Self, cast
 from urllib.parse import urljoin
 
-import pendulum
 import yaml
 from jinja2 import Template
 from markdown2 import Markdown
-from pendulum.datetime import DateTime
 from slugify import slugify
 from yaml import SafeLoader
 
@@ -263,20 +261,21 @@ class MarkdownSource:
         return self.meta.get("title")
 
     @cached_property
-    def pub_time(self) -> Optional[DateTime]:
+    def pub_time(self) -> Optional[dt]:
         value = self.meta.get("pub_time", None)
         exc = err.VoltResourceError(
-            f"value {value!r} in {str(self.path)!r} is not a valid datetime"
+            f"value {value!r} in {str(self.path)!r} is not a valid ISO format datetime"
         )
         if value is None:
             return value
         if isinstance(value, str):
-            rv = pendulum.parse(value)
-            if isinstance(rv, DateTime):
-                return rv
-            raise exc
+            try:
+                rv = dt.fromisoformat(value)
+            except ValueError as e:
+                raise exc from e
+            return rv
         if isinstance(value, dt):
-            return pendulum.instance(value)
+            return value
         raise exc
 
     @cached_property
