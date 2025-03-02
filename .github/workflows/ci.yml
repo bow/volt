@@ -28,7 +28,8 @@ jobs:
           cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Run tests
-        run: nix develop .#ci --command just test
+        # FIXME: Use the .ci env for this.
+        run: nix develop . --command just test
 
       - name: Upload test report
         if: always()
