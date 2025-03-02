@@ -1073,7 +1073,6 @@ dependencies = [
     { name = "rich" },
     { name = "structlog" },
     { name = "tomlkit" },
-    { name = "urllib3" },
     { name = "watchdog" },
 ]
 
@@ -1112,7 +1111,6 @@ requires-dist = [
     { name = "rich", specifier = "==13.*" },
     { name = "structlog", specifier = "==24.*" },
     { name = "tomlkit", specifier = "==0.*" },
-    { name = "urllib3", specifier = "==2.*" },
     { name = "watchdog", specifier = "==2.2.1" },
 ]
 
