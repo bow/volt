@@ -43,20 +43,21 @@
         pythonSet = (pkgs.callPackage pyproject-nix.build.packages {inherit python;}).overrideScope (
           nixpkgs.lib.composeManyExtensions [pyproject-build-systems.overlays.default overlay]
         );
-        venvAll = pythonSet.mkVirtualEnv "volt-env-all" workspace.deps.all;
+        venvCI = pythonSet.mkVirtualEnv "volt-env-ci" workspace.deps.all;
+        venvRelease = pythonSet.mkVirtualEnv "volt-env-release" workspace.deps.optionals;
         app = (pkgs.callPackages pyproject-nix.build.util {}).mkApplication {
-          venv = venvAll;
+          venv = venvCI;
           package = pythonSet.volt;
         };
       in {
         apps = {
           default = {
             type = "app";
-            program = "${venvAll}/bin/${app.pname}";
+            program = "${venvCI}/bin/${app.pname}";
           };
         };
         devShells = {
-          ci = pkgs.mkShellNoCC {packages = devPkgs ++ pyTools ++ [venvAll];};
+          ci = pkgs.mkShellNoCC {packages = devPkgs ++ pyTools ++ [venvCI];};
           default = pkgs.mkShell rec {
             nativeBuildInputs = [python.pkgs.venvShellHook];
             packages = devPkgs ++ pyTools ++ nixTools;
@@ -102,7 +103,7 @@
             };
           };
         in {
-          default = venvAll;
+          default = venvRelease;
           dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
           dockerArchiveStreamer = pkgs.dockerTools.streamLayeredImage imgAttrs;
         };
