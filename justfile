@@ -91,7 +91,7 @@ lint-style:
 
 # Lint various metrics.
 lint-metrics:
-    python -m radon cc --total-average --show-closures --show-complexity --min C {{src-dir}}
+    radon cc --total-average --show-closures --show-complexity --min C {{src-dir}}
 
 # Perform all security analyses.
 scan-sec: scan-sec-ast scan-sec-deps
