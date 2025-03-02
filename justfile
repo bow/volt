@@ -86,7 +86,7 @@ lint-types:
 
 # Lint style conventions.
 lint-style:
-    ruff check {{src-dir}}
+    ruff check
     black -t py312 --check {{src-dir}} {{test-dir}}
 
 # Lint various metrics.

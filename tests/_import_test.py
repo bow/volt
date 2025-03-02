@@ -19,7 +19,7 @@ def test_import_file_ok(tmpdir):
         mod = import_file(mod_fp, "volt.test.custom")
 
         assert hasattr(mod, "Test")
-        cls = getattr(mod, "Test")
+        cls = mod.Test
         inst = cls()
         assert inst.val == 1
 

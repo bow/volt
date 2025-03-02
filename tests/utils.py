@@ -138,13 +138,15 @@ def invoke_isolated_server(
         runner = CommandRunner()
         toks = args or ["serve", "-h", host, "-p", f"{port}", "--no-sig-handlers"]
 
-        with runner.isolated_filesystem() as ifs:
-            with isolation_func(ifs, project_fixture_name) as pd:
-                project_dir = pd
-                sentinel_file = pd / sentinel_project_file
-                assert not sentinel_file.exists()
+        with (
+            runner.isolated_filesystem() as ifs,
+            isolation_func(ifs, project_fixture_name) as pd,
+        ):
+            project_dir = pd
+            sentinel_file = pd / sentinel_project_file
+            assert not sentinel_file.exists()
 
-                runner.invoke(cli.root, toks)
+            runner.invoke(cli.root, toks)
 
     def start() -> None:
         nonlocal sentinel_file
