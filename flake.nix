@@ -36,7 +36,9 @@
         nixTools = with pkgs; [alejandra deadnix statix];
         pyTools = with pkgs; [black ruff uv];
         python = pkgs.python313; # NOTE: Keep in-sync with pyproject.toml.
-        devPkgs = [python] ++ (with pkgs; [curl just pre-commit skopeo]);
+        devPkgs = [python] ++ pyTools ++ nixTools ++ (with pkgs; [just pre-commit]);
+        ciPkgs = [python] ++ pyTools ++ nixTools ++ (with pkgs; [just skopeo]);
+
 
         workspace = uv2nix.lib.workspace.loadWorkspace {workspaceRoot = ./.;};
         overlay = workspace.mkPyprojectOverlay {sourcePreference = "wheel";};
@@ -57,10 +59,10 @@
           };
         };
         devShells = {
-          ci = pkgs.mkShellNoCC {packages = devPkgs ++ pyTools ++ [venvCI];};
+          ci = pkgs.mkShellNoCC {packages = ciPkgs ++ [venvCI];};
           default = pkgs.mkShell rec {
             nativeBuildInputs = [python.pkgs.venvShellHook];
-            packages = devPkgs ++ pyTools ++ nixTools;
+            packages = devPkgs;
             env = {
               UV_PYTHON_DOWNLOADS = "never";
               UV_PYTHON = "${venvDir}/bin/python";
