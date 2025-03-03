@@ -46,14 +46,14 @@
         venvCI = pythonSet.mkVirtualEnv "volt-env-ci" workspace.deps.all;
         venvRelease = pythonSet.mkVirtualEnv "volt-env-release" workspace.deps.optionals;
         app = (pkgs.callPackages pyproject-nix.build.util {}).mkApplication {
-          venv = venvCI;
+          venv = venvRelease;
           package = pythonSet.volt;
         };
       in {
         apps = {
           default = {
             type = "app";
-            program = "${venvCI}/bin/${app.pname}";
+            program = "${venvRelease}/bin/${app.pname}";
           };
         };
         devShells = {
