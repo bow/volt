@@ -32,7 +32,7 @@ jobs:
 
       - name: Upload test report
         if: always()
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         with:
           check_name: Test report
           report_paths: '**/.junit.xml'
