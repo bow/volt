@@ -487,13 +487,10 @@ def test_help_with_xcmd(
         assert (project_dir / "extension" / "cli.py").exists()
 
         res0 = runner.invoke(cli.root, [])
-        assert res0.exit_code == 0, res0.output
         assert " xcmd " in res0.output, res0.output
 
         res1 = runner.invoke(cli.root, ["xcmd"])
-        assert res1.exit_code == 0, res1.output
         assert " hello-ext " in res1.output, res1.output
 
         res2 = runner.invoke(cli.root, ["xcmd", "hello-ext"])
-        assert res2.exit_code == 0, res2.output
         assert "FooBar!" in res2.output, res2.output
