@@ -113,3 +113,11 @@ test:
         --cov-report=xml:.coverage.xml \
         --cov-report=html:htmlcov \
         {{src-dir}} {{test-dir}}
+
+# Update flake and Python dependencies.
+update:
+    nix flake update
+    uv sync -U
+    rm -rf .venv
+    direnv reload
+    just fmt
