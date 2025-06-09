@@ -16,7 +16,7 @@ rtd-build-api-url := "https://readthedocs.org/api/v3/projects/{{app-id}}/version
 
 # Show this help and exit.
 default:
-    @just --list --justfile {{justfile()}} --list-heading $'{{BOLD}}{{CYAN}}◉ {{YELLOW}}{{app-id}}{{CYAN}} dev console{{NORMAL}}\n'
+    @just --list --list-prefix $'{{BOLD}}{{BLUE}}→{{NORMAL}} ' --justfile {{justfile()}} --list-heading $'{{BOLD}}{{CYAN}}◉ {{YELLOW}}{{app-id}}{{CYAN}} dev console{{NORMAL}}\n'
 
 # Build wheel and source dist.
 build:
