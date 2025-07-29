@@ -21,37 +21,66 @@
     };
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-    uv2nix,
-    pyproject-nix,
-    pyproject-build-systems,
-    ...
-  }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      uv2nix,
+      pyproject-nix,
+      pyproject-build-systems,
+      ...
+    }:
     flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {inherit system;};
-        nixTools = with pkgs; [alejandra deadnix statix];
-        pyTools = with pkgs; [black ruff uv];
+      system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+        nixTools = with pkgs; [
+          deadnix
+          nixfmt-rfc-style
+          statix
+        ];
+        pyTools = with pkgs; [
+          black
+          ruff
+          uv
+        ];
         python = pkgs.python313; # NOTE: Keep in-sync with pyproject.toml.
-        devPkgs = [python] ++ pyTools ++ nixTools ++ (with pkgs; [just pre-commit]);
-        ciPkgs = [python] ++ pyTools ++ nixTools ++ (with pkgs; [just skopeo]);
+        devPkgs = [
+          python
+        ]
+        ++ pyTools
+        ++ nixTools
+        ++ (with pkgs; [
+          just
+          pre-commit
+        ]);
+        ciPkgs = [
+          python
+        ]
+        ++ pyTools
+        ++ nixTools
+        ++ (with pkgs; [
+          just
+          skopeo
+        ]);
 
-
-        workspace = uv2nix.lib.workspace.loadWorkspace {workspaceRoot = ./.;};
-        overlay = workspace.mkPyprojectOverlay {sourcePreference = "wheel";};
-        pythonSet = (pkgs.callPackage pyproject-nix.build.packages {inherit python;}).overrideScope (
-          nixpkgs.lib.composeManyExtensions [pyproject-build-systems.overlays.default overlay]
+        workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
+        overlay = workspace.mkPyprojectOverlay { sourcePreference = "wheel"; };
+        pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
+          nixpkgs.lib.composeManyExtensions [
+            pyproject-build-systems.overlays.default
+            overlay
+          ]
         );
         venvCI = pythonSet.mkVirtualEnv "volt-env-ci" workspace.deps.all;
         venvRelease = pythonSet.mkVirtualEnv "volt-env-release" workspace.deps.optionals;
-        app = (pkgs.callPackages pyproject-nix.build.util {}).mkApplication {
+        app = (pkgs.callPackages pyproject-nix.build.util { }).mkApplication {
           venv = venvRelease;
           package = pythonSet.volt;
         };
-      in {
+      in
+      {
         apps = {
           default = {
             type = "app";
@@ -59,9 +88,9 @@
           };
         };
         devShells = {
-          ci = pkgs.mkShellNoCC {packages = ciPkgs ++ [venvCI];};
+          ci = pkgs.mkShellNoCC { packages = ciPkgs ++ [ venvCI ]; };
           default = pkgs.mkShell rec {
-            nativeBuildInputs = [python.pkgs.venvShellHook];
+            nativeBuildInputs = [ python.pkgs.venvShellHook ];
             packages = devPkgs;
             env = {
               UV_PYTHON_DOWNLOADS = "never";
@@ -79,36 +108,31 @@
             '';
           };
         };
-        formatter = pkgs.alejandra;
-        packages = let
-          readFileOr = path: default:
-            with builtins;
-              if pathExists path
-              then (readFile path)
-              else default;
-          imgTag =
-            if app.version != "0.0.dev0"
-            then app.version
-            else "latest";
-          imgAttrs = rec {
-            name = "ghcr.io/bow/${app.pname}";
-            tag = imgTag;
-            contents = [app];
-            config = {
-              Entrypoint = ["/bin/${app.pname}"];
-              Labels = {
-                "org.opencontainers.image.revision" = readFileOr "${self}/.rev" "";
-                "org.opencontainers.image.source" = "https://github.com/bow/${app.pname}";
-                "org.opencontainers.image.title" = "${app.pname}";
-                "org.opencontainers.image.url" = "https://${name}";
+        formatter = pkgs.nixfmt-rfc-style;
+        packages =
+          let
+            readFileOr = path: default: with builtins; if pathExists path then (readFile path) else default;
+            imgTag = if app.version != "0.0.dev0" then app.version else "latest";
+            imgAttrs = rec {
+              name = "ghcr.io/bow/${app.pname}";
+              tag = imgTag;
+              contents = [ app ];
+              config = {
+                Entrypoint = [ "/bin/${app.pname}" ];
+                Labels = {
+                  "org.opencontainers.image.revision" = readFileOr "${self}/.rev" "";
+                  "org.opencontainers.image.source" = "https://github.com/bow/${app.pname}";
+                  "org.opencontainers.image.title" = "${app.pname}";
+                  "org.opencontainers.image.url" = "https://${name}";
+                };
               };
             };
+          in
+          {
+            default = venvRelease;
+            dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
+            dockerArchiveStreamer = pkgs.dockerTools.streamLayeredImage imgAttrs;
           };
-        in {
-          default = venvRelease;
-          dockerArchive = pkgs.dockerTools.buildLayeredImage imgAttrs;
-          dockerArchiveStreamer = pkgs.dockerTools.streamLayeredImage imgAttrs;
-        };
       }
     );
 }
