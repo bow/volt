@@ -14,12 +14,32 @@ docs-dir := 'docs'
 python-ver        := 'py313'
 rtd-build-api-url := "https://readthedocs.org/api/v3/projects/{{app-id}}/versions/latest/builds/"
 
-# Show this help and exit.
-default:
-    @just --list --list-prefix $'{{BOLD}}{{BLUE}}→{{NORMAL}} ' --justfile {{justfile()}} --list-heading $'{{BOLD}}{{CYAN}}◉ {{YELLOW}}{{app-id}}{{CYAN}} dev console{{NORMAL}}\n'
+
+[private]
+default: help
+
+# Build HTML documentation.
+[working-directory: 'docs']
+build-docs:
+    make html
+
+# Build HTML documentation and serve it.
+build-docs-and-serve:
+    #!/usr/bin/env bash
+    if command -v entr > /dev/null 2>&1; then
+        find {{docs-dir}} -not \( -path "{{docs-dir}}/_build" -prune \) \
+            | entr -rcdns '$(MAKE) -B docs-html && python -m http.server -d {{docs-dir}}/_build/html'
+    else
+        make -B docs-html && python -m http.server -d {{docs-dir}}/_build/html
+    fi
+
+# Build a docker image and load it into a running daemon.
+build-img:
+    nix build .#dockerArchiveStreamer
+    ./result | docker image load
 
 # Build wheel and source dist.
-build:
+build-pkg:
     uv build
 
 # Remove build and test artifacts.
@@ -31,51 +51,14 @@ clean:
         result
     @docker rmi ghcr.io/bow/{{app-id}} 2> /dev/null || true
 
-# Set local development environment with nix and direnv.
-dev:
-    #!/usr/bin/env bash
-    if command -v nix-env > /dev/null && command -v direnv > /dev/null; then
-        printf "Configuring a local dev environment and setting up git pre-commit hooks...\n" >&2 \
-            && direnv allow . > /dev/null \
-            && DIRENV_LOG_FORMAT="" direnv exec {{justfile_directory()}} pre-commit install \
-            && printf "Done.\n" >&2
-    elif command -v nix-env > /dev/null; then
-        printf "Error: direnv seems to be unconfigured or missing\n" >&2 && exit 1
-    elif command -v direnv > /dev/null; then
-        printf "Error: nix seems to be unconfigured or missing\n" >&2 && exit 1
-    else
-        printf "Error: both direnv and nix seem to be unconfigured and/or missing" >&2 && exit 1
-    fi
-
-# Reset local development environment.
-dev-reset:
-    rm -rf .venv .direnv
-    direnv reload
-
-# Build HTML documentation.
-[working-directory: 'docs']
-docs-html:
-    make html
-
-# Build HTML documentation and serve it.
-docs-html-serve:
-    #!/usr/bin/env bash
-    if command -v entr > /dev/null 2>&1; then
-        find {{docs-dir}} -not \( -path "{{docs-dir}}/_build" -prune \) \
-            | entr -rcdns '$(MAKE) -B docs-html && python -m http.server -d {{docs-dir}}/_build/html'
-    else
-        make -B docs-html && python -m http.server -d {{docs-dir}}/_build/html
-    fi
-
 # Reorder imports with ruff then apply black.
 fmt:
     ruff check --fix
     black -t {{python-ver}} {{src-dir}} {{test-dir}}
 
-# Build a docker image and load it into a running daemon.
-img:
-    nix build .#dockerArchiveStreamer
-    ./result | docker image load
+# Show this help and exit.
+help:
+    @just --list --list-prefix $'{{BOLD}}{{BLUE}}→{{NORMAL}} ' --justfile {{justfile()}} --list-heading $'{{BOLD}}{{CYAN}}◉ {{YELLOW}}{{app-id}}{{CYAN}} dev console{{NORMAL}}\n'
 
 # Lint the code.
 lint: lint-types lint-style lint-metrics
@@ -104,6 +87,22 @@ scan-sec-ast:
 scan-sec-deps:
     uv export --no-hashes | safety check --full-report --stdin
 
+# Setup the local development environment with nix and direnv.
+install-dev:
+    #!/usr/bin/env bash
+    if command -v nix-env > /dev/null && command -v direnv > /dev/null; then
+        printf "Configuring a local dev environment and setting up git pre-commit hooks...\n" >&2 \
+            && direnv allow . > /dev/null \
+            && DIRENV_LOG_FORMAT="" direnv exec {{justfile_directory()}} pre-commit install \
+            && printf "Done.\n" >&2
+    elif command -v nix-env > /dev/null; then
+        printf "Error: direnv seems to be unconfigured or missing\n" >&2 && exit 1
+    elif command -v direnv > /dev/null; then
+        printf "Error: nix seems to be unconfigured or missing\n" >&2 && exit 1
+    else
+        printf "Error: both direnv and nix seem to be unconfigured and/or missing" >&2 && exit 1
+    fi
+
 # Run the test suite.
 test:
     py.test \
@@ -121,3 +120,8 @@ update:
     rm -rf .venv
     direnv reload
     just fmt
+
+# Destroy the local development environment.
+uninstall-dev:
+    rm -rf .venv .direnv
+    direnv reload
