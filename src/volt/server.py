@@ -307,44 +307,44 @@ class _BuildHandler(events.RegexMatchingEventHandler):
                 )
 
             case events.FileModifiedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
+                log_attrs = dict(
                     reason="file_modified",
                     file=event.src_path.removeprefix("./"),
                 )
 
             case events.FileDeletedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
+                log_attrs = dict(
                     reason="file_deleted",
                     file=event.src_path.removeprefix("./"),
                 )
 
             case events.FileMovedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
+                log_attrs = dict(
                     reason="file_moved",
                     src=event.src_path.removeprefix("./"),
                     dest=event.dest_path.removeprefix("./"),
                 )
 
             case events.DirCreatedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
+                log_attrs = dict(
                     reason="dir_created",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirModifiedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
+                log_attrs = dict(
                     reason="dir_modified",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirDeletedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
+                log_attrs = dict(
                     reason="dir_deleted",
                     dir=event.src_path.removeprefix("./"),
                 )
 
             case events.DirMovedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
+                log_attrs = dict(
                     reason="dir_moved",
                     src=event.src_path.removeprefix("./"),
                     dest=event.dest_path.removeprefix("./"),
