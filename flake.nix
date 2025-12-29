@@ -3,16 +3,18 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+
     pyproject-nix = {
       url = "github:pyproject-nix/pyproject.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
     uv2nix = {
       url = "github:pyproject-nix/uv2nix";
       inputs.pyproject-nix.follows = "pyproject-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
     pyproject-build-systems = {
       url = "github:pyproject-nix/build-system-pkgs";
       inputs = {
@@ -27,47 +29,59 @@
     {
       self,
       nixpkgs,
-      flake-utils,
       uv2nix,
       pyproject-nix,
       pyproject-build-systems,
       ...
     }:
-    flake-utils.lib.eachDefaultSystem (
+    let
+      inherit (nixpkgs) lib;
+
+      supportedSystems = [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+
+      forEachSupportedSystem =
+        f:
+        let
+          bySystem = nixpkgs.lib.genAttrs supportedSystems f;
+
+          transpose =
+            systemAttrs:
+            let
+              getOrEmpty = attrs: key: if builtins.hasAttr key attrs then attrs.${key} else { };
+              foldOp =
+                acc: systemKey:
+                let
+                  value = systemAttrs.${systemKey};
+                  mapOp = topKey: value: lib.recursiveUpdate (getOrEmpty acc topKey) { ${systemKey} = value; };
+                in
+                acc // (builtins.mapAttrs mapOp value);
+              systemKeys = builtins.attrNames systemAttrs;
+            in
+            builtins.foldl' foldOp { } systemKeys;
+        in
+        transpose bySystem;
+    in
+    forEachSupportedSystem (
       system:
       let
-        pkgs = import nixpkgs { inherit system; };
-        nixTools = with pkgs; [
-          deadnix
-          nixfmt-rfc-style
-          statix
+        pkgs = nixpkgs.legacyPackages.${system};
+        python = pkgs.python313;
+        devPkgs = [
+          python
+          pkgs.black
+          pkgs.deadnix
+          pkgs.just
+          pkgs.nixfmt-rfc-style
+          pkgs.ruff
+          pkgs.statix
+          pkgs.uv
         ];
-        pyTools = with pkgs; [
-          black
-          ruff
-          uv
-        ];
-        python = pkgs.python313; # NOTE: Keep in-sync with pyproject.toml.
-        devPkgs =
-          [
-            python
-          ]
-          ++ pyTools
-          ++ nixTools
-          ++ (with pkgs; [
-            just
-            pre-commit
-          ]);
-        ciPkgs =
-          [
-            python
-          ]
-          ++ pyTools
-          ++ nixTools
-          ++ (with pkgs; [
-            just
-            skopeo
-          ]);
+        ciPkgs = devPkgs ++ [ pkgs.skopeo ];
 
         workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
         overlay = workspace.mkPyprojectOverlay { sourcePreference = "wheel"; };
