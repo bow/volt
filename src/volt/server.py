@@ -71,12 +71,17 @@ class _RunFile:
     def draft(self) -> bool:
         return self._draft
 
-    def toggle_draft(self, value: Optional[bool]) -> Self:
+    def toggle_draft(self, value: Optional[bool], write_on_change: bool = True) -> bool:
         log.debug("toggling server draft mode", value=value)
         new_value = value if value is not None else (not self._draft)
+        toggled = self._draft != new_value
         self._draft = new_value
-        log.debug("toggled server draft mode", value=self.draft)
-        return self
+        if toggled:
+            log.debug("toggled server draft mode", value=self.draft)
+            self.dump()
+        else:
+            log.debug("kept server draft mode", value=self.draft)
+        return toggled
 
     def dump(self) -> None:
         log.debug("writing server run file", path=self.path, draft=self.draft)

@@ -219,8 +219,11 @@ def serve_draft(config: Config, value: Optional[bool]) -> None:
         # NOTE: Setting 'draft' to False here since we will toggle it later.
         rf = _RunFile.from_config(config=config, draft=False)
 
-    rf.toggle_draft(value).dump()
-    log.info("Draft mode set", value=f"{'on' if rf.draft else 'off'}")
+    toggled = rf.toggle_draft(value)
+    if toggled:
+        log.info("Draft mode toggled", value=f"{'on' if rf.draft else 'off'}")
+    else:
+        log.info("Draft mode unchanged", value=f"{'on' if rf.draft else 'off'}")
 
     return None
 
