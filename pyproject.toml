@@ -17,7 +17,7 @@ dependencies = [
     "rich==13.*",
     "structlog==24.*",
     "tomlkit==0.*",
-    "watchdog==2.2.1",
+    "watchdog==6.*",
 ]
 readme = "README.md"
 keywords = ["static website"]

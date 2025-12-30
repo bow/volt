@@ -24,7 +24,7 @@ from click import echo
 from click._compat import get_text_stderr
 from structlog.contextvars import bound_contextvars
 from watchdog import events
-from watchdog.observers import Observer
+from watchdog.observers.inotify import InotifyObserver
 
 from . import __version__, constants
 from . import signals as blinker_signals
@@ -258,10 +258,10 @@ class _SyncQueue(queue.Queue):
         self._putlock.release()
 
 
-class _BuildObserver(Observer):
+class _BuildObserver(InotifyObserver):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)  # type: ignore[no-untyped-call]
-        self._event_queue = _SyncQueue()
+        super().__init__(*args, **kwargs)
+        self._event_queue = _SyncQueue()  # type: ignore[assignment]
 
 
 class _BuildHandler(events.RegexMatchingEventHandler):
@@ -288,10 +288,10 @@ class _BuildHandler(events.RegexMatchingEventHandler):
             ".*__pycache__.*",
         ]
         super().__init__(
-            regexes,
-            ignore_regexes,
+            regexes=regexes,
+            ignore_regexes=ignore_regexes,
             case_sensitive=True,
-        )  # type: ignore[no-untyped-call]
+        )
         self.config = config
         self._build = build_func
 
@@ -309,6 +309,12 @@ class _BuildHandler(events.RegexMatchingEventHandler):
             case events.FileModifiedEvent:
                 log_attrs = dict(  # type: ignore[unreachable]
                     reason="file_modified",
+                    file=event.src_path.removeprefix("./"),
+                )
+
+            case events.FileClosedEvent:
+                log_attrs = dict(  # type: ignore[unreachable]
+                    reason="file_closed_and_modified",
                     file=event.src_path.removeprefix("./"),
                 )
 
@@ -351,7 +357,8 @@ class _BuildHandler(events.RegexMatchingEventHandler):
                 )
 
             case _:
-                log_attrs = dict(reason="unknown")
+                log.debug("ignoring event", event_value=event)
+                return None
 
         log.info("rebuilding site", **log_attrs)
         self._build()
@@ -363,9 +370,9 @@ class _Rebuilder:
         self._observer = _BuildObserver()
         self._observer.schedule(
             _BuildHandler(config, build_func),
-            config.project_dir_rel,
+            f"{config.project_dir_rel}",
             recursive=True,
-        )  # type: ignore[no-untyped-call]
+        )
 
     def __enter__(self):  # type: ignore
         return self._observer.start()
