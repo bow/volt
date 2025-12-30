@@ -121,7 +121,7 @@ update:
     direnv reload
     just fmt
 
-# Destroy the local development environment.
-uninstall-dev:
+# Rebuilds the local development environment.
+rebuild-dev:
     rm -rf .venv .direnv
     direnv reload
