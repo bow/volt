@@ -14,8 +14,8 @@ dependencies = [
     "pygments==2.*",
     "python-slugify==8.*",
     "pyyaml==6.*",
-    "rich==13.*",
-    "structlog==24.*",
+    "rich==14.*",
+    "structlog==25.*",
     "tomlkit==0.*",
     "watchdog==6.*",
 ]
