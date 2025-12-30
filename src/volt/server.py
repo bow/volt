@@ -3,11 +3,9 @@
 # Copyright (c) 2012-2023 Wibowo Arindrarto <contact@arindrarto.dev>
 # SPDX-License-Identifier: BSD-3-Clause
 
-import queue
 import signal
 import socket
 import sys
-import threading
 import time
 from collections.abc import Callable
 from contextlib import suppress
@@ -24,7 +22,7 @@ from click import echo
 from click._compat import get_text_stderr
 from structlog.contextvars import bound_contextvars
 from watchdog import events
-from watchdog.observers.inotify import InotifyObserver
+from watchdog.observers import Observer
 
 from . import __version__, constants
 from . import signals as blinker_signals
@@ -231,39 +229,6 @@ def _wait_ready(
     return False
 
 
-class _SyncQueue(queue.Queue):
-    """A queue of size=1 that drops events sent to it while it processes tasks"""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs["maxsize"] = 1
-        super().__init__(*args, **kwargs)
-        self._putlock = threading.Lock()
-
-    def put(
-        self,
-        item: Any,
-        block: bool = True,
-        timeout: Optional[float] = None,
-    ) -> None:
-        if not self._putlock.acquire(blocking=False):
-            return
-
-        if self.unfinished_tasks > 0:
-            self._putlock.release()
-            return
-
-        with suppress(queue.Full):
-            super().put(item, False, timeout=None)
-
-        self._putlock.release()
-
-
-class _BuildObserver(InotifyObserver):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self._event_queue = _SyncQueue()  # type: ignore[assignment]
-
-
 class _BuildHandler(events.RegexMatchingEventHandler):
     def __init__(self, config: Config, build_func: Callable) -> None:
         prefix = f"{config.project_dir_rel}".replace(".", r"\.")
@@ -309,12 +274,6 @@ class _BuildHandler(events.RegexMatchingEventHandler):
             case events.FileModifiedEvent:
                 log_attrs = dict(  # type: ignore[unreachable]
                     reason="file_modified",
-                    file=event.src_path.removeprefix("./"),
-                )
-
-            case events.FileClosedEvent:
-                log_attrs = dict(  # type: ignore[unreachable]
-                    reason="file_closed_and_modified",
                     file=event.src_path.removeprefix("./"),
                 )
 
@@ -367,7 +326,7 @@ class _BuildHandler(events.RegexMatchingEventHandler):
 
 class _Rebuilder:
     def __init__(self, config: Config, build_func: Callable) -> None:
-        self._observer = _BuildObserver()
+        self._observer = Observer()
         self._observer.schedule(
             _BuildHandler(config, build_func),
             f"{config.project_dir_rel}",
