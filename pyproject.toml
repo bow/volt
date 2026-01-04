@@ -60,7 +60,7 @@ dev = [
     "radon==6.*",
     "requests==2.*",
     "safety==3.*",
-    "sphinx==8.*",
+    "sphinx==9.*",
     "toml==0.*",
     "types-python-slugify==8.*",
     "types-pyyaml==6.*",
