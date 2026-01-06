@@ -126,4 +126,4 @@ rebuild-dev:
     rm -f ./.git/hooks/pre-commit
     rm -rf .venv .direnv
     direnv reload
-    pre-commit install
+    DIRENV_LOG_FORMAT="" direnv exec {{justfile_directory()}} pre-commit install \
