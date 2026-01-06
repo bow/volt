@@ -77,6 +77,7 @@
           pkgs.deadnix
           pkgs.just
           pkgs.nixfmt-rfc-style
+          pkgs.pre-commit
           pkgs.ruff
           pkgs.statix
           pkgs.uv

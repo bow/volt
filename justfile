@@ -123,5 +123,7 @@ update:
 
 # Rebuilds the local development environment.
 rebuild-dev:
+    rm -f ./.git/hooks/pre-commit
     rm -rf .venv .direnv
     direnv reload
+    pre-commit install
